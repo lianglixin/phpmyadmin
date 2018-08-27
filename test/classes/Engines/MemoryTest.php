@@ -4,16 +4,19 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Engines\Memory;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Memory
  *
  * @package PhpMyAdmin-test
  */
-class MemoryTest extends \PMATestCase
+class MemoryTest extends PmaTestCase
 {
     /**
      * @access protected
@@ -54,11 +57,11 @@ class MemoryTest extends \PMATestCase
     {
         $this->assertEquals(
             $this->object->getVariables(),
-            array(
-                'max_heap_table_size' => array(
+            [
+                'max_heap_table_size' => [
                                             'type'  => 1,
-                                         )
-                )
+                                         ]
+                ]
         );
     }
 }

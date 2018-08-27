@@ -5,34 +5,51 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Template;
+use PhpMyAdmin\Tests\PmaTestCase;
+use Twig\Error\LoaderError;
 
 /**
  * Test for PhpMyAdmin\Template class
  *
  * @package PhpMyAdmin-test
  */
-class TemplateTest extends \PMATestCase
+class TemplateTest extends PmaTestCase
 {
     /**
-     * Test for set function
-     *
-     * @dataProvider providerTestSet
+     * @var Template
+     */
+    protected $template;
+
+    /**
+     * Sets up the fixture.
      *
      * @return void
      */
+    protected function setUp()
+    {
+        $this->template = new Template();
+    }
+
+    /**
+     * Test for set function
+     *
+     * @param string $data Template name
+     *
+     * @return void
+     *
+     * @dataProvider providerTestSet
+     */
     public function testSet($data)
     {
-        $template = Template::get($data);
-        $template->set('variable1', 'value1');
-        $template->set(
-            array(
-                'variable2' => 'value2'
-            )
-        );
-        $result = $template->render();
+        $result = $this->template->render($data, [
+            'variable1' => 'value1',
+            'variable2' => 'value2',
+        ]);
         $this->assertContains('value1', $result);
         $this->assertContains('value2', $result);
     }
@@ -46,69 +63,25 @@ class TemplateTest extends \PMATestCase
     {
         return [
             ['test/add_data'],
-            ['test/add_data_twig'],
         ];
-    }
-
-    /**
-     * Test for setHelper
-     *
-     * @return void
-     */
-    public function testSetHelper()
-    {
-        $template = Template::get('test/set_helper');
-        $template->setHelper('hello', function ($string) {
-            return 'hello ' . $string;
-        });
-        $template->set(['variable' => 'world']);
-        $this->assertEquals('hello world', $template->render());
-
-        $this->setExpectedException('LogicException');
-        $template->setHelper('hello', 'again');
-    }
-
-    /**
-     * Test for removeHelper
-     *
-     * @return void
-     */
-    public function testRemoveHelper()
-    {
-        $template = Template::get('test/set_helper');
-        $template->setHelper('hello', function ($string) {
-            return 'hello ' . $string;
-        });
-        $template->set(['variable' => 'world']);
-        $template->removeHelper('hello');
-        $this->setExpectedException('LogicException');
-        $template->render();
-    }
-
-    /**
-     * Test for removeHelper
-     *
-     * @return void
-     */
-    public function testRemoveHelperNotFound()
-    {
-        $template = Template::get('test/set_helper');
-        $this->setExpectedException('LogicException');
-        $template->removeHelper('not found');
     }
 
     /**
      * Test for render
      *
-     * @dataProvider providerTestDynamicRender
+     * @param string $templateFile Template name
+     * @param string $key          Template variable array key
+     * @param string $value        Template variable array value
      *
      * @return void
+     *
+     * @dataProvider providerTestDynamicRender
      */
     public function testDynamicRender($templateFile, $key, $value)
     {
         $this->assertEquals(
             $value,
-            Template::get($templateFile)->render([$key => $value])
+            $this->template->render($templateFile, [$key => $value])
         );
     }
 
@@ -121,7 +94,6 @@ class TemplateTest extends \PMATestCase
     {
         return [
             ['test/echo', 'variable', 'value'],
-            ['test/echo_twig', 'variable', 'value'],
         ];
     }
 
@@ -132,22 +104,25 @@ class TemplateTest extends \PMATestCase
      */
     public function testRenderTemplateNotFound()
     {
-        $this->setExpectedException('LogicException');
-        Template::get('template not found')->render();
+        $this->expectException(LoaderError::class);
+        $this->template->render('template not found');
     }
 
     /**
      * Test for render
      *
-     * @dataProvider providerTestRender
+     * @param string $templateFile   Template name
+     * @param string $expectedResult Expected result
      *
      * @return void
+     *
+     * @dataProvider providerTestRender
      */
     public function testRender($templateFile, $expectedResult)
     {
         $this->assertEquals(
             $expectedResult,
-            Template::get($templateFile)->render()
+            $this->template->render($templateFile)
         );
     }
 
@@ -160,22 +135,25 @@ class TemplateTest extends \PMATestCase
     {
         return [
             ['test/static', 'static content'],
-            ['test/static_twig', 'static content'],
         ];
     }
 
     /**
      * Test for render
      *
-     * @dataProvider providerTestRenderGettext
+     * @param string $templateFile   Template name
+     * @param array  $renderParams   Render params
+     * @param string $expectedResult Expected result
      *
      * @return void
+     *
+     * @dataProvider providerTestRenderGettext
      */
     public function testRenderGettext($templateFile, $renderParams, $expectedResult)
     {
         $this->assertEquals(
             $expectedResult,
-            Template::get($templateFile)->render($renderParams)
+            $this->template->render($templateFile, $renderParams)
         );
     }
 
@@ -188,14 +166,12 @@ class TemplateTest extends \PMATestCase
     {
         return [
             ['test/gettext/gettext', [], 'Text'],
-            ['test/gettext/gettext_twig', [], 'Text'],
             ['test/gettext/pgettext', [], 'Text'],
-            ['test/gettext/pgettext_twig', [], 'Text'],
-            ['test/gettext/notes_twig', [], 'Text'],
-            ['test/gettext/plural_twig', ['table_count' => 1], 'One table'],
-            ['test/gettext/plural_twig', ['table_count' => 2], '2 tables'],
-            ['test/gettext/plural_notes_twig', ['table_count' => 1], 'One table'],
-            ['test/gettext/plural_notes_twig', ['table_count' => 2], '2 tables'],
+            ['test/gettext/notes', [], 'Text'],
+            ['test/gettext/plural', ['table_count' => 1], 'One table'],
+            ['test/gettext/plural', ['table_count' => 2], '2 tables'],
+            ['test/gettext/plural_notes', ['table_count' => 1], 'One table'],
+            ['test/gettext/plural_notes', ['table_count' => 2], '2 tables'],
         ];
     }
 }

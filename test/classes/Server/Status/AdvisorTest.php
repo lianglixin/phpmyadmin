@@ -5,13 +5,16 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Server\Status;
 
 use PhpMyAdmin\Core;
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Server\Status\Advisor;
 use PhpMyAdmin\Server\Status\Data;
 use PhpMyAdmin\Theme;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * PhpMyAdmin\Tests\Server\Status\AdvisorTest class
@@ -34,7 +37,7 @@ class AdvisorTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$_REQUEST
         $_REQUEST['log'] = "index1";
@@ -44,7 +47,7 @@ class AdvisorTest extends TestCase
         $GLOBALS['cfg']['MaxRows'] = 10;
         $GLOBALS['cfg']['ServerDefault'] = "server";
         $GLOBALS['cfg']['RememberSorting'] = true;
-        $GLOBALS['cfg']['SQP'] = array();
+        $GLOBALS['cfg']['SQP'] = [];
         $GLOBALS['cfg']['MaxCharactersInDisplayedSQL'] = 1000;
         $GLOBALS['cfg']['ShowSQL'] = true;
         $GLOBALS['cfg']['TableNavigationLinksMode'] = 'icons';
@@ -67,49 +70,49 @@ class AdvisorTest extends TestCase
             ->getMock();
 
         //this data is needed when PhpMyAdmin\Server\Status\Data constructs
-        $server_status = array(
+        $server_status = [
             "Aborted_clients" => "0",
             "Aborted_connects" => "0",
             "Com_delete_multi" => "0",
             "Com_create_function" => "0",
             "Com_empty_query" => "0",
-        );
+        ];
 
-        $server_variables= array(
+        $server_variables = [
             "auto_increment_increment" => "1",
             "auto_increment_offset" => "1",
             "automatic_sp_privileges" => "ON",
             "back_log" => "50",
             "big_tables" => "OFF",
-        );
+        ];
 
-        $fetchResult = array(
-            array(
+        $fetchResult = [
+            [
                 "SHOW GLOBAL STATUS",
                 0,
                 1,
-                null,
+                DatabaseInterface::CONNECT_USER,
                 0,
                 $server_status
-            ),
-            array(
+            ],
+            [
                 "SHOW GLOBAL VARIABLES",
                 0,
                 1,
-                null,
+                DatabaseInterface::CONNECT_USER,
                 0,
                 $server_variables
-            ),
-            array(
+            ],
+            [
                 "SELECT concat('Com_', variable_name), variable_value "
                     . "FROM data_dictionary.GLOBAL_STATEMENTS",
                 0,
                 1,
-                null,
+                DatabaseInterface::CONNECT_USER,
                 0,
                 $server_status
-            ),
-        );
+            ],
+        ];
 
         $dbi->expects($this->any())->method('fetchResult')
             ->will($this->returnValueMap($fetchResult));

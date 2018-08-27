@@ -1,10 +1,12 @@
 <?php
 /* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
- * set of functions with the operations section in pma
+ * Holds the PhpMyAdmin\Operations class
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Charsets;
@@ -21,12 +23,25 @@ use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 
 /**
- * PhpMyAdmin\Operations
+ * Set of functions with the operations section in phpMyAdmin
  *
  * @package PhpMyAdmin
  */
 class Operations
 {
+    /**
+     * @var Relation $relation
+     */
+    private $relation;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->relation = new Relation();
+    }
+
     /**
      * Get HTML output for database comment
      *
@@ -34,7 +49,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForDatabaseComment($db)
+    public function getHtmlForDatabaseComment($db)
     {
         $html_output = '<div>'
             . '<form method="post" action="db_operations.php" id="formDatabaseComment">'
@@ -42,13 +57,13 @@ class Operations
             . '<fieldset>'
             . '<legend>';
         if (Util::showIcons('ActionLinksMode')) {
-            $html_output .= Util::getImage('b_comment.png') . '&nbsp;';
+            $html_output .= Util::getImage('b_comment') . '&nbsp;';
         }
         $html_output .=  __('Database comment');
         $html_output .= '</legend>';
         $html_output .= '<input type="text" name="comment" '
             . 'class="textfield"'
-            . 'value="' . htmlspecialchars(Relation::getDbComment($db)) . '" />'
+            . 'value="' . htmlspecialchars($this->relation->getDbComment($db)) . '" />'
             . '</fieldset>';
         $html_output .= '<fieldset class="tblFooters">'
             . '<input type="submit" value="' . __('Go') . '" />'
@@ -66,7 +81,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForRenameDatabase($db)
+    public function getHtmlForRenameDatabase($db)
     {
         $html_output = '<div>'
             . '<form id="rename_db_form" '
@@ -85,7 +100,7 @@ class Operations
             . '<legend>';
 
         if (Util::showIcons('ActionLinksMode')) {
-            $html_output .= Util::getImage('b_edit.png') . '&nbsp;';
+            $html_output .= Util::getImage('b_edit') . '&nbsp;';
         }
         $html_output .= __('Rename database to')
             . '</legend>';
@@ -131,10 +146,10 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForDropDatabaseLink($db)
+    public function getHtmlForDropDatabaseLink($db)
     {
         $this_sql_query = 'DROP DATABASE ' . Util::backquote($db);
-        $this_url_params = array(
+        $this_url_params = [
             'sql_query' => $this_sql_query,
             'back' => 'db_operations.php',
             'goto' => 'index.php',
@@ -145,18 +160,18 @@ class Operations
                 htmlspecialchars(Util::backquote($db))
             ),
             'db' => null,
-        );
+        ];
 
         $html_output = '<div>'
             . '<fieldset class="caution">';
         $html_output .= '<legend>';
         if (Util::showIcons('ActionLinksMode')) {
-            $html_output .= Util::getImage('b_deltbl.png') . '&nbsp';
+            $html_output .= Util::getImage('b_deltbl') . '&nbsp';
         }
         $html_output .= __('Remove database')
             . '</legend>';
         $html_output .= '<ul>';
-        $html_output .= self::getDeleteDataOrTablelink(
+        $html_output .= $this->getDeleteDataOrTablelink(
             $this_url_params,
             'DROP_DATABASE',
             __('Drop the database (DROP)'),
@@ -175,21 +190,16 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForCopyDatabase($db)
+    public function getHtmlForCopyDatabase($db)
     {
         $drop_clause = 'DROP TABLE / DROP VIEW';
-        $choices = array(
+        $choices = [
             'structure' => __('Structure only'),
             'data'      => __('Structure and data'),
             'dataonly'  => __('Data only')
-        );
+        ];
 
-        if (isset($_COOKIE)
-            && isset($_COOKIE['pma_switch_to_new'])
-            && $_COOKIE['pma_switch_to_new'] == 'true'
-        ) {
-            $pma_switch_to_new = 'true';
-        }
+        $pma_switch_to_new = isset($_SESSION['pma_switch_to_new']) && $_SESSION['pma_switch_to_new'];
 
         $html_output = '<div>';
         $html_output .= '<form id="copy_db_form" '
@@ -207,14 +217,17 @@ class Operations
             . '<legend>';
 
         if (Util::showIcons('ActionLinksMode')) {
-            $html_output .= Util::getImage('b_edit.png') . '&nbsp';
+            $html_output .= Util::getImage('b_edit') . '&nbsp';
         }
         $html_output .= __('Copy database to')
             . '</legend>'
             . '<input type="text" maxlength="64" name="newname" '
             . 'class="textfield" required="required" /><br />'
             . Util::getRadioFields(
-                'what', $choices, 'data', true
+                'what',
+                $choices,
+                'data',
+                true
             );
         $html_output .= '<br />';
         $html_output .= '<input type="checkbox" name="create_database_before_copying" '
@@ -257,10 +270,7 @@ class Operations
 
         $html_output .= '<input type="checkbox" name="switch_to_new" value="true"'
             . 'id="checkbox_switch"'
-            . ((isset($pma_switch_to_new) && $pma_switch_to_new == 'true')
-                ? ' checked="checked"'
-                : '')
-            . '/>';
+            . ($pma_switch_to_new ? ' checked="checked"' : '') . '/>';
         $html_output .= '<label for="checkbox_switch">'
             . __('Switch to copied database') . '</label>'
             . '</fieldset>';
@@ -281,7 +291,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForChangeDatabaseCharset($db, $table)
+    public function getHtmlForChangeDatabaseCharset($db, $table)
     {
         $html_output = '<div>'
             . '<form id="change_db_charset_form" ';
@@ -293,12 +303,14 @@ class Operations
         $html_output .= '<fieldset>' . "\n"
            . '    <legend>';
         if (Util::showIcons('ActionLinksMode')) {
-            $html_output .= Util::getImage('s_asci.png') . '&nbsp';
+            $html_output .= Util::getImage('s_asci') . '&nbsp';
         }
         $html_output .= '<label for="select_db_collation">' . __('Collation')
             . '</label>' . "\n"
             . '</legend>' . "\n"
             . Charsets::getCollationDropdownBox(
+                $GLOBALS['dbi'],
+                $GLOBALS['cfg']['Server']['DisableIS'],
                 'db_collation',
                 'select_db_collation',
                 isset($_REQUEST['db_collation']) ? $_REQUEST['db_collation'] : '',
@@ -337,14 +349,16 @@ class Operations
      *
      * @return void
      */
-    public static function runProcedureAndFunctionDefinitions($db)
+    public function runProcedureAndFunctionDefinitions($db)
     {
         $procedure_names = $GLOBALS['dbi']->getProceduresOrFunctions($db, 'PROCEDURE');
         if ($procedure_names) {
             foreach ($procedure_names as $procedure_name) {
                 $GLOBALS['dbi']->selectDb($db);
                 $tmp_query = $GLOBALS['dbi']->getDefinition(
-                    $db, 'PROCEDURE', $procedure_name
+                    $db,
+                    'PROCEDURE',
+                    $procedure_name
                 );
                 // collect for later display
                 $GLOBALS['sql_query'] .= "\n" . $tmp_query;
@@ -358,7 +372,9 @@ class Operations
             foreach ($function_names as $function_name) {
                 $GLOBALS['dbi']->selectDb($db);
                 $tmp_query = $GLOBALS['dbi']->getDefinition(
-                    $db, 'FUNCTION', $function_name
+                    $db,
+                    'FUNCTION',
+                    $function_name
                 );
                 // collect for later display
                 $GLOBALS['sql_query'] .= "\n" . $tmp_query;
@@ -373,15 +389,8 @@ class Operations
      *
      * @return void
      */
-    public static function createDbBeforeCopy()
+    public function createDbBeforeCopy()
     {
-        // lower_case_table_names=1 `DB` becomes `db`
-        if ($GLOBALS['dbi']->getLowerCaseNames() === '1') {
-            $_REQUEST['newname'] = mb_strtolower(
-                $_REQUEST['newname']
-            );
-        }
-
         $local_query = 'CREATE DATABASE IF NOT EXISTS '
             . Util::backquote($_REQUEST['newname']);
         if (isset($_REQUEST['db_collation'])) {
@@ -417,16 +426,17 @@ class Operations
      *
      * @return array $views
      */
-    public static function getViewsAndCreateSqlViewStandIn(
-        array $tables_full, $export_sql_plugin, $db
+    public function getViewsAndCreateSqlViewStandIn(
+        array $tables_full,
+        $export_sql_plugin,
+        $db
     ) {
-        $views = array();
+        $views = [];
         foreach ($tables_full as $each_table => $tmp) {
             // to be able to rename a db containing views,
             // first all the views are collected and a stand-in is created
             // the real views are created after the tables
-            if ($GLOBALS['dbi']->getTable($db, $each_table)->isView()) {
-
+            if ($GLOBALS['dbi']->getTable($db, (string)$each_table)->isView()) {
                 // If view exists, and 'add drop view' is selected: Drop it!
                 if ($_REQUEST['what'] != 'nocopy'
                     && isset($_REQUEST['drop_if_exists'])
@@ -443,7 +453,9 @@ class Operations
                 $views[] = $each_table;
                 // Create stand-in definition to resolve view dependencies
                 $sql_view_standin = $export_sql_plugin->getTableDefStandIn(
-                    $db, $each_table, "\n"
+                    $db,
+                    $each_table,
+                    "\n"
                 );
                 $GLOBALS['dbi']->selectDb($_REQUEST['newname']);
                 $GLOBALS['dbi']->query($sql_view_standin);
@@ -462,12 +474,12 @@ class Operations
      *
      * @return array SQL queries for the constraints
      */
-    public static function copyTables(array $tables_full, $move, $db)
+    public function copyTables(array $tables_full, $move, $db)
     {
-        $sqlContraints = array();
+        $sqlContraints = [];
         foreach ($tables_full as $each_table => $tmp) {
             // skip the views; we have created stand-in definitions
-            if ($GLOBALS['dbi']->getTable($db, $each_table)->isView()) {
+            if ($GLOBALS['dbi']->getTable($db, (string)$each_table)->isView()) {
                 continue;
             }
 
@@ -476,7 +488,7 @@ class Operations
 
             // do not copy the data from a Merge table
             // note: on the calling FORM, 'data' means 'structure and data'
-            if ($GLOBALS['dbi']->getTable($db, $each_table)->isMerge()) {
+            if ($GLOBALS['dbi']->getTable($db, (string)$each_table)->isMerge()) {
                 if ($this_what == 'data') {
                     $this_what = 'structure';
                 }
@@ -489,12 +501,16 @@ class Operations
                 // keep the triggers from the original db+table
                 // (third param is empty because delimiters are only intended
                 //  for importing via the mysql client or our Import feature)
-                $triggers = $GLOBALS['dbi']->getTriggers($db, $each_table, '');
+                $triggers = $GLOBALS['dbi']->getTriggers($db, (string)$each_table, '');
 
                 if (! Table::moveCopy(
-                    $db, $each_table, $_REQUEST['newname'], $each_table,
+                    $db,
+                    $each_table,
+                    $_REQUEST['newname'],
+                    $each_table,
                     (isset($this_what) ? $this_what : 'data'),
-                    $move, 'db_copy'
+                    $move,
+                    'db_copy'
                 )) {
                     $GLOBALS['_error'] = true;
                     break;
@@ -531,7 +547,7 @@ class Operations
      *
      * @return void
      */
-    public static function runEventDefinitionsForDb($db)
+    public function runEventDefinitionsForDb($db)
     {
         $event_names = $GLOBALS['dbi']->fetchResult(
             'SELECT EVENT_NAME FROM information_schema.EVENTS WHERE EVENT_SCHEMA= \''
@@ -558,7 +574,7 @@ class Operations
      *
      * @return void
      */
-    public static function handleTheViews(array $views, $move, $db)
+    public function handleTheViews(array $views, $move, $db)
     {
         // temporarily force to add DROP IF EXIST to CREATE VIEW query,
         // to remove stand-in VIEW that was created earlier
@@ -570,7 +586,13 @@ class Operations
         $_REQUEST['drop_if_exists'] = 'true';
         foreach ($views as $view) {
             $copying_succeeded = Table::moveCopy(
-                $db, $view, $_REQUEST['newname'], $view, 'structure', $move, 'db_copy'
+                $db,
+                $view,
+                $_REQUEST['newname'],
+                $view,
+                'structure',
+                $move,
+                'db_copy'
             );
             if (! $copying_succeeded) {
                 $GLOBALS['_error'] = true;
@@ -593,7 +615,7 @@ class Operations
      *
      * @return void
      */
-    public static function adjustPrivilegesMoveDb($oldDb, $newname)
+    public function adjustPrivilegesMoveDb($oldDb, $newname)
     {
         if ($GLOBALS['db_priv'] && $GLOBALS['table_priv']
             && $GLOBALS['col_priv'] && $GLOBALS['proc_priv']
@@ -641,7 +663,7 @@ class Operations
      *
      * @return void
      */
-    public static function adjustPrivilegesCopyDb($oldDb, $newname)
+    public function adjustPrivilegesCopyDb($oldDb, $newname)
     {
         if ($GLOBALS['db_priv'] && $GLOBALS['table_priv']
             && $GLOBALS['col_priv'] && $GLOBALS['proc_priv']
@@ -747,7 +769,7 @@ class Operations
      *
      * @return void
      */
-    public static function createAllAccumulatedConstraints(array $sqlConstratints)
+    public function createAllAccumulatedConstraints(array $sqlConstratints)
     {
         $GLOBALS['dbi']->selectDb($_REQUEST['newname']);
         foreach ($sqlConstratints as $one_query) {
@@ -765,15 +787,18 @@ class Operations
      *
      * @return void
      */
-    public static function duplicateBookmarks($_error, $db)
+    public function duplicateBookmarks($_error, $db)
     {
         if (! $_error && $db != $_REQUEST['newname']) {
-            $get_fields = array('user', 'label', 'query');
-            $where_fields = array('dbase' => $db);
-            $new_fields = array('dbase' => $_REQUEST['newname']);
+            $get_fields = ['user', 'label', 'query'];
+            $where_fields = ['dbase' => $db];
+            $new_fields = ['dbase' => $_REQUEST['newname']];
             Table::duplicateInfo(
-                'bookmarkwork', 'bookmark', $get_fields,
-                $where_fields, $new_fields
+                'bookmarkwork',
+                'bookmark',
+                $get_fields,
+                $where_fields,
+                $new_fields
             );
         }
     }
@@ -785,13 +810,14 @@ class Operations
      *
      * @return string $html_out
      */
-    public static function getHtmlForOrderTheTable(array $columns)
+    public function getHtmlForOrderTheTable(array $columns)
     {
         $html_output = '<div>';
         $html_output .= '<form method="post" id="alterTableOrderby" '
             . 'action="tbl_operations.php">';
         $html_output .= Url::getHiddenInputs(
-            $GLOBALS['db'], $GLOBALS['table']
+            $GLOBALS['db'],
+            $GLOBALS['table']
         );
         $html_output .= '<fieldset id="fieldset_table_order">'
             . '<legend>' . __('Alter table order by') . '</legend>'
@@ -826,7 +852,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForMoveTable()
+    public function getHtmlForMoveTable()
     {
         $html_output = '<div>';
         $html_output .= '<form method="post" action="tbl_operations.php"'
@@ -907,22 +933,37 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getTableOptionDiv($pma_table, $comment, $tbl_collation, $tbl_storage_engine,
-        $pack_keys, $auto_increment, $delay_key_write,
-        $transactional, $page_checksum, $checksum
+    public function getTableOptionDiv(
+        $pma_table,
+        $comment,
+        $tbl_collation,
+        $tbl_storage_engine,
+        $pack_keys,
+        $auto_increment,
+        $delay_key_write,
+        $transactional,
+        $page_checksum,
+        $checksum
     ) {
         $html_output = '<div>';
         $html_output .= '<form method="post" action="tbl_operations.php"';
         $html_output .= ' id="tableOptionsForm" class="ajax">';
         $html_output .= Url::getHiddenInputs(
-            $GLOBALS['db'], $GLOBALS['table']
+            $GLOBALS['db'],
+            $GLOBALS['table']
         );
         $html_output .= '<input type="hidden" name="reload" value="1" />';
 
-        $html_output .= self::getTableOptionFieldset(
-            $pma_table, $comment, $tbl_collation,
-            $tbl_storage_engine, $pack_keys,
-            $delay_key_write, $auto_increment, $transactional, $page_checksum,
+        $html_output .= $this->getTableOptionFieldset(
+            $pma_table,
+            $comment,
+            $tbl_collation,
+            $tbl_storage_engine,
+            $pack_keys,
+            $delay_key_write,
+            $auto_increment,
+            $transactional,
+            $page_checksum,
             $checksum
         );
 
@@ -941,7 +982,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForRenameTable()
+    private function getHtmlForRenameTable()
     {
         $html_output = '<tr><td class="vmiddle">' . __('Rename table to') . '</td>'
             . '<td>'
@@ -980,7 +1021,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForTableComments($current_value)
+    private function getHtmlForTableComments($current_value)
     {
         $commentLength = $GLOBALS['dbi']->getVersion() >= 50503 ? 2048 : 60;
         $html_output = '<tr><td class="vmiddle">' . __('Table comments') . '</td>'
@@ -1002,7 +1043,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForPackKeys($current_value)
+    private function getHtmlForPackKeys($current_value)
     {
         $html_output = '<tr>'
             . '<td class="vmiddle"><label for="new_pack_keys">PACK_KEYS</label></td>'
@@ -1046,17 +1087,24 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getTableOptionFieldset($pma_table, $comment, $tbl_collation,
-        $tbl_storage_engine, $pack_keys,
-        $delay_key_write, $auto_increment, $transactional,
-        $page_checksum, $checksum
+    private function getTableOptionFieldset(
+        $pma_table,
+        $comment,
+        $tbl_collation,
+        $tbl_storage_engine,
+        $pack_keys,
+        $delay_key_write,
+        $auto_increment,
+        $transactional,
+        $page_checksum,
+        $checksum
     ) {
         $html_output = '<fieldset>'
             . '<legend>' . __('Table options') . '</legend>';
 
         $html_output .= '<table>';
-        $html_output .= self::getHtmlForRenameTable();
-        $html_output .= self::getHtmlForTableComments($comment);
+        $html_output .= $this->getHtmlForRenameTable();
+        $html_output .= $this->getHtmlForTableComments($comment);
 
         //Storage engine
         $html_output .= '<tr><td class="vmiddle">' . __('Storage Engine')
@@ -1064,7 +1112,9 @@ class Operations
             . '</td>'
             . '<td>'
             . StorageEngine::getHtmlSelect(
-                'new_tbl_storage_engine', null, $tbl_storage_engine
+                'new_tbl_storage_engine',
+                null,
+                $tbl_storage_engine
             )
             . '</td>'
             . '</tr>';
@@ -1073,7 +1123,12 @@ class Operations
         $html_output .= '<tr><td class="vmiddle">' . __('Collation') . '</td>'
             . '<td>'
             . Charsets::getCollationDropdownBox(
-                'tbl_collation', null, $tbl_collation, false
+                $GLOBALS['dbi'],
+                $GLOBALS['cfg']['Server']['DisableIS'],
+                'tbl_collation',
+                null,
+                $tbl_collation,
+                false
             )
             . '</td>'
             . '</tr>';
@@ -1087,18 +1142,18 @@ class Operations
             . '</label>'
             . '</td></tr>';
 
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA', 'ISAM'))) {
-            $html_output .= self::getHtmlForPackKeys($pack_keys);
+        if ($pma_table->isEngine(['MYISAM', 'ARIA', 'ISAM'])) {
+            $html_output .= $this->getHtmlForPackKeys($pack_keys);
         } // end if (MYISAM|ISAM)
 
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA'))) {
-            $html_output .= self::getHtmlForTableRow(
+        if ($pma_table->isEngine(['MYISAM', 'ARIA'])) {
+            $html_output .= $this->getHtmlForTableRow(
                 'new_checksum',
                 'CHECKSUM',
                 $checksum
             );
 
-            $html_output .= self::getHtmlForTableRow(
+            $html_output .= $this->getHtmlForTableRow(
                 'new_delay_key_write',
                 'DELAY_KEY_WRITE',
                 $delay_key_write
@@ -1106,13 +1161,13 @@ class Operations
         } // end if (MYISAM)
 
         if ($pma_table->isEngine('ARIA')) {
-            $html_output .= self::getHtmlForTableRow(
+            $html_output .= $this->getHtmlForTableRow(
                 'new_transactional',
                 'TRANSACTIONAL',
                 $transactional
             );
 
-            $html_output .= self::getHtmlForTableRow(
+            $html_output .= $this->getHtmlForTableRow(
                 'new_page_checksum',
                 'PAGE_CHECKSUM',
                 $page_checksum
@@ -1120,7 +1175,7 @@ class Operations
         } // end if (ARIA)
 
         if (strlen($auto_increment) > 0
-            && $pma_table->isEngine(array('MYISAM', 'ARIA', 'INNODB', 'PBXT'))
+            && $pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'PBXT'])
         ) {
             $html_output .= '<tr><td class="vmiddle">'
                 . '<label for="auto_increment_opt">AUTO_INCREMENT</label></td>'
@@ -1130,7 +1185,7 @@ class Operations
                 . '</tr> ';
         } // end if (MYISAM|INNODB)
 
-        $possible_row_formats = self::getPossibleRowFormat();
+        $possible_row_formats = $this->getPossibleRowFormat();
 
         // for MYISAM there is also COMPRESSED but it can be set only by the
         // myisampack utility, so don't offer here the choice because if we
@@ -1145,8 +1200,10 @@ class Operations
                 . '<label for="new_row_format">ROW_FORMAT</label></td>'
                 . '<td>';
             $html_output .= Util::getDropdown(
-                'new_row_format', $possible_row_formats[$tbl_storage_engine],
-                $current_row_format, 'new_row_format'
+                'new_row_format',
+                $possible_row_formats[$tbl_storage_engine],
+                $current_row_format,
+                'new_row_format'
             );
             $html_output .= '</td></tr>';
         }
@@ -1166,7 +1223,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForTableRow($attribute, $label, $val)
+    private function getHtmlForTableRow($attribute, $label, $val)
     {
         return '<tr>'
             . '<td class="vmiddle">'
@@ -1185,38 +1242,38 @@ class Operations
      *
      * @return array $possible_row_formats
      */
-    public static function getPossibleRowFormat()
+    private function getPossibleRowFormat()
     {
         // the outer array is for engines, the inner array contains the dropdown
         // option values as keys then the dropdown option labels
 
-        $possible_row_formats = array(
-            'ARCHIVE' => array(
+        $possible_row_formats = [
+            'ARCHIVE' => [
                 'COMPRESSED' => 'COMPRESSED',
-            ),
-            'ARIA'  => array(
+            ],
+            'ARIA'  => [
                 'FIXED'     => 'FIXED',
                 'DYNAMIC'   => 'DYNAMIC',
                 'PAGE'      => 'PAGE'
-            ),
-            'MARIA'  => array(
+            ],
+            'MARIA'  => [
                 'FIXED'     => 'FIXED',
                 'DYNAMIC'   => 'DYNAMIC',
                 'PAGE'      => 'PAGE'
-            ),
-            'MYISAM' => array(
+            ],
+            'MYISAM' => [
                  'FIXED'    => 'FIXED',
                  'DYNAMIC'  => 'DYNAMIC'
-            ),
-            'PBXT'   => array(
+            ],
+            'PBXT'   => [
                  'FIXED'    => 'FIXED',
                  'DYNAMIC'  => 'DYNAMIC'
-            ),
-            'INNODB' => array(
+            ],
+            'INNODB' => [
                  'COMPACT'  => 'COMPACT',
                  'REDUNDANT' => 'REDUNDANT'
-            )
-        );
+            ]
+        ];
 
         /** @var Innodb $innodbEnginePlugin */
         $innodbEnginePlugin = StorageEngine::getEngine('Innodb');
@@ -1241,7 +1298,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForCopytable()
+    public function getHtmlForCopytable()
     {
         $html_output = '<div>';
         $html_output .= '<form method="post" action="tbl_operations.php" '
@@ -1270,14 +1327,17 @@ class Operations
             . 'name="new_name" maxlength="64" '
             . 'value="' . htmlspecialchars($GLOBALS['table']) . '"/><br />';
 
-        $choices = array(
+        $choices = [
             'structure' => __('Structure only'),
             'data'      => __('Structure and data'),
             'dataonly'  => __('Data only')
-        );
+        ];
 
         $html_output .= Util::getRadioFields(
-            'what', $choices, 'data', true
+            'what',
+            $choices,
+            'data',
+            true
         );
         $html_output .= '<br />';
 
@@ -1292,7 +1352,7 @@ class Operations
 
         // display "Add constraints" choice only if there are
         // foreign keys
-        if (Relation::getForeigners($GLOBALS['db'], $GLOBALS['table'], '', 'foreign')) {
+        if ($this->relation->getForeigners($GLOBALS['db'], $GLOBALS['table'], '', 'foreign')) {
             $html_output .= '<input type="checkbox" name="add_constraints" '
                 . 'value="1" id="checkbox_constraints" checked="checked"/>';
             $html_output .= '<label for="checkbox_constraints">'
@@ -1318,17 +1378,11 @@ class Operations
             . __('Adjust privileges') . Util::showDocu('faq', 'faq6-39')
             . '</label><br />';
 
-        if (isset($_COOKIE['pma_switch_to_new'])
-            && $_COOKIE['pma_switch_to_new'] == 'true'
-        ) {
-            $pma_switch_to_new = 'true';
-        }
+        $pma_switch_to_new = isset($_SESSION['pma_switch_to_new']) && $_SESSION['pma_switch_to_new'];
 
         $html_output .= '<input type="checkbox" name="switch_to_new" value="true"'
             . 'id="checkbox_switch"'
-            . ((isset($pma_switch_to_new) && $pma_switch_to_new == 'true')
-                ? ' checked="checked"'
-                : '' . '/>');
+            . ($pma_switch_to_new ? ' checked="checked"' : '') . '/>';
         $html_output .= '<label for="checkbox_switch">'
             . __('Switch to copied table') . '</label>'
             . '</fieldset>';
@@ -1350,7 +1404,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForTableMaintenance($pma_table, array $url_params)
+    public function getHtmlForTableMaintenance($pma_table, array $url_params)
     {
         $html_output = '<div>';
         $html_output .= '<fieldset>'
@@ -1358,7 +1412,7 @@ class Operations
         $html_output .= '<ul id="tbl_maintenance">';
 
         // Note: BERKELEY (BDB) is no longer supported, starting with MySQL 5.1
-        $html_output .= self::getListofMaintainActionLink($pma_table, $url_params);
+        $html_output .= $this->getListofMaintainActionLink($pma_table, $url_params);
 
         $html_output .= '</ul>'
             . '</fieldset>'
@@ -1375,18 +1429,18 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getListofMaintainActionLink($pma_table, array $url_params)
+    private function getListofMaintainActionLink($pma_table, array $url_params)
     {
         $html_output = '';
 
         // analyze table
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA', 'INNODB', 'BERKELEYDB', 'TOKUDB'))) {
-            $params = array(
+        if ($pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'BERKELEYDB', 'TOKUDB'])) {
+            $params = [
                 'sql_query' => 'ANALYZE TABLE '
                     . Util::backquote($GLOBALS['table']),
                 'table_maintenance' => 'Go',
-            );
-            $html_output .= self::getMaintainActionlink(
+            ];
+            $html_output .= $this->getMaintainActionlink(
                 __('Analyze table'),
                 $params,
                 $url_params,
@@ -1395,13 +1449,13 @@ class Operations
         }
 
         // check table
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA', 'INNODB', 'TOKUDB'))) {
-            $params = array(
+        if ($pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'TOKUDB'])) {
+            $params = [
                 'sql_query' => 'CHECK TABLE '
                     . Util::backquote($GLOBALS['table']),
                 'table_maintenance' => 'Go',
-            );
-            $html_output .= self::getMaintainActionlink(
+            ];
+            $html_output .= $this->getMaintainActionlink(
                 __('Check table'),
                 $params,
                 $url_params,
@@ -1410,12 +1464,12 @@ class Operations
         }
 
         // checksum table
-        $params = array(
+        $params = [
             'sql_query' => 'CHECKSUM TABLE '
                 . Util::backquote($GLOBALS['table']),
             'table_maintenance' => 'Go',
-        );
-        $html_output .= self::getMaintainActionlink(
+        ];
+        $html_output .= $this->getMaintainActionlink(
             __('Checksum table'),
             $params,
             $url_params,
@@ -1423,13 +1477,13 @@ class Operations
         );
 
         // defragment table
-        if ($pma_table->isEngine(array('INNODB'))) {
-            $params = array(
+        if ($pma_table->isEngine(['INNODB'])) {
+            $params = [
                 'sql_query' => 'ALTER TABLE '
                 . Util::backquote($GLOBALS['table'])
                 . ' ENGINE = InnoDB;'
-            );
-            $html_output .= self::getMaintainActionlink(
+            ];
+            $html_output .= $this->getMaintainActionlink(
                 __('Defragment table'),
                 $params,
                 $url_params,
@@ -1438,7 +1492,7 @@ class Operations
         }
 
         // flush table
-        $params = array(
+        $params = [
             'sql_query' => 'FLUSH TABLE '
                 . Util::backquote($GLOBALS['table']),
             'message_to_show' => sprintf(
@@ -1446,8 +1500,8 @@ class Operations
                 htmlspecialchars($GLOBALS['table'])
             ),
             'reload' => 1,
-        );
-        $html_output .= self::getMaintainActionlink(
+        ];
+        $html_output .= $this->getMaintainActionlink(
             __('Flush the table (FLUSH)'),
             $params,
             $url_params,
@@ -1455,13 +1509,13 @@ class Operations
         );
 
         // optimize table
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA', 'INNODB', 'BERKELEYDB', 'TOKUDB'))) {
-            $params = array(
+        if ($pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'BERKELEYDB', 'TOKUDB'])) {
+            $params = [
                 'sql_query' => 'OPTIMIZE TABLE '
                     . Util::backquote($GLOBALS['table']),
                 'table_maintenance' => 'Go',
-            );
-            $html_output .= self::getMaintainActionlink(
+            ];
+            $html_output .= $this->getMaintainActionlink(
                 __('Optimize table'),
                 $params,
                 $url_params,
@@ -1470,13 +1524,13 @@ class Operations
         }
 
         // repair table
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA'))) {
-            $params = array(
+        if ($pma_table->isEngine(['MYISAM', 'ARIA'])) {
+            $params = [
                 'sql_query' => 'REPAIR TABLE '
                     . Util::backquote($GLOBALS['table']),
                 'table_maintenance' => 'Go',
-            );
-            $html_output .= self::getMaintainActionlink(
+            ];
+            $html_output .= $this->getMaintainActionlink(
                 __('Repair table'),
                 $params,
                 $url_params,
@@ -1497,14 +1551,14 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getMaintainActionlink($action_message, array $params, array $url_params, $link)
+    private function getMaintainActionlink($action_message, array $params, array $url_params, $link)
     {
         return '<li>'
-            . '<a class="maintain_action ajax" '
-            . 'href="sql.php'
-            . Url::getCommon(array_merge($url_params, $params)) . '">'
-            . $action_message
-            . '</a>'
+            . Util::linkOrButton(
+                'sql.php' . Url::getCommon(array_merge($url_params, $params)),
+                $action_message,
+                ['class' => 'maintain_action ajax']
+            )
             . Util::showMySQLDocu($link)
             . '</li>';
     }
@@ -1517,7 +1571,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForDeleteDataOrTable(
+    public function getHtmlForDeleteDataOrTable(
         array $truncate_table_url_params,
         array $dropTableUrlParams
     ) {
@@ -1528,7 +1582,7 @@ class Operations
         $html_output .= '<ul>';
 
         if (! empty($truncate_table_url_params)) {
-            $html_output .= self::getDeleteDataOrTablelink(
+            $html_output .= $this->getDeleteDataOrTablelink(
                 $truncate_table_url_params,
                 'TRUNCATE_TABLE',
                 __('Empty the table (TRUNCATE)'),
@@ -1536,7 +1590,7 @@ class Operations
             );
         }
         if (!empty($dropTableUrlParams)) {
-            $html_output .= self::getDeleteDataOrTablelink(
+            $html_output .= $this->getDeleteDataOrTablelink(
                 $dropTableUrlParams,
                 'DROP_TABLE',
                 __('Delete the table (DROP)'),
@@ -1556,14 +1610,15 @@ class Operations
      * @param string $link       link to be shown
      * @param string $htmlId     id of the link
      *
-     * @return String html output
+     * @return string html output
      */
-    public static function getDeleteDataOrTablelink(array $url_params, $syntax, $link, $htmlId)
+    public function getDeleteDataOrTablelink(array $url_params, $syntax, $link, $htmlId)
     {
-        return  '<li><a '
-            . 'href="sql.php' . Url::getCommon($url_params) . '"'
-            . ' id="' . $htmlId . '" class="ajax">'
-            . $link . '</a>'
+        return '<li>' . Util::linkOrButton(
+            'sql.php' . Url::getCommon($url_params),
+            $link,
+            ['id' => $htmlId, 'class' => 'ajax']
+        )
             . Util::showMySQLDocu($syntax)
             . '</li>';
     }
@@ -1576,19 +1631,20 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForPartitionMaintenance(array $partition_names, array $url_params)
+    public function getHtmlForPartitionMaintenance(array $partition_names, array $url_params)
     {
-        $choices = array(
+        $choices = [
             'ANALYZE' => __('Analyze'),
             'CHECK' => __('Check'),
             'OPTIMIZE' => __('Optimize'),
             'REBUILD' => __('Rebuild'),
             'REPAIR' => __('Repair'),
             'TRUNCATE' => __('Truncate')
-        );
+        ];
 
         $partition_method = Partition::getPartitionMethod(
-            $GLOBALS['db'], $GLOBALS['table']
+            $GLOBALS['db'],
+            $GLOBALS['table']
         );
         // add COALESCE or DROP option to choices array depeding on Partition method
         if ($partition_method == 'RANGE'
@@ -1628,15 +1684,20 @@ class Operations
 
         $html_output .= '<div class="clearfloat" />';
         $html_output .= Util::getRadioFields(
-            'partition_operation', $choices, 'ANALYZE', false, true, 'floatleft'
+            'partition_operation',
+            $choices,
+            'ANALYZE',
+            false,
+            true,
+            'floatleft'
         );
         $this_url_params = array_merge(
             $url_params,
-            array(
+            [
                 'sql_query' => 'ALTER TABLE '
                 . Util::backquote($GLOBALS['table'])
                 . ' REMOVE PARTITIONING;'
-            )
+            ]
         );
         $html_output .= '<div class="clearfloat" /><br />';
 
@@ -1664,7 +1725,7 @@ class Operations
      *
      * @return string $html_output
      */
-    public static function getHtmlForReferentialIntegrityCheck(array $foreign, array $url_params)
+    public function getHtmlForReferentialIntegrityCheck(array $foreign, array $url_params)
     {
         $html_output = '<div>'
             . '<fieldset>'
@@ -1705,7 +1766,7 @@ class Operations
                 . ' IS NOT NULL';
             $this_url_params = array_merge(
                 $url_params,
-                array('sql_query' => $join_query)
+                ['sql_query' => $join_query]
             );
 
             $html_output .= '<li>'
@@ -1726,7 +1787,7 @@ class Operations
      *
      * @return array SQL query and result
      */
-    public static function getQueryAndResultForReorderingTable()
+    public function getQueryAndResultForReorderingTable()
     {
         $sql_query = 'ALTER TABLE '
             . Util::backquote($GLOBALS['table'])
@@ -1742,7 +1803,7 @@ class Operations
         $sql_query .= ';';
         $result = $GLOBALS['dbi']->query($sql_query);
 
-        return array($sql_query, $result);
+        return [$sql_query, $result];
     }
 
     /**
@@ -1760,13 +1821,20 @@ class Operations
      *
      * @return array  $table_alters
      */
-    public static function getTableAltersArray($pma_table, $pack_keys,
-        $checksum, $page_checksum, $delay_key_write,
-        $row_format, $newTblStorageEngine, $transactional, $tbl_collation
+    public function getTableAltersArray(
+        $pma_table,
+        $pack_keys,
+        $checksum,
+        $page_checksum,
+        $delay_key_write,
+        $row_format,
+        $newTblStorageEngine,
+        $transactional,
+        $tbl_collation
     ) {
         global $auto_increment;
 
-        $table_alters = array();
+        $table_alters = [];
 
         if (isset($_REQUEST['comment'])
             && urldecode($_REQUEST['prev_comment']) !== $_REQUEST['comment']
@@ -1787,7 +1855,7 @@ class Operations
                 . Util::getCharsetQueryPart($_REQUEST['tbl_collation']);
         }
 
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA', 'ISAM'))
+        if ($pma_table->isEngine(['MYISAM', 'ARIA', 'ISAM'])
             && isset($_REQUEST['new_pack_keys'])
             && $_REQUEST['new_pack_keys'] != (string)$pack_keys
         ) {
@@ -1795,7 +1863,7 @@ class Operations
         }
 
         $_REQUEST['new_checksum'] = empty($_REQUEST['new_checksum']) ? '0' : '1';
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA'))
+        if ($pma_table->isEngine(['MYISAM', 'ARIA'])
             && $_REQUEST['new_checksum'] !== $checksum
         ) {
             $table_alters[] = 'checksum = ' . $_REQUEST['new_checksum'];
@@ -1819,13 +1887,13 @@ class Operations
 
         $_REQUEST['new_delay_key_write']
             = empty($_REQUEST['new_delay_key_write']) ? '0' : '1';
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA'))
+        if ($pma_table->isEngine(['MYISAM', 'ARIA'])
             && $_REQUEST['new_delay_key_write'] !== $delay_key_write
         ) {
             $table_alters[] = 'delay_key_write = ' . $_REQUEST['new_delay_key_write'];
         }
 
-        if ($pma_table->isEngine(array('MYISAM', 'ARIA', 'INNODB', 'PBXT'))
+        if ($pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'PBXT'])
             && ! empty($_REQUEST['new_auto_increment'])
             && (! isset($auto_increment)
             || $_REQUEST['new_auto_increment'] !== $auto_increment)
@@ -1837,7 +1905,7 @@ class Operations
         if (! empty($_REQUEST['new_row_format'])) {
             $newRowFormat = $_REQUEST['new_row_format'];
             $newRowFormatLower = mb_strtolower($newRowFormat);
-            if ($pma_table->isEngine(array('MYISAM', 'ARIA', 'INNODB', 'PBXT'))
+            if ($pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'PBXT'])
                 && (strlen($row_format) === 0
                 || $newRowFormatLower !== mb_strtolower($row_format))
             ) {
@@ -1854,9 +1922,9 @@ class Operations
      *
      * @return array  $warning_messages
      */
-    public static function getWarningMessagesArray()
+    public function getWarningMessagesArray()
     {
-        $warning_messages = array();
+        $warning_messages = [];
         foreach ($GLOBALS['dbi']->getWarnings() as $warning) {
             // In MariaDB 5.1.44, when altering a table from Maria to MyISAM
             // and if TRANSACTIONAL was set, the system reports an error;
@@ -1882,7 +1950,7 @@ class Operations
      *
      * @return array $sql_query, $result
      */
-    public static function getQueryAndResultForPartition()
+    public function getQueryAndResultForPartition()
     {
         $sql_query = 'ALTER TABLE '
             . Util::backquote($GLOBALS['table']) . ' '
@@ -1897,7 +1965,7 @@ class Operations
 
         $result = $GLOBALS['dbi']->query($sql_query);
 
-        return array($sql_query, $result);
+        return [$sql_query, $result];
     }
 
     /**
@@ -1910,7 +1978,7 @@ class Operations
      *
      * @return void
      */
-    public static function adjustPrivilegesRenameOrMoveTable($oldDb, $oldTable, $newDb, $newTable)
+    public function adjustPrivilegesRenameOrMoveTable($oldDb, $oldTable, $newDb, $newTable)
     {
         if ($GLOBALS['table_priv'] && $GLOBALS['col_priv']
             && $GLOBALS['is_reload_priv']
@@ -1947,7 +2015,7 @@ class Operations
      *
      * @return void
      */
-    public static function adjustPrivilegesCopyTable($oldDb, $oldTable, $newDb, $newTable)
+    public function adjustPrivilegesCopyTable($oldDb, $oldTable, $newDb, $newTable)
     {
         if ($GLOBALS['table_priv'] && $GLOBALS['col_priv']
             && $GLOBALS['is_reload_priv']
@@ -2009,7 +2077,7 @@ class Operations
      *
      * @return void
      */
-    public static function changeAllColumnsCollation($db, $table, $tbl_collation)
+    public function changeAllColumnsCollation($db, $table, $tbl_collation)
     {
         $GLOBALS['dbi']->selectDb($db);
 
@@ -2033,7 +2101,7 @@ class Operations
      *
      * @return void
      */
-    public static function moveOrCopyTable($db, $table)
+    public function moveOrCopyTable($db, $table)
     {
         /**
          * Selects the database to work with
@@ -2060,20 +2128,31 @@ class Operations
                 }
             } else {
                 Table::moveCopy(
-                    $db, $table, $_REQUEST['target_db'], $_REQUEST['new_name'],
-                    $_REQUEST['what'], isset($_REQUEST['submit_move']), 'one_table'
+                    $db,
+                    $table,
+                    $_REQUEST['target_db'],
+                    $_REQUEST['new_name'],
+                    $_REQUEST['what'],
+                    isset($_REQUEST['submit_move']),
+                    'one_table'
                 );
 
                 if (isset($_REQUEST['adjust_privileges'])
                     && ! empty($_REQUEST['adjust_privileges'])
                 ) {
                     if (isset($_REQUEST['submit_move'])) {
-                        self::adjustPrivilegesRenameOrMoveTable(
-                            $db, $table, $_REQUEST['target_db'], $_REQUEST['new_name']
+                        $this->adjustPrivilegesRenameOrMoveTable(
+                            $db,
+                            $table,
+                            $_REQUEST['target_db'],
+                            $_REQUEST['new_name']
                         );
                     } else {
-                        self::adjustPrivilegesCopyTable(
-                            $db, $table, $_REQUEST['target_db'], $_REQUEST['new_name']
+                        $this->adjustPrivilegesCopyTable(
+                            $db,
+                            $table,
+                            $_REQUEST['target_db'],
+                            $_REQUEST['new_name']
                         );
                     }
 
@@ -2092,7 +2171,6 @@ class Operations
                             )
                         );
                     }
-
                 } else {
                     if (isset($_REQUEST['submit_move'])) {
                         $message = Message::success(

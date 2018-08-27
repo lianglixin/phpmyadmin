@@ -5,13 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Controllers\Server;
 
 use PhpMyAdmin\Charsets;
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Di\Container;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
-use PhpMyAdmin\Theme;
 use ReflectionClass;
 
 /**
@@ -19,15 +21,14 @@ use ReflectionClass;
  *
  * @package PhpMyAdmin-test
  */
-
-class ServerDatabasesControllerTest extends \PMATestCase
+class ServerDatabasesControllerTest extends PmaTestCase
 {
     /**
      * Prepares environment for the test.
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$_REQUEST
         $_REQUEST['log'] = "index1";
@@ -36,21 +37,23 @@ class ServerDatabasesControllerTest extends \PMATestCase
         //$GLOBALS
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['PMA_Config']->enableBc();
-        $GLOBALS['is_superuser'] = true;
 
+        $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = "table";
         $GLOBALS['replication_info']['master']['status'] = false;
         $GLOBALS['replication_info']['slave']['status'] = false;
         $GLOBALS['pmaThemeImage'] = 'image';
         $GLOBALS['text_dir'] = "text_dir";
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
+        $GLOBALS['cfg']['Server']['DisableIS'] = false;
 
         //$_SESSION
         $GLOBALS['server'] = 1;
 
         $container = Container::getDefaultContainer();
         $container->set('dbi', $GLOBALS['dbi']);
-        $this->response = new ResponseStub();
-        $container->set('PhpMyAdmin\Response', $this->response);
+        $response = new ResponseStub();
+        $container->set('PhpMyAdmin\Response', $response);
         $container->alias('response', 'PhpMyAdmin\Response');
     }
 
@@ -69,18 +72,19 @@ class ServerDatabasesControllerTest extends \PMATestCase
         $container = Container::getDefaultContainer();
         $container->factory('PhpMyAdmin\Controllers\Server\ServerDatabasesController');
         $container->alias(
-            'ServerDatabasesController', 'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
+            'ServerDatabasesController',
+            'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
         );
         $ctrl = $container->get('ServerDatabasesController');
 
         //Call the test function
-        $databases = array(
-            array("SCHEMA_NAME" => "pma_bookmark"),
-            array("SCHEMA_NAME" => "information_schema"),
-            array("SCHEMA_NAME" => "mysql"),
-            array("SCHEMA_NAME" => "performance_schema"),
-            array("SCHEMA_NAME" => "phpmyadmin")
-        );
+        $databases = [
+            ["SCHEMA_NAME" => "pma_bookmark"],
+            ["SCHEMA_NAME" => "information_schema"],
+            ["SCHEMA_NAME" => "mysql"],
+            ["SCHEMA_NAME" => "performance_schema"],
+            ["SCHEMA_NAME" => "phpmyadmin"]
+        ];
         $property = $class->getProperty('_databases');
         $property->setAccessible(true);
         $property->setValue($ctrl, $databases);
@@ -95,7 +99,7 @@ class ServerDatabasesControllerTest extends \PMATestCase
 
         $property = $class->getProperty('_dbstats');
         $property->setAccessible(true);
-        $property->setValue($ctrl, 0);
+        $property->setValue($ctrl, false);
 
         $property = $class->getProperty('_sort_by');
         $property->setAccessible(true);
@@ -105,34 +109,13 @@ class ServerDatabasesControllerTest extends \PMATestCase
         $property->setAccessible(true);
         $property->setValue($ctrl, 'asc');
 
-        $replication_types = array("master", "slave");
+        $replication_types = ["master", "slave"];
 
         $html = $method->invoke($ctrl, $replication_types);
-
-        //validate 1: General info
-        $this->assertContains(
-            '<div id="tableslistcontainer">',
-            $html
-        );
-
-        //validate 2:ajax Form
-        $this->assertContains(
-            '<form class="ajax" action="server_databases.php" ',
-            $html
-        );
-
-        $this->assertContains(
-            '<table id="tabledatabases" class="data">',
-            $html
-        );
 
         //validate 3: PMA_getHtmlForColumnOrderWithSort
         $this->assertContains(
             '<a href="server_databases.php',
-            $html
-        );
-        $this->assertContains(
-            'sort_by=SCHEMA_NAME',
             $html
         );
 
@@ -154,19 +137,19 @@ class ServerDatabasesControllerTest extends \PMATestCase
             $html
         );
 
-        //validate 5: PMA_getHtmlForTableFooter
+        //validate 5: table footer
         $this->assertContains(
-            'Total: <span id="databases_count">5</span>',
+            'Total: <span id="filter-rows-count">5</span>',
             $html
         );
 
-        //validate 6: PMA_getHtmlForTableFooterButtons
+        //validate 6: footer buttons
         $this->assertContains(
             'Check all',
             $html
         );
 
-        //validate 7: PMA_getHtmlForNoticeEnableStatistics
+        //validate 7: enable statistics
         $this->assertContains(
             'Note: Enabling the database statistics here might cause heavy traffic',
             $html
@@ -195,12 +178,13 @@ class ServerDatabasesControllerTest extends \PMATestCase
         $container = Container::getDefaultContainer();
         $container->factory('PhpMyAdmin\Controllers\Server\ServerDatabasesController');
         $container->alias(
-            'ServerDatabasesController', 'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
+            'ServerDatabasesController',
+            'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
         );
         $ctrl = $container->get('ServerDatabasesController');
 
         //$_REQUEST['sort_by'] and $_REQUEST['sort_order'] are empty
-        $method->invoke($ctrl, array("master", "slave"));
+        $method->invoke($ctrl, ["master", "slave"]);
         $this->assertEquals(
             'SCHEMA_NAME',
             $propertySortBy->getValue($ctrl)
@@ -213,7 +197,8 @@ class ServerDatabasesControllerTest extends \PMATestCase
         $container = Container::getDefaultContainer();
         $container->factory('PhpMyAdmin\Controllers\Server\ServerDatabasesController');
         $container->alias(
-            'ServerDatabasesController', 'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
+            'ServerDatabasesController',
+            'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
         );
         $ctrl = $container->get('ServerDatabasesController');
 
@@ -234,7 +219,8 @@ class ServerDatabasesControllerTest extends \PMATestCase
         $container = Container::getDefaultContainer();
         $container->factory('PhpMyAdmin\Controllers\Server\ServerDatabasesController');
         $container->alias(
-            'ServerDatabasesController', 'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
+            'ServerDatabasesController',
+            'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
         );
         $ctrl = $container->get('ServerDatabasesController');
 
@@ -267,52 +253,53 @@ class ServerDatabasesControllerTest extends \PMATestCase
         $container = Container::getDefaultContainer();
         $container->factory('PhpMyAdmin\Controllers\Server\ServerDatabasesController');
         $container->alias(
-            'ServerDatabasesController', 'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
+            'ServerDatabasesController',
+            'PhpMyAdmin\Controllers\Server\ServerDatabasesController'
         );
         $ctrl = $container->get('ServerDatabasesController');
 
         $this->assertEquals(
-            array(
-                'DEFAULT_COLLATION_NAME' => array(
+            [
+                'DEFAULT_COLLATION_NAME' => [
                     'disp_name' => __('Collation'),
-                    'description_function' => array(
+                    'description_function' => [
                         Charsets::class,
                         'getCollationDescr'
-                    ),
+                    ],
                     'format'    => 'string',
                     'footer'    => 'utf8_general_ci'
-                ),
-                'SCHEMA_TABLES' => array(
+                ],
+                'SCHEMA_TABLES' => [
                     'disp_name' => __('Tables'),
                     'format'    => 'number',
                     'footer'    => 0
-                ),
-                'SCHEMA_TABLE_ROWS' => array(
+                ],
+                'SCHEMA_TABLE_ROWS' => [
                     'disp_name' => __('Rows'),
                     'format'    => 'number',
                     'footer'    => 0
-                ),
-                'SCHEMA_DATA_LENGTH' => array(
+                ],
+                'SCHEMA_DATA_LENGTH' => [
                     'disp_name' => __('Data'),
                     'format'    => 'byte',
                     'footer'    => 0
-                ),
-                'SCHEMA_INDEX_LENGTH' => array(
+                ],
+                'SCHEMA_INDEX_LENGTH' => [
                     'disp_name' => __('Indexes'),
                     'format'    => 'byte',
                     'footer'    => 0
-                ),
-                'SCHEMA_LENGTH' => array(
+                ],
+                'SCHEMA_LENGTH' => [
                     'disp_name' => __('Total'),
                     'format'    => 'byte',
                     'footer'    => 0
-                ),
-                'SCHEMA_DATA_FREE' => array(
+                ],
+                'SCHEMA_DATA_FREE' => [
                     'disp_name' => __('Overhead'),
                     'format'    => 'byte',
                     'footer'    => 0
-                )
-            ),
+                ]
+            ],
             $method->invoke($ctrl)
         );
     }

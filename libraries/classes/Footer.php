@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Config;
@@ -56,13 +58,19 @@ class Footer
     private $_isEnabled;
 
     /**
+     * @var Relation $relation
+     */
+    private $relation;
+
+    /**
      * Creates a new class instance
      */
     public function __construct()
     {
         $this->_isEnabled = true;
-        $this->_scripts   = new Scripts();
+        $this->_scripts = new Scripts();
         $this->_isMinimal = false;
+        $this->relation = new Relation();
     }
 
     /**
@@ -70,7 +78,7 @@ class Footer
      *
      * @return string
      */
-    private function _getDemoMessage()
+    private function _getDemoMessage(): string
     {
         $message = '<a href="/">' . __('phpMyAdmin Demo Server') . '</a>: ';
         if (@file_exists('./revision-info.php')) {
@@ -98,12 +106,12 @@ class Footer
      *
      * @return object Reference passed object
      */
-    private static function _removeRecursion(&$object, array $stack = array())
+    private static function _removeRecursion(&$object, array $stack = [])
     {
         if ((is_object($object) || is_array($object)) && $object) {
             if ($object instanceof Traversable) {
                 $object = "***ITERATOR***";
-            } else if (!in_array($object, $stack, true)) {
+            } elseif (!in_array($object, $stack, true)) {
                 $stack[] = $object;
                 foreach ($object as &$subobject) {
                     self::_removeRecursion($subobject, $stack);
@@ -120,7 +128,7 @@ class Footer
      *
      * @return string
      */
-    public function getDebugMessage()
+    public function getDebugMessage(): string
     {
         $retval = '\'null\'';
         if ($GLOBALS['cfg']['DBG']['sql']
@@ -130,11 +138,11 @@ class Footer
             // Remove recursions and iterators from $_SESSION['debug']
             self::_removeRecursion($_SESSION['debug']);
 
-            $retval = JSON_encode($_SESSION['debug']);
-            $_SESSION['debug'] = array();
+            $retval = json_encode($_SESSION['debug']);
+            $_SESSION['debug'] = [];
             return json_last_error() ? '\'false\'' : $retval;
         }
-        $_SESSION['debug'] = array();
+        $_SESSION['debug'] = [];
         return $retval;
     }
 
@@ -143,20 +151,20 @@ class Footer
      *
      * @return string
      */
-    public function getSelfUrl()
+    public function getSelfUrl(): string
     {
-        $db = ! empty($GLOBALS['db']) ? $GLOBALS['db'] : '';
-        $table = ! empty($GLOBALS['table']) ? $GLOBALS['table'] : '';
-        $target = ! empty($_REQUEST['target']) ? $_REQUEST['target'] : '';
-        $params = array(
+        $db = isset($GLOBALS['db']) && strlen($GLOBALS['db']) ? $GLOBALS['db'] : '';
+        $table = isset($GLOBALS['table']) && strlen($GLOBALS['table']) ? $GLOBALS['table'] : '';
+        $target = isset($_REQUEST['target']) && strlen($_REQUEST['target']) ? $_REQUEST['target'] : '';
+        $params = [
             'db' => $db,
             'table' => $table,
             'server' => $GLOBALS['server'],
             'target' => $target
-        );
+        ];
         // needed for server privileges tabs
         if (isset($_REQUEST['viewing_mode'])
-            && in_array($_REQUEST['viewing_mode'], array('server', 'db', 'table'))
+            && in_array($_REQUEST['viewing_mode'], ['server', 'db', 'table'])
         ) {
             $params['viewing_mode'] = $_REQUEST['viewing_mode'];
         }
@@ -179,7 +187,7 @@ class Footer
             $params['checkprivstable'] = $_REQUEST['checkprivstable'];
         }
         if (isset($_REQUEST['single_table'])
-            && in_array($_REQUEST['single_table'], array(true, false))
+            && in_array($_REQUEST['single_table'], [true, false])
         ) {
             $params['single_table'] = $_REQUEST['single_table'];
         }
@@ -193,7 +201,7 @@ class Footer
      *
      * @return string
      */
-    private function _getSelfLink($url)
+    private function _getSelfLink(string $url): string
     {
         $retval  = '';
         $retval .= '<div id="selflink" class="print_ignore">';
@@ -201,7 +209,7 @@ class Footer
             . ' title="' . __('Open new phpMyAdmin window') . '" target="_blank" rel="noopener noreferrer">';
         if (Util::showIcons('TabsMode')) {
             $retval .= Util::getImage(
-                'window-new.png',
+                'window-new',
                 __('Open new phpMyAdmin window')
             );
         } else {
@@ -217,7 +225,7 @@ class Footer
      *
      * @return string
      */
-    public function getErrorMessages()
+    public function getErrorMessages(): string
     {
         $retval = '';
         if ($GLOBALS['error_handler']->hasDisplayErrors()) {
@@ -237,17 +245,15 @@ class Footer
      *
      * @return void
      */
-    private function _setHistory()
+    private function _setHistory(): void
     {
         if (! Core::isValid($_REQUEST['no_history'])
             && empty($GLOBALS['error_message'])
             && ! empty($GLOBALS['sql_query'])
-            && (isset($GLOBALS['dbi'])
-            && ($GLOBALS['dbi']->getLink()
-            || isset($GLOBALS['controllink'])
-            && $GLOBALS['controllink']))
+            && isset($GLOBALS['dbi'])
+            && $GLOBALS['dbi']->isUserType('logged')
         ) {
-            Relation::setHistory(
+            $this->relation->setHistory(
                 Core::ifSetOr($GLOBALS['db'], ''),
                 Core::ifSetOr($GLOBALS['table'], ''),
                 $GLOBALS['cfg']['Server']['user'],
@@ -261,7 +267,7 @@ class Footer
      *
      * @return void
      */
-    public function disable()
+    public function disable(): void
     {
         $this->_isEnabled = false;
     }
@@ -274,9 +280,9 @@ class Footer
      *
      * @return void
      */
-    public function setAjax($isAjax)
+    public function setAjax(bool $isAjax): void
     {
-        $this->_isAjax = (boolean) $isAjax;
+        $this->_isAjax = $isAjax;
     }
 
     /**
@@ -284,7 +290,7 @@ class Footer
      *
      * @return void
      */
-    public function setMinimal()
+    public function setMinimal(): void
     {
         $this->_isMinimal = true;
     }
@@ -294,7 +300,7 @@ class Footer
      *
      * @return Scripts object
      */
-    public function getScripts()
+    public function getScripts(): Scripts
     {
         return $this->_scripts;
     }
@@ -304,7 +310,7 @@ class Footer
      *
      * @return string
      */
-    public function getDisplay()
+    public function getDisplay(): string
     {
         $retval = '';
         $this->_setHistory();

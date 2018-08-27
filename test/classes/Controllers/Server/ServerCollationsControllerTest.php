@@ -5,50 +5,41 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Controllers\Server;
 
 use PhpMyAdmin\Controllers\Server\ServerCollationsController;
 use PhpMyAdmin\Core;
+use PhpMyAdmin\Di\Container;
+use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PhpMyAdmin\Theme;
 use ReflectionClass;
-
-/*
- * Include to test.
- */
-//$GLOBALS
-$GLOBALS['server'] = 1;
-$GLOBALS['is_superuser'] = false;
-$GLOBALS['cfg']['ServerDefault'] = 1;
-$GLOBALS['url_query'] = "url_query";
-$GLOBALS['PMA_PHP_SELF'] = Core::getenv('PHP_SELF');
-$GLOBALS['lang'] = "en";
-$GLOBALS['text_dir'] = "text_dir";
-$GLOBALS['cfg']['Server'] = array(
-    'DisableIS' => false
-);
-
-require_once 'libraries/server_common.inc.php';
 
 /**
  * Tests for ServerCollationsController class
  *
  * @package PhpMyAdmin-test
  */
-class ServerCollationsControllerTest extends \PMATestCase
+class ServerCollationsControllerTest extends PmaTestCase
 {
     /**
      * Prepares environment for the test.
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$_REQUEST
-        $_REQUEST['log'] = "index1";
+        $_REQUEST['log'] = 'index1';
         $_REQUEST['pos'] = 3;
 
         //$GLOBALS
-        $GLOBALS['table'] = "table";
+        $GLOBALS['server'] = 1;
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = 'table';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
     }
 
     /**
@@ -58,37 +49,44 @@ class ServerCollationsControllerTest extends \PMATestCase
      */
     public function testPMAGetHtmlForCharsets()
     {
-        $mysql_charsets = array("armscii8", "ascii", "big5", "binary");
-        $mysql_collations = array(
-            "armscii8" => array("armscii8"),
-            "ascii" => array("ascii"),
-            "big5" => array("big5"),
-            "binary" => array("binary"),
-        );
-        $mysql_charsets_descriptions = array(
+        $mysql_charsets = ["armscii8", "ascii", "big5", "binary"];
+        $mysql_collations = [
+            "armscii8" => ["armscii8"],
+            "ascii" => ["ascii"],
+            "big5" => ["big5"],
+            "binary" => ["binary"],
+        ];
+        $mysql_charsets_descriptions = [
             "armscii8" => "PMA_armscii8_general_ci",
             "ascii" => "PMA_ascii_general_ci",
             "big5" => "PMA_big5_general_ci",
             "binary" => "PMA_binary_general_ci",
-        );
-        $mysql_default_collations = array(
+        ];
+        $mysql_default_collations = [
             "armscii8" => "armscii8",
             "ascii" => "ascii",
             "big5" => "big5",
             "binary" => "binary",
-        );
-        $mysql_collations_available = array(
+        ];
+        $mysql_collations_available = [
             "armscii8" => true,
             "ascii" => true,
             "big5" => true,
             "binary" => true,
-        );
+        ];
+
+        $container = Container::getDefaultContainer();
+        $container->set('PhpMyAdmin\Response', new ResponseStub());
+        $container->alias('response', 'PhpMyAdmin\Response');
 
         $class = new ReflectionClass('\PhpMyAdmin\Controllers\Server\ServerCollationsController');
         $method = $class->getMethod('_getHtmlForCharsets');
         $method->setAccessible(true);
 
-        $ctrl = new ServerCollationsController();
+        $ctrl = new ServerCollationsController(
+            $container->get('response'),
+            $container->get('dbi')
+        );
         $html = $method->invoke(
             $ctrl,
             $mysql_charsets,

@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Header;
@@ -44,46 +46,19 @@ class Scripts
      */
     private function _includeFiles(array $files)
     {
-        $first_dynamic_scripts = "";
-        $dynamic_scripts = "";
-        $scripts = array();
-        $separator = Url::getArgSeparator();
+        $result = '';
         foreach ($files as $value) {
-            if (mb_strpos($value['filename'], ".php") !== false) {
-                $file_name = $value['filename'] . Url::getCommon($value['params'] + array('v' => PMA_VERSION));
-                if ($value['before_statics'] === true) {
-                    $first_dynamic_scripts
-                        .= "<script data-cfasync='false' type='text/javascript' "
-                        . "src='js/" . $file_name . "'></script>";
-                } else {
-                    $dynamic_scripts .= "<script data-cfasync='false' "
-                        . "type='text/javascript' src='js/" . $file_name
-                        . "'></script>";
-                }
-                continue;
-            }
-            $include = true;
-            if ($include) {
-                $scripts[] = "scripts%5B%5D=" . $value['filename'];
+            if (strpos($value['filename'], ".php") !== false) {
+                $file_name = $value['filename'] . Url::getCommon($value['params'] + ['v' => PMA_VERSION]);
+                $result .= "<script data-cfasync='false' "
+                    . "type='text/javascript' src='js/" . $file_name
+                    . "'></script>\n";
+            } else {
+                $result .= '<script data-cfasync="false" type="text/javascript" src="js/'
+                    . $value['filename'] . '?' . Header::getVersionParameter() . '"></script>' . "\n";
             }
         }
-        $separator = Url::getArgSeparator();
-        $static_scripts = '';
-        // Using chunks of 10 files to avoid too long URLs
-        // as some servers are set to 512 bytes URL limit
-        $script_chunks = array_chunk($scripts, 10);
-        foreach ($script_chunks as $script_chunk) {
-            $url = 'js/get_scripts.js.php?'
-                . implode($separator, $script_chunk)
-                . $separator . Header::getVersionParameter();
-
-            $static_scripts .= sprintf(
-                '<script data-cfasync="false" type="text/javascript" src="%s">' .
-                '</script>',
-                htmlspecialchars($url)
-            );
-        }
-        return $first_dynamic_scripts . $static_scripts . $dynamic_scripts;
+        return $result;
     }
 
     /**
@@ -92,25 +67,21 @@ class Scripts
      */
     public function __construct()
     {
-        $this->_files  = array();
+        $this->_files  = [];
         $this->_code   = '';
-
     }
 
     /**
      * Adds a new file to the list of scripts
      *
-     * @param string $filename       The name of the file to include
-     * @param bool   $before_statics Whether this dynamic script should be
-     *                               included before the static ones
-     * @param array  $params         Additional parameters to pass to the file
+     * @param string $filename The name of the file to include
+     * @param array  $params   Additional parameters to pass to the file
      *
      * @return void
      */
     public function addFile(
         $filename,
-        $before_statics = false,
-        array $params = array()
+        array $params = []
     ) {
         $hash = md5($filename);
         if (!empty($this->_files[$hash])) {
@@ -118,12 +89,11 @@ class Scripts
         }
 
         $has_onload = $this->_eventBlacklist($filename);
-        $this->_files[$hash] = array(
+        $this->_files[$hash] = [
             'has_onload' => $has_onload,
             'filename' => $filename,
             'params' => $params,
-            'before_statics' => $before_statics
-        );
+        ];
     }
 
     /**
@@ -154,7 +124,6 @@ class Scripts
             || strpos($filename, 'codemirror') !== false
             || strpos($filename, 'messages.php') !== false
             || strpos($filename, 'ajax.js') !== false
-            || strpos($filename, 'get_image.js.php') !== false
             || strpos($filename, 'cross_framing_protection.js') !== false
         ) {
             return 0;
@@ -183,17 +152,16 @@ class Scripts
      */
     public function getFiles()
     {
-        $retval = array();
+        $retval = [];
         foreach ($this->_files as $file) {
             //If filename contains a "?", continue.
             if (strpos($file['filename'], "?") !== false) {
                 continue;
             }
-            $retval[] = array(
+            $retval[] = [
                 'name' => $file['filename'],
                 'fire' => $file['has_onload']
-            );
-
+            ];
         }
         return $retval;
     }

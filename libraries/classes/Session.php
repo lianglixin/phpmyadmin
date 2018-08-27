@@ -7,6 +7,8 @@
  *
  * @see     https://secure.php.net/session
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Config;
@@ -54,6 +56,8 @@ class Session
         if (session_status() === PHP_SESSION_ACTIVE && ! defined('TESTSUITE')) {
             session_regenerate_id(true);
         }
+        // continue with empty session
+        session_unset();
         self::generateToken();
     }
 
@@ -66,7 +70,7 @@ class Session
      */
     private static function sessionFailed(array $errors)
     {
-        $messages = array();
+        $messages = [];
         foreach ($errors as $error) {
             /*
              * Remove path from open() in error message to avoid path disclossure
@@ -111,7 +115,7 @@ class Session
     public static function setUp(Config $config, ErrorHandler $errorHandler)
     {
         // verify if PHP supports session, die if it does not
-        if (!@function_exists('session_name')) {
+        if (!function_exists('session_name')) {
             Core::warnMissingExtension('session', true);
         } elseif (! empty(ini_get('session.auto_start'))
             && session_name() != 'phpMyAdmin'
@@ -132,12 +136,15 @@ class Session
 
         // session cookie settings
         session_set_cookie_params(
-            0, $config->getRootPath(),
-            '', $config->isHttps(), true
+            0,
+            $config->getRootPath(),
+            '',
+            $config->isHttps(),
+            true
         );
 
-        // cookies are safer (use @ini_set() in case this function is disabled)
-        @ini_set('session.use_cookies', 'true');
+        // cookies are safer (use ini_set() in case this function is disabled)
+        ini_set('session.use_cookies', 'true');
 
         // optionally set session_save_path
         $path = $config->get('SessionSavePath');
@@ -150,23 +157,23 @@ class Session
         }
 
         // use cookies only
-        @ini_set('session.use_only_cookies', '1');
+        ini_set('session.use_only_cookies', '1');
         // strict session mode (do not accept random string as session ID)
-        @ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_strict_mode', '1');
         // make the session cookie HttpOnly
-        @ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_httponly', '1');
         // do not force transparent session ids
-        @ini_set('session.use_trans_sid', '0');
+        ini_set('session.use_trans_sid', '0');
 
         // delete session/cookies when browser is closed
-        @ini_set('session.cookie_lifetime', '0');
+        ini_set('session.cookie_lifetime', '0');
 
         // warn but don't work with bug
-        @ini_set('session.bug_compat_42', 'false');
-        @ini_set('session.bug_compat_warn', 'true');
+        ini_set('session.bug_compat_42', 'false');
+        ini_set('session.bug_compat_warn', 'true');
 
         // use more secure session ids
-        @ini_set('session.hash_function', '1');
+        ini_set('session.hash_function', '1');
 
         // some pages (e.g. stylesheet) may be cached on clients, but not in shared
         // proxy servers
@@ -198,7 +205,9 @@ class Session
         /**
          * Disable setting of session cookies for further session_start() calls.
          */
-        @ini_set('session.use_cookies', 'true');
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            ini_set('session.use_cookies', 'true');
+        }
 
         /**
          * Token which is used for authenticating access queries.

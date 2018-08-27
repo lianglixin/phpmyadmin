@@ -6,6 +6,7 @@
 *
 * @package PhpMyAdmin\Controllers
 */
+declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server;
 
@@ -27,10 +28,13 @@ class ServerPluginsController extends Controller
 
     /**
      * Constructs ServerPluginsController
+     *
+     * @param \PhpMyAdmin\Response          $response Response object
+     * @param \PhpMyAdmin\DatabaseInterface $dbi      DatabaseInterface object
      */
-    public function __construct()
+    public function __construct($response, $dbi)
     {
-        parent::__construct();
+        parent::__construct($response, $dbi);
         $this->_setServerPlugins();
     }
 
@@ -51,7 +55,11 @@ class ServerPluginsController extends Controller
         /**
          * Displays the page
         */
-        $this->response->addHTML(Common::getHtmlForSubPageHeader('plugins'));
+        $this->response->addHTML(
+            $this->template->render('server/sub_page_header', [
+                'type' => 'plugins',
+            ])
+        );
         $this->response->addHTML($this->_getPluginsHtml());
     }
 
@@ -73,7 +81,7 @@ class ServerPluginsController extends Controller
                 ORDER BY plugin_type, plugin_name";
 
         $res = $this->dbi->query($sql);
-        $this->plugins = array();
+        $this->plugins = [];
         while ($row = $this->dbi->fetchAssoc($res)) {
             $this->plugins[$row['plugin_type']][] = $row;
         }
@@ -88,20 +96,18 @@ class ServerPluginsController extends Controller
      */
     private function _getPluginsHtml()
     {
-        $html  = '<div id="plugins_plugins">';
-        $html .= Template::get('server/plugins/section_links')
-            ->render(array('plugins' => $this->plugins));
-
-        foreach ($this->plugins as $plugin_type => $plugin_list) {
-            $html .= Template::get('server/plugins/section')
-                ->render(
-                    array(
-                        'plugin_type' => $plugin_type,
-                        'plugin_list' => $plugin_list,
-                    )
-                );
+        $plugins_type_clean = [];
+        $keys = array_keys($this->plugins);
+        foreach ($keys as $plugin_type) {
+            $plugins_type_clean[$plugin_type] = preg_replace(
+                '/[^a-z]/',
+                '',
+                mb_strtolower($plugin_type)
+            );
         }
-        $html .= '</div>';
-        return $html;
+        return $this->template->render('server/plugins/main', [
+            'plugins' => $this->plugins,
+            'plugins_type_clean' => $plugins_type_clean,
+        ]);
     }
 }

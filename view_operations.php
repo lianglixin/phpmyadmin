@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Operations;
 use PhpMyAdmin\Response;
@@ -34,13 +36,14 @@ require './libraries/tbl_common.inc.php';
 $url_query .= '&amp;goto=view_operations.php&amp;back=view_operations.php';
 $url_params['goto'] = $url_params['back'] = 'view_operations.php';
 
+$operations = new Operations();
+
 /**
  * Updates if required
  */
-$_message = new Message;
+$_message = new Message();
 $_type = 'success';
 if (isset($_REQUEST['submitoptions'])) {
-
     if (isset($_REQUEST['new_name'])) {
         if ($pma_table->rename($_REQUEST['new_name'])) {
             $_message->addText($pma_table->getLastMessage());
@@ -55,7 +58,7 @@ if (isset($_REQUEST['submitoptions'])) {
         }
     }
 
-    $warning_messages = Operations::getWarningMessagesArray();
+    $warning_messages = $operations->getWarningMessagesArray();
 }
 
 if (isset($result)) {
@@ -78,7 +81,9 @@ if (isset($result)) {
         unset($warning_messages);
     }
     echo Util::getMessage(
-        $_message, $sql_query, $_type
+        $_message,
+        $sql_query,
+        $_type
     );
 }
 unset($_message, $_type);
@@ -117,7 +122,7 @@ $url_params['back'] = 'view_operations.php';
 <?php
 $drop_view_url_params = array_merge(
     $url_params,
-    array(
+    [
         'sql_query' => 'DROP VIEW ' . Util::backquote(
             $GLOBALS['table']
         ),
@@ -129,14 +134,14 @@ $drop_view_url_params = array_merge(
             htmlspecialchars($GLOBALS['table'])
         ),
         'table' => $GLOBALS['table']
-    )
+    ]
 );
 echo '<div>';
 echo '<fieldset class="caution">';
 echo '<legend>' , __('Delete data or table') , '</legend>';
 
 echo '<ul>';
-echo Operations::getDeleteDataOrTablelink(
+echo $operations->getDeleteDataOrTablelink(
     $drop_view_url_params,
     'DROP VIEW',
     __('Delete the view (DROP)'),

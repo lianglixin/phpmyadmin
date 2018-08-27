@@ -7,7 +7,7 @@
  <property name="env.PHPUNIT_XML" value="phpunit.xml.dist"/>
  <property name="env.PHPUNIT_XML_NOCOVERAGE" value="phpunit.xml.nocoverage"/>
  <property name="env.PHPUNIT_XML_HHVM" value="phpunit.xml.hhvm"/>
- <property name="env.PHPUNIT_ARGS" value=""/>
+ <property name="env.PHPUNIT_ARGS" value="--exclude-group selenium"/>
 
  <target name="clean" description="Clean up and create artifact directories">
   <delete dir="${basedir}/build/api"/>
@@ -118,7 +118,7 @@
   <apply executable="jshint" output="${basedir}/build/logs/jshint-jslint.xml"  parallel="true">
    <arg line="--config ./.jshintrc --reporter=jslint" />
    <fileset dir="${basedir}">
-    <include name="js/pmd/*.js" />
+    <include name="js/designer/*.js" />
     <include name="js/*.js" />
     <include name="setup/*.js" />
    </fileset>
@@ -129,7 +129,7 @@
   <apply executable="jshint" output="${basedir}/build/logs/jshint-checkstyle.xml"  parallel="true">
    <arg line="--config ./.jshintrc --reporter=checkstyle" />
    <fileset dir="${basedir}">
-    <include name="js/pmd/*.js" />
+    <include name="js/designer/*.js" />
     <include name="js/*.js" />
     <include name="setup/*.js" />
    </fileset>

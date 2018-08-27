@@ -5,34 +5,43 @@
  *
  * @package PhpMyAdmin\Twig
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Twig;
 
-use Twig_Extension;
-use Twig_SimpleFunction;
 use PhpMyAdmin\Message;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 /**
  * Class MessageExtension
  *
  * @package PhpMyAdmin\Twig
  */
-class MessageExtension extends Twig_Extension
+class MessageExtension extends AbstractExtension
 {
     /**
-     * Returns a list of functions to add to the existing list.
+     * Returns a list of filters to add to the existing list.
      *
-     * @return Twig_SimpleFunction[]
+     * @return TwigFilter[]
      */
-    public function getFunctions()
+    public function getFilters()
     {
-        return array(
-            new Twig_SimpleFunction(
-                'Message_notice',
+        return [
+            new TwigFilter(
+                'notice',
                 function ($string) {
                     return Message::notice($string)->getDisplay();
                 },
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-        );
+            new TwigFilter(
+                'error',
+                function ($string) {
+                    return Message::error($string)->getDisplay();
+                },
+                ['is_safe' => ['html']]
+            ),
+        ];
     }
 }

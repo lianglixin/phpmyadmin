@@ -5,14 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Export\ExportPhparray;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionMethod;
 use ReflectionProperty;
-
-require_once 'libraries/config.default.php';
 
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportPhparray class
@@ -20,7 +21,7 @@ require_once 'libraries/config.default.php';
  * @package PhpMyAdmin-test
  * @group medium
  */
-class ExportPhparrayTest extends \PMATestCase
+class ExportPhparrayTest extends PmaTestCase
 {
     protected $object;
 
@@ -29,7 +30,7 @@ class ExportPhparrayTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['output_kanji_conversion'] = false;
@@ -216,7 +217,7 @@ class ExportPhparrayTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('SELECT', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('SELECT', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -237,7 +238,7 @@ class ExportPhparrayTest extends \PMATestCase
         $dbi->expects($this->at(4))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array(1, 'a')));
+            ->will($this->returnValue([1, 'a']));
 
         $dbi->expects($this->at(5))
             ->method('fetchRow')
@@ -249,14 +250,18 @@ class ExportPhparrayTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'db', 'table', "\n", 'phpmyadmin.net/err', 'SELECT'
+                'db',
+                'table',
+                "\n",
+                'phpmyadmin.net/err',
+                'SELECT'
             )
         );
         $result = ob_get_clean();
 
         $this->assertEquals(
             "\n" . '/* `db`.`table` */' . "\n" .
-            '$table = array('  . "\n" .
+            '$table = array(' . "\n" .
             '  array(\'c1\' => 1,\'\' => \'a\')' . "\n" .
             ');' . "\n",
             $result
@@ -269,7 +274,7 @@ class ExportPhparrayTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('SELECT', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('SELECT', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -287,7 +292,11 @@ class ExportPhparrayTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'db', '0`932table', "\n", 'phpmyadmin.net/err', 'SELECT'
+                'db',
+                '0`932table',
+                "\n",
+                'phpmyadmin.net/err',
+                'SELECT'
             )
         );
         $result = ob_get_clean();

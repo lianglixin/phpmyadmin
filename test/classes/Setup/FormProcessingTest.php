@@ -5,25 +5,31 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Setup;
 
 use PhpMyAdmin\Setup\FormProcessing;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * tests for methods under Formset processing library
  *
  * @package PhpMyAdmin-test
  */
-class FormProcessingTest extends \PMATestCase
+class FormProcessingTest extends PmaTestCase
 {
     /**
      * Prepares environment for the test.
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         $GLOBALS['server'] = 1;
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = 'table';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
         $GLOBALS['cfg']['ServerDefault'] = 1;
     }
 
@@ -35,17 +41,17 @@ class FormProcessingTest extends \PMATestCase
     public function testProcessFormSet()
     {
         $this->mockResponse(
-            array(
-                array('status: 303 See Other'),
-                array('Location: index.php?lang=en'),
+            [
+                ['status: 303 See Other'],
+                ['Location: index.php?lang=en'],
                 303
-                )
-            );
+                ]
+        );
 
         // case 1
         $formDisplay = $this->getMockBuilder('PhpMyAdmin\Config\FormDisplay')
             ->disableOriginalConstructor()
-            ->setMethods(array('process', 'getDisplay'))
+            ->setMethods(['process', 'getDisplay'])
             ->getMock();
 
         $formDisplay->expects($this->once())
@@ -62,7 +68,7 @@ class FormProcessingTest extends \PMATestCase
         // case 2
         $formDisplay = $this->getMockBuilder('PhpMyAdmin\Config\FormDisplay')
             ->disableOriginalConstructor()
-            ->setMethods(array('process', 'hasErrors', 'displayErrors'))
+            ->setMethods(['process', 'hasErrors', 'displayErrors'])
             ->getMock();
 
         $formDisplay->expects($this->once())
@@ -102,7 +108,7 @@ class FormProcessingTest extends \PMATestCase
         // case 3
         $formDisplay = $this->getMockBuilder('PhpMyAdmin\Config\FormDisplay')
             ->disableOriginalConstructor()
-            ->setMethods(array('process', 'hasErrors'))
+            ->setMethods(['process', 'hasErrors'])
             ->getMock();
 
         $formDisplay->expects($this->once())

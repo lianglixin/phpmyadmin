@@ -4,7 +4,6 @@
  * Unbind all event handlers before tearing down a page
  */
 AJAX.registerTeardown('server_variables.js', function () {
-    $('#filterText').off('keyup');
     $(document).off('click', 'a.editLink');
     $('#serverVariables').find('.var-name').find('a img').remove();
 });
@@ -13,11 +12,9 @@ AJAX.registerOnload('server_variables.js', function () {
     var $editLink = $('a.editLink');
     var $saveLink = $('a.saveLink');
     var $cancelLink = $('a.cancelLink');
-    var $filterField = $('#filterText');
-
 
     $('#serverVariables').find('.var-name').find('a').append(
-        $('#docImage').clone().show()
+        $('#docImage').clone().css('display', 'inline-block')
     );
 
     /* Launches the variable editor */
@@ -26,63 +23,21 @@ AJAX.registerOnload('server_variables.js', function () {
         editVariable(this);
     });
 
-    /* Event handler for variables filter */
-    $filterField.keyup(function () {
-        var textFilter = null;
-        var val = $(this).val();
-        if (val.length !== 0) {
-            try {
-                textFilter = new RegExp('(^| )' + val.replace(/_/g, ' '), 'i');
-                $(this).removeClass('error');
-            } catch (e) {
-                if (e instanceof SyntaxError) {
-                    $(this).addClass('error');
-                    textFilter = null;
-                }
-            }
-        }
-        filterVariables(textFilter);
-    });
-
-    /* Trigger filtering of the list based on incoming variable name */
-    if ($filterField.val()) {
-        $filterField.trigger('keyup').select();
-    }
-
-    /* Filters the rows by the user given regexp */
-    function filterVariables (textFilter) {
-        var mark_next = false;
-        var $row;
-        $('#serverVariables').find('.var-row').not('.var-header').each(function () {
-            $row = $(this);
-            if (mark_next || textFilter === null ||
-                textFilter.exec($row.find('.var-name').text())
-            ) {
-                // If current global value is different from session value
-                // (has class diffSession), then display that one too
-                mark_next = $row.hasClass('diffSession') && ! mark_next;
-                $row.css('display', '');
-            } else {
-                $row.css('display', 'none');
-            }
-        });
-    }
-
     /* Allows the user to edit a server variable */
     function editVariable (link) {
         var $link = $(link);
         var $cell = $link.parent();
         var $valueCell = $link.parents('.var-row').find('.var-value');
         var varName = $link.data('variable');
-        var $mySaveLink = $saveLink.clone().show();
-        var $myCancelLink = $cancelLink.clone().show();
+
+        var $mySaveLink = $saveLink.clone().css('display', 'inline-block');
+        var $myCancelLink = $cancelLink.clone().css('display', 'inline-block');
         var $msgbox = PMA_ajaxShowMessage();
         var $myEditLink = $cell.find('a.editLink');
-
         $cell.addClass('edit'); // variable is being edited
         $myEditLink.remove(); // remove edit link
 
-        $mySaveLink.click(function () {
+        $mySaveLink.on('click', function () {
             var $msgbox = PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
             $.post($(this).attr('href'), {
                 ajax_request: true,
@@ -108,7 +63,7 @@ AJAX.registerOnload('server_variables.js', function () {
             return false;
         });
 
-        $myCancelLink.click(function () {
+        $myCancelLink.on('click', function () {
             $valueCell.html($valueCell.data('content'));
             $cell.removeClass('edit').html($myEditLink);
             return false;
@@ -132,13 +87,15 @@ AJAX.registerOnload('server_variables.js', function () {
                     );
                     // Save and replace content
                 $cell
-                    .html($links);
+                    .html($links)
+                    .children()
+                    .css('display', 'flex');
                 $valueCell
                     .data('content', $valueCell.html())
                     .html($editor)
                     .find('input')
                     .focus()
-                    .keydown(function (event) { // Keyboard shortcuts
+                    .on('keydown', function (event) { // Keyboard shortcuts
                         if (event.keyCode === 13) { // Enter key
                             $mySaveLink.trigger('click');
                         } else if (event.keyCode === 27) { // Escape key

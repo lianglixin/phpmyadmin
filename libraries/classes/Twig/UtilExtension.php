@@ -5,114 +5,189 @@
  *
  * @package PhpMyAdmin\Twig
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Twig;
 
-use Twig_Extension;
-use Twig_SimpleFunction;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
+use Twig\TwigFilter;
 
 /**
  * Class UtilExtension
  *
  * @package PhpMyAdmin\Twig
  */
-class UtilExtension extends Twig_Extension
+class UtilExtension extends AbstractExtension
 {
     /**
      * Returns a list of functions to add to the existing list.
      *
-     * @return Twig_SimpleFunction[]
+     * @return TwigFunction[]
      */
     public function getFunctions()
     {
-        return array(
-            new Twig_SimpleFunction(
-                'Util_backquote',
+        return [
+            new TwigFunction(
+                'backquote',
                 'PhpMyAdmin\Util::backquote'
             ),
-            new Twig_SimpleFunction(
-                'Util_convertBitDefaultValue',
-                'PhpMyAdmin\Util::convertBitDefaultValue'
+            new TwigFunction(
+                'get_browse_upload_file_block',
+                'PhpMyAdmin\Util::getBrowseUploadFileBlock',
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_escapeMysqlWildcards',
-                'PhpMyAdmin\Util::escapeMysqlWildcards'
+            new TwigFunction(
+                'extract_column_spec',
+                'PhpMyAdmin\Util::extractColumnSpec'
             ),
-            new Twig_SimpleFunction(
-                'Util_formatByteDown',
+            new TwigFunction(
+                'format_byte_down',
                 'PhpMyAdmin\Util::formatByteDown'
             ),
-            new Twig_SimpleFunction(
-                'Util_formatNumber',
+            new TwigFunction(
+                'format_number',
                 'PhpMyAdmin\Util::formatNumber'
             ),
-            new Twig_SimpleFunction(
-                'Util_formatSql',
+            new TwigFunction(
+                'format_sql',
                 'PhpMyAdmin\Util::formatSql',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_getButtonOrImage',
+            new TwigFunction(
+                'get_button_or_image',
                 'PhpMyAdmin\Util::getButtonOrImage',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_getDivForSliderEffect',
-                'PhpMyAdmin\Util::getDivForSliderEffect',
-                array('is_safe' => array('html'))
+            new TwigFunction(
+                'get_class_for_type',
+                'PhpMyAdmin\Util::getClassForType',
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_getDropdown',
+            new TwigFunction(
+                'get_docu_link',
+                'PhpMyAdmin\Util::getDocuLink',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
+                'get_list_navigator',
+                'PhpMyAdmin\Util::getListNavigator',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
+                'show_docu',
+                'PhpMyAdmin\Util::showDocu',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
+                'get_dropdown',
                 'PhpMyAdmin\Util::getDropdown',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_getHtmlTab',
+            new TwigFunction(
+                'get_fk_checkbox',
+                'PhpMyAdmin\Util::getFKCheckbox',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
+                'get_gis_datatypes',
+                'PhpMyAdmin\Util::getGISDatatypes'
+            ),
+            new TwigFunction(
+                'get_gis_functions',
+                'PhpMyAdmin\Util::getGISFunctions'
+            ),
+            new TwigFunction(
+                'get_html_tab',
                 'PhpMyAdmin\Util::getHtmlTab',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_getIcon',
+            new TwigFunction(
+                'get_icon',
                 'PhpMyAdmin\Util::getIcon',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_getImage',
+            new TwigFunction(
+                'get_image',
                 'PhpMyAdmin\Util::getImage',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_getStartAndNumberOfRowsPanel',
+            new TwigFunction(
+                'get_radio_fields',
+                'PhpMyAdmin\Util::getRadioFields',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
+                'get_select_upload_file_block',
+                'PhpMyAdmin\Util::getSelectUploadFileBlock',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
+                'get_script_name_for_option',
+                'PhpMyAdmin\Util::getScriptNameForOption',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
+                'get_start_and_number_of_rows_panel',
                 'PhpMyAdmin\Util::getStartAndNumberOfRowsPanel',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_getSupportedDatatypes',
+            new TwigFunction(
+                'get_supported_datatypes',
                 'PhpMyAdmin\Util::getSupportedDatatypes',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_linkOrButton',
+            new TwigFunction(
+                'is_foreign_key_supported',
+                'PhpMyAdmin\Util::isForeignKeySupported'
+            ),
+            new TwigFunction(
+                'link_or_button',
                 'PhpMyAdmin\Util::linkOrButton',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_localisedDate',
+            new TwigFunction(
+                'localised_date',
                 'PhpMyAdmin\Util::localisedDate'
             ),
-            new Twig_SimpleFunction(
-                'Util_showHint',
+            new TwigFunction(
+                'show_hint',
                 'PhpMyAdmin\Util::showHint',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-            new Twig_SimpleFunction(
-                'Util_showIcons',
+            new TwigFunction(
+                'show_icons',
                 'PhpMyAdmin\Util::showIcons'
             ),
-            new Twig_SimpleFunction(
-                'Util_showMySQLDocu',
+            new TwigFunction(
+                'show_mysql_docu',
                 'PhpMyAdmin\Util::showMySQLDocu',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-        );
+            new TwigFunction(
+                'sortable_table_header',
+                'PhpMyAdmin\Util::sortableTableHeader',
+                ['is_safe' => ['html']]
+            ),
+        ];
+    }
+
+    /**
+     * Returns a list of filters to add to the existing list.
+     *
+     * @return TwigFilter[]
+     */
+    public function getFilters()
+    {
+        return [
+            new TwigFilter(
+                'convert_bit_default_value',
+                'PhpMyAdmin\Util::convertBitDefaultValue'
+            ),
+            new TwigFilter(
+                'escape_mysql_wildcards',
+                'PhpMyAdmin\Util::convertBitDefaultValue'
+            ),
+        ];
     }
 }

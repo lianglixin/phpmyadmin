@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Controllers\Table;
 
 use PhpMyAdmin\Controllers\Table\TableIndexesController;
@@ -12,8 +14,8 @@ use PhpMyAdmin\Di\Container;
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
-use PhpMyAdmin\Theme;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 
@@ -22,7 +24,7 @@ use PhpMyAdmin\Util;
  *
  * @package PhpMyAdmin-test
  */
-class TableIndexesControllerTest extends \PMATestCase
+class TableIndexesControllerTest extends PmaTestCase
 {
     /**
      * Setup function for test cases
@@ -36,34 +38,36 @@ class TableIndexesControllerTest extends \PMATestCase
          * SET these to avoid undefined index error
          */
         $GLOBALS['server'] = 1;
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = 'table';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
         $GLOBALS['cfg']['Server']['pmadb'] = '';
-        $GLOBALS['url_params'] = array(
+        $GLOBALS['url_params'] = [
             'db' => 'db',
             'server' => 1
-        );
-        $GLOBALS['db'] = 'db';
+        ];
 
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $indexs = array(
-            array(
+        $indexs = [
+            [
                 "Schema" => "Schema1",
-                "Key_name"=>"Key_name1",
-                "Column_name"=>"Column_name1"
-            ),
-            array(
+                "Key_name" => "Key_name1",
+                "Column_name" => "Column_name1"
+            ],
+            [
                 "Schema" => "Schema2",
-                "Key_name"=>"Key_name2",
-                "Column_name"=>"Column_name2"
-            ),
-            array(
+                "Key_name" => "Key_name2",
+                "Column_name" => "Column_name2"
+            ],
+            [
                 "Schema" => "Schema3",
-                "Key_name"=>"Key_name3",
-                "Column_name"=>"Column_name3"
-            ),
-        );
+                "Key_name" => "Key_name3",
+                "Column_name" => "Column_name3"
+            ],
+        ];
 
         $dbi->expects($this->any())->method('getTableIndexes')
             ->will($this->returnValue($indexs));
@@ -100,7 +104,13 @@ class TableIndexesControllerTest extends \PMATestCase
         $container->set('PhpMyAdmin\Response', $response);
         $container->alias('response', 'PhpMyAdmin\Response');
 
-        $ctrl = new TableIndexesController(null);
+        $ctrl = new TableIndexesController(
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db'),
+            $container->get('table'),
+            null
+        );
 
         // Preview SQL
         $_REQUEST['preview_sql'] = true;
@@ -139,7 +149,7 @@ class TableIndexesControllerTest extends \PMATestCase
         $table->expects($this->any())->method('isView')
             ->will($this->returnValue(false));
         $table->expects($this->any())->method('getNameAndTypeOfTheColumns')
-            ->will($this->returnValue(array("field_name" => "field_type")));
+            ->will($this->returnValue(["field_name" => "field_type"]));
 
         $GLOBALS['dbi']->expects($this->any())->method('getTable')
             ->will($this->returnValue($table));
@@ -153,7 +163,13 @@ class TableIndexesControllerTest extends \PMATestCase
         $container->alias('response', 'PhpMyAdmin\Response');
         $index = new Index();
 
-        $ctrl = new TableIndexesController($index);
+        $ctrl = new TableIndexesController(
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db'),
+            $container->get('table'),
+            $index
+        );
 
         $_REQUEST['create_index'] = true;
         $_REQUEST['added_fields'] = 3;
@@ -163,11 +179,11 @@ class TableIndexesControllerTest extends \PMATestCase
         //Url::getHiddenInputs
         $this->assertContains(
             Url::getHiddenInputs(
-                array(
+                [
                     'db' => 'db',
                     'table' => 'table',
                     'create_index' => 1,
-                )
+                ]
             ),
             $html
         );

@@ -5,10 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Properties\Options\Groups;
 
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * tests for PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup class
@@ -24,7 +26,7 @@ class OptionsPropertyRootGroupTest extends TestCase
      *
      * @return void
      */
-    protected function setup()
+    protected function setUp()
     {
         $this->object = new OptionsPropertyRootGroup();
     }
@@ -59,10 +61,9 @@ class OptionsPropertyRootGroupTest extends TestCase
      */
     public function testCountable()
     {
-        $this->assertEquals(
+        $this->assertCount(
             0,
-            count($this->object)
+            $this->object
         );
     }
-
 }

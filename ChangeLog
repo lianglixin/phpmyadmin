@@ -1,7 +1,73 @@
 phpMyAdmin - ChangeLog
 ======================
 
-4.8.0 (not yet released)
+5.0.0 (not yet released)
+- issue #13896 Drop support for PHP 5.5, PHP 5.6, PHP 7.0 and HHVM
+- issue #14007 Enable columns names by default for CSV exports
+- issue #13919 Remove font size feature
+- issue #12373 Add Metro theme
+- issue #14155 Add move columns preview SQL button
+- issue #14296 Enable strict mode in PHP files
+- issue #13627 Increase field width for editing varchar fields
+- issue #12603 Show warning for users with the default values for controluser and controlpass
+
+4.8.4 (not yet released)
+- issue #14452 Remove hash param in edit query URL
+
+4.8.3 (2018-08-22)
+- issue #14314 Error when naming a database '0'
+- issue #14333 Fix NULL as default not shown
+- issue #14229 Fixes issue with recent table list
+- issue #14045 Fix slow performance on DB structure filtering
+- issue #14327 Fix Editing server variable not showing save or cancel option
+- issue #14377 Populate options for view create and edit
+- issue #14171 2FA configuration fails if PHP doesn't have GD support
+- issue #14390 Can't unhide tables
+- issue #14382 "Visualize GIS data" icon missing
+- issue #14435 Event scheduler status toggle doesn't work
+- issue #14365 View not working on multiple servers
+- issue #14207 Partition actions in table structure do not work
+- issue #14375 Fixes ERR_BLOCKED_BY_XSS_AUDITOR on export table
+- issue #14552 Blank message shown instead of MySQL error when adding trigger and other locations
+- issue #14525 Fix PHP 7.3 warning: "continue" in "switch" is equal to "break"
+- issue #14554 Icon missing when creating a new trigger, routine, and event
+- issue #14422 Table comment not showing since 4.8.1
+- issue #14426 Drop table doesn't work when you copy tables to another database
+- issue #14581 Escaped HTML in 'Add a new server' setup
+- issue #14548 [security] HTML injection in import warning messages, see PMASA-2018-5
+
+4.8.2 (2018-06-21)
+- issue #14370 WHERE 0 causes Fatal error
+- issue #14225 Fix missing index icon
+- issue        [security] XSS vulnerability in Designer, see PMASA-2018-3
+- issue        [security] File inclusion and remote code execution vulnerability, see PMASA-2018-4
+
+4.8.1 (2018-05-24)
+- issue #12772 Fix case where the central columns attributes don't get filled in
+- issue #14049 Fix case where the query builder doesn't work when selected column is *
+- issue #14029 Revert "Browse" table CSS overflow
+- issue #14241 Dropping indexes and foreign keys fail
+- issue #14227 Relational linking broken
+- issue #14246 Fixed error in configuration storage zero config
+- issue #14128 Show 2FA Secret next to QR code
+- issue #14212 XML Export from single table throws fatal error
+- issue #14239 Line and some other charts ignore result set order of values chosen for the x-axis
+- issue #14260 Fixed configuration for DefaultLang and Lang
+- issue #14264 Linking for 'Distinct values' broken
+- issue #13968 Fix MariaDB 10.2 current_timestamp()
+- issue #14249 Fix for missing go button in view edit
+- issue #14125 Fix for issues with spatial fields
+- issue #14189 Remember table's sorting broken
+- issue #14289 Fix multi-column sorting
+- issue #14278 Fix central columns in-line edit bug
+- issue #14066 Fix AUTO_INCREMENT error when only exporting table structure in database-level exports
+- issue #13893 Simulating queries produces unexpected results
+- issue #14309 Setup script icons missing
+
+4.8.0.1 (2018-04-19)
+- issue        [security] Multiple CSRF vulnerabilities, See PMASA-2018-02
+
+4.8.0 (2018-04-07)
 - issue #12946 Allow to export JSON with unescaped unicode chars
 - issue #12983 Disable login button without solved reCaptcha
 - issue #12315 Allow to remove individual segments from pie charts
@@ -21,7 +87,7 @@ phpMyAdmin - ChangeLog
 - issue #13058 Improved error reporting for reCAPTCHA
 - issue #12899 Improved rendering of server variables table
 - issue #12948 Fixed javascript editor for TIME values
-- issue #13095 Fixed alignmnet of foreign keys editing
+- issue #13095 Fixed alignment of foreign keys editing
 - issue #12944 Improved inline editor for JSON
 - issue #13145 Improved layout of operations pages
 - issue #13448 Add "format" query button in edit view form
@@ -33,11 +99,50 @@ phpMyAdmin - ChangeLog
 - issue #13408 Show MySQL warnings when executing SQL queries
 - issue #5827  Allow Designer to show tables from other databases
 - issue #13268 Replace Query-By-Example with multi-table query generator interface
-- issue #13576 Add privileges export to per database listing
+- issue #13576 Add privileges export to per-database listing
 - issue        Consolidate functions into class files
 - issue #13560 Add support for changing collation for all tables and columns in database
+- issue #13303 Add support for creating fulltext index from table structure
+- issue #13711 Lower default value for $cfg['MaxExactCount']
+- issue #13722 DisableIS is not fully honored
+- issue #6197  Added support for authentication using U2F and 2FA
+- issue #13480 Avoid removing cookies on upgrade
+- issue #13397 Remember state of navigation panel
+- issue #11688 Reduced cookie usage
+- issue #13466 Better utilization of user preferences
+- issue #14042 Rename PMD to Designer
+- issue #13940 Honor arg_separator in AJAX requests
+- issue #14060 Can't edit rows in Internet Explorer
+- issue #14096 Internet Explorer compatibility; fixes JavaScript error Object doesn't support property or method 'startsWith'
 
-4.7.5 (not yet released)
+4.7.9 (2018-03-05)
+- issue #13931 Fixed browsing tables with more results
+- issue #13927 "Not an integer" when browsing a table
+- issue #13887 "Input variables exceeded 1000" error relating to PHP's max_input_vars directive
+
+4.7.8 (2018-02-20)
+- issue #13914 Fixed resetting default setting values.
+- issue #13758 Fixed fallback value for collation connection.
+- issue #13938 Fixed error handling in PHP 7.2
+- issue        [security] Fix XSS in Central Columns Feature, See PMASA-2018-01
+
+4.7.7 (2017-12-23)
+- issue #13865 Fixed displaying of formatted numeric values for some locales
+- issue #13856 Ensure datetimepicker is always loaded for datetime fields
+- issue #13848 Fixed PHP error when browsing certain results
+- issue        [security] Fix XSRF/CSRF vulnerability, see PMASA-2017-09
+
+4.7.6 (2017-11-29)
+- issue #13517 Fixed check all interaction with filtering
+- issue #13803 Add SJIS-win to default list of allowed charsets
+- issue #13436 Improve detection that MySQL server needs SSL connection
+- issue #13038 Support JSON datatype on MariaDB 10.2.7 and newer
+- issue #13824 Fixed constructing ALTER query with AFTER
+- issue #13821 Lock page when changes are done in the SQL editor
+- issue #13842 Prefer iconv for encoding conversions
+- issue #13737 Fixed changing password on MariaDB cluster
+
+4.7.5 (2017-10-23)
 - issue #13615 Avoid problems with browsing unknown query types
 - issue #13612 Integrate tooltip into datetime pickers
 - issue #13628 Fixed javascript error in server monitor
@@ -50,6 +155,13 @@ phpMyAdmin - ChangeLog
 - issue #13669 Fixed selecting multiple rows accidentally selects the next row too
 - issue #13513 Fixed edit index Column alignment issue
 - issue #13515 Fixed rendering of add index dialog
+- issue #13710 Fixed possible error in server advisor
+- issue #13477 Fixed setting input transformations
+- issue #13552 Fixed IPv4/IPv6 To Binary input transformation
+- issue #13686 Clicking on column name to trigger sort with an active search leads to logout
+- issue #13725 Fixed copying tables with specific PARTITION definition
+- issue #13761 Fixed listing of bookmarks for a database
+- issue #13800 Database lost when renaming to similar name and lower_case_table_names=1
 
 4.7.4 (2017-08-23)
 - issue #13415 Remove shadow from the logo

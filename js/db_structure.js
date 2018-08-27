@@ -30,7 +30,6 @@ AJAX.registerTeardown('db_structure.js', function () {
     $('a.real_row_count').off('click');
     $('a.row_count_sum').off('click');
     $('select[name=submit_mult]').off('change');
-    $('#filterText').off('keyup');
 });
 
 /**
@@ -148,7 +147,7 @@ function PMA_fetchRealRowCount ($target) {
         .first()
         .clone()
         .css({ visibility: 'visible', display: 'inline-block' })
-        .click(false);
+        .on('click', false);
     $target.html($throbber);
     $.ajax({
         type: 'GET',
@@ -213,29 +212,9 @@ AJAX.registerOnload('db_structure.js', function () {
     };
 
     /**
-* Filtering tables on table listing of particular database
-*
-*/
-    $('#filterText').keyup(function () {
-        var filterInput = $(this).val().toUpperCase();
-        var structureTable = $('#structureTable')[0];
-        $('#structureTable tbody tr').each(function () {
-            var tr = $(this);
-            var a = tr.find('a')[0];
-            if (a) {
-                if (a.text.trim().toUpperCase().indexOf(filterInput) > -1) {
-                    tr[0].style.display = '';
-                } else {
-                    tr[0].style.display = 'none';
-                }
-            }
-        });
-    });
-
-    /**
  *  Event handler on select of "Make consistent with central list"
  */
-    $('select[name=submit_mult]').change(function (event) {
+    $('select[name=submit_mult]').on('change', function (event) {
         if ($(this).val() === 'make_consistent_with_central_list') {
             event.preventDefault();
             event.stopPropagation();
@@ -319,7 +298,7 @@ AJAX.registerOnload('db_structure.js', function () {
         $this_anchor.PMA_confirm(question, $this_anchor.attr('href'), function (url) {
             PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
 
-            var params = getJSConfirmCommonParam(this);
+            var params = getJSConfirmCommonParam(this, $this_anchor.getPostData());
 
             $.post(url, params, function (data) {
                 if (typeof data !== 'undefined' && data.success === true) {
@@ -381,7 +360,7 @@ AJAX.registerOnload('db_structure.js', function () {
         $this_anchor.PMA_confirm(question, $this_anchor.attr('href'), function (url) {
             var $msg = PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
 
-            var params = getJSConfirmCommonParam(this);
+            var params = getJSConfirmCommonParam(this, $this_anchor.getPostData());
 
             $.post(url, params, function (data) {
                 if (typeof data !== 'undefined' && data.success === true) {

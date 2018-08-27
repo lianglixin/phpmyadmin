@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Config\ConfigFile;
 use PhpMyAdmin\Config\Forms\User\UserFormList;
 use PhpMyAdmin\Core;
@@ -17,8 +19,10 @@ use PhpMyAdmin\UserPreferences;
  */
 require_once 'libraries/common.inc.php';
 
+$userPreferences = new UserPreferences();
+
 $cf = new ConfigFile($GLOBALS['PMA_Config']->base_settings);
-UserPreferences::pageInit($cf);
+$userPreferences->pageInit($cf);
 
 // handle form processing
 
@@ -34,7 +38,7 @@ if (isset($_POST['revert'])) {
     // revert erroneous fields to their default values
     $form_display->fixErrors();
     // redirect
-    $url_params = array('form' => $form_param);
+    $url_params = ['form' => $form_param];
     Core::sendHeaderLocation(
         './prefs_forms.php'
         . Url::getCommonRaw($url_params)
@@ -45,15 +49,15 @@ if (isset($_POST['revert'])) {
 $error = null;
 if ($form_display->process(false) && !$form_display->hasErrors()) {
     // save settings
-    $result = UserPreferences::save($cf->getConfigArray());
+    $result = $userPreferences->save($cf->getConfigArray());
     if ($result === true) {
         // reload config
         $GLOBALS['PMA_Config']->loadUserPreferences();
         $tabHash = isset($_POST['tab_hash']) ? $_POST['tab_hash'] : null;
         $hash = ltrim($tabHash, '#');
-        UserPreferences::redirect(
+        $userPreferences->redirect(
             'prefs_forms.php',
-            array('form' => $form_param),
+            ['form' => $form_param],
             $hash
         );
         exit;

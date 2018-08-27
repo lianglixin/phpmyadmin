@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Config;
@@ -114,6 +116,11 @@ class Header
     private $_headerIsSent;
 
     /**
+     * @var UserPreferences
+     */
+    private $userPreferences;
+
+    /**
      * Creates a new class instance
      */
     public function __construct()
@@ -121,11 +128,11 @@ class Header
         $this->_isEnabled = true;
         $this->_isAjax = false;
         $this->_bodyId = '';
-        $this->_title  = '';
+        $this->_title = '';
         $this->_console = new Console();
-        $db = ! empty($GLOBALS['db']) ? $GLOBALS['db'] : '';
-        $table = ! empty($GLOBALS['table']) ? $GLOBALS['table'] : '';
-        $this->_menu   = new Menu(
+        $db = strlen($GLOBALS['db']) ? $GLOBALS['db'] : '';
+        $table = strlen($GLOBALS['table']) ? $GLOBALS['table'] : '';
+        $this->_menu = new Menu(
             $GLOBALS['server'],
             $db,
             $table
@@ -145,6 +152,8 @@ class Header
         ) {
             $this->_userprefsOfferImport = true;
         }
+
+        $this->userPreferences = new UserPreferences();
     }
 
     /**
@@ -152,11 +161,11 @@ class Header
      *
      * @return void
      */
-    private function _addDefaultScripts()
+    private function _addDefaultScripts(): void
     {
         // Localised strings
         $this->_scripts->addFile('vendor/jquery/jquery.min.js');
-        $this->_scripts->addFile('vendor/jquery/jquery-migrate-3.0.0.js');
+        $this->_scripts->addFile('vendor/jquery/jquery-migrate.js');
         $this->_scripts->addFile('whitelist.php');
         $this->_scripts->addFile('vendor/sprintf.js');
         $this->_scripts->addFile('ajax.js');
@@ -165,6 +174,7 @@ class Header
         $this->_scripts->addFile('vendor/js.cookie.js');
         $this->_scripts->addFile('vendor/jquery/jquery.mousewheel.js');
         $this->_scripts->addFile('vendor/jquery/jquery.event.drag-2.2.js');
+        $this->_scripts->addFile('vendor/jquery/jquery.validate.js');
         $this->_scripts->addFile('vendor/jquery/jquery-ui-timepicker-addon.js');
         $this->_scripts->addFile('vendor/jquery/jquery.ba-hashchange-1.3.js');
         $this->_scripts->addFile('vendor/jquery/jquery.debounce-1.0.5.js');
@@ -184,7 +194,7 @@ class Header
         // Here would not be a good place to add CodeMirror because
         // the user preferences have not been merged at this point
 
-        $this->_scripts->addFile('messages.php', false, array('l' => $GLOBALS['lang']));
+        $this->_scripts->addFile('messages.php', ['l' => $GLOBALS['lang']]);
         // Append the theme id to this url to invalidate
         // the cache on a theme change. Though this might be
         // unavailable for fatal errors.
@@ -193,7 +203,6 @@ class Header
         } else {
             $theme_id = 'default';
         }
-        $this->_scripts->addFile('get_image.js.php', false, array('theme' => $theme_id));
         $this->_scripts->addFile('config.js');
         $this->_scripts->addFile('doclinks.js');
         $this->_scripts->addFile('functions.js');
@@ -201,7 +210,10 @@ class Header
         $this->_scripts->addFile('indexes.js');
         $this->_scripts->addFile('common.js');
         $this->_scripts->addFile('page_settings.js');
-        if(!$GLOBALS['cfg']['DisableShortcutKeys']) {
+        if ($GLOBALS['cfg']['enable_drag_drop_import'] === true) {
+            $this->_scripts->addFile('drag_drop_import.js');
+        }
+        if (! $GLOBALS['PMA_Config']->get('DisableShortcutKeys')) {
             $this->_scripts->addFile('shortcuts_handler.js');
         }
         $this->_scripts->addCode($this->getJsParamsCode());
@@ -213,28 +225,23 @@ class Header
      *
      * @return array
      */
-    public function getJsParams()
+    public function getJsParams(): array
     {
-        $db = ! empty($GLOBALS['db']) ? $GLOBALS['db'] : '';
-        $table = ! empty($GLOBALS['table']) ? $GLOBALS['table'] : '';
-        $pftext = ! empty($_SESSION['tmpval']['pftext'])
+        $db = strlen($GLOBALS['db']) ? $GLOBALS['db'] : '';
+        $table = strlen($GLOBALS['table']) ? $GLOBALS['table'] : '';
+        $pftext = isset($_SESSION['tmpval']['pftext'])
             ? $_SESSION['tmpval']['pftext'] : '';
 
-        // not sure when this happens, but it happens
-        if (! isset($GLOBALS['collation_connection'])) {
-            $GLOBALS['collation_connection'] = 'utf8_general_ci';
-        }
-
-        $params = array(
+        $params = [
             'common_query' => Url::getCommonRaw(),
             'opendb_url' => Util::getScriptNameForOption(
-                $GLOBALS['cfg']['DefaultTabDatabase'], 'database'
+                $GLOBALS['cfg']['DefaultTabDatabase'],
+                'database'
             ),
-            'collation_connection' => $GLOBALS['collation_connection'],
             'lang' => $GLOBALS['lang'],
             'server' => $GLOBALS['server'],
             'table' => $table,
-            'db'    => $db,
+            'db' => $db,
             'token' => $_SESSION[' PMA_token '],
             'text_dir' => $GLOBALS['text_dir'],
             'show_databases_navigation_as_tree' => $GLOBALS['cfg']['ShowDatabasesNavigationAsTree'],
@@ -251,12 +258,13 @@ class Header
             'pftext' => $pftext,
             'confirm' => $GLOBALS['cfg']['Confirm'],
             'LoginCookieValidity' => $GLOBALS['cfg']['LoginCookieValidity'],
-            'session_gc_maxlifetime' => (int)@ini_get('session.gc_maxlifetime'),
-            'logged_in' => isset($GLOBALS['userlink']) ? true : false,
+            'session_gc_maxlifetime' => (int)ini_get('session.gc_maxlifetime'),
+            'logged_in' => (isset($GLOBALS['dbi']) ? $GLOBALS['dbi']->isUserType('logged') : false),
             'is_https' => $GLOBALS['PMA_Config']->isHttps(),
             'rootPath' => $GLOBALS['PMA_Config']->getRootPath(),
+            'arg_separator' => URL::getArgSeparator(),
             'PMA_VERSION' => PMA_VERSION
-        );
+        ];
         if (isset($GLOBALS['cfg']['Server'])
             && isset($GLOBALS['cfg']['Server']['auth_type'])
         ) {
@@ -275,7 +283,7 @@ class Header
      *
      * @return string
      */
-    public function getJsParamsCode()
+    public function getJsParamsCode(): string
     {
         $params = $this->getJsParams();
         foreach ($params as $key => $value) {
@@ -293,7 +301,7 @@ class Header
      *
      * @return void
      */
-    public function disable()
+    public function disable(): void
     {
         $this->_isEnabled = false;
     }
@@ -306,9 +314,9 @@ class Header
      *
      * @return void
      */
-    public function setAjax($isAjax)
+    public function setAjax(bool $isAjax): void
     {
-        $this->_isAjax = (boolean) $isAjax;
+        $this->_isAjax = $isAjax;
         $this->_console->setAjax($isAjax);
     }
 
@@ -317,7 +325,7 @@ class Header
      *
      * @return Scripts object
      */
-    public function getScripts()
+    public function getScripts(): Scripts
     {
         return $this->_scripts;
     }
@@ -327,7 +335,7 @@ class Header
      *
      * @return Menu object
      */
-    public function getMenu()
+    public function getMenu(): Menu
     {
         return $this->_menu;
     }
@@ -339,7 +347,7 @@ class Header
      *
      * @return void
      */
-    public function setBodyId($id)
+    public function setBodyId(string $id): void
     {
         $this->_bodyId = htmlspecialchars($id);
     }
@@ -351,7 +359,7 @@ class Header
      *
      * @return void
      */
-    public function setTitle($title)
+    public function setTitle(string $title): void
     {
         $this->_title = htmlspecialchars($title);
     }
@@ -361,7 +369,7 @@ class Header
      *
      * @return void
      */
-    public function disableMenuAndConsole()
+    public function disableMenuAndConsole(): void
     {
         $this->_menuEnabled = false;
         $this->_console->disable();
@@ -372,7 +380,7 @@ class Header
      *
      * @return void
      */
-    public function disableWarnings()
+    public function disableWarnings(): void
     {
         $this->_warningsEnabled = false;
     }
@@ -382,7 +390,7 @@ class Header
      *
      * @return void
      */
-    public function enablePrintView()
+    public function enablePrintView(): void
     {
         $this->disableMenuAndConsole();
         $this->setTitle(__('Print view') . ' - phpMyAdmin ' . PMA_VERSION);
@@ -394,7 +402,7 @@ class Header
      *
      * @return string The header
      */
-    public function getDisplay()
+    public function getDisplay(): string
     {
         $retval = '';
         if (! $this->_headerIsSent) {
@@ -441,7 +449,7 @@ class Header
                 $retval .= Config::renderHeader();
                 // offer to load user preferences from localStorage
                 if ($this->_userprefsOfferImport) {
-                    $retval .= UserPreferences::autoloadGetHeader();
+                    $retval .= $this->userPreferences->autoloadGetHeader();
                 }
                 // pass configuration for hint tooltip display
                 // (to be used by PMA_tooltip() in js/functions.js)
@@ -455,14 +463,14 @@ class Header
                     $retval .= '<span id="lock_page_icon"></span>';
                     $retval .= '<span id="page_settings_icon">'
                         . Util::getImage(
-                            's_cog.png',
+                            's_cog',
                             __('Page-related settings')
                         )
                         . '</span>';
                     $retval .= sprintf(
                         '<a id="goto_pagetop" href="#">%s</a>',
                         Util::getImage(
-                            's_top.png',
+                            's_top',
                             __('Click on the bar to scroll to top of page')
                         )
                     );
@@ -488,14 +496,14 @@ class Header
      *
      * @return string
      */
-    public function getMessage()
+    public function getMessage(): string
     {
         $retval = '';
         $message = '';
         if (! empty($GLOBALS['message'])) {
             $message = $GLOBALS['message'];
             unset($GLOBALS['message']);
-        } else if (! empty($_REQUEST['message'])) {
+        } elseif (! empty($_REQUEST['message'])) {
             $message = $_REQUEST['message'];
         }
         if (! empty($message)) {
@@ -515,7 +523,7 @@ class Header
      *
      * @return void
      */
-    public function sendHttpHeaders()
+    public function sendHttpHeaders(): void
     {
         if (defined('TESTSUITE')) {
             return;
@@ -539,6 +547,10 @@ class Header
         if (! $GLOBALS['cfg']['AllowThirdPartyFraming']) {
             header(
                 'X-Frame-Options: DENY'
+            );
+        } elseif ($GLOBALS['cfg']['AllowThirdPartyFraming'] === 'sameorigin') {
+            header(
+                'X-Frame-Options: SAMEORIGIN'
             );
         }
         header('Referrer-Policy: no-referrer');
@@ -626,7 +638,7 @@ class Header
      *
      * @return string DOCTYPE and HTML tags
      */
-    private function _getHtmlStart()
+    private function _getHtmlStart(): string
     {
         $lang = $GLOBALS['lang'];
         $dir  = $GLOBALS['text_dir'];
@@ -643,7 +655,7 @@ class Header
      *
      * @return string the META tags
      */
-    private function _getMetaTags()
+    private function _getMetaTags(): string
     {
         $retval  = '<meta charset="utf-8" />';
         $retval .= '<meta name="referrer" content="no-referrer" />';
@@ -661,7 +673,7 @@ class Header
      *
      * @return string the LINK tags
      */
-    private function _getLinkTags()
+    private function _getLinkTags(): string
     {
         $retval = '<link rel="icon" href="favicon.ico" '
             . 'type="image/x-icon" />'
@@ -706,7 +718,7 @@ class Header
      *
      * @return string the TITLE tag
      */
-    public function getTitleTag()
+    public function getTitleTag(): string
     {
         $retval  = "<title>";
         $retval .= $this->_getPageTitle();
@@ -720,15 +732,15 @@ class Header
      *
      * @return string
      */
-    private function _getPageTitle()
+    private function _getPageTitle(): string
     {
-        if (empty($this->_title)) {
+        if (strlen($this->_title) == 0) {
             if ($GLOBALS['server'] > 0) {
-                if (! empty($GLOBALS['table'])) {
+                if (strlen($GLOBALS['table'])) {
                     $temp_title = $GLOBALS['cfg']['TitleTable'];
-                } else if (! empty($GLOBALS['db'])) {
+                } elseif (strlen($GLOBALS['db'])) {
                     $temp_title = $GLOBALS['cfg']['TitleDatabase'];
-                } elseif (! empty($GLOBALS['cfg']['Server']['host'])) {
+                } elseif (strlen($GLOBALS['cfg']['Server']['host'])) {
                     $temp_title = $GLOBALS['cfg']['TitleServer'];
                 } else {
                     $temp_title = $GLOBALS['cfg']['TitleDefault'];
@@ -749,10 +761,10 @@ class Header
      *
      * @return string HEAD and BODY tags
      */
-    private function _getBodyStart()
+    private function _getBodyStart(): string
     {
         $retval = "</head><body";
-        if (! empty($this->_bodyId)) {
+        if (strlen($this->_bodyId)) {
             $retval .= " id='" . $this->_bodyId . "'";
         }
         $retval .= ">";
@@ -764,7 +776,7 @@ class Header
      *
      * @return string The warnings
      */
-    private function _getWarnings()
+    private function _getWarnings(): string
     {
         $retval = '';
         if ($this->_warningsEnabled) {
@@ -785,15 +797,17 @@ class Header
      *
      * @return string
      */
-    private function _addRecentTable($db, $table)
+    private function _addRecentTable(string $db, string $table): string
     {
         $retval = '';
         if ($this->_menuEnabled
             && strlen($table) > 0
             && $GLOBALS['cfg']['NumRecentTables'] > 0
         ) {
-            $tmp_result = RecentFavoriteTable::getInstance('recent')
-                              ->add($db, $table);
+            $tmp_result = RecentFavoriteTable::getInstance('recent')->add(
+                $db,
+                $table
+            );
             if ($tmp_result === true) {
                 $retval = RecentFavoriteTable::getHtmlUpdateRecentTables();
             } else {
@@ -810,7 +824,7 @@ class Header
      *
      * @return string urlenocded pma version as a parameter
      */
-    public static function getVersionParameter()
+    public static function getVersionParameter(): string
     {
         return "v=" . urlencode(PMA_VERSION);
     }

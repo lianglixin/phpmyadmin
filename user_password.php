@@ -6,6 +6,7 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
 
 use PhpMyAdmin\Display\ChangePassword;
 use PhpMyAdmin\Message;
@@ -22,6 +23,8 @@ $header   = $response->getHeader();
 $scripts  = $header->getScripts();
 $scripts->addFile('server_privileges.js');
 $scripts->addFile('vendor/zxcvbn.js');
+
+$userPassword = new UserPassword();
 
 /**
  * Displays an error message and exits if the user isn't allowed to use this
@@ -47,12 +50,12 @@ if (isset($_REQUEST['nopass'])) {
     } else {
         $password = $_REQUEST['pma_pw'];
     }
-    $change_password_message = UserPassword::setChangePasswordMsg();
+    $change_password_message = $userPassword->setChangePasswordMsg();
     $msg = $change_password_message['msg'];
     if (! $change_password_message['error']) {
-        UserPassword::changePassword($password, $msg, $change_password_message);
+        $userPassword->changePassword($password, $msg, $change_password_message);
     } else {
-        UserPassword::getChangePassMessage($change_password_message);
+        $userPassword->getChangePassMessage($change_password_message);
     }
 }
 

@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\LanguageManager;
@@ -73,9 +75,9 @@ class Language
     {
         if (! empty($this->native)) {
             return $this->native . ' - ' . $this->name;
-        } else {
-            return $this->name;
         }
+
+        return $this->name;
     }
 
     /**
@@ -157,7 +159,7 @@ class Language
      */
     public function isRTL()
     {
-        return in_array($this->code, array('ar', 'fa', 'he', 'ur'));
+        return in_array($this->code, ['ar', 'fa', 'he', 'ur']);
     }
 
     /**
@@ -173,6 +175,10 @@ class Language
         _setlocale(0, $this->code);
         _bindtextdomain('phpmyadmin', LOCALE_PATH);
         _textdomain('phpmyadmin');
+        // Set PHP locale as well
+        if (function_exists('setlocale')) {
+            setlocale(0, $this->code);
+        }
 
         /* Text direction for language */
         if ($this->isRTL()) {
@@ -182,7 +188,7 @@ class Language
         }
 
         /* TCPDF */
-        $GLOBALS['l'] = array();
+        $GLOBALS['l'] = [];
 
         /* TCPDF settings */
         $GLOBALS['l']['a_meta_charset'] = 'UTF-8';

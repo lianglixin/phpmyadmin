@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Transformations;
@@ -34,23 +36,26 @@ $response = Response::getInstance();
 $header   = $response->getHeader();
 $header->enablePrintView();
 
+$relation = new Relation();
+$transformations = new Transformations();
+
 /**
  * Gets the relations settings
  */
-$cfgRelation  = Relation::getRelationsParam();
+$cfgRelation  = $relation->getRelationsParam();
 
 /**
  * Check parameters
  */
-PhpMyAdmin\Util::checkParameters(array('db'));
+PhpMyAdmin\Util::checkParameters(['db']);
 
 /**
  * Defines the url to return to in case of error in a sql statement
  */
-$err_url = 'db_sql.php' . Url::getCommon(array('db' => $db));
+$err_url = 'db_sql.php' . Url::getCommon(['db' => $db]);
 
 if ($cfgRelation['commwork']) {
-    $comment = Relation::getDbComment($db);
+    $comment = $relation->getDbComment($db);
 
     /**
      * Displays DB comment
@@ -69,7 +74,7 @@ $tables = $GLOBALS['dbi']->getTables($db);
 
 $count  = 0;
 foreach ($tables as $table) {
-    $comments = Relation::getComments($db, $table);
+    $comments = $relation->getComments($db, $table);
 
     echo '<div>' , "\n";
 
@@ -95,8 +100,10 @@ foreach ($tables as $table) {
     $columns = $GLOBALS['dbi']->getColumns($db, $table);
 
     // Check if we can use Relations
-    list($res_rel, $have_rel) = Relation::getRelationsAndStatus(
-        ! empty($cfgRelation['relation']), $db, $table
+    list($res_rel, $have_rel) = $relation->getRelationsAndStatus(
+        ! empty($cfgRelation['relation']),
+        $db,
+        $table
     );
 
     /**
@@ -125,7 +132,6 @@ foreach ($tables as $table) {
     }
     echo '</tr>';
     foreach ($columns as $row) {
-
         if ($row['Null'] == '') {
             $row['Null'] = 'NO';
         }
@@ -171,7 +177,7 @@ foreach ($tables as $table) {
 
         if ($have_rel) {
             echo '    <td>';
-            if ($foreigner = Relation::searchColumnInForeigners($res_rel, $column_name)) {
+            if ($foreigner = $relation->searchColumnInForeigners($res_rel, $column_name)) {
                 echo htmlspecialchars(
                     $foreigner['foreign_table']
                     . ' -> '
@@ -186,7 +192,7 @@ foreach ($tables as $table) {
         }
         echo '</td>' , "\n";
         if ($cfgRelation['mimework']) {
-            $mime_map = Transformations::getMIME($db, $table, true);
+            $mime_map = $transformations->getMime($db, $table, true);
 
             echo '    <td>';
             if (isset($mime_map[$column_name])) {

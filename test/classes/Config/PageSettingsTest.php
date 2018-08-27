@@ -5,28 +5,33 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Config;
 
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Config\PageSettings;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Config\PageSettings
  *
  * @package PhpMyAdmin-test
  */
-class PageSettingsTest extends \PMATestCase
+class PageSettingsTest extends PmaTestCase
 {
     /**
      * Setup tests
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['server'] = 1;
         $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = '';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
     }
 
     /**
@@ -80,7 +85,7 @@ class PageSettingsTest extends \PMATestCase
      *
      * @return void
      */
-    function testGetNaviSettings()
+    public function testGetNaviSettings()
     {
         $html = PageSettings::getNaviSettings();
 

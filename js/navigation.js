@@ -188,7 +188,7 @@ function loadChildNodes (isNode, $expandElem, callback) {
             if (window.location.href.indexOf('?') === -1) {
                 window.location.href += '?session_expired=1';
             } else {
-                window.location.href += '&session_expired=1';
+                window.location.href += PMA_commonParams.get('arg_separator') + 'session_expired=1';
             }
             window.location.reload();
         } else {
@@ -341,7 +341,7 @@ $(function () {
         $('#pma_navigation_tree').find('a.expander').each(function () {
             var $icon = $(this).find('img');
             if ($icon.is('.ic_b_minus')) {
-                $(this).click();
+                $(this).trigger('click');
             }
         });
     });
@@ -495,7 +495,7 @@ $(function () {
         event.preventDefault();
         var url = $(this).attr('href').substr(
             $(this).attr('href').indexOf('?') + 1
-        ) + '&ajax_request=true';
+        ) + PMA_commonParams.get('arg_separator') + 'ajax_request=true';
         var title = PMA_messages.strAddIndex;
         indexEditorDialog(url, title);
     });
@@ -505,7 +505,7 @@ $(function () {
         event.preventDefault();
         var url = $(this).attr('href').substr(
             $(this).attr('href').indexOf('?') + 1
-        ) + '&ajax_request=true';
+        ) + PMA_commonParams.get('arg_separator') + 'ajax_request=true';
         var title = PMA_messages.strEditIndex;
         indexEditorDialog(url, title);
     });
@@ -524,7 +524,7 @@ $(function () {
             data: {
                 server: PMA_commonParams.get('server'),
             },
-            url: $(this).attr('href') + '&ajax_request=true',
+            url: $(this).attr('href') + PMA_commonParams.get('arg_separator') + 'ajax_request=true',
             success: function (data) {
                 if (typeof data !== 'undefined' && data.success === true) {
                     PMA_reloadNavigation();
@@ -539,7 +539,7 @@ $(function () {
     $(document).on('click', 'a.showUnhide.ajax', function (event) {
         event.preventDefault();
         var $msg = PMA_ajaxShowMessage();
-        $.get($(this).attr('href') + '&ajax_request=1', function (data) {
+        $.get($(this).attr('href') + PMA_commonParams.get('arg_separator') + 'ajax_request=1', function (data) {
             if (typeof data !== 'undefined' && data.success === true) {
                 PMA_ajaxRemoveMessage($msg);
                 var buttonOptions = {};
@@ -575,7 +575,7 @@ $(function () {
             data: {
                 server: PMA_commonParams.get('server'),
             },
-            url: $(this).attr('href') + '&ajax_request=true',
+            url: $(this).attr('href') + PMA_commonParams.get('arg_separator') + 'ajax_request=true',
             success: function (data) {
                 PMA_ajaxRemoveMessage($msg);
                 if (typeof data !== 'undefined' && data.success === true) {
@@ -678,7 +678,7 @@ function expandTreeNode ($expandElem, callback) {
             .first()
             .clone()
             .css({ visibility: 'visible', display: 'block' })
-            .click(false);
+            .on('click', false);
         $icon.hide();
         $throbber.insertBefore($icon);
 
@@ -691,7 +691,7 @@ function expandTreeNode ($expandElem, callback) {
                 if ($destination.find('ul > li').length === 1) {
                     $destination.find('ul > li')
                         .find('a.expander.container')
-                        .click();
+                        .trigger('click');
                 }
                 if (callback && typeof callback === 'function') {
                     callback.call();
@@ -829,7 +829,7 @@ function PMA_showCurrentNavigation () {
                             $(this)
                                 .children('div:first')
                                 .children('a.expander')
-                                .click();
+                                .trigger('click');
                         }
                     });
                     ret = $li;
@@ -1037,18 +1037,18 @@ function PMA_navigationTreePagination ($this) {
         params = 'ajax_request=true';
     } else { // tagName === 'SELECT'
         url = 'navigation.php';
-        params = $this.closest('form').serialize() + '&ajax_request=true';
+        params = $this.closest('form').serialize() + PMA_commonParams.get('arg_separator') + 'ajax_request=true';
     }
     var searchClause = PMA_fastFilter.getSearchClause();
     if (searchClause) {
-        params += '&searchClause=' + encodeURIComponent(searchClause);
+        params += PMA_commonParams.get('arg_separator') + 'searchClause=' + encodeURIComponent(searchClause);
     }
     if (isDbSelector) {
-        params += '&full=true';
+        params += PMA_commonParams.get('arg_separator') + 'full=true';
     } else {
         var searchClause2 = PMA_fastFilter.getSearchClause2($this);
         if (searchClause2) {
-            params += '&searchClause2=' + encodeURIComponent(searchClause2);
+            params += PMA_commonParams.get('arg_separator') + 'searchClause2=' + encodeURIComponent(searchClause2);
         }
     }
     $.post(url, params, function (data) {
@@ -1113,13 +1113,13 @@ var ResizeHandler = function () {
      * @return void
      */
     this.setWidth = function (pos) {
+        if (typeof pos !== 'number') {
+            pos = 240;
+        }
         var $resizer = $('#pma_navigation_resizer');
         var resizer_width = $resizer.width();
         var $collapser = $('#pma_navigation_collapser');
         var windowWidth = $(window).width();
-        if (pos > 240 && windowWidth > 768) {
-            pos = 241;
-        }
         $('#pma_navigation').width(pos);
         $('body').css('margin-' + this.left, pos + 'px');
         $('#floating_menubar, #pma_console')
@@ -1221,7 +1221,7 @@ var ResizeHandler = function () {
      */
     this.mouseup = function (event) {
         $('body').css('cursor', '');
-        Cookies.set('pma_navi_width', event.data.resize_handler.getPos(event));
+        configSet('NavigationWidth', event.data.resize_handler.getPos(event));
         $('#topmenu').menuResizer('resize');
         $(document)
             .off('mousemove')
@@ -1256,6 +1256,7 @@ var ResizeHandler = function () {
         if (width === 0 && panel_width === 0) {
             panel_width = 240;
         }
+        configSet('NavigationWidth', panel_width);
         event.data.resize_handler.setWidth(panel_width);
         event.data.resize_handler.panel_width = width;
     };
@@ -1284,10 +1285,8 @@ var ResizeHandler = function () {
     // Hide the pma_navigation initially when loaded on mobile
     if ($(window).width() < 768) {
         this.setWidth(0);
-    } else if (Cookies.get('pma_navi_width')) {
-        // If we have a cookie, set the width of the panel to its value
-        var pos = Math.abs(parseInt(Cookies.get('pma_navi_width'), 10) || 0);
-        this.setWidth(pos);
+    } else {
+        this.setWidth(configGet('NavigationWidth', false));
         $('#topmenu').menuResizer('resize');
     }
     // Register the events for the resizer and the collapser
@@ -1555,7 +1554,7 @@ PMA_fastFilter.filter.prototype.request = function () {
     if (self.$this.find('> ul > li > form.fast_filter:first input[name=searchClause]').length === 0) {
         var $input = $('#pma_navigation_tree').find('li.fast_filter.db_fast_filter input.searchClause');
         if ($input.length && $input.val() !== $input[0].defaultValue) {
-            params += '&searchClause=' + encodeURIComponent($input.val());
+            params += PMA_commonParams.get('arg_separator') + 'searchClause=' + encodeURIComponent($input.val());
         }
     }
     self.xhr = $.ajax({
@@ -1619,7 +1618,7 @@ PMA_fastFilter.filter.prototype.restore = function (focus) {
  * @return void
  */
 function PMA_showFullName ($containerELem) {
-    $containerELem.find('.hover_show_full').mouseenter(function () {
+    $containerELem.find('.hover_show_full').on('mouseenter', function () {
         /** mouseenter */
         var $this = $(this);
         var thisOffset = $this.offset();
@@ -1636,7 +1635,7 @@ function PMA_showFullName ($containerELem) {
                     /** mouseleave */
                     $(this).addClass('hide')
                         .removeClass('hovering');
-                }).mouseenter(function () {
+                }).on('mouseenter', function () {
                     /** mouseenter */
                     $(this).addClass('hovering');
                 });

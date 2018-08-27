@@ -5,8 +5,8 @@
  *
  * @package PhpMyAdmin-Navigation
  */
+declare(strict_types=1);
 
-// Include common functionalities
 use PhpMyAdmin\Config\PageSettings;
 use PhpMyAdmin\Navigation\Navigation;
 use PhpMyAdmin\Relation;
@@ -31,7 +31,8 @@ if (isset($_REQUEST['getNaviSettings']) && $_REQUEST['getNaviSettings']) {
     exit();
 }
 
-$cfgRelation = Relation::getRelationsParam();
+$relation = new Relation();
+$cfgRelation = $relation->getRelationsParam();
 if ($cfgRelation['navwork']) {
     if (isset($_REQUEST['hideNavItem'])) {
         if (! empty($_REQUEST['itemName'])

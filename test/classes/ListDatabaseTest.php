@@ -5,9 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\ListDatabase;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionClass;
 
 $GLOBALS['server'] = 1;
@@ -18,16 +21,23 @@ $GLOBALS['cfg']['Server']['DisableIS'] = false;
  *
  * @package PhpMyAdmin-test
  */
-class ListDatabaseTest extends \PMATestCase
+class ListDatabaseTest extends PmaTestCase
 {
+    /**
+     * ListDatabase instance
+     *
+     * @var ListDatabase
+     */
+    private $object;
+
     /**
      * SetUp for test cases
      *
      * @return void
      */
-    public function setup()
+    protected function setUp()
     {
-        $GLOBALS['cfg']['Server']['only_db'] = array('single\\_db');
+        $GLOBALS['cfg']['Server']['only_db'] = ['single\\_db'];
         $this->object = new ListDatabase();
     }
 
@@ -37,7 +47,7 @@ class ListDatabaseTest extends \PMATestCase
      * @param string $name   method name
      * @param array  $params parameters for the invocation
      *
-     * @return the output from the protected method.
+     * @return mixed the output from the protected method.
      */
     private function _callProtectedFunction($name, $params)
     {
@@ -54,7 +64,7 @@ class ListDatabaseTest extends \PMATestCase
      */
     public function testEmpty()
     {
-        $arr = new ListDatabase;
+        $arr = new ListDatabase();
         $this->assertEquals('', $arr->getEmpty());
     }
 
@@ -65,7 +75,7 @@ class ListDatabaseTest extends \PMATestCase
      */
     public function testExists()
     {
-        $arr = new ListDatabase;
+        $arr = new ListDatabase();
         $this->assertEquals(true, $arr->exists('single_db'));
     }
 
@@ -76,7 +86,7 @@ class ListDatabaseTest extends \PMATestCase
      */
     public function testHtmlOptions()
     {
-        $arr = new ListDatabase;
+        $arr = new ListDatabase();
         $this->assertEquals(
             '<option value="single_db">single_db</option>' . "\n",
             $arr->getHtmlOptions()
@@ -94,7 +104,7 @@ class ListDatabaseTest extends \PMATestCase
         $this->assertEquals(
             $this->_callProtectedFunction(
                 'checkHideDatabase',
-                array()
+                []
             ),
             ''
         );
@@ -119,5 +129,4 @@ class ListDatabaseTest extends \PMATestCase
             'mysql'
         );
     }
-
 }

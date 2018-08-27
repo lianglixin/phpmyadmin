@@ -5,10 +5,12 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Util;
-use stdClass;
+use PhpMyAdmin\Utils\HttpRequest;
 
 /**
  * Responsible for retrieving version information and notifiying about latest version
@@ -39,7 +41,8 @@ class VersionInformation
         } else {
             $save = true;
             $file = 'https://www.phpmyadmin.net/home_page/version.json';
-            $response = Util::httpRequest($file, "GET");
+            $httpRequest = new HttpRequest();
+            $response = $httpRequest->create($file, 'GET');
         }
         $response = $response ? $response : '{}';
         /* Parse response */
@@ -55,10 +58,10 @@ class VersionInformation
         }
 
         if ($save) {
-            $_SESSION['cache']['version_check'] = array(
+            $_SESSION['cache']['version_check'] = [
                 'response' => $response,
                 'timestamp' => time()
-            );
+            ];
         }
         return $data;
     }
@@ -99,27 +102,27 @@ class VersionInformation
         }
 
         if (!empty($suffix)) {
-            $matches = array();
+            $matches = [];
             if (preg_match('/^(\D+)(\d+)$/', $suffix, $matches)) {
                 $suffix = $matches[1];
                 $result += intval($matches[2]);
             }
             switch ($suffix) {
-            case 'pl':
-                $result += 60;
-                break;
-            case 'rc':
-                $result += 30;
-                break;
-            case 'beta':
-                $result += 20;
-                break;
-            case 'alpha':
-                $result += 10;
-                break;
-            case 'dev':
-                $result += 0;
-                break;
+                case 'pl':
+                    $result += 60;
+                    break;
+                case 'rc':
+                    $result += 30;
+                    break;
+                case 'beta':
+                    $result += 20;
+                    break;
+                case 'alpha':
+                    $result += 10;
+                    break;
+                case 'dev':
+                    $result += 0;
+                    break;
             }
         } else {
             $result += 50; // for final
@@ -159,10 +162,10 @@ class VersionInformation
                 }
             }
 
-            return array(
+            return [
                 'version' => $release->version,
                 'date' => $release->date,
-            );
+            ];
         }
 
         // no compatible version
@@ -180,7 +183,8 @@ class VersionInformation
     public function evaluateVersionCondition($type, $condition)
     {
         $operator = null;
-        $operators = array("<=", ">=", "!=", "<>", "<", ">", "="); // preserve order
+        $version = null;
+        $operators = ["<=", ">=", "!=", "<>", "<", ">", "="]; // preserve order
         foreach ($operators as $oneOperator) {
             if (strpos($condition, $oneOperator) === 0) {
                 $operator = $oneOperator;

@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin\Controllers
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Controllers;
 
 /**
@@ -26,11 +28,20 @@ abstract class TableController extends Controller
 
     /**
      * Constructor
+     *
+     * @param \PhpMyAdmin\Response          $response Response object
+     * @param \PhpMyAdmin\DatabaseInterface $dbi      DatabaseInterface object
+     * @param string                        $db       Database name
+     * @param string                        $table    Table name
      */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->db = $this->container->get('db');
-        $this->table = $this->container->get('table');
+    public function __construct(
+        $response,
+        $dbi,
+        $db,
+        $table
+    ) {
+        parent::__construct($response, $dbi);
+        $this->db = $db;
+        $this->table = $table;
     }
 }

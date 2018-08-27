@@ -5,15 +5,16 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Export\ExportOds;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionMethod;
 use ReflectionProperty;
 use stdClass;
-
-require_once 'libraries/config.default.php';
 
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportOds class
@@ -21,7 +22,7 @@ require_once 'libraries/config.default.php';
  * @package PhpMyAdmin-test
  * @group medium
  */
-class ExportOdsTest extends \PMATestCase
+class ExportOdsTest extends PmaTestCase
 {
     protected $object;
 
@@ -30,7 +31,7 @@ class ExportOdsTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['output_kanji_conversion'] = false;
@@ -167,7 +168,6 @@ class ExportOdsTest extends \PMATestCase
             'structure_or_data',
             $property->getName()
         );
-
     }
 
     /**
@@ -177,8 +177,9 @@ class ExportOdsTest extends \PMATestCase
      */
     public function testExportHeader()
     {
-        $this->assertTrue(
-            isset($GLOBALS['ods_buffer'])
+        $this->assertArrayHasKey(
+            'ods_buffer',
+            $GLOBALS
         );
 
         $this->assertTrue(
@@ -270,42 +271,42 @@ class ExportOdsTest extends \PMATestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $flags = array();
-        $a = new stdClass;
+        $flags = [];
+        $a = new stdClass();
         $flags[] = $a;
 
-        $a = new stdClass;
+        $a = new stdClass();
         $a->blob = true;
         $flags[] = $a;
 
-        $a = new stdClass;
+        $a = new stdClass();
         $a->blob = false;
         $a->type = 'date';
         $flags[] = $a;
 
-        $a = new stdClass;
+        $a = new stdClass();
         $a->blob = false;
         $a->type = 'time';
         $flags[] = $a;
 
-        $a = new stdClass;
+        $a = new stdClass();
         $a->blob = false;
         $a->type = 'datetime';
         $flags[] = $a;
 
-        $a = new stdClass;
+        $a = new stdClass();
         $a->numeric = true;
         $a->type = 'none';
         $a->blob = false;
         $flags[] = $a;
 
-        $a = new stdClass;
+        $a = new stdClass();
         $a->numeric = true;
         $a->type = 'real';
         $a->blob = true;
         $flags[] = $a;
 
-        $a = new stdClass;
+        $a = new stdClass();
         $a->type = "dummy";
         $a->blob = false;
         $a->numeric = false;
@@ -331,7 +332,7 @@ class ExportOdsTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('SELECT', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('SELECT', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -344,10 +345,10 @@ class ExportOdsTest extends \PMATestCase
             ->with(true)
             ->will(
                 $this->returnValue(
-                    array(
+                    [
                         null, '01-01-2000', '01-01-2000', '01-01-2000 10:00:00',
                         "01-01-2014 10:02:00", "t>s", "a&b", "<"
-                    )
+                    ]
                 )
             );
 
@@ -359,7 +360,11 @@ class ExportOdsTest extends \PMATestCase
 
         $this->assertTrue(
             $this->object->exportData(
-                'db', 'table', "\n", "example.com", "SELECT"
+                'db',
+                'table',
+                "\n",
+                "example.com",
+                "SELECT"
             )
         );
 
@@ -395,7 +400,7 @@ class ExportOdsTest extends \PMATestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $flags = array();
+        $flags = [];
 
         $dbi->expects($this->once())
             ->method('getFieldsMeta')
@@ -408,7 +413,7 @@ class ExportOdsTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('SELECT', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('SELECT', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -442,7 +447,11 @@ class ExportOdsTest extends \PMATestCase
 
         $this->assertTrue(
             $this->object->exportData(
-                'db', 'table', "\n", "example.com", "SELECT"
+                'db',
+                'table',
+                "\n",
+                "example.com",
+                "SELECT"
             )
         );
 
@@ -460,7 +469,7 @@ class ExportOdsTest extends \PMATestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $flags = array();
+        $flags = [];
 
         $dbi->expects($this->once())
             ->method('getFieldsMeta')
@@ -469,7 +478,7 @@ class ExportOdsTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('SELECT', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('SELECT', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -495,7 +504,11 @@ class ExportOdsTest extends \PMATestCase
 
         $this->assertTrue(
             $this->object->exportData(
-                'db', 'table', "\n", "example.com", "SELECT"
+                'db',
+                'table',
+                "\n",
+                "example.com",
+                "SELECT"
             )
         );
 

@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Bookmark;
@@ -28,20 +30,32 @@ class Console
     private $_isEnabled;
 
     /**
-     * Creates a new class instance
-     */
-    public function __construct()
-    {
-        $this->_isEnabled = true;
-    }
-
-    /**
      * Whether we are servicing an ajax request.
      *
      * @access private
      * @var bool
      */
     private $_isAjax;
+
+    /**
+     * @var Relation
+     */
+    private $relation;
+
+    /**
+     * @var Template
+     */
+    public $template;
+
+    /**
+     * Creates a new class instance
+     */
+    public function __construct()
+    {
+        $this->_isEnabled = true;
+        $this->relation = new Relation();
+        $this->template = new Template();
+    }
 
     /**
      * Set the ajax flag to indicate whether
@@ -51,9 +65,9 @@ class Console
      *
      * @return void
      */
-    public function setAjax($isAjax)
+    public function setAjax(bool $isAjax): void
     {
-        $this->_isAjax = (boolean) $isAjax;
+        $this->_isAjax = $isAjax;
     }
 
     /**
@@ -61,7 +75,7 @@ class Console
      *
      * @return void
      */
-    public function disable()
+    public function disable(): void
     {
         $this->_isEnabled = false;
     }
@@ -72,11 +86,15 @@ class Console
      * @access public
      * @return string
      */
-    public static function getBookmarkContent()
+    public static function getBookmarkContent(): string
     {
-        $cfgBookmark = Bookmark::getParams();
+        $template = new Template();
+        $cfgBookmark = Bookmark::getParams($GLOBALS['cfg']['Server']['user']);
         if ($cfgBookmark) {
-            $bookmarks = Bookmark::getList();
+            $bookmarks = Bookmark::getList(
+                $GLOBALS['dbi'],
+                $GLOBALS['cfg']['Server']['user']
+            );
             $count_bookmarks = count($bookmarks);
             if ($count_bookmarks > 0) {
                 $welcomeMessage = sprintf(
@@ -91,13 +109,10 @@ class Console
                 $welcomeMessage = __('No bookmarks');
             }
             unset($count_bookmarks, $private_message, $shared_message);
-            return Template::get('console/bookmark_content')
-                ->render(
-                    array(
-                        'welcome_message'    => $welcomeMessage,
-                        'bookmarks'         => $bookmarks,
-                    )
-                );
+            return $template->render('console/bookmark_content', [
+                'welcome_message' => $welcomeMessage,
+                'bookmarks' => $bookmarks,
+            ]);
         }
         return '';
     }
@@ -107,9 +122,9 @@ class Console
      *
      * @return array list of scripts
      */
-    public function getScripts()
+    public function getScripts(): array
     {
-        return array('console.js');
+        return ['console.js'];
     }
 
     /**
@@ -118,26 +133,26 @@ class Console
      * @access public
      * @return string
      */
-    public function getDisplay()
+    public function getDisplay(): string
     {
         if ((! $this->_isAjax) && $this->_isEnabled) {
-            $cfgBookmark = Bookmark::getParams();
+            $cfgBookmark = Bookmark::getParams(
+                $GLOBALS['cfg']['Server']['user']
+            );
 
-            $image = Util::getImage('console.png', __('SQL Query Console'));
-            $_sql_history = Relation::getHistory($GLOBALS['cfg']['Server']['user']);
+            $image = Util::getImage('console', __('SQL Query Console'));
+            $_sql_history = $this->relation->getHistory(
+                $GLOBALS['cfg']['Server']['user']
+            );
             $bookmarkContent = static::getBookmarkContent();
 
-            return Template::get('console/display')
-                ->render(
-                    array(
-                        'cfg_bookmark' => $cfgBookmark,
-                        'image' => $image,
-                        'sql_history' => $_sql_history,
-                        'bookmark_content' => $bookmarkContent,
-                    )
-                );
+            return $this->template->render('console/display', [
+                'cfg_bookmark' => $cfgBookmark,
+                'image' => $image,
+                'sql_history' => $_sql_history,
+                'bookmark_content' => $bookmarkContent,
+            ]);
         }
         return '';
     }
-
 }

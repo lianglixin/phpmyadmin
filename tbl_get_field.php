@@ -5,28 +5,33 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
 
 use PhpMyAdmin\Core;
 use PhpMyAdmin\Mime;
+use PhpMyAdmin\Response;
 
 /**
  * Common functions.
  */
+require_once 'libraries/common.inc.php';
+
 // we don't want the usual PhpMyAdmin\Response-generated HTML above the column's
 // data
-define('PMA_BYPASS_GET_INSTANCE', 1);
-require_once 'libraries/common.inc.php';
+$response = Response::getInstance();
+$response->disable();
 
 /* Check parameters */
 PhpMyAdmin\Util::checkParameters(
-    array('db', 'table')
+    ['db', 'table']
 );
 
 /* Select database */
 if (!$GLOBALS['dbi']->selectDb($db)) {
     PhpMyAdmin\Util::mysqlDie(
         sprintf(__('\'%s\' database does not exist.'), htmlspecialchars($db)),
-        '', false
+        '',
+        false
     );
 }
 
@@ -44,15 +49,16 @@ $result = $GLOBALS['dbi']->fetchValue($sql);
 /* Check return code */
 if ($result === false) {
     PhpMyAdmin\Util::mysqlDie(
-        __('MySQL returned an empty result set (i.e. zero rows).'), $sql
+        __('MySQL returned an empty result set (i.e. zero rows).'),
+        $sql
     );
 }
 
 /* Avoid corrupting data */
-@ini_set('url_rewriter.tags', '');
+ini_set('url_rewriter.tags', '');
 
 Core::downloadHeader(
-    $table . '-' .  $_GET['transform_key'] . '.bin',
+    $table . '-' . $_GET['transform_key'] . '.bin',
     Mime::detect($result),
     strlen($result)
 );

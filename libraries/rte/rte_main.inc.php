@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Rte\Events;
 use PhpMyAdmin\Rte\Routines;
@@ -16,6 +18,10 @@ if (! defined('PHPMYADMIN')) {
 }
 
 $response = Response::getInstance();
+
+$events = new Events($GLOBALS['dbi']);
+$routines = new Routines($GLOBALS['dbi']);
+$triggers = new Triggers($GLOBALS['dbi']);
 
 if (! $response->isAjax()) {
     /**
@@ -49,25 +55,13 @@ if (! $response->isAjax()) {
         $GLOBALS['dbi']->selectDb($db);
         if (! isset($url_query)) {
             $url_query = Url::getCommon(
-                array(
+                [
                     'db' => $db, 'table' => $table
-                )
+                ]
             );
         }
     }
 }
-
-/**
- * Generate the conditional classes that will
- * be used to attach jQuery events to links
- */
-$ajax_class = array(
-    'add'    => 'class="ajax add_anchor"',
-    'edit'   => 'class="ajax edit_anchor"',
-    'exec'   => 'class="ajax exec_anchor"',
-    'drop'   => 'class="ajax drop_anchor"',
-    'export' => 'class="ajax export_anchor"'
-);
 
 /**
  * Create labels for the list
@@ -78,24 +72,24 @@ $titles = PhpMyAdmin\Util::buildActionTitles();
  * Keep a list of errors that occurred while
  * processing an 'Add' or 'Edit' operation.
  */
-$errors = array();
+$errors = [];
 
 
 /**
  * Call the appropriate main function
  */
 switch ($_PMA_RTE) {
-case 'RTN':
-    $type = null;
-    if (isset($_REQUEST['type'])) {
-        $type = $_REQUEST['type'];
-    }
-    Routines::main($type);
-    break;
-case 'TRI':
-    Triggers::main();
-    break;
-case 'EVN':
-    Events::main();
-    break;
+    case 'RTN':
+        $type = null;
+        if (isset($_REQUEST['type'])) {
+            $type = $_REQUEST['type'];
+        }
+        $routines->main($type);
+        break;
+    case 'TRI':
+        $triggers->main();
+        break;
+    case 'EVN':
+        $events->main();
+        break;
 }

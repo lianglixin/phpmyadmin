@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Properties\Options\Items;
 
 use PhpMyAdmin\Properties\Options\Items\BoolPropertyItem;
@@ -14,7 +16,7 @@ use PhpMyAdmin\Properties\Options\Items\MessageOnlyPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\RadioPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\SelectPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\TextPropertyItem;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * tests for *PhpMyAdmin\Properties\PropertyItem class

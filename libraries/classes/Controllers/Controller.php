@@ -5,11 +5,13 @@
  *
  * @package PhpMyAdmin\Controllers
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Controllers;
 
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Di\Container;
 use PhpMyAdmin\Response;
+use PhpMyAdmin\Template;
 
 /**
  * Base class for all of controller
@@ -30,18 +32,20 @@ abstract class Controller
     protected $dbi;
 
     /**
-     * @var \PhpMyAdmin\Di\Container
+     * @var Template
      */
-    protected $container;
+    public $template;
 
     /**
      * Constructor
+     *
+     * @param Response          $response Response object
+     * @param DatabaseInterface $dbi      DatabaseInterface object
      */
-    public function __construct()
+    public function __construct($response, $dbi)
     {
-        $container = Container::getDefaultContainer();
-        $this->container = $container;
-        $this->dbi = $this->container->get('dbi');
-        $this->response = $this->container->get('response');
+        $this->response = $response;
+        $this->dbi = $dbi;
+        $this->template = new Template();
     }
 }

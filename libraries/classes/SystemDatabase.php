@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\DatabaseInterface;
@@ -24,14 +26,20 @@ class SystemDatabase
     protected $dbi;
 
     /**
+     * @var Relation $relation
+     */
+    private $relation;
+
+    /**
      * Get instance of SystemDatabase
      *
      * @param DatabaseInterface $dbi Database interface for the system database
      *
      */
-    function __construct(DatabaseInterface $dbi)
+    public function __construct(DatabaseInterface $dbi)
     {
         $this->dbi = $dbi;
+        $this->relation = new Relation();
     }
 
     /**
@@ -44,7 +52,7 @@ class SystemDatabase
      */
     public function getExistingTransformationData($db)
     {
-        $cfgRelation = Relation::getRelationsParam();
+        $cfgRelation = $this->relation->getRelationsParam();
 
         // Get the existing transformation details of the same database
         // from pma__column_info table
@@ -68,10 +76,13 @@ class SystemDatabase
      *
      * @return string $new_transformations_sql SQL query for new transformations
      */
-    function getNewTransformationDataSql(
-        $pma_transformation_data, array $column_map, $view_name, $db
+    public function getNewTransformationDataSql(
+        $pma_transformation_data,
+        array $column_map,
+        $view_name,
+        $db
     ) {
-        $cfgRelation = Relation::getRelationsParam();
+        $cfgRelation = $this->relation->getRelationsParam();
 
         // Need to store new transformation details for VIEW
         $new_transformations_sql = sprintf(
@@ -87,9 +98,7 @@ class SystemDatabase
         $add_comma = false;
 
         while ($data_row = $this->dbi->fetchAssoc($pma_transformation_data)) {
-
             foreach ($column_map as $column) {
-
                 if ($data_row['table_name'] != $column['table_name']
                     || $data_row['column_name'] != $column['refering_column']
                 ) {

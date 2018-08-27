@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin-Navigation
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Navigation\Nodes;
 
 use PhpMyAdmin\Util;
@@ -27,13 +29,13 @@ class NodeEvent extends NodeDatabaseChild
     public function __construct($name, $type = Node::OBJECT, $is_group = false)
     {
         parent::__construct($name, $type, $is_group);
-        $this->icon = Util::getImage('b_events.png');
-        $this->links = array(
+        $this->icon = Util::getImage('b_events');
+        $this->links = [
             'text' => 'db_events.php?server=' . $GLOBALS['server']
                 . '&amp;db=%2$s&amp;item_name=%1$s&amp;edit_item=1',
             'icon' => 'db_events.php?server=' . $GLOBALS['server']
                 . '&amp;db=%2$s&amp;item_name=%1$s&amp;export_item=1',
-        );
+        ];
         $this->classes = 'event';
     }
 

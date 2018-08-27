@@ -5,10 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\SysInfo;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * tests for sysinfo library
@@ -42,12 +44,12 @@ class SysInfoTest extends TestCase
      */
     public function sysInfoOsProvider()
     {
-        return array(
-            array('FreeBSD', 'Linux'),
-            array('Linux', 'Linux'),
-            array('Winnt', 'Winnt'),
-            array('SunOS', 'SunOS'),
-        );
+        return [
+            ['FreeBSD', 'Linux'],
+            ['Linux', 'Linux'],
+            ['Winnt', 'Winnt'],
+            ['SunOS', 'SunOS'],
+        ];
     }
 
     /**

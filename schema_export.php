@@ -5,6 +5,7 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
 
 use PhpMyAdmin\Export;
 use PhpMyAdmin\Relation;
@@ -19,14 +20,16 @@ require_once 'libraries/common.inc.php';
  * get all variables needed for exporting relational schema
  * in $cfgRelation
  */
-$cfgRelation = Relation::getRelationsParam();
+$relation = new Relation();
+$cfgRelation = $relation->getRelationsParam();
 
 if (! isset($_REQUEST['export_type'])) {
-    Util::checkParameters(array('export_type'));
+    Util::checkParameters(['export_type']);
 }
 
 /**
  * Include the appropriate Schema Class depending on $export_type
  * default is PDF
  */
-Export::processExportSchema($_REQUEST['export_type']);
+$export = new Export();
+$export->processExportSchema($_REQUEST['export_type']);

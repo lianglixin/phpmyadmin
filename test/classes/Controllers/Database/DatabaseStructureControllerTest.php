@@ -7,13 +7,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Controllers\Database;
 
 use PhpMyAdmin\Controllers\Database\DatabaseStructureController;
 use PhpMyAdmin\Di\Container;
 use PhpMyAdmin\Table;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
-use PhpMyAdmin\Theme;
 use ReflectionClass;
 
 /**
@@ -23,7 +25,7 @@ use ReflectionClass;
  *
  * @package PhpMyAdmin-test
  */
-class DatabaseStructureControllerTest extends \PMATestCase
+class DatabaseStructureControllerTest extends PmaTestCase
 {
     /**
      * @var \PhpMyAdmin\Tests\Stubs\Response
@@ -35,7 +37,7 @@ class DatabaseStructureControllerTest extends \PMATestCase
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$_REQUEST
         $_REQUEST['log'] = "index1";
@@ -46,6 +48,7 @@ class DatabaseStructureControllerTest extends \PMATestCase
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['table'] = "table";
         $GLOBALS['db'] = 'db';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
 
         //$_SESSION
 
@@ -99,7 +102,9 @@ class DatabaseStructureControllerTest extends \PMATestCase
         $method = $class->getMethod('getValuesForInnodbTable');
         $method->setAccessible(true);
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
         // Showing statistics
         $property = $class->getProperty('_is_show_stats');
@@ -107,15 +112,15 @@ class DatabaseStructureControllerTest extends \PMATestCase
         $property->setValue($ctrl, true);
 
         $GLOBALS['cfg']['MaxExactCount'] = 10;
-        $current_table = array(
+        $current_table = [
             'ENGINE' => 'InnoDB',
             'TABLE_ROWS' => 5,
             'Data_length' => 16384,
             'Index_length' => 0,
             'TABLE_NAME' => 'table'
-        );
+        ];
         list($current_table,,, $sum_size)
-            = $method->invokeArgs($ctrl, array($current_table, 10));
+            = $method->invokeArgs($ctrl, [$current_table, 10]);
 
         $this->assertEquals(
             true,
@@ -132,7 +137,7 @@ class DatabaseStructureControllerTest extends \PMATestCase
 
         $current_table['ENGINE'] = 'MYISAM';
         list($current_table,,, $sum_size)
-            = $method->invokeArgs($ctrl, array($current_table, 10));
+            = $method->invokeArgs($ctrl, [$current_table, 10]);
 
         $this->assertEquals(
             false,
@@ -145,12 +150,14 @@ class DatabaseStructureControllerTest extends \PMATestCase
         // Not showing statistics
         $is_show_stats = false;
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
 
         $current_table['ENGINE'] = 'InnoDB';
         list($current_table,,, $sum_size)
-            = $method->invokeArgs($ctrl, array($current_table, 10));
+            = $method->invokeArgs($ctrl, [$current_table, 10]);
         $this->assertEquals(
             true,
             $current_table['COUNTED']
@@ -162,7 +169,7 @@ class DatabaseStructureControllerTest extends \PMATestCase
 
         $current_table['ENGINE'] = 'MYISAM';
         list($current_table,,, $sum_size)
-            = $method->invokeArgs($ctrl, array($current_table, 10));
+            = $method->invokeArgs($ctrl, [$current_table, 10]);
         $this->assertEquals(
             false,
             $current_table['COUNTED']
@@ -181,12 +188,15 @@ class DatabaseStructureControllerTest extends \PMATestCase
      */
     public function testGetValuesForAriaTable()
     {
+        $container = Container::getDefaultContainer();
         $class = new ReflectionClass('PhpMyAdmin\Controllers\Database\DatabaseStructureController');
         $method = $class->getMethod('getValuesForAriaTable');
         $method->setAccessible(true);
 
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
         // Showing statistics
         $property = $class->getProperty('_is_show_stats');
@@ -196,14 +206,14 @@ class DatabaseStructureControllerTest extends \PMATestCase
         $property->setAccessible(true);
         $property->setValue($ctrl, true);
 
-        $current_table = array(
+        $current_table = [
             'Data_length'  => 16384,
             'Index_length' => 0,
             'Name'         => 'table',
             'Data_free'    => 300,
-        );
+        ];
         list($current_table,,,,, $overhead_size, $sum_size)
-            = $method->invokeArgs($ctrl, array($current_table, 0, 0, 0, 0, 0, 0,));
+            = $method->invokeArgs($ctrl, [$current_table, 0, 0, 0, 0, 0, 0,]);
         $this->assertEquals(
             6,
             $current_table['Rows']
@@ -219,23 +229,27 @@ class DatabaseStructureControllerTest extends \PMATestCase
 
         unset($current_table['Data_free']);
         list($current_table,,,,, $overhead_size,)
-            = $method->invokeArgs($ctrl, array($current_table, 0, 0, 0, 0, 0, 0,));
+            = $method->invokeArgs($ctrl, [$current_table, 0, 0, 0, 0, 0, 0,]);
         $this->assertEquals(0, $overhead_size);
 
         $is_show_stats = false;
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
         list($current_table,,,,,, $sum_size)
-            = $method->invokeArgs($ctrl, array($current_table, 0, 0, 0, 0, 0, 0));
+            = $method->invokeArgs($ctrl, [$current_table, 0, 0, 0, 0, 0, 0]);
         $this->assertEquals(0, $sum_size);
 
         $db_is_system_schema = false;
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
         list($current_table,,,,,,)
-            = $method->invokeArgs($ctrl, array($current_table, 0, 0, 0, 0, 0, 0,));
+            = $method->invokeArgs($ctrl, [$current_table, 0, 0, 0, 0, 0, 0,]);
         $this->assertArrayNotHasKey('Row', $current_table);
     }
 
@@ -247,36 +261,39 @@ class DatabaseStructureControllerTest extends \PMATestCase
      */
     public function testHasTable()
     {
+        $container = Container::getDefaultContainer();
         $class = new ReflectionClass('PhpMyAdmin\Controllers\Database\DatabaseStructureController');
         $method = $class->getMethod('hasTable');
         $method->setAccessible(true);
 
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
 
         // When parameter $db is empty
         $this->assertEquals(
             false,
-            $method->invokeArgs($ctrl, array(array(), 'table'))
+            $method->invokeArgs($ctrl, [[], 'table'])
         );
 
         // Correct parameter
-        $tables = array(
+        $tables = [
             'db.table'
-        );
+        ];
         $this->assertEquals(
             true,
-            $method->invokeArgs($ctrl, array($tables, 'table'))
+            $method->invokeArgs($ctrl, [$tables, 'table'])
         );
 
         // Table not in database
-        $tables = array(
+        $tables = [
             'db.tab1e'
-        );
+        ];
         $this->assertEquals(
             false,
-            $method->invokeArgs($ctrl, array($tables, 'table'))
+            $method->invokeArgs($ctrl, [$tables, 'table'])
         );
     }
 
@@ -288,26 +305,29 @@ class DatabaseStructureControllerTest extends \PMATestCase
      */
     public function testCheckFavoriteTable()
     {
+        $container = Container::getDefaultContainer();
         $class = new ReflectionClass('PhpMyAdmin\Controllers\Database\DatabaseStructureController');
         $method = $class->getMethod('checkFavoriteTable');
         $method->setAccessible(true);
 
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
 
-        $_SESSION['tmpval']['favorite_tables'][$GLOBALS['server']] = array(
-            array('db' => 'db', 'table' => 'table')
-        );
+        $_SESSION['tmpval']['favorite_tables'][$GLOBALS['server']] = [
+            ['db' => 'db', 'table' => 'table']
+        ];
 
         $this->assertEquals(
             false,
-            $method->invokeArgs($ctrl, array(''))
+            $method->invokeArgs($ctrl, [''])
         );
 
         $this->assertEquals(
             true,
-            $method->invokeArgs($ctrl, array('table'))
+            $method->invokeArgs($ctrl, ['table'])
         );
     }
 
@@ -319,18 +339,19 @@ class DatabaseStructureControllerTest extends \PMATestCase
      */
     public function testSynchronizeFavoriteTables()
     {
+        $container = Container::getDefaultContainer();
         $fav_instance = $this->getMockBuilder('PhpMyAdmin\RecentFavoriteTable')
             ->disableOriginalConstructor()
             ->getMock();
         $fav_instance->expects($this->at(1))->method('getTables')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $fav_instance->expects($this->at(2))
             ->method('getTables')
             ->will(
                 $this->returnValue(
-                    array(
-                        array('db' => 'db', 'table' => 'table'),
-                    )
+                    [
+                        ['db' => 'db', 'table' => 'table'],
+                    ]
                 )
             );
 
@@ -339,18 +360,20 @@ class DatabaseStructureControllerTest extends \PMATestCase
         $method->setAccessible(true);
 
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
 
         // The user hash for test
         $user = 'abcdefg';
-        $favorite_table = array(
-            $user => array(
-                array('db' => 'db', 'table' => 'table')
-            ),
-        );
+        $favorite_table = [
+            $user => [
+                ['db' => 'db', 'table' => 'table']
+            ],
+        ];
 
-        $method->invokeArgs($ctrl, array($fav_instance, $user, $favorite_table));
+        $method->invokeArgs($ctrl, [$fav_instance, $user, $favorite_table]);
         $json = $this->_response->getJSONResult();
 
         $this->assertEquals(json_encode($favorite_table), $json['favorite_tables']);
@@ -365,10 +388,13 @@ class DatabaseStructureControllerTest extends \PMATestCase
      */
     public function testHandleRealRowCountRequestAction()
     {
+        $container = Container::getDefaultContainer();
         $_REQUEST['table'] = 'table';
 
         $ctrl = new DatabaseStructureController(
-            $GLOBALS['db'], null
+            $container->get('response'),
+            $container->get('dbi'),
+            $container->get('db')
         );
         // Showing statistics
         $class = new ReflectionClass('PhpMyAdmin\Controllers\Database\DatabaseStructureController');
@@ -386,21 +412,21 @@ class DatabaseStructureControllerTest extends \PMATestCase
         $_REQUEST['real_row_count_all'] = 'abc';
         $property->setValue(
             $ctrl,
-            array(
-                array(
+            [
+                [
                     'TABLE_NAME' => 'table'
-                )
-            )
+                ]
+            ]
         );
         $ctrl->handleRealRowCountRequestAction();
         $json = $this->_response->getJSONResult();
 
-        $expected_result = array(
-            array(
+        $expected_result = [
+            [
                 'table' => 'table',
                 'row_count' => 6
-            )
-        );
+            ]
+        ];
         $this->assertEquals(
             json_encode($expected_result),
             $json['real_row_count_all']

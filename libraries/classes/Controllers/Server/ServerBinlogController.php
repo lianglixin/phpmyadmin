@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin\Controllers
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Controllers\Server;
 
 use PhpMyAdmin\Controllers\Controller;
@@ -29,15 +31,18 @@ class ServerBinlogController extends Controller
 
     /**
      * Constructs ServerBinlogController
+     *
+     * @param \PhpMyAdmin\Response          $response Response object
+     * @param \PhpMyAdmin\DatabaseInterface $dbi      DatabaseInterface object
      */
-    public function __construct()
+    public function __construct($response, $dbi)
     {
-        parent::__construct();
+        parent::__construct($response, $dbi);
         $this->binary_logs = $this->dbi->fetchResult(
             'SHOW MASTER LOGS',
             'Log_name',
             null,
-            null,
+            DatabaseInterface::CONNECT_USER,
             DatabaseInterface::QUERY_STORE
         );
     }
@@ -54,7 +59,7 @@ class ServerBinlogController extends Controller
          */
         include_once 'libraries/server_common.inc.php';
 
-        $url_params = array();
+        $url_params = [];
         if (! isset($_REQUEST['log'])
             || ! array_key_exists($_REQUEST['log'], $this->binary_logs)
         ) {
@@ -67,7 +72,11 @@ class ServerBinlogController extends Controller
             $url_params['dontlimitchars'] = 1;
         }
 
-        $this->response->addHTML(Common::getHtmlForSubPageHeader('binlog'));
+        $this->response->addHTML(
+            $this->template->render('server/sub_page_header', [
+                'type' => 'binlog',
+            ])
+        );
         $this->response->addHTML($this->_getLogSelector($url_params));
         $this->response->addHTML($this->_getLogInfo($url_params));
     }
@@ -81,12 +90,11 @@ class ServerBinlogController extends Controller
      */
     private function _getLogSelector(array $url_params)
     {
-        return Template::get('server/binlog/log_selector')->render(
-            array(
-                'url_params' => $url_params,
-                'binary_logs' => $this->binary_logs,
-            )
-        );
+        return $this->template->render('server/binlog/log_selector', [
+            'url_params' => $url_params,
+            'binary_logs' => $this->binary_logs,
+            'log' => $_REQUEST['log'],
+        ]);
     }
 
     /**
@@ -246,12 +254,10 @@ class ServerBinlogController extends Controller
     {
         $html = "";
         while ($value = $this->dbi->fetchAssoc($result)) {
-            $html .= Template::get('server/binlog/log_row')->render(
-                array(
-                    'value' => $value,
-                    'dontlimitchars' => $dontlimitchars,
-                )
-            );
+            $html .= $this->template->render('server/binlog/log_row', [
+                'value' => $value,
+                'dontlimitchars' => $dontlimitchars,
+            ]);
         }
         return $html;
     }

@@ -24,7 +24,8 @@ AJAX.registerOnload('tbl_operations.js', function () {
         event.preventDefault();
         var $form = $(this);
         PMA_prepareForAjaxRequest($form);
-        $.post($form.attr('action'), $form.serialize() + '&submit_copy=Go', function (data) {
+        var argsep = PMA_commonParams.get('arg_separator');
+        $.post($form.attr('action'), $form.serialize() + argsep + 'submit_copy=Go', function (data) {
             if (typeof data !== 'undefined' && data.success === true) {
                 if ($form.find('input[name=\'switch_to_new\']').prop('checked')) {
                     PMA_commonParams.set(
@@ -56,7 +57,8 @@ AJAX.registerOnload('tbl_operations.js', function () {
         event.preventDefault();
         var $form = $(this);
         PMA_prepareForAjaxRequest($form);
-        $.post($form.attr('action'), $form.serialize() + '&submit_move=1', function (data) {
+        var argsep = PMA_commonParams.get('arg_separator');
+        $.post($form.attr('action'), $form.serialize() + argsep + 'submit_move=1', function (data) {
             if (typeof data !== 'undefined' && data.success === true) {
                 PMA_commonParams.set('db', data._params.db);
                 PMA_commonParams.set('table', data._params.tbl);
@@ -127,6 +129,8 @@ AJAX.registerOnload('tbl_operations.js', function () {
     **/
     $(document).on('click', '#tbl_maintenance li a.maintain_action.ajax', function (event) {
         event.preventDefault();
+        var $link = $(this);
+
         if ($('.sqlqueryresults').length !== 0) {
             $('.sqlqueryresults').remove();
         }
@@ -134,11 +138,16 @@ AJAX.registerOnload('tbl_operations.js', function () {
             $('.result_query').remove();
         }
         // variables which stores the common attributes
-        var params = {
+        var params = $.param({
             ajax_request: 1,
             server: PMA_commonParams.get('server')
-        };
-        $.post($(this).attr('href'), params, function (data) {
+        });
+        var postData = $link.getPostData();
+        if (postData) {
+            params += PMA_commonParams.get('arg_separator') + postData;
+        }
+
+        $.post($link.attr('href'), params, function (data) {
             function scrollToTop () {
                 $('html, body').animate({ scrollTop: 0 });
             }
@@ -150,7 +159,7 @@ AJAX.registerOnload('tbl_operations.js', function () {
                 PMA_highlightSQL($('#page_content'));
                 scrollToTop();
             } else if (typeof data !== 'undefined' && data.success === true) {
-                var $temp_div = $('<div id=\'temp_div\'></div>');
+                $temp_div = $('<div id=\'temp_div\'></div>');
                 $temp_div.html(data.message);
                 var $success = $temp_div.find('.result_query .success');
                 PMA_ajaxShowMessage($success);
@@ -163,7 +172,14 @@ AJAX.registerOnload('tbl_operations.js', function () {
             } else {
                 $temp_div = $('<div id=\'temp_div\'></div>');
                 $temp_div.html(data.error);
-                var $error = $temp_div.find('code').addClass('error');
+
+                var $error;
+                if ($temp_div.find('.error code').length !== 0) {
+                    $error = $temp_div.find('.error code').addClass('error');
+                } else {
+                    $error = $temp_div;
+                }
+
                 PMA_ajaxShowMessage($error, false);
             }
         }); // end $.post()
@@ -178,7 +194,8 @@ AJAX.registerOnload('tbl_operations.js', function () {
         var $form = $(this);
 
         function submitPartitionMaintenance () {
-            var submitData = $form.serialize() + '&ajax_request=true&ajax_page_request=true';
+            var argsep = PMA_commonParams.get('arg_separator');
+            var submitData = $form.serialize() + argsep + 'ajax_request=true' + argsep + 'ajax_page_request=true';
             PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
             AJAX.source = $form;
             $.post($form.attr('action'), submitData, AJAX.responseHandler);
@@ -201,6 +218,7 @@ AJAX.registerOnload('tbl_operations.js', function () {
 
     $(document).on('click', '#drop_tbl_anchor.ajax', function (event) {
         event.preventDefault();
+        var $link = $(this);
         /**
          * @var question    String containing the question to be asked for confirmation
          */
@@ -213,7 +231,7 @@ AJAX.registerOnload('tbl_operations.js', function () {
         $(this).PMA_confirm(question, $(this).attr('href'), function (url) {
             var $msgbox = PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
 
-            var params = getJSConfirmCommonParam(this);
+            var params = getJSConfirmCommonParam(this, $link.getPostData());
 
             $.post(url, params, function (data) {
                 if (typeof data !== 'undefined' && data.success === true) {
@@ -272,6 +290,7 @@ AJAX.registerOnload('tbl_operations.js', function () {
 
     $(document).on('click', '#truncate_tbl_anchor.ajax', function (event) {
         event.preventDefault();
+        var $link = $(this);
         /**
          * @var question    String containing the question to be asked for confirmation
          */
@@ -283,7 +302,7 @@ AJAX.registerOnload('tbl_operations.js', function () {
         $(this).PMA_confirm(question, $(this).attr('href'), function (url) {
             PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
 
-            var params = getJSConfirmCommonParam(this);
+            var params = getJSConfirmCommonParam(this, $link.getPostData());
 
             $.post(url, params, function (data) {
                 if ($('.sqlqueryresults').length !== 0) {

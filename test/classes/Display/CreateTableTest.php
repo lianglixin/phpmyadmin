@@ -5,13 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Display;
 
 use PhpMyAdmin\Display\CreateTable;
 use PhpMyAdmin\Theme;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * PhpMyAdmin\Tests\Display\CreateTableTest class
@@ -27,7 +29,7 @@ class CreateTableTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$GLOBALS
         $GLOBALS['server'] = 0;
@@ -62,7 +64,7 @@ class CreateTableTest extends TestCase
 
         //getImage
         $this->assertContains(
-            Util::getImage('b_table_add.png'),
+            Util::getImage('b_table_add'),
             $html
         );
 

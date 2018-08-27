@@ -5,14 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Export\ExportYaml;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionMethod;
 use ReflectionProperty;
-
-require_once 'libraries/config.default.php';
 
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportYaml class
@@ -20,7 +21,7 @@ require_once 'libraries/config.default.php';
  * @package PhpMyAdmin-test
  * @group medium
  */
-class ExportYamlTest extends \PMATestCase
+class ExportYamlTest extends PmaTestCase
 {
     protected $object;
 
@@ -29,7 +30,7 @@ class ExportYamlTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['output_kanji_conversion'] = false;
@@ -205,7 +206,7 @@ class ExportYamlTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('SELECT', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('SELECT', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -234,7 +235,7 @@ class ExportYamlTest extends \PMATestCase
             ->with(true)
             ->will(
                 $this->returnValue(
-                    array(null, '123', "\"c\\a\nb\r")
+                    [null, '123', "\"c\\a\nb\r"]
                 )
             );
 
@@ -243,7 +244,7 @@ class ExportYamlTest extends \PMATestCase
             ->with(true)
             ->will(
                 $this->returnValue(
-                    array(null)
+                    [null]
                 )
             );
 
@@ -252,7 +253,11 @@ class ExportYamlTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'db', 'ta<ble', "\n", "example.com", "SELECT"
+                'db',
+                'ta<ble',
+                "\n",
+                "example.com",
+                "SELECT"
             )
         );
         $result = ob_get_clean();

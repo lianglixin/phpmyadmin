@@ -5,10 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Bookmark;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for Bookmark class
@@ -24,7 +26,7 @@ class BookmarkTest extends TestCase
      * @access protected
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         $GLOBALS['cfg']['Server']['user'] = 'root';
         $GLOBALS['cfg']['Server']['pmadb'] = 'phpmyadmin';
@@ -41,7 +43,7 @@ class BookmarkTest extends TestCase
     {
         $this->assertEquals(
             false,
-            Bookmark::getParams()
+            Bookmark::getParams($GLOBALS['cfg']['Server']['user'])
         );
     }
 
@@ -53,8 +55,12 @@ class BookmarkTest extends TestCase
     public function testGetList()
     {
         $this->assertEquals(
-            array(),
-            Bookmark::getList('phpmyadmin')
+            [],
+            Bookmark::getList(
+                $GLOBALS['dbi'],
+                $GLOBALS['cfg']['Server']['user'],
+                'phpmyadmin'
+            )
         );
     }
 
@@ -66,7 +72,12 @@ class BookmarkTest extends TestCase
     public function testGet()
     {
         $this->assertNull(
-            Bookmark::get('phpmyadmin', '1')
+            Bookmark::get(
+                $GLOBALS['dbi'],
+                $GLOBALS['cfg']['Server']['user'],
+                'phpmyadmin',
+                '1'
+            )
         );
     }
 
@@ -77,14 +88,18 @@ class BookmarkTest extends TestCase
      */
     public function testSave()
     {
-        $bookmarkData = array(
+        $bookmarkData = [
             'bkm_database' => 'phpmyadmin',
             'bkm_user' => 'root',
             'bkm_sql_query' => 'SELECT "phpmyadmin"',
             'bkm_label' => 'bookmark1',
-        );
+        ];
 
-        $bookmark = Bookmark::createBookmark($bookmarkData);
-        $this->assertfalse($bookmark->save());
+        $bookmark = Bookmark::createBookmark(
+            $GLOBALS['dbi'],
+            $GLOBALS['cfg']['Server']['user'],
+            $bookmarkData
+        );
+        $this->assertFalse($bookmark->save());
     }
 }

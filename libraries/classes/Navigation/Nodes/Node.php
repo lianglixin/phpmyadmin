@@ -5,8 +5,11 @@
  *
  * @package PhpMyAdmin-Navigation
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Navigation\Nodes;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Util;
 
@@ -20,11 +23,11 @@ class Node
     /**
      * @var int Defines a possible node type
      */
-    const CONTAINER = 0;
+    public const CONTAINER = 0;
     /**
      * @var int Defines a possible node type
      */
-    const OBJECT = 1;
+    public const OBJECT = 1;
     /**
      * @var string A non-unique identifier for the node
      *             This may be trimmed when grouping nodes
@@ -58,7 +61,7 @@ class Node
      * @var Node[] An array of Node objects that are
      *             direct children of this node
      */
-    public $children = array();
+    public $children = [];
     /**
      * @var Mixed A string used to group nodes, or an array of strings
      *            Only relevant if the node is of type CONTAINER
@@ -102,6 +105,11 @@ class Node
     public $pos3 = 0;
 
     /**
+     * @var Relation $relation
+     */
+    protected $relation;
+
+    /**
      * Initialises the class by setting the mandatory variables
      *
      * @param string $name     An identifier for the new node
@@ -111,7 +119,7 @@ class Node
      */
     public function __construct($name, $type = Node::OBJECT, $is_group = false)
     {
-        if (!empty($name)) {
+        if (strlen($name)) {
             $this->name = $name;
             $this->real_name = $name;
         }
@@ -119,6 +127,7 @@ class Node
             $this->type = Node::CONTAINER;
         }
         $this->is_group = (bool)$is_group;
+        $this->relation = new Relation();
     }
 
     /**
@@ -191,7 +200,7 @@ class Node
      */
     public function parents($self = false, $containers = false, $groups = false)
     {
-        $parents = array();
+        $parents = [];
         if ($self
             && ($this->type != Node::CONTAINER || $containers)
             && (!$this->is_group || $groups)
@@ -199,7 +208,7 @@ class Node
             $parents[] = $this;
         }
         $parent = $this->parent;
-        while (isset($parent)) {
+        while (! is_null($parent)) {
             if (($parent->type != Node::CONTAINER || $containers)
                 && (!$parent->is_group || $groups)
             ) {
@@ -314,8 +323,8 @@ class Node
      */
     public function getPaths()
     {
-        $aPath = array();
-        $aPath_clean = array();
+        $aPath = [];
+        $aPath_clean = [];
         foreach ($this->parents(true, true, false) as $parent) {
             $aPath[] = base64_encode($parent->real_name);
             $aPath_clean[] = $parent->real_name;
@@ -323,8 +332,8 @@ class Node
         $aPath = implode('.', array_reverse($aPath));
         $aPath_clean = array_reverse($aPath_clean);
 
-        $vPath = array();
-        $vPath_clean = array();
+        $vPath = [];
+        $vPath_clean = [];
         foreach ($this->parents(true, true, true) as $parent) {
             $vPath[] = base64_encode($parent->name);
             $vPath_clean[] = $parent->name;
@@ -332,12 +341,12 @@ class Node
         $vPath = implode('.', array_reverse($vPath));
         $vPath_clean = array_reverse($vPath_clean);
 
-        return array(
+        return [
             'aPath'       => $aPath,
             'aPath_clean' => $aPath_clean,
             'vPath'       => $vPath,
             'vPath_clean' => $vPath_clean,
-        );
+        ];
     }
 
     /**
@@ -371,7 +380,7 @@ class Node
             }
 
             if ($GLOBALS['dbs_to_test'] === false) {
-                $retval = array();
+                $retval = [];
                 $query = "SHOW DATABASES ";
                 $query .= $this->_getWhereClause('Database', $searchClause);
                 $handle = $GLOBALS['dbi']->tryQuery($query);
@@ -396,7 +405,7 @@ class Node
                 return $retval;
             }
 
-            $retval = array();
+            $retval = [];
             $count = 0;
             foreach ($this->_getDatabasesToSearch($searchClause) as $db) {
                 $query = "SHOW DATABASES LIKE '" . $db . "'";
@@ -458,9 +467,9 @@ class Node
             $query = "SHOW DATABASES ";
             $query .= $this->_getWhereClause('Database', $searchClause);
             $handle = $GLOBALS['dbi']->tryQuery($query);
-            $prefixes = array();
+            $prefixes = [];
             if ($handle !== false) {
-                $prefixMap = array();
+                $prefixMap = [];
                 $total = $pos + $maxItems;
                 while ($arr = $GLOBALS['dbi']->fetchArray($handle)) {
                     $prefix = strstr($arr[0], $dbSeparator, true);
@@ -478,10 +487,10 @@ class Node
             $query = "SHOW DATABASES ";
             $query .= $this->_getWhereClause('Database', $searchClause);
             $query .= "AND (";
-            $subClauses = array();
+            $subClauses = [];
             foreach ($prefixes as $prefix) {
                 $subClauses[] = " LOCATE('"
-                    . $GLOBALS['dbi']->escapeString($prefix) . $dbSeparator
+                    . $GLOBALS['dbi']->escapeString((string)$prefix) . $dbSeparator
                     . "', "
                     . "CONCAT(`Database`, '" . $dbSeparator . "')) = 1 ";
             }
@@ -491,8 +500,8 @@ class Node
             return $retval;
         }
 
-        $retval = array();
-        $prefixMap = array();
+        $retval = [];
+        $prefixMap = [];
         $total = $pos + $maxItems;
         foreach ($this->_getDatabasesToSearch($searchClause) as $db) {
             $query = "SHOW DATABASES LIKE '" . $db . "'";
@@ -612,7 +621,7 @@ class Node
         }
 
         if ($GLOBALS['dbs_to_test'] !== false) {
-            $prefixMap = array();
+            $prefixMap = [];
             foreach ($this->_getDatabasesToSearch($searchClause) as $db) {
                 $query = "SHOW DATABASES LIKE '" . $db . "'";
                 $handle = $GLOBALS['dbi']->tryQuery($query);
@@ -636,7 +645,7 @@ class Node
             return $retval;
         }
 
-        $prefixMap = array();
+        $prefixMap = [];
         $query = "SHOW DATABASES ";
         $query .= $this->_getWhereClause('Database', $searchClause);
         $handle = $GLOBALS['dbi']->tryQuery($query);
@@ -663,13 +672,8 @@ class Node
      */
     private function _isHideDb($db)
     {
-        if (!empty($GLOBALS['cfg']['Server']['hide_db'])
-            && preg_match('/' . $GLOBALS['cfg']['Server']['hide_db'] . '/', $db)
-        ) {
-            return true;
-        }
-
-        return false;
+        return !empty($GLOBALS['cfg']['Server']['hide_db'])
+            && preg_match('/' . $GLOBALS['cfg']['Server']['hide_db'] . '/', $db);
     }
 
     /**
@@ -684,10 +688,11 @@ class Node
      */
     private function _getDatabasesToSearch($searchClause)
     {
+        $databases = [];
         if (!empty($searchClause)) {
-            $databases = array(
+            $databases = [
                 "%" . $GLOBALS['dbi']->escapeString($searchClause) . "%",
-            );
+            ];
         } elseif (!empty($GLOBALS['cfg']['Server']['only_db'])) {
             $databases = $GLOBALS['cfg']['Server']['only_db'];
         } elseif (!empty($GLOBALS['dbs_to_test'])) {
@@ -726,12 +731,12 @@ class Node
 
         if (!empty($GLOBALS['cfg']['Server']['only_db'])) {
             if (is_string($GLOBALS['cfg']['Server']['only_db'])) {
-                $GLOBALS['cfg']['Server']['only_db'] = array(
+                $GLOBALS['cfg']['Server']['only_db'] = [
                     $GLOBALS['cfg']['Server']['only_db'],
-                );
+                ];
             }
             $whereClause .= "AND (";
-            $subClauses = array();
+            $subClauses = [];
             foreach ($GLOBALS['cfg']['Server']['only_db'] as $each_only_db) {
                 $subClauses[] = " " . Util::backquote($columnName)
                     . " LIKE '"
@@ -767,7 +772,7 @@ class Node
             return '';
         }
 
-        $result = array('expander');
+        $result = ['expander'];
 
         if ($this->is_group || $match) {
             $result[] = 'loaded';
@@ -794,10 +799,10 @@ class Node
         } elseif ($match && !$this->is_group) {
             $this->visible = true;
 
-            return Util::getImage('b_minus.png');
-        } else {
-            return Util::getImage('b_plus.png', __('Expand/Collapse'));
+            return Util::getImage('b_minus');
         }
+
+        return Util::getImage('b_plus', __('Expand/Collapse'));
     }
 
     /**
@@ -807,7 +812,7 @@ class Node
      */
     public function getNavigationHidingData()
     {
-        $cfgRelation = Relation::getRelationsParam();
+        $cfgRelation = $this->relation->getRelationsParam();
         if ($cfgRelation['navwork']) {
             $navTable = Util::backquote($cfgRelation['db'])
                 . "." . Util::backquote(
@@ -823,7 +828,7 @@ class Node
                 $sqlQuery,
                 'db_name',
                 'count',
-                $GLOBALS['controllink']
+                DatabaseInterface::CONNECT_CONTROL
             );
 
             return $counts;

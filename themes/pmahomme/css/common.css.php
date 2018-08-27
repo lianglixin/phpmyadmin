@@ -6,17 +6,17 @@
  * @package    PhpMyAdmin-theme
  * @subpackage PMAHomme
  */
+declare(strict_types=1);
 
 // unplanned execution path
-if (! defined('PMA_MINIMUM_COMMON') && ! defined('TESTSUITE')) {
+if (! defined('PHPMYADMIN') && ! defined('TESTSUITE')) {
     exit();
 }
 ?>
 /******************************************************************************/
-
 /* general tags */
 html {
-    font-size: <?php echo $theme->getFontSize(); ?>
+    font-size: 82%;
 }
 
 input,
@@ -55,6 +55,10 @@ body#loginform {
 
 .all85{
     width: 85%;
+}
+
+.auth_config_tbl{
+    margin: 0 auto;
 }
 
 <?php if (! empty($GLOBALS['cfg']['FontFamilyFixed'])) : ?>
@@ -341,6 +345,14 @@ textarea.char {
     margin: 6px;
 }
 
+th.fillPage {
+    width: 80%;
+}
+
+textarea.charField {
+    width: 95%;
+}
+
 fieldset, .preview_sql {
     margin-top: 1em;
     border-radius: 4px 4px 0 0;
@@ -382,8 +394,7 @@ fieldset legend {
     margin: 1.5em;
 }
 
-/* buttons in some browsers (eg. Konqueror) are block elements,
-   this breaks design */
+/* buttons in some browsers (eg. Konqueror) are block elements, this breaks design */
 button {
     display: inline;
 }
@@ -398,6 +409,10 @@ table td {
 }
 
 /* 3.4 */
+.datatable{
+    table-layout: fixed;
+}
+
 table {
     border-collapse: collapse;
 }
@@ -552,13 +567,17 @@ button.mult_submit {
 
 /* odd items 1,3,5,7,... */
 table tbody:first-of-type tr:nth-child(odd),
-table tbody:first-of-type tr:nth-child(odd) th {
+table tbody:first-of-type tr:nth-child(odd) th,
+#table_index tbody:nth-of-type(odd) tr,
+#table_index tbody:nth-of-type(odd) th {
     background: #fff;
 }
 
 /* even items 2,4,6,8,... */
 table tbody:first-of-type tr:nth-child(even),
-table tbody:first-of-type tr:nth-child(even) th {
+table tbody:first-of-type tr:nth-child(even) th,
+#table_index tbody:nth-of-type(even) tr,
+#table_index tbody:nth-of-type(even) th {
     background: #DFDFDF;
 }
 
@@ -585,6 +604,8 @@ table tbody:first-of-type tr:not(.nopointer):hover th,
 }
 
 /* hovered table rows */
+#table_index tbody:hover tr,
+#table_index tbody:hover th,
 table tr.hover:not(.nopointer) th {
     <?php echo $theme->getCssGradient('ced6df', 'b6c6d7'); ?>
     color: <?php echo $GLOBALS['cfg']['BrowsePointerColor']; ?>;
@@ -690,6 +711,7 @@ img.lightbulb {
 
 /* no extra space in table cells */
 td .icon {
+    image-rendering: pixelated;
     margin: 0;
 }
 
@@ -887,6 +909,28 @@ body#loginform div.container {
     margin: 0 auto;
 }
 
+div.container.modal_form {
+    margin: 0 auto;
+    width: 30em;
+    text-align: center;
+    background: #fff;
+    z-index: 999;
+}
+
+#login_form {
+    text-align: left;
+}
+
+div#modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: #fff;
+    z-index: 900;
+}
+
 form.login label {
     float: <?php echo $left; ?>;
     width: 10em;
@@ -906,6 +950,40 @@ form.login select {
 
 .column_attribute {
     font-size: 70%;
+}
+
+.cfg_dbg_demo{
+    margin: 0.5em 1em 0.5em 1em;
+}
+
+.central_columns_navigation{
+    padding:1.5% 0em !important;
+}
+
+.central_columns_add_column{
+    display:inline-block;
+    margin-left:1%;
+    max-width:50%
+}
+
+.message_errors_found{
+    margin-top: 20px;
+}
+
+.repl_gui_skip_err_cnt{
+    width: 30px;
+}
+
+.font_weight_bold{
+    font-weight: bold;
+}
+
+.color_gray{
+    color: gray;
+}
+
+.pma_sliding_message{
+    display: inline-block;
 }
 
 /******************************************************************************/
@@ -978,6 +1056,9 @@ ul#topmenu2 a {
 
 span.caution {
     color: #FF0000;
+}
+span.success {
+    color: green;
 }
 fieldset.caution a {
     color: #FF0000;
@@ -1576,6 +1657,7 @@ div#profilingchart {
     font-size: 1.7em;
 }
 #sectionlinks {
+    margin-bottom: 15px;
     padding: 16px;
     background: #f3f3f3;
     border: 1px solid #aaa;
@@ -1786,6 +1868,7 @@ div.sqlvalidate {
 
 .result_query div.sqlOuter {
     background: <?php echo $GLOBALS['cfg']['BgOne']; ?>;
+    text-align: <?php echo $left; ?>;
 }
 
 .result_query .success, .result_query .error {
@@ -1998,6 +2081,10 @@ select.invalid_value,
 
 .export_table_name {
     vertical-align: middle;
+}
+
+.exportoptions h2 {
+    word-wrap: break-word;
 }
 
 .exportoptions h3,
@@ -2528,9 +2615,10 @@ fieldset .disabled-field td {
 .toggleButton .container {
     position: absolute;
 }
-.toggleButton .container td {
+.toggleButton .container td,
+.toggleButton .container tr {
     background-image: none;
-    background: none;
+    background: none !important;
 }
 .toggleButton .toggleOn {
     color: #fff;
@@ -2586,6 +2674,13 @@ fieldset .disabled-field td {
     border: 1px solid #aaa;
     float: <?php echo $right; ?>;
     overflow: hidden;
+    width: 450px;
+    height: 300px;
+}
+
+#openlayersmap{
+    width: 450px;
+    height: 300px;
 }
 
 .placeholderDrag {
@@ -3614,4 +3709,9 @@ body .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
         margin: 1%;
         width: 95% !important;
     }
+}
+/* templates/database/designer */
+/* side menu */
+#name-panel {
+    overflow:hidden;
 }

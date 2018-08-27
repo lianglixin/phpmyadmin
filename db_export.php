@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Config\PageSettings;
 use PhpMyAdmin\Display\Export as DisplayExport;
 use PhpMyAdmin\Export;
@@ -24,6 +26,8 @@ $header   = $response->getHeader();
 $scripts  = $header->getScripts();
 $scripts->addFile('export.js');
 
+$export = new Export();
+
 // $sub_part is used in Util::getDbInfo() to see if we are coming from
 // db_export.php, in which case we don't obey $cfg['MaxTableList']
 $sub_part  = '_export';
@@ -40,7 +44,7 @@ list(
     $tooltip_truename,
     $tooltip_aliasname,
     $pos
-) = Util::getDbInfo($db, isset($sub_part) ? $sub_part : '');
+) = Util::getDbInfo($db, is_null($sub_part) ? '' : $sub_part);
 
 /**
  * Displays the form
@@ -86,7 +90,7 @@ if (!empty($_POST['selected_tbl']) && empty($table_select)) {
 
 // Check if the selected tables are defined in $_GET
 // (from clicking Back button on export.php)
-foreach (array('table_select', 'table_structure', 'table_data') as $one_key) {
+foreach (['table_select', 'table_structure', 'table_data'] as $one_key) {
     if (isset($_GET[$one_key])) {
         $_GET[$one_key] = urldecode($_GET[$one_key]);
         $_GET[$one_key] = explode(",", $_GET[$one_key]);
@@ -95,26 +99,30 @@ foreach (array('table_select', 'table_structure', 'table_data') as $one_key) {
 
 foreach ($tables as $each_table) {
     if (isset($_GET['table_select']) && is_array($_GET['table_select'])) {
-        $is_checked = Export::getCheckedClause(
-            $each_table['Name'], $_GET['table_select']
+        $is_checked = $export->getCheckedClause(
+            $each_table['Name'],
+            $_GET['table_select']
         );
     } elseif (isset($table_select)) {
-        $is_checked = Export::getCheckedClause(
-            $each_table['Name'], $table_select
+        $is_checked = $export->getCheckedClause(
+            $each_table['Name'],
+            $table_select
         );
     } else {
         $is_checked = ' checked="checked"';
     }
     if (isset($_GET['table_structure']) && is_array($_GET['table_structure'])) {
-        $structure_checked = Export::getCheckedClause(
-            $each_table['Name'], $_GET['table_structure']
+        $structure_checked = $export->getCheckedClause(
+            $each_table['Name'],
+            $_GET['table_structure']
         );
     } else {
         $structure_checked = $is_checked;
     }
     if (isset($_GET['table_data']) && is_array($_GET['table_data'])) {
-        $data_checked = Export::getCheckedClause(
-            $each_table['Name'], $_GET['table_data']
+        $data_checked = $export->getCheckedClause(
+            $each_table['Name'],
+            $_GET['table_data']
         );
     } else {
         $data_checked = $is_checked;
@@ -146,13 +154,19 @@ if (! isset($num_tables)) {
 if (! isset($unlim_num_rows)) {
     $unlim_num_rows = 0;
 }
-if (! isset($multi_values)) {
+if (is_null($multi_values)) {
     $multi_values = '';
 }
 $response = Response::getInstance();
+$displayExport = new DisplayExport();
 $response->addHTML(
-    DisplayExport::getExportDisplay(
-        'database', $db, $table, $sql_query, $num_tables,
-        $unlim_num_rows, $multi_values
+    $displayExport->getDisplay(
+        'database',
+        $db,
+        $table,
+        $sql_query,
+        $num_tables,
+        $unlim_num_rows,
+        $multi_values
     )
 );

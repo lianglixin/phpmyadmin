@@ -13,11 +13,7 @@ services:
 php:
   - "7.2"
   - "7.1"
-  - "7.0"
-  - "5.6"
-  - "5.5"
-  - "hhvm-3.12"
-  - "hhvm-3.18"
+  - "nightly"
 
 sudo: required
 
@@ -29,12 +25,13 @@ env:
     - TESTSUITE_URL=http://127.0.0.1:8000
 
 install:
+  - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then source ~/virtualenv/python3.6/bin/activate ; fi
   - ./test/ci-install-$CI_MODE
   - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then case "$TRAVIS_PHP_VERSION" in hhvm*) ;; *) phpenv config-add test/php-noprofile.ini ;; esac ; fi
 
 before_script:
   - export TESTSUITE_PASSWORD=`openssl rand -base64 30`
-  - export TESTSUITE_BROWSERSTACK_KEY=`echo eDJkYVJzelR5bnJMbkthTEFBcXI= | base64 --decode`
+  - export TESTSUITE_BROWSERSTACK_KEY=`echo cHlDcHJTNmZwZjVlaUR2RmV6VkU= | base64 --decode`
   - export PATH=~/.composer/vendor/bin/:$PATH
   - mysql -uroot -e "CREATE DATABASE IF NOT EXISTS test"
   - mysql -uroot < sql/create_tables.sql
@@ -43,7 +40,7 @@ before_script:
 
 script:
   - ./scripts/generate-mo --quiet
-  - if [ $CI_MODE = test ] ; then ./test/ci-lint ; fi
+  - if [ $CI_MODE = test ] ; then ./test/ci-phplint ; fi
   - ./test/ci-$CI_MODE
 
 after_script:
@@ -59,31 +56,40 @@ after_success:
 matrix:
   fast_finish: true
   include:
-    - php: "7.2"
+    - php: "7.1"
       env: CI_MODE=selenium
-    - php: "7.0"
+    - php: "7.1"
+      env: CI_MODE=lint
+    - php: "7.1"
       env: CI_MODE=release
-    - php: "7.0"
+    - php: "7.1"
       env: CI_MODE=docs
+    - php: "7.1"
+      env: CI_MODE=apidocs
+    - php: "7.2"
+      env: CI_MODE=phpstan
     - os: osx
       language: generic
       env: CI_MODE=test
       before_install:
-        - brew tap homebrew/php
         - brew update
-        - brew install gettext php71 mariadb
+        - brew install gettext php72 mariadb
         - brew link --force gettext
-        - sed -i -e 's/^memory_limit = .*/memory_limit = -1/' /usr/local/etc/php/7.1/php.ini
+        - sed -i -e 's/^memory_limit = .*/memory_limit = -1/' /usr/local/etc/php/7.2/php.ini
         - curl https://getcomposer.org/installer | php
         - ln -s "`pwd`/composer.phar" /usr/local/bin/composer
         - mysql.server start
+  allow_failures:
+    - php: "nightly"
+      env: CI_MODE=test
+    - php: "7.2"
+      env: CI_MODE=phpstan
 
 cache:
   pip: true
   directories:
     - $HOME/.composer/cache/
     - $HOME/browserstack
-    - $HOME/runkit
 # Install APT packages
 #  - git > 2.5.1 needed for worktrees
 #  - mysql server does not seem to be always present on Travis Trusty environment

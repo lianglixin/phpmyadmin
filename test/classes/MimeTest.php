@@ -5,10 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Mime;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Test for mime detection.
@@ -42,23 +44,23 @@ class MimeTest extends TestCase
      */
     public function providerForTestDetect()
     {
-        return array(
-            array(
+        return [
+            [
                 'pma',
                 'application/octet-stream'
-            ),
-            array(
+            ],
+            [
                 'GIF',
                 'image/gif'
-            ),
-            array(
+            ],
+            [
                 "\x89PNG",
                 'image/png'
-            ),
-            array(
+            ],
+            [
                 chr(0xff) . chr(0xd8),
                 'image/jpeg'
-            ),
-        );
+            ],
+        ];
     }
 }

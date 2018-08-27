@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use ZipArchive;
@@ -17,6 +19,19 @@ use ZipArchive;
 class ZipExtension
 {
     /**
+     * @var ZipArchive
+     */
+    private $zip;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->zip = new ZipArchive();
+    }
+
+    /**
      * Gets zip file contents
      *
      * @param string $file           path to zip file
@@ -25,7 +40,7 @@ class ZipExtension
      * @return array ($error_message, $file_data); $error_message
      *                  is empty if no error
      */
-    public static function getContents($file, $specific_entry = null)
+    public function getContents($file, $specific_entry = null)
     {
         /**
         * This function is used to "import" a SQL file which has been exported earlier
@@ -36,33 +51,32 @@ class ZipExtension
         $error_message = '';
         $file_data = '';
 
-        $zip = new ZipArchive;
-        $res = $zip->open($file);
+        $res = $this->zip->open($file);
 
-        if ($res === TRUE) {
-            if ($zip->numFiles === 0) {
+        if ($res === true) {
+            if ($this->zip->numFiles === 0) {
                 $error_message = __('No files found inside ZIP archive!');
-                $zip->close();
-                return (array('error' => $error_message, 'data' => $file_data));
+                $this->zip->close();
+                return (['error' => $error_message, 'data' => $file_data]);
             }
 
             /* Is the the zip really an ODS file? */
             $ods_mime = 'application/vnd.oasis.opendocument.spreadsheet';
-            $first_zip_entry = $zip->getFromIndex(0);
+            $first_zip_entry = $this->zip->getFromIndex(0);
             if (!strcmp($ods_mime, $first_zip_entry)) {
                 $specific_entry = '/^content\.xml$/';
             }
 
             if (!isset($specific_entry)) {
                 $file_data = $first_zip_entry;
-                $zip->close();
-                return (array('error' => $error_message, 'data' => $file_data));
+                $this->zip->close();
+                return (['error' => $error_message, 'data' => $file_data]);
             }
 
             /* Return the correct contents, not just the first entry */
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                if (@preg_match($specific_entry, $zip->getNameIndex($i))) {
-                    $file_data = $zip->getFromIndex($i);
+            for ($i = 0; $i < $this->zip->numFiles; $i++) {
+                if (@preg_match($specific_entry, $this->zip->getNameIndex($i))) {
+                    $file_data = $this->zip->getFromIndex($i);
                     break;
                 }
             }
@@ -73,12 +87,12 @@ class ZipExtension
                     . ' Could not find "' . $specific_entry . '"';
             }
 
-            $zip->close();
-            return (array('error' => $error_message, 'data' => $file_data));
+            $this->zip->close();
+            return (['error' => $error_message, 'data' => $file_data]);
         } else {
-            $error_message = __('Error in ZIP archive:') . ' ' . $zip->getStatusString();
-            $zip->close();
-            return (array('error' => $error_message, 'data' => $file_data));
+            $error_message = __('Error in ZIP archive:') . ' ' . $this->zip->getStatusString();
+            $this->zip->close();
+            return (['error' => $error_message, 'data' => $file_data]);
         }
     }
 
@@ -90,16 +104,15 @@ class ZipExtension
      *
      * @return string the file name of the first file that matches the given regular expression
      */
-    public static function findFile($file, $regex)
+    public function findFile($file, $regex)
     {
-        $zip = new ZipArchive;
-        $res = $zip->open($file);
+        $res = $this->zip->open($file);
 
-        if ($res === TRUE) {
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                if (preg_match($regex, $zip->getNameIndex($i))) {
-                    $filename = $zip->getNameIndex($i);
-                    $zip->close();
+        if ($res === true) {
+            for ($i = 0; $i < $this->zip->numFiles; $i++) {
+                if (preg_match($regex, $this->zip->getNameIndex($i))) {
+                    $filename = $this->zip->getNameIndex($i);
+                    $this->zip->close();
                     return $filename;
                 }
             }
@@ -114,14 +127,13 @@ class ZipExtension
      *
      * @return int the number of files in the zip archive or 0, either if there wern't any files or an error occured.
      */
-    public static function getNumberOfFiles($file)
+    public function getNumberOfFiles($file)
     {
         $num = 0;
-        $zip = new ZipArchive;
-        $res = $zip->open($file);
+        $res = $this->zip->open($file);
 
-        if ($res === TRUE) {
-            $num = $zip->numFiles;
+        if ($res === true) {
+            $num = $this->zip->numFiles;
         }
         return $num;
     }
@@ -134,12 +146,11 @@ class ZipExtension
      *
      * @return string|bool data on sucess, false otherwise
      */
-    public static function extract($file, $entry)
+    public function extract($file, $entry)
     {
-        $zip = new ZipArchive;
-        if ($zip->open($file) === true) {
-            $result = $zip->getFromName($entry);
-            $zip->close();
+        if ($this->zip->open($file) === true) {
+            $result = $this->zip->getFromName($entry);
+            $this->zip->close();
             return $result;
         }
         return false;
@@ -148,32 +159,46 @@ class ZipExtension
     /**
      * Creates a zip file.
      * If $data is an array and $name is a string, the filenames will be indexed.
-     * The function will return false if $data is a string but $name is an array or if $data is an array and $name is an array, but they don't have the same amount of elements.
+     * The function will return false if $data is a string but $name is an array
+     * or if $data is an array and $name is an array, but they don't have the
+     * same amount of elements.
      *
      * @param array|string $data contents of the file/files
      * @param array|string $name name of the file/files in the archive
      * @param integer      $time the current timestamp
      *
-     * @return string|bool  the ZIP file contents, or false if there was an error.
+     * @return string|bool the ZIP file contents, or false if there was an error.
      */
-    public static function createFile($data, $name, $time = 0)
+    public function createFile($data, $name, $time = 0)
     {
-        $datasec = array();  // Array to store compressed data
-        $ctrl_dir = array(); // Central directory
-        $old_offset = 0;     // Last offset position
+        $datasec = []; // Array to store compressed data
+        $ctrl_dir = []; // Central directory
+        $old_offset = 0; // Last offset position
         $eof_ctrl_dir = "\x50\x4b\x05\x06\x00\x00\x00\x00"; // End of central directory record
 
-        if (is_string($name) && is_string($data)) {
-            $name = array($name);
-            $data = array($data);
-        } else {
-            if (! is_array($name) || ! is_array($data) || count($name) != count($data)) {
-                return false;
+        if (is_string($data) && is_string($name)) {
+            $data = [$name => $data];
+        } elseif (is_array($data) && is_string($name)) {
+            $ext_pos = strpos($name, '.');
+            $extension = substr($name, $ext_pos);
+            $newData = [];
+            foreach ($data as $key => $value) {
+                $newName = str_replace(
+                    $extension,
+                    '_' . $key . $extension,
+                    $name
+                );
+                $newData[$newName] = $value;
             }
+            $data = $newData;
+        } elseif (is_array($data) && is_array($name) && count($data) === count($name)) {
+            $data = array_combine($name, $data);
+        } else {
+            return false;
         }
 
-        for ($i = 0; $i < count($data); $i++) {
-            $temp_name = str_replace('\\', '/', $name[$i]);
+        foreach ($data as $table => $dump) {
+            $temp_name = str_replace('\\', '/', $table);
 
             /* Convert Unix timestamp to DOS timestamp */
             $timearray = ($time == 0) ? getdate() : getdate($time);
@@ -196,9 +221,9 @@ class ZipExtension
 
             $hexdtime = pack('V', $time);
 
-            $unc_len = strlen($data[$i]);
-            $crc = crc32($data[$i]);
-            $zdata = gzcompress($data[$i]);
+            $unc_len = strlen($dump);
+            $crc = crc32($dump);
+            $zdata = gzcompress($dump);
             $zdata = substr(substr($zdata, 0, strlen($zdata) - 4), 2); // fix crc bug
             $c_len = strlen($zdata);
             $fr = "\x50\x4b\x03\x04"
@@ -220,7 +245,6 @@ class ZipExtension
 
             $datasec[] = $fr;
 
-            $old_offset += strlen($fr);
             // now add to central directory record
             $cdrec = "\x50\x4b\x01\x02"
                 . "\x00\x00"                     // version made by
@@ -240,7 +264,7 @@ class ZipExtension
                                                  // - 'archive' bit set
                 . pack('V', $old_offset)         // relative offset of local header
                 . $temp_name;                    // filename
-
+            $old_offset += strlen($fr);
             // optional extra field, file comment goes here
             // save to central directory
             $ctrl_dir[] = $cdrec;
@@ -250,10 +274,10 @@ class ZipExtension
         $temp_ctrldir = implode('', $ctrl_dir);
         $header = $temp_ctrldir .
             $eof_ctrl_dir .
-            pack('v', sizeof($ctrl_dir)) .      //total #of entries "on this disk"
-            pack('v', sizeof($ctrl_dir)) .      //total #of entries overall
-            pack('V', strlen($temp_ctrldir)) .  //size of central dir
-            pack('V', $old_offset) .            //offset to start of central dir
+            pack('v', sizeof($ctrl_dir)) . //total #of entries "on this disk"
+            pack('v', sizeof($ctrl_dir)) . //total #of entries overall
+            pack('V', strlen($temp_ctrldir)) . //size of central dir
+            pack('V', $old_offset) . //offset to start of central dir
             "\x00\x00";                         //.zip file comment length
 
         $data = implode('', $datasec);

@@ -5,25 +5,28 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Navigation;
 
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Navigation\Nodes\Node;
-use PhpMyAdmin\Theme;
+use PhpMyAdmin\Tests\PmaTestCase;
+use PHPUnit\Framework\Exception;
 
 /**
  * Tests for NodeFactory class
  *
  * @package PhpMyAdmin-test
  */
-class NodeFactoryTest extends \PMATestCase
+class NodeFactoryTest extends PmaTestCase
 {
     /**
      * SetUp for test cases
      *
      * @return void
      */
-    public function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
     }
@@ -83,7 +86,7 @@ class NodeFactoryTest extends \PMATestCase
      */
     public function testFileError()
     {
-        $this->setExpectedException('PHPUnit_Framework_Error');
+        $this->expectException(Exception::class);
         NodeFactory::getInstance('NodeDoesNotExist');
     }
 
@@ -94,7 +97,7 @@ class NodeFactoryTest extends \PMATestCase
      */
     public function testClassNameError()
     {
-        $this->setExpectedException('PHPUnit_Framework_Error');
+        $this->expectException(Exception::class);
         NodeFactory::getInstance('Invalid');
     }
 }

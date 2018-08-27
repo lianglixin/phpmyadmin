@@ -5,8 +5,11 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Url;
@@ -44,7 +47,12 @@ class RecentFavoriteTable
      * @access private
      * @var array
      */
-    private static $_instances = array();
+    private static $_instances = [];
+
+    /**
+     * @var Relation $relation
+     */
+    private $relation;
 
     /**
      * Creates a new instance of RecentFavoriteTable
@@ -55,12 +63,13 @@ class RecentFavoriteTable
      */
     private function __construct($type)
     {
+        $this->relation = new Relation();
         $this->_tableType = $type;
         $server_id = $GLOBALS['server'];
         if (! isset($_SESSION['tmpval'][$this->_tableType . '_tables'][$server_id])
         ) {
             $_SESSION['tmpval'][$this->_tableType . '_tables'][$server_id]
-                = $this->_getPmaTable() ? $this->getFromDb() : array();
+                = $this->_getPmaTable() ? $this->getFromDb() : [];
         }
         $this->_tables
             =& $_SESSION['tmpval'][$this->_tableType . '_tables'][$server_id];
@@ -103,8 +112,8 @@ class RecentFavoriteTable
             = " SELECT `tables` FROM " . $this->_getPmaTable() .
             " WHERE `username` = '" . $GLOBALS['dbi']->escapeString($GLOBALS['cfg']['Server']['user']) . "'";
 
-        $return = array();
-        $result = Relation::queryAsControlUser($sql_query, false);
+        $return = [];
+        $result = $this->relation->queryAsControlUser($sql_query, false);
         if ($result) {
             $row = $GLOBALS['dbi']->fetchArray($result);
             if (isset($row[0])) {
@@ -129,23 +138,23 @@ class RecentFavoriteTable
                     json_encode($this->_tables)
                 ) . "')";
 
-        $success = $GLOBALS['dbi']->tryQuery($sql_query, $GLOBALS['controllink']);
+        $success = $GLOBALS['dbi']->tryQuery($sql_query, DatabaseInterface::CONNECT_CONTROL);
 
         if (! $success) {
             $error_msg = '';
             switch ($this->_tableType) {
-            case 'recent':
-                $error_msg = __('Could not save recent table!');
-                break;
+                case 'recent':
+                    $error_msg = __('Could not save recent table!');
+                    break;
 
-            case 'favorite':
-                $error_msg = __('Could not save favorite table!');
-                break;
+                case 'favorite':
+                    $error_msg = __('Could not save favorite table!');
+                    break;
             }
             $message = Message::error($error_msg);
             $message->addMessage(
                 Message::rawError(
-                    $GLOBALS['dbi']->getError($GLOBALS['controllink'])
+                    $GLOBALS['dbi']->getError(DatabaseInterface::CONNECT_CONTROL)
                 ),
                 '<br /><br />'
             );
@@ -163,7 +172,8 @@ class RecentFavoriteTable
     public function trim()
     {
         $max = max(
-            $GLOBALS['cfg']['Num' . ucfirst($this->_tableType) . 'Tables'], 0
+            $GLOBALS['cfg']['Num' . ucfirst($this->_tableType) . 'Tables'],
+            0
         );
         $trimming_occurred = count($this->_tables) > $max;
         while (count($this->_tables) > $max) {
@@ -184,10 +194,10 @@ class RecentFavoriteTable
             if ($this->_tableType == 'recent') {
                 foreach ($this->_tables as $table) {
                     $html .= '<li class="warp_link">';
-                    $recent_params = array(
+                    $recent_params = [
                         'db'    => $table['db'],
                         'table' => $table['table']
-                    );
+                    ];
                     $recent_url = 'tbl_recent_favorite.php'
                         . Url::getCommon($recent_params);
                     $html .= '<a href="' . $recent_url . '">`'
@@ -200,12 +210,12 @@ class RecentFavoriteTable
                     $html .= '<li class="warp_link">';
 
                     $html .= '<a class="ajax favorite_table_anchor" ';
-                    $fav_params = array(
+                    $fav_params = [
                         'db'              => $table['db'],
                         'ajax_request'    => true,
                         'favorite_table'  => $table['table'],
                         'remove_favorite' => true
-                    );
+                    ];
                     $fav_rm_url = 'db_structure.php'
                         . Url::getCommon($fav_params);
                     $html .= 'href="' . $fav_rm_url
@@ -213,13 +223,13 @@ class RecentFavoriteTable
                         . '" data-favtargetn="'
                         . md5($table['db'] . "." . $table['table'])
                         . '" >'
-                        . Util::getIcon('b_favorite.png')
+                        . Util::getIcon('b_favorite')
                         . '</a>';
 
-                    $fav_params = array(
+                    $fav_params = [
                         'db'    => $table['db'],
                         'table' => $table['table']
-                    );
+                    ];
                     $table_url = 'tbl_recent_favorite.php'
                         . Url::getCommon($fav_params);
                     $html .= '<a href="' . $table_url . '">`'
@@ -231,8 +241,8 @@ class RecentFavoriteTable
         } else {
             $html .= '<li class="warp_link">'
                   . ($this->_tableType == 'recent'
-                    ?__('There are no recent tables.')
-                    :__('There are no favorite tables.'))
+                    ? __('There are no recent tables.')
+                    : __('There are no favorite tables.'))
                   . '</li>';
         }
         return $html;
@@ -275,7 +285,7 @@ class RecentFavoriteTable
             return true;
         }
 
-        $table_arr = array();
+        $table_arr = [];
         $table_arr['db'] = $db;
         $table_arr['table'] = $table;
 
@@ -323,7 +333,7 @@ class RecentFavoriteTable
      */
     public function remove($db, $table)
     {
-        $table_arr = array();
+        $table_arr = [];
         $table_arr['db'] = $db;
         $table_arr['table'] = $table;
         foreach ($this->_tables as $key => $value) {
@@ -349,11 +359,11 @@ class RecentFavoriteTable
         if ($server_id == 0) {
             return '';
         }
-        $cfgRelation = Relation::getRelationsParam();
+        $cfgRelation = $this->relation->getRelationsParam();
         // Not to show this once list is synchronized.
         if ($cfgRelation['favoritework'] && ! isset($_SESSION['tmpval']['favorites_synced'][$server_id])) {
-            $params  = array('ajax_request' => true, 'favorite_table' => true,
-                'sync_favorite_tables' => true);
+            $params  = ['ajax_request' => true, 'favorite_table' => true,
+                'sync_favorite_tables' => true];
             $url     = 'db_structure.php' . Url::getCommon($params);
             $retval  = '<a class="hide" id="sync_favorite_tables"';
             $retval .= ' href="' . $url . '"></a>';
@@ -368,7 +378,7 @@ class RecentFavoriteTable
      */
     public static function getHtmlUpdateRecentTables()
     {
-        $params  = array('ajax_request' => true, 'recent_table' => true);
+        $params  = ['ajax_request' => true, 'recent_table' => true];
         $url     = 'index.php' . Url::getCommon($params);
         $retval  = '<a class="hide" id="update_recent_tables"';
         $retval .= ' href="' . $url . '"></a>';
@@ -382,7 +392,7 @@ class RecentFavoriteTable
      */
     private function _getPmaTable()
     {
-        $cfgRelation = Relation::getRelationsParam();
+        $cfgRelation = $this->relation->getRelationsParam();
         if (! empty($cfgRelation['db'])
             && ! empty($cfgRelation[$this->_tableType])
         ) {

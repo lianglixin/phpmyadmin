@@ -5,31 +5,36 @@
  *
  * @package PhpMyAdmin\Twig
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Twig;
 
-use Twig_Extension;
-use Twig_SimpleFunction;
+use PhpMyAdmin\Server\Privileges;
+use PhpMyAdmin\Template;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
 /**
  * Class ServerPrivilegesExtension
  *
  * @package PhpMyAdmin\Twig
  */
-class ServerPrivilegesExtension extends Twig_Extension
+class ServerPrivilegesExtension extends AbstractExtension
 {
     /**
      * Returns a list of functions to add to the existing list.
      *
-     * @return Twig_SimpleFunction[]
+     * @return TwigFunction[]
      */
     public function getFunctions()
     {
-        return array(
-            new Twig_SimpleFunction(
-                'ServerPrivileges_formatPrivilege',
-                'PhpMyAdmin\Server\Privileges::formatPrivilege',
-                array('is_safe' => array('html'))
+        $serverPrivileges = new Privileges(new Template());
+        return [
+            new TwigFunction(
+                'format_privilege',
+                [$serverPrivileges, 'formatPrivilege'],
+                ['is_safe' => ['html']]
             ),
-        );
+        ];
     }
 }

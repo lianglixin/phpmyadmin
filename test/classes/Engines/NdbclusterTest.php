@@ -4,16 +4,19 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Engines\Ndbcluster;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Ndbcluster
  *
  * @package PhpMyAdmin-test
  */
-class NdbclusterTest extends \PMATestCase
+class NdbclusterTest extends PmaTestCase
 {
     /**
      * @access protected
@@ -54,10 +57,10 @@ class NdbclusterTest extends \PMATestCase
     {
         $this->assertEquals(
             $this->object->getVariables(),
-            array(
-                'ndb_connectstring' => array(
-                ),
-            )
+            [
+                'ndb_connectstring' => [
+                ],
+            ]
         );
     }
 
@@ -85,6 +88,5 @@ class NdbclusterTest extends \PMATestCase
             $this->object->getMysqlHelpPage(),
             'ndbcluster'
         );
-
     }
 }

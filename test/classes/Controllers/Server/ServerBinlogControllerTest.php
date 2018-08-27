@@ -5,11 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Controllers\Server;
 
-use PhpMyAdmin\Theme;
 use PhpMyAdmin\Controllers\Server\ServerBinlogController;
 use PhpMyAdmin\Di\Container;
+use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
+use PhpMyAdmin\Theme;
 use PhpMyAdmin\Util;
 use ReflectionClass;
 
@@ -18,14 +22,14 @@ use ReflectionClass;
  *
  * @package PhpMyAdmin-test
  */
-class ServerBinlogControllerTest extends \PMATestCase
+class ServerBinlogControllerTest extends PmaTestCase
 {
     /**
      * Prepares environment for the test.
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$_REQUEST
         $_REQUEST['log'] = "index1";
@@ -36,22 +40,24 @@ class ServerBinlogControllerTest extends \PMATestCase
         $GLOBALS['server'] = 1;
         $GLOBALS['cfg']['ServerDefault'] = "server";
         $GLOBALS['cfg']['RememberSorting'] = true;
-        $GLOBALS['cfg']['SQP'] = array();
+        $GLOBALS['cfg']['SQP'] = [];
         $GLOBALS['cfg']['MaxCharactersInDisplayedSQL'] = 1000;
         $GLOBALS['cfg']['ShowSQL'] = true;
         $GLOBALS['cfg']['TableNavigationLinksMode'] = 'icons';
         $GLOBALS['cfg']['LimitChars'] = 100;
 
+        $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = "table";
         $GLOBALS['pmaThemeImage'] = 'image';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
 
         //$_SESSION
 
         Util::cacheSet('profiling_supported', true);
 
-        $binary_log_file_names = array();
-        $binary_log_file_names[] = array("Log_name"=>"index1", "File_size"=>100);
-        $binary_log_file_names[] = array("Log_name"=>"index2", "File_size"=>200);
+        $binary_log_file_names = [];
+        $binary_log_file_names[] = ["Log_name" => "index1", "File_size" => 100];
+        $binary_log_file_names[] = ["Log_name" => "index2", "File_size" => 200];
 
         //Mock DBI
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
@@ -61,6 +67,9 @@ class ServerBinlogControllerTest extends \PMATestCase
             ->will($this->returnValue($binary_log_file_names));
         $container = Container::getDefaultContainer();
         $container->set('dbi', $dbi);
+        $response = new ResponseStub();
+        $container->set('PhpMyAdmin\Response', $response);
+        $container->alias('response', 'PhpMyAdmin\Response');
     }
 
     /**
@@ -70,7 +79,9 @@ class ServerBinlogControllerTest extends \PMATestCase
      */
     public function testGetLogSelector()
     {
-        $url_params = array();
+        $container = Container::getDefaultContainer();
+
+        $url_params = [];
         $url_params['log'] = "log";
         $url_params['dontlimitchars'] = 1;
 
@@ -78,7 +89,10 @@ class ServerBinlogControllerTest extends \PMATestCase
         $method = $class->getMethod('_getLogSelector');
         $method->setAccessible(true);
 
-        $ctrl = new ServerBinlogController();
+        $ctrl = new ServerBinlogController(
+            $container->get('response'),
+            $container->get('dbi')
+        );
         $html = $method->invoke(
             $ctrl,
             $url_params
@@ -106,40 +120,42 @@ class ServerBinlogControllerTest extends \PMATestCase
      */
     public function testGetLogInfo()
     {
-        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Server\ServerBinlogController');
-        $method = $class->getMethod('_getLogInfo');
-        $method->setAccessible(true);
-        $ctrl = new ServerBinlogController();
-
-        //Mock DBI
         $container = Container::getDefaultContainer();
         $dbi = $container->get('dbi');
 
+        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Server\ServerBinlogController');
+        $method = $class->getMethod('_getLogInfo');
+        $method->setAccessible(true);
+        $ctrl = new ServerBinlogController(
+            $container->get('response'),
+            $dbi
+        );
+
         //expects return value
-        $result = array(
-            array(
+        $result = [
+            [
                 "SHOW BINLOG EVENTS IN 'index1' LIMIT 3, 10",
                 null,
                 1,
                 true,
-                array("log1"=>"logd")
-            ),
-            array(
-                array("log2"=>"logb"),
+                ["log1" => "logd"]
+            ],
+            [
+                ["log2" => "logb"],
                 null,
                 0,
                 false,
                 'executed'
-            )
-        );
-        $value = array(
+            ]
+        ];
+        $value = [
                 'Info' => "index1_Info",
                 'Log_name' => "index1_Log_name",
                 'Pos' => "index1_Pos",
                 'Event_type' => "index1_Event_type",
                 'End_log_pos' => "index1_End_log_pos",
                 'Server_id' => "index1_Server_id",
-        );
+        ];
         $count = 3;
 
         //expects functions
@@ -158,7 +174,7 @@ class ServerBinlogControllerTest extends \PMATestCase
         $container->set('dbi', $dbi);
 
         //Call the test function
-        $url_params = array();
+        $url_params = [];
         $url_params['log'] = "log";
         $url_params['dontlimitchars'] = 1;
         $html = $method->invoke($ctrl, $url_params);
@@ -219,16 +235,18 @@ class ServerBinlogControllerTest extends \PMATestCase
      */
     public function testGetAllLogItemInfo()
     {
-        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Server\ServerBinlogController');
-        $method = $class->getMethod('_getAllLogItemInfo');
-        $method->setAccessible(true);
-        $ctrl = new ServerBinlogController();
-
-        //Mock DBI
         $container = Container::getDefaultContainer();
         $dbi = $container->get('dbi');
 
-        $fetchAssoc = array(
+        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Server\ServerBinlogController');
+        $method = $class->getMethod('_getAllLogItemInfo');
+        $method->setAccessible(true);
+        $ctrl = new ServerBinlogController(
+            $container->get('response'),
+            $dbi
+        );
+
+        $fetchAssoc = [
             'Info' => 'Info',
             'Log_name' => 'Log_name',
             'Pos' => 'Pos',
@@ -236,7 +254,7 @@ class ServerBinlogControllerTest extends \PMATestCase
             'Server_id' => 'Server_id',
             'Orig_log_pos' => 'Orig_log_pos',
             'End_log_pos' => 'End_log_pos',
-        );
+        ];
         $dbi->expects($this->at(0))->method('fetchAssoc')
             ->will($this->returnValue($fetchAssoc));
         $dbi->expects($this->at(1))->method('fetchAssoc')
@@ -245,7 +263,7 @@ class ServerBinlogControllerTest extends \PMATestCase
 
         $GLOBALS['cfg']['LimitChars'] = 2;
 
-        $result = array();
+        $result = [];
         $dontlimitchars = ";";
         $html = $method->invoke($ctrl, $result, $dontlimitchars);
 

@@ -5,12 +5,14 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\Header;
-use PhpMyAdmin\Theme;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionMethod;
 
 /**
@@ -19,14 +21,14 @@ use ReflectionMethod;
  * @package PhpMyAdmin-test
  * @group medium
  */
-class HeaderTest extends \PMATestCase
+class HeaderTest extends PmaTestCase
 {
     /**
      * Configures global environment.
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         if (!defined('PMA_IS_WINDOWS')) {
             define('PMA_IS_WINDOWS', false);

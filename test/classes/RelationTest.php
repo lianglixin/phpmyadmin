@@ -1,15 +1,17 @@
 <?php
 /* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
- * tests for PhpMyAdmin\Relation
+ * Tests for PhpMyAdmin\Relation
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Theme;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for PhpMyAdmin\Relation
@@ -20,13 +22,18 @@ use PHPUnit_Framework_TestCase as TestCase;
 class RelationTest extends TestCase
 {
     /**
+     * @var Relation
+     */
+    private $relation;
+
+    /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      *
      * @access protected
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         $GLOBALS['server'] = 1;
         $GLOBALS['db'] = 'db';
@@ -35,14 +42,16 @@ class RelationTest extends TestCase
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfg']['ZeroConf'] = true;
         $_SESSION['relation'][$GLOBALS['server']] = "PMA_relation";
-        $_SESSION['relation'] = array();
+        $_SESSION['relation'] = [];
 
         $GLOBALS['pmaThemePath'] = $GLOBALS['PMA_Theme']->getPath();
         $GLOBALS['cfg']['ServerDefault'] = 0;
+
+        $this->relation = new Relation();
     }
 
     /**
-     * Test for Relation::queryAsControlUser
+     * Test for queryAsControlUser
      *
      * @return void
      */
@@ -65,22 +74,22 @@ class RelationTest extends TestCase
         $sql = "insert into PMA_bookmark A,B values(1, 2)";
         $this->assertEquals(
             'executeResult1',
-            Relation::queryAsControlUser($sql)
+            $this->relation->queryAsControlUser($sql)
         );
         $this->assertEquals(
             'executeResult2',
-            Relation::queryAsControlUser($sql, false)
+            $this->relation->queryAsControlUser($sql, false)
         );
     }
 
     /**
-     * Test for Relation::getRelationsParam & Relation::getRelationsParamDiagnostic
+     * Test for getRelationsParam & getRelationsParamDiagnostic
      *
      * @return void
      */
     public function testPMAGetRelationsParam()
     {
-        $relationsPara = Relation::getRelationsParam();
+        $relationsPara = $this->relation->getRelationsParam();
         $this->assertEquals(
             false,
             $relationsPara['relwork']
@@ -98,7 +107,7 @@ class RelationTest extends TestCase
             $relationsPara['db']
         );
 
-        $retval = Relation::getRelationsParamDiagnostic($relationsPara);
+        $retval = $this->relation->getRelationsParamDiagnostic($relationsPara);
         //check $cfg['Servers'][$i]['pmadb']
         $this->assertContains(
             "\$cfg['Servers'][\$i]['pmadb']",
@@ -111,20 +120,20 @@ class RelationTest extends TestCase
 
         //$cfg['Servers'][$i]['relation']
         $result = "\$cfg['Servers'][\$i]['pmadb']  ... </th><td class=\"right\">"
-            . "<span style=\"color:green\"><strong>OK</strong></span>";
+            . "<span class=\"success\"><strong>OK</strong></span>";
         $this->assertContains(
             $result,
             $retval
         );
         // $cfg['Servers'][$i]['relation']
         $result = "\$cfg['Servers'][\$i]['relation']  ... </th><td class=\"right\">"
-            . "<span style=\"color:red\"><strong>not OK</strong></span>";
+            . "<span class=\"caution\"><strong>not OK</strong></span>";
         $this->assertContains(
             $result,
             $retval
         );
         // General relation features
-        $result = 'General relation features: <span style="color:red">Disabled</span>';
+        $result = 'General relation features: <span class="caution">Disabled</span>';
         $this->assertContains(
             $result,
             $retval
@@ -132,20 +141,20 @@ class RelationTest extends TestCase
         // $cfg['Servers'][$i]['table_info']
         $result = "\$cfg['Servers'][\$i]['table_info']  ... </th>"
             . "<td class=\"right\">"
-            . "<span style=\"color:red\"><strong>not OK</strong></span>";
+            . "<span class=\"caution\"><strong>not OK</strong></span>";
         $this->assertContains(
             $result,
             $retval
         );
         // Display Features:
-        $result = 'Display Features: <span style="color:red">Disabled</span>';
+        $result = 'Display Features: <span class="caution">Disabled</span>';
         $this->assertContains(
             $result,
             $retval
         );
 
         $relationsPara['db'] = false;
-        $retval = Relation::getRelationsParamDiagnostic($relationsPara);
+        $retval = $this->relation->getRelationsParamDiagnostic($relationsPara);
 
         $result = __('General relation features');
         $this->assertContains(
@@ -165,7 +174,7 @@ class RelationTest extends TestCase
     }
 
     /**
-     * Test for Relation::getDisplayField
+     * Test for getDisplayField
      *
      * @return void
      */
@@ -175,51 +184,50 @@ class RelationTest extends TestCase
         $table = 'CHARACTER_SETS';
         $this->assertEquals(
             'DESCRIPTION',
-            Relation::getDisplayField($db, $table)
+            $this->relation->getDisplayField($db, $table)
         );
 
         $db = 'information_schema';
         $table = 'TABLES';
         $this->assertEquals(
             'TABLE_COMMENT',
-            Relation::getDisplayField($db, $table)
+            $this->relation->getDisplayField($db, $table)
         );
 
         $db = 'information_schema';
         $table = 'PMA';
         $this->assertEquals(
             false,
-            Relation::getDisplayField($db, $table)
+            $this->relation->getDisplayField($db, $table)
         );
-
     }
 
     /**
-     * Test for Relation::getComments
+     * Test for getComments
      *
      * @return void
      */
     public function testPMAGetComments()
     {
         $GLOBALS['cfg']['ServerDefault'] = 0;
-        $_SESSION['relation'] = array();
+        $_SESSION['relation'] = [];
 
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $getColumnsResult = array(
-                array(
+        $getColumnsResult = [
+                [
                         'Field' => 'field1',
                         'Type' => 'int(11)',
                         'Comment' => 'Comment1'
-                ),
-                array(
+                ],
+                [
                         'Field' => 'field2',
                         'Type' => 'text',
                         'Comment' => 'Comment1'
-                )
-        );
+                ]
+        ];
         $dbi->expects($this->any())->method('getColumns')
             ->will($this->returnValue($getColumnsResult));
 
@@ -227,23 +235,23 @@ class RelationTest extends TestCase
 
         $db = 'information_schema';
         $this->assertEquals(
-            array(''),
-            Relation::getComments($db)
+            [''],
+            $this->relation->getComments($db)
         );
 
         $db = 'information_schema';
         $table = 'TABLES';
         $this->assertEquals(
-            array(
+            [
                 'field1' => 'Comment1',
                 'field2' => 'Comment1'
-            ),
-            Relation::getComments($db, $table)
+            ],
+            $this->relation->getComments($db, $table)
         );
     }
 
     /**
-     * Test for Relation::tryUpgradeTransformations
+     * Test for tryUpgradeTransformations
      *
      * @return void
      */
@@ -267,14 +275,14 @@ class RelationTest extends TestCase
         $GLOBALS['cfg']['Server']['column_info'] = 'column_info';
 
         // Case 1
-        $actual = Relation::tryUpgradeTransformations();
+        $actual = $this->relation->tryUpgradeTransformations();
         $this->assertEquals(
             false,
             $actual
         );
 
         // Case 2
-        $actual = Relation::tryUpgradeTransformations();
+        $actual = $this->relation->tryUpgradeTransformations();
         $this->assertEquals(
             true,
             $actual
@@ -282,34 +290,34 @@ class RelationTest extends TestCase
     }
 
     /**
-     * Test for Relation::searchColumnInForeigners
+     * Test for searchColumnInForeigners
      *
      * @return void
      */
     public function testPMASearchColumnInForeigners()
     {
-        $foreigners = array(
-            'value' => array(
+        $foreigners = [
+            'value' => [
                   'master_field' => 'value',
                   'foreign_db' => 'GSoC14',
                   'foreign_table' => 'test',
                   'foreign_field' => 'value'
-            ),
-            'foreign_keys_data' => array(
-                0 => array(
+            ],
+            'foreign_keys_data' => [
+                0 => [
                     'constraint' => 'ad',
-                    'index_list' => array('id', 'value'),
+                    'index_list' => ['id', 'value'],
                     'ref_db_name' => 'GSoC14',
                     'ref_table_name' => 'table_1',
-                    'ref_index_list' => array('id', 'value'),
+                    'ref_index_list' => ['id', 'value'],
                     'on_delete' => 'CASCADE',
                     'on_update' => 'CASCADE'
-                )
-            )
-        );
+                ]
+            ]
+        ];
 
-        $foreigner = Relation::searchColumnInForeigners($foreigners, 'id');
-        $expected = array();
+        $foreigner = $this->relation->searchColumnInForeigners($foreigners, 'id');
+        $expected = [];
         $expected['foreign_field'] = 'id';
         $expected['foreign_db'] = 'GSoC14';
         $expected['foreign_table'] = 'table_1';

@@ -5,10 +5,13 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Navigation;
 
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Navigation\NavigationTree;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Theme;
 
 /*
@@ -25,7 +28,7 @@ require_once 'libraries/check_user_privileges.inc.php';
  *
  * @package PhpMyAdmin-test
  */
-class NavigationTreeTest extends \PMATestCase
+class NavigationTreeTest extends PmaTestCase
 {
     /**
      * @var NavigationTree

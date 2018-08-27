@@ -5,6 +5,7 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
 
 use PhpMyAdmin\BrowseForeigners;
 use PhpMyAdmin\Relation;
@@ -16,10 +17,10 @@ require_once 'libraries/common.inc.php';
 /**
  * Sets globals from $_REQUEST
  */
-$request_params = array(
+$request_params = [
     'data',
     'field'
-);
+];
 
 foreach ($request_params as $one_request_param) {
     if (isset($_REQUEST[$one_request_param])) {
@@ -27,7 +28,7 @@ foreach ($request_params as $one_request_param) {
     }
 }
 
-Util::checkParameters(array('db', 'table', 'field'));
+Util::checkParameters(['db', 'table', 'field']);
 
 $response = Response::getInstance();
 $response->getFooter()->setMinimal();
@@ -35,17 +36,27 @@ $header = $response->getHeader();
 $header->disableMenuAndConsole();
 $header->setBodyId('body_browse_foreigners');
 
+$relation = new Relation();
+
 /**
  * Displays the frame
  */
-
-$foreigners = Relation::getForeigners($db, $table);
-$foreign_limit = BrowseForeigners::getForeignLimit(
+$foreigners = $relation->getForeigners($db, $table);
+$browseForeigners = new BrowseForeigners(
+    $GLOBALS['cfg']['LimitChars'],
+    $GLOBALS['cfg']['MaxRows'],
+    $GLOBALS['cfg']['RepeatCells'],
+    $GLOBALS['cfg']['ShowAll'],
+    $GLOBALS['pmaThemeImage']
+);
+$foreign_limit = $browseForeigners->getForeignLimit(
     isset($_REQUEST['foreign_showAll']) ? $_REQUEST['foreign_showAll'] : null
 );
 
-$foreignData = Relation::getForeignData(
-    $foreigners, $_REQUEST['field'], true,
+$foreignData = $relation->getForeignData(
+    $foreigners,
+    $_REQUEST['field'],
+    true,
     isset($_REQUEST['foreign_filter'])
     ? $_REQUEST['foreign_filter']
     : '',
@@ -54,10 +65,13 @@ $foreignData = Relation::getForeignData(
 );
 
 // HTML output
-$html = BrowseForeigners::getHtmlForRelationalFieldSelection(
-    $db, $table, $_REQUEST['field'], $foreignData,
-    isset($fieldkey) ? $fieldkey : null,
-    isset($data) ? $data : null
+$html = $browseForeigners->getHtmlForRelationalFieldSelection(
+    $db,
+    $table,
+    $_REQUEST['field'],
+    $foreignData,
+    isset($fieldkey) ? $fieldkey : '',
+    isset($data) ? $data : ''
 );
 
 $response->addHtml($html);

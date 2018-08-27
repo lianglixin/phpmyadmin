@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin-Navigation
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Navigation\Nodes;
 
 use PhpMyAdmin\Navigation\NodeFactory;
@@ -36,11 +38,11 @@ class NodeDatabaseContainer extends Node
                 _pgettext('Create new database', 'New')
             );
             $new->isNew = true;
-            $new->icon = Util::getImage('b_newdb.png', '');
-            $new->links = array(
+            $new->icon = Util::getImage('b_newdb', '');
+            $new->links = [
                 'text' => 'server_databases.php?server=' . $GLOBALS['server'],
                 'icon' => 'server_databases.php?server=' . $GLOBALS['server'],
-            );
+            ];
             $new->classes = 'new_database italics';
             $this->addChild($new);
         }

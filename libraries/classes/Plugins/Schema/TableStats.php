@@ -5,9 +5,12 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Plugins\Schema;
 
 use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Font;
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Util;
@@ -30,12 +33,23 @@ abstract class TableStats
     protected $showKeys;
     protected $tableDimension;
     public $displayfield;
-    public $fields = array();
-    public $primary = array();
-    public $x, $y;
+    public $fields = [];
+    public $primary = [];
+    public $x;
+    public $y;
     public $width = 0;
     public $heightCell = 0;
     protected $offline;
+
+    /**
+     * @var Relation $relation
+     */
+    protected $relation;
+
+    /**
+     * @var Font
+     */
+    protected $font;
 
     /**
      * Constructor
@@ -51,7 +65,13 @@ abstract class TableStats
      *                                from the browser
      */
     public function __construct(
-        $diagram, $db, $pageNumber, $tableName, $showKeys, $tableDimension, $offline
+        $diagram,
+        $db,
+        $pageNumber,
+        $tableName,
+        $showKeys,
+        $tableDimension,
+        $offline
     ) {
         $this->diagram    = $diagram;
         $this->db         = $db;
@@ -62,6 +82,9 @@ abstract class TableStats
         $this->tableDimension   = $tableDimension;
 
         $this->offline    = $offline;
+
+        $this->relation = new Relation();
+        $this->font = new Font();
 
         // checks whether the table exists
         // and loads fields
@@ -83,7 +106,9 @@ abstract class TableStats
     {
         $sql = 'DESCRIBE ' . Util::backquote($this->tableName);
         $result = $GLOBALS['dbi']->tryQuery(
-            $sql, null, DatabaseInterface::QUERY_STORE
+            $sql,
+            DatabaseInterface::CONNECT_USER,
+            DatabaseInterface::QUERY_STORE
         );
         if (! $result || ! $GLOBALS['dbi']->numRows($result)) {
             $this->showMissingTableError();
@@ -91,7 +116,7 @@ abstract class TableStats
 
         if ($this->showKeys) {
             $indexes = Index::getFromTable($this->tableName, $this->db);
-            $all_columns = array();
+            $all_columns = [];
             foreach ($indexes as $index) {
                 $all_columns = array_merge(
                     $all_columns,
@@ -112,7 +137,7 @@ abstract class TableStats
      * @return void
      * @abstract
      */
-    protected abstract function showMissingTableError();
+    abstract protected function showMissingTableError();
 
     /**
      * Loads coordinates of a table
@@ -137,7 +162,7 @@ abstract class TableStats
      */
     protected function loadDisplayField()
     {
-        $this->displayfield = Relation::getDisplayField($this->db, $this->tableName);
+        $this->displayfield = $this->relation->getDisplayField($this->db, $this->tableName);
     }
 
     /**
@@ -149,7 +174,8 @@ abstract class TableStats
     {
         $result = $GLOBALS['dbi']->query(
             'SHOW INDEX FROM ' . Util::backquote($this->tableName) . ';',
-            null, DatabaseInterface::QUERY_STORE
+            DatabaseInterface::CONNECT_USER,
+            DatabaseInterface::QUERY_STORE
         );
         if ($GLOBALS['dbi']->numRows($result) > 0) {
             while ($row = $GLOBALS['dbi']->fetchAssoc($result)) {

@@ -5,9 +5,12 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Charsets;
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Template;
@@ -22,12 +25,75 @@ use PhpMyAdmin\Util;
 class CentralColumns
 {
     /**
+     * DatabaseInterface instance
+     *
+     * @var DatabaseInterface
+     */
+    private $dbi;
+
+    /**
+     * Current user
+     *
+     * @var string
+     */
+    private $user;
+
+    /**
+     * Number of rows displayed when browsing a result set
+     *
+     * @var int
+     */
+    private $maxRows;
+
+    /**
+     * Which editor should be used for CHAR/VARCHAR fields
+     *
+     * @var string
+     */
+    private $charEditing;
+
+    /**
+     * Disable use of INFORMATION_SCHEMA
+     *
+     * @var boolean
+     */
+    private $disableIs;
+
+    /**
+     * @var Relation
+     */
+    private $relation;
+
+    /**
+     * @var Template
+     */
+    public $template;
+
+    /**
+     * Constructor
+     *
+     * @param DatabaseInterface $dbi DatabaseInterface instance
+     */
+    public function __construct(DatabaseInterface $dbi)
+    {
+        $this->dbi = $dbi;
+
+        $this->user = $GLOBALS['cfg']['Server']['user'];
+        $this->maxRows = (int) $GLOBALS['cfg']['MaxRows'];
+        $this->charEditing = $GLOBALS['cfg']['CharEditing'];
+        $this->disableIs = (bool) $GLOBALS['cfg']['Server']['DisableIS'];
+
+        $this->relation = new Relation();
+        $this->template = new Template();
+    }
+
+    /**
      * Defines the central_columns parameters for the current user
      *
-     * @return array    the central_columns parameters for the current user
-     * @access  public
+     * @return array|bool the central_columns parameters for the current user
+     * @access public
      */
-    public static function getParams()
+    public function getParams()
     {
         static $cfgCentralColumns = null;
 
@@ -35,14 +101,14 @@ class CentralColumns
             return $cfgCentralColumns;
         }
 
-        $cfgRelation = Relation::getRelationsParam();
+        $cfgRelation = $this->relation->getRelationsParam();
 
         if ($cfgRelation['centralcolumnswork']) {
-            $cfgCentralColumns = array(
-                'user'  => $GLOBALS['cfg']['Server']['user'],
+            $cfgCentralColumns = [
+                'user'  => $this->user,
                 'db'    => $cfgRelation['db'],
                 'table' => $cfgRelation['central_columns'],
-            );
+            ];
         } else {
             $cfgCentralColumns = false;
         }
@@ -61,91 +127,107 @@ class CentralColumns
      * @return array list of $num columns present in central columns list
      * starting at offset $from for the given database
      */
-    public static function getColumnsList($db, $from=0, $num=25)
+    public function getColumnsList(string $db, int $from = 0, int $num = 25): array
     {
-        $cfgCentralColumns = self::getParams();
+        $cfgCentralColumns = $this->getParams();
         if (empty($cfgCentralColumns)) {
-            return array();
+            return [];
         }
         $pmadb = $cfgCentralColumns['db'];
-        $GLOBALS['dbi']->selectDb($pmadb, $GLOBALS['controllink']);
+        $this->dbi->selectDb($pmadb, DatabaseInterface::CONNECT_CONTROL);
         $central_list_table = $cfgCentralColumns['table'];
         //get current values of $db from central column list
         if ($num == 0) {
             $query = 'SELECT * FROM ' . Util::backquote($central_list_table) . ' '
-                . 'WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\';';
+                . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\';';
         } else {
             $query = 'SELECT * FROM ' . Util::backquote($central_list_table) . ' '
-                . 'WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\' '
+                . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\' '
                 . 'LIMIT ' . $from . ', ' . $num . ';';
         }
-        $has_list = (array) $GLOBALS['dbi']->fetchResult(
-            $query, null, null, $GLOBALS['controllink']
+        $has_list = (array) $this->dbi->fetchResult(
+            $query,
+            null,
+            null,
+            DatabaseInterface::CONNECT_CONTROL
         );
-        self::handleColumnExtra($has_list);
+        $this->handleColumnExtra($has_list);
         return $has_list;
     }
 
     /**
-     * get the number of columns present in central list for given db
+     * Get the number of columns present in central list for given db
      *
      * @param string $db current database
      *
      * @return int number of columns in central list of columns for $db
      */
-    public static function getCount($db)
+    public function getCount(string $db): int
     {
-        $cfgCentralColumns = self::getParams();
+        $cfgCentralColumns = $this->getParams();
         if (empty($cfgCentralColumns)) {
             return 0;
         }
         $pmadb = $cfgCentralColumns['db'];
-        $GLOBALS['dbi']->selectDb($pmadb, $GLOBALS['controllink']);
+        $this->dbi->selectDb($pmadb, DatabaseInterface::CONNECT_CONTROL);
         $central_list_table = $cfgCentralColumns['table'];
         $query = 'SELECT count(db_name) FROM ' .
             Util::backquote($central_list_table) . ' '
-            . 'WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\';';
-        $res = $GLOBALS['dbi']->fetchResult(
-            $query, null, null, $GLOBALS['controllink']
+            . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\';';
+        $res = $this->dbi->fetchResult(
+            $query,
+            null,
+            null,
+            DatabaseInterface::CONNECT_CONTROL
         );
         if (isset($res[0])) {
-            return $res[0];
-        } else {
-            return 0;
+            return (int) $res[0];
         }
+
+        return 0;
     }
+
     /**
      * return the existing columns in central list among the given list of columns
      *
      * @param string  $db        the selected database
      * @param string  $cols      comma separated list of given columns
      * @param boolean $allFields set if need all the fields of existing columns,
-     * otherwise only column_name is returned
+     *                           otherwise only column_name is returned
      *
      * @return array list of columns in central columns among given set of columns
      */
-    public static function findExistingColNames($db, $cols, $allFields=false)
-    {
-        $cfgCentralColumns = self::getParams();
+    private function findExistingColNames(
+        string $db,
+        string $cols,
+        bool $allFields = false
+    ): array {
+        $cfgCentralColumns = $this->getParams();
         if (empty($cfgCentralColumns)) {
-            return array();
+            return [];
         }
         $pmadb = $cfgCentralColumns['db'];
-        $GLOBALS['dbi']->selectDb($pmadb, $GLOBALS['controllink']);
+        $this->dbi->selectDb($pmadb, DatabaseInterface::CONNECT_CONTROL);
         $central_list_table = $cfgCentralColumns['table'];
         if ($allFields) {
             $query = 'SELECT * FROM ' . Util::backquote($central_list_table) . ' '
-                . 'WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\' AND col_name IN (' . $cols . ');';
-            $has_list = (array) $GLOBALS['dbi']->fetchResult(
-                $query, null, null, $GLOBALS['controllink']
+                . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\' AND col_name IN (' . $cols . ');';
+            $has_list = (array) $this->dbi->fetchResult(
+                $query,
+                null,
+                null,
+                DatabaseInterface::CONNECT_CONTROL
             );
-            self::handleColumnExtra($has_list);
+            $this->handleColumnExtra($has_list);
         } else {
             $query = 'SELECT col_name FROM '
                 . Util::backquote($central_list_table) . ' '
-                . 'WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\' AND col_name IN (' . $cols . ');';
-            $has_list = (array) $GLOBALS['dbi']->fetchResult(
-                $query, null, null, $GLOBALS['controllink']
+                . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\' AND col_name IN (' . $cols . ');';
+            $has_list = (array) $this->dbi->fetchResult(
+                $query,
+                null,
+                null,
+                DatabaseInterface::CONNECT_CONTROL
             );
         }
 
@@ -158,7 +240,7 @@ class CentralColumns
      *
      * @return Message
      */
-    public static function configErrorMessage()
+    private function configErrorMessage(): Message
     {
         return Message::error(
             __(
@@ -180,8 +262,12 @@ class CentralColumns
      * @return string query string to insert the given column
      * with definition into central list
      */
-    public static function getInsertQuery($column, array $def, $db, $central_list_table)
-    {
+    private function getInsertQuery(
+        string $column,
+        array $def,
+        string $db,
+        string $central_list_table
+    ): string {
         $type = "";
         $length = 0;
         $attribute = "";
@@ -194,20 +280,20 @@ class CentralColumns
         if (isset($def['Attribute'])) {
             $attribute = $def['Attribute'];
         };
-        $collation = isset($def['Collation'])?$def['Collation']:"";
-        $isNull = ($def['Null'] == "NO")?0:1;
-        $extra = isset($def['Extra'])?$def['Extra']:"";
-        $default = isset($def['Default'])?$def['Default']:"";
+        $collation = isset($def['Collation']) ? $def['Collation'] : "";
+        $isNull = ($def['Null'] == "NO") ? '0' : '1';
+        $extra = isset($def['Extra']) ? $def['Extra'] : "";
+        $default = isset($def['Default']) ? $def['Default'] : "";
         $insQuery = 'INSERT INTO '
             . Util::backquote($central_list_table) . ' '
-            . 'VALUES ( \'' . $GLOBALS['dbi']->escapeString($db) . '\' ,'
-            . '\'' . $GLOBALS['dbi']->escapeString($column) . '\',\''
-            . $GLOBALS['dbi']->escapeString($type) . '\','
-            . '\'' . $GLOBALS['dbi']->escapeString($length) . '\',\''
-            . $GLOBALS['dbi']->escapeString($collation) . '\','
-            . '\'' . $GLOBALS['dbi']->escapeString($isNull) . '\','
-            . '\'' . implode(',', array($extra, $attribute))
-            . '\',\'' . $GLOBALS['dbi']->escapeString($default) . '\');';
+            . 'VALUES ( \'' . $this->dbi->escapeString($db) . '\' ,'
+            . '\'' . $this->dbi->escapeString($column) . '\',\''
+            . $this->dbi->escapeString($type) . '\','
+            . '\'' . $this->dbi->escapeString((string) $length) . '\',\''
+            . $this->dbi->escapeString($collation) . '\','
+            . '\'' . $this->dbi->escapeString($isNull) . '\','
+            . '\'' . implode(',', [$extra, $attribute])
+            . '\',\'' . $this->dbi->escapeString($default) . '\');';
         return $insQuery;
     }
 
@@ -217,45 +303,54 @@ class CentralColumns
      * list of columns and these columns are added to central list if not already added
      *
      * @param array  $field_select if $isTable is true selected tables list
-     * otherwise selected columns list
+     *                             otherwise selected columns list
      * @param bool   $isTable      if passed array is of tables or columns
-     * @param string $table        if $isTable is false,
-     * then table name to which columns belong
+     * @param string $table        if $isTable is false, then table name to
+     *                             which columns belong
      *
-     * @return true|PhpMyAdmin\Message
+     * @return true|\PhpMyAdmin\Message
      */
-    public static function syncUniqueColumns(array $field_select, $isTable=true, $table=null)
-    {
-        $cfgCentralColumns = self::getParams();
+    public function syncUniqueColumns(
+        array $field_select,
+        bool $isTable = true,
+        ?string $table = null
+    ) {
+        $cfgCentralColumns = $this->getParams();
         if (empty($cfgCentralColumns)) {
-            return self::configErrorMessage();
+            return $this->configErrorMessage();
         }
         $db = $_REQUEST['db'];
         $pmadb = $cfgCentralColumns['db'];
         $central_list_table = $cfgCentralColumns['table'];
-        $GLOBALS['dbi']->selectDb($db, $GLOBALS['userlink']);
-        $existingCols = array();
+        $this->dbi->selectDb($db);
+        $existingCols = [];
         $cols = "";
-        $insQuery = array();
-        $fields = array();
+        $insQuery = [];
+        $fields = [];
         $message = true;
         if ($isTable) {
             foreach ($field_select as $table) {
-                $fields[$table] = (array) $GLOBALS['dbi']->getColumns(
-                    $db, $table, null, true, $GLOBALS['userlink']
+                $fields[$table] = (array) $this->dbi->getColumns(
+                    $db,
+                    $table,
+                    null,
+                    true
                 );
                 foreach ($fields[$table] as $field => $def) {
-                    $cols .= "'" . $GLOBALS['dbi']->escapeString($field) . "',";
+                    $cols .= "'" . $this->dbi->escapeString($field) . "',";
                 }
             }
 
-            $has_list = self::findExistingColNames($db, trim($cols, ','));
+            $has_list = $this->findExistingColNames($db, trim($cols, ','));
             foreach ($field_select as $table) {
                 foreach ($fields[$table] as $field => $def) {
                     if (!in_array($field, $has_list)) {
                         $has_list[] = $field;
-                        $insQuery[] = self::getInsertQuery(
-                            $field, $def, $db, $central_list_table
+                        $insQuery[] = $this->getInsertQuery(
+                            $field,
+                            $def,
+                            $db,
+                            $central_list_table
                         );
                     } else {
                         $existingCols[] = "'" . $field . "'";
@@ -267,18 +362,23 @@ class CentralColumns
                 $table = $_REQUEST['table'];
             }
             foreach ($field_select as $column) {
-                $cols .= "'" . $GLOBALS['dbi']->escapeString($column) . "',";
+                $cols .= "'" . $this->dbi->escapeString($column) . "',";
             }
-            $has_list = self::findExistingColNames($db, trim($cols, ','));
+            $has_list = $this->findExistingColNames($db, trim($cols, ','));
             foreach ($field_select as $column) {
                 if (!in_array($column, $has_list)) {
                     $has_list[] = $column;
-                    $field = (array) $GLOBALS['dbi']->getColumns(
-                        $db, $table, $column,
-                        true, $GLOBALS['userlink']
+                    $field = (array) $this->dbi->getColumns(
+                        $db,
+                        $table,
+                        $column,
+                        true
                     );
-                    $insQuery[] = self::getInsertQuery(
-                        $column, $field, $db, $central_list_table
+                    $insQuery[] = $this->getInsertQuery(
+                        $column,
+                        $field,
+                        $db,
+                        $central_list_table
                     );
                 } else {
                     $existingCols[] = "'" . $column . "'";
@@ -291,7 +391,8 @@ class CentralColumns
                 sprintf(
                     __(
                         'Could not add %1$s as they already exist in central list!'
-                    ), htmlspecialchars($existingCols)
+                    ),
+                    htmlspecialchars($existingCols)
                 )
             );
             $message->addMessage(
@@ -301,14 +402,14 @@ class CentralColumns
                 )
             );
         }
-        $GLOBALS['dbi']->selectDb($pmadb, $GLOBALS['controllink']);
+        $this->dbi->selectDb($pmadb, DatabaseInterface::CONNECT_CONTROL);
         if (! empty($insQuery)) {
             foreach ($insQuery as $query) {
-                if (!$GLOBALS['dbi']->tryQuery($query, $GLOBALS['controllink'])) {
+                if (!$this->dbi->tryQuery($query, DatabaseInterface::CONNECT_CONTROL)) {
                     $message = Message::error(__('Could not add columns!'));
                     $message->addMessage(
                         Message::rawError(
-                            $GLOBALS['dbi']->getError($GLOBALS['controllink'])
+                            $this->dbi->getError(DatabaseInterface::CONNECT_CONTROL)
                         )
                     );
                     break;
@@ -324,36 +425,39 @@ class CentralColumns
      * given columns if present in central list
      *
      * @param array $field_select if $isTable selected list of tables otherwise
-     * selected list of columns to remove from central list
+     *                            selected list of columns to remove from central list
      * @param bool  $isTable      if passed array is of tables or columns
      *
-     * @return true|PhpMyAdmin\Message
+     * @return true|\PhpMyAdmin\Message
      */
-    public static function deleteColumnsFromList(array $field_select, $isTable=true)
-    {
-        $cfgCentralColumns = self::getParams();
+    public function deleteColumnsFromList(
+        array $field_select,
+        bool $isTable = true
+    ) {
+        $cfgCentralColumns = $this->getParams();
         if (empty($cfgCentralColumns)) {
-            return self::configErrorMessage();
+            return $this->configErrorMessage();
         }
         $db = $_REQUEST['db'];
         $pmadb = $cfgCentralColumns['db'];
         $central_list_table = $cfgCentralColumns['table'];
-        $GLOBALS['dbi']->selectDb($db, $GLOBALS['userlink']);
+        $this->dbi->selectDb($db);
         $message = true;
-        $colNotExist = array();
-        $fields = array();
+        $colNotExist = [];
+        $fields = [];
         if ($isTable) {
             $cols = '';
             foreach ($field_select as $table) {
-                $fields[$table] = (array) $GLOBALS['dbi']->getColumnNames(
-                    $db, $table, $GLOBALS['userlink']
+                $fields[$table] = (array) $this->dbi->getColumnNames(
+                    $db,
+                    $table
                 );
                 foreach ($fields[$table] as $col_select) {
-                    $cols .= '\'' . $GLOBALS['dbi']->escapeString($col_select) . '\',';
+                    $cols .= '\'' . $this->dbi->escapeString($col_select) . '\',';
                 }
             }
             $cols = trim($cols, ',');
-            $has_list = self::findExistingColNames($db, $cols);
+            $has_list = $this->findExistingColNames($db, $cols);
             foreach ($field_select as $table) {
                 foreach ($fields[$table] as $column) {
                     if (!in_array($column, $has_list)) {
@@ -361,14 +465,13 @@ class CentralColumns
                     }
                 }
             }
-
         } else {
             $cols = '';
             foreach ($field_select as $col_select) {
-                $cols .= '\'' . $GLOBALS['dbi']->escapeString($col_select) . '\',';
+                $cols .= '\'' . $this->dbi->escapeString($col_select) . '\',';
             }
             $cols = trim($cols, ',');
-            $has_list = self::findExistingColNames($db, $cols);
+            $has_list = $this->findExistingColNames($db, $cols);
             foreach ($field_select as $column) {
                 if (!in_array($column, $has_list)) {
                     $colNotExist[] = "'" . $column . "'";
@@ -382,21 +485,22 @@ class CentralColumns
                     __(
                         'Couldn\'t remove Column(s) %1$s '
                         . 'as they don\'t exist in central columns list!'
-                    ), htmlspecialchars($colNotExist)
+                    ),
+                    htmlspecialchars($colNotExist)
                 )
             );
         }
-        $GLOBALS['dbi']->selectDb($pmadb, $GLOBALS['controllink']);
+        $this->dbi->selectDb($pmadb, DatabaseInterface::CONNECT_CONTROL);
 
         $query = 'DELETE FROM ' . Util::backquote($central_list_table) . ' '
-            . 'WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\' AND col_name IN (' . $cols . ');';
+            . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\' AND col_name IN (' . $cols . ');';
 
-        if (!$GLOBALS['dbi']->tryQuery($query, $GLOBALS['controllink'])) {
+        if (!$this->dbi->tryQuery($query, DatabaseInterface::CONNECT_CONTROL)) {
             $message = Message::error(__('Could not remove columns!'));
             $message->addHtml('<br />' . htmlspecialchars($cols) . '<br />');
             $message->addMessage(
                 Message::rawError(
-                    $GLOBALS['dbi']->getError($GLOBALS['controllink'])
+                    $this->dbi->getError(DatabaseInterface::CONNECT_CONTROL)
                 )
             );
         }
@@ -404,30 +508,34 @@ class CentralColumns
     }
 
     /**
-     * make the columns of given tables consistent with central list of columns.
+     * Make the columns of given tables consistent with central list of columns.
      * Updates only those columns which are not being referenced.
      *
      * @param string $db              current database
      * @param array  $selected_tables list of selected tables.
      *
-     * @return true|PhpMyAdmin\Message
+     * @return true|\PhpMyAdmin\Message
      */
-    public static function makeConsistentWithList($db, array $selected_tables)
-    {
+    public function makeConsistentWithList(
+        string $db,
+        array $selected_tables
+    ) {
         $message = true;
         foreach ($selected_tables as $table) {
             $query = 'ALTER TABLE ' . Util::backquote($table);
-            $has_list = self::getFromTable($db, $table, true);
-            $GLOBALS['dbi']->selectDb($db, $GLOBALS['userlink']);
+            $has_list = $this->getFromTable($db, $table, true);
+            $this->dbi->selectDb($db);
             foreach ($has_list as $column) {
-                $column_status = Relation::checkChildForeignReferences(
-                    $db, $table, $column['col_name']
+                $column_status = $this->relation->checkChildForeignReferences(
+                    $db,
+                    $table,
+                    $column['col_name']
                 );
                 //column definition can only be changed if
                 //it is not referenced by another column
                 if ($column_status['isEditable']) {
                     $query .= ' MODIFY ' . Util::backquote($column['col_name']) . ' '
-                        . $GLOBALS['dbi']->escapeString($column['col_type']);
+                        . $this->dbi->escapeString($column['col_type']);
                     if ($column['col_length']) {
                         $query .= '(' . $column['col_length'] . ')';
                     }
@@ -441,12 +549,13 @@ class CentralColumns
 
                     $query .= ' ' . $column['col_extra'];
                     if ($column['col_default']) {
-                        if ($column['col_default'] != 'CURRENT_TIMESTAMP') {
-                            $query .= ' DEFAULT \'' . $GLOBALS['dbi']->escapeString(
-                                $column['col_default']
+                        if ($column['col_default'] != 'CURRENT_TIMESTAMP'
+                            && $column['col_default'] != 'current_timestamp()') {
+                            $query .= ' DEFAULT \'' . $this->dbi->escapeString(
+                                (string) $column['col_default']
                             ) . '\'';
                         } else {
-                            $query .= ' DEFAULT ' . $GLOBALS['dbi']->escapeString(
+                            $query .= ' DEFAULT ' . $this->dbi->escapeString(
                                 $column['col_default']
                             );
                         }
@@ -455,14 +564,14 @@ class CentralColumns
                 }
             }
             $query = trim($query, " ,") . ";";
-            if (!$GLOBALS['dbi']->tryQuery($query, $GLOBALS['userlink'])) {
+            if (!$this->dbi->tryQuery($query)) {
                 if ($message === true) {
                     $message = Message::error(
-                        $GLOBALS['dbi']->getError($GLOBALS['userlink'])
+                        $this->dbi->getError()
                     );
                 } else {
                     $message->addText(
-                        $GLOBALS['dbi']->getError($GLOBALS['userlink']),
+                        $this->dbi->getError(),
                         '<br />'
                     );
                 }
@@ -478,31 +587,35 @@ class CentralColumns
      * @param string  $db        given database
      * @param string  $table     given table
      * @param boolean $allFields set if need all the fields of existing columns,
-     * otherwise only column_name is returned
+     *                           otherwise only column_name is returned
      *
      * @return array columns present in central list from given table of given db.
      */
-    public static function getFromTable($db, $table, $allFields=false)
-    {
-        $cfgCentralColumns = self::getParams();
+    public function getFromTable(
+        string $db,
+        string $table,
+        bool $allFields = false
+    ): array {
+        $cfgCentralColumns = $this->getParams();
         if (empty($cfgCentralColumns)) {
-            return array();
+            return [];
         }
-        $GLOBALS['dbi']->selectDb($db, $GLOBALS['userlink']);
-        $fields = (array) $GLOBALS['dbi']->getColumnNames(
-            $db, $table, $GLOBALS['userlink']
+        $this->dbi->selectDb($db);
+        $fields = (array) $this->dbi->getColumnNames(
+            $db,
+            $table
         );
         $cols = '';
         foreach ($fields as $col_select) {
-            $cols .= '\'' . $GLOBALS['dbi']->escapeString($col_select) . '\',';
+            $cols .= '\'' . $this->dbi->escapeString((string)$col_select) . '\',';
         }
         $cols = trim($cols, ',');
-        $has_list = self::findExistingColNames($db, $cols, $allFields);
+        $has_list = $this->findExistingColNames($db, $cols, $allFields);
         if (! empty($has_list)) {
             return (array)$has_list;
-        } else {
-            return array();
         }
+
+        return [];
     }
 
     /**
@@ -519,46 +632,55 @@ class CentralColumns
      * @param string $col_extra     new column extra property
      * @param string $col_default   new column default value
      *
-     * @return true|PhpMyAdmin\Message
+     * @return true|\PhpMyAdmin\Message
      */
-    public static function updateOneColumn($db, $orig_col_name, $col_name, $col_type,
-        $col_attribute,$col_length, $col_isNull, $collation, $col_extra, $col_default
+    public function updateOneColumn(
+        string $db,
+        string $orig_col_name,
+        string $col_name,
+        string $col_type,
+        string $col_attribute,
+        string $col_length,
+        int $col_isNull,
+        string $collation,
+        string $col_extra,
+        string $col_default
     ) {
-        $cfgCentralColumns = self::getParams();
+        $cfgCentralColumns = $this->getParams();
         if (empty($cfgCentralColumns)) {
-            return self::configErrorMessage();
+            return $this->configErrorMessage();
         }
         $centralTable = $cfgCentralColumns['table'];
-        $GLOBALS['dbi']->selectDb($cfgCentralColumns['db'], $GLOBALS['controllink']);
+        $this->dbi->selectDb($cfgCentralColumns['db'], DatabaseInterface::CONNECT_CONTROL);
         if ($orig_col_name == "") {
-            $def = array();
+            $def = [];
             $def['Type'] = $col_type;
             if ($col_length) {
                 $def['Type'] .= '(' . $col_length . ')';
             }
             $def['Collation'] = $collation;
-            $def['Null'] = $col_isNull?__('YES'):__('NO');
+            $def['Null'] = $col_isNull ? __('YES') : __('NO');
             $def['Extra'] = $col_extra;
             $def['Attribute'] = $col_attribute;
             $def['Default'] = $col_default;
-            $query = self::getInsertQuery($col_name, $def, $db, $centralTable);
+            $query = $this->getInsertQuery($col_name, $def, $db, $centralTable);
         } else {
             $query = 'UPDATE ' . Util::backquote($centralTable)
-                . ' SET col_type = \'' . $GLOBALS['dbi']->escapeString($col_type) . '\''
-                . ', col_name = \'' . $GLOBALS['dbi']->escapeString($col_name) . '\''
-                . ', col_length = \'' . $GLOBALS['dbi']->escapeString($col_length) . '\''
+                . ' SET col_type = \'' . $this->dbi->escapeString($col_type) . '\''
+                . ', col_name = \'' . $this->dbi->escapeString($col_name) . '\''
+                . ', col_length = \'' . $this->dbi->escapeString($col_length) . '\''
                 . ', col_isNull = ' . $col_isNull
-                . ', col_collation = \'' . $GLOBALS['dbi']->escapeString($collation) . '\''
+                . ', col_collation = \'' . $this->dbi->escapeString($collation) . '\''
                 . ', col_extra = \''
-                . implode(',', array($col_extra, $col_attribute)) . '\''
-                . ', col_default = \'' . $GLOBALS['dbi']->escapeString($col_default) . '\''
-                . ' WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\' '
-                . 'AND col_name = \'' . $GLOBALS['dbi']->escapeString($orig_col_name)
+                . implode(',', [$col_extra, $col_attribute]) . '\''
+                . ', col_default = \'' . $this->dbi->escapeString($col_default) . '\''
+                . ' WHERE db_name = \'' . $this->dbi->escapeString($db) . '\' '
+                . 'AND col_name = \'' . $this->dbi->escapeString($orig_col_name)
                 . '\'';
         }
-        if (!$GLOBALS['dbi']->tryQuery($query, $GLOBALS['controllink'])) {
+        if (!$this->dbi->tryQuery($query, DatabaseInterface::CONNECT_CONTROL)) {
             return Message::error(
-                $GLOBALS['dbi']->getError($GLOBALS['controllink'])
+                $this->dbi->getError(DatabaseInterface::CONNECT_CONTROL)
             );
         }
         return true;
@@ -567,9 +689,9 @@ class CentralColumns
     /**
      * Update Multiple column in central columns list if a chnage is requested
      *
-     * @return true|PhpMyAdmin\Message
+     * @return true|\PhpMyAdmin\Message
      */
-    public static function updateMultipleColumn()
+    public function updateMultipleColumn()
     {
         $db = $_POST['db'];
         $col_name = $_POST['field_name'];
@@ -579,24 +701,31 @@ class CentralColumns
         $col_attribute = $_POST['field_attribute'];
         $col_type = $_POST['field_type'];
         $collation = $_POST['field_collation'];
-        $col_isNull = array();
-        $col_extra = array();
+        $col_isNull = [];
+        $col_extra = [];
         $num_central_fields = count($orig_col_name);
-        for ($i = 0; $i < $num_central_fields ; $i++) {
+        for ($i = 0; $i < $num_central_fields; $i++) {
             $col_isNull[$i] = isset($_POST['field_null'][$i]) ? 1 : 0;
             $col_extra[$i] = isset($_POST['col_extra'][$i])
                 ? $_POST['col_extra'][$i] : '';
 
             if ($col_default[$i] == 'NONE') {
                 $col_default[$i] = "";
-            } else if ($col_default[$i] == 'USER_DEFINED') {
+            } elseif ($col_default[$i] == 'USER_DEFINED') {
                 $col_default[$i] = $_POST['field_default_value'][$i];
             }
 
-            $message = self::updateOneColumn(
-                $db, $orig_col_name[$i], $col_name[$i], $col_type[$i],
-                $col_attribute[$i], $col_length[$i], $col_isNull[$i], $collation[$i],
-                $col_extra[$i], $col_default[$i]
+            $message = $this->updateOneColumn(
+                $db,
+                $orig_col_name[$i],
+                $col_name[$i],
+                $col_type[$i],
+                $col_attribute[$i],
+                $col_length[$i],
+                $col_isNull[$i],
+                $collation[$i],
+                $col_extra[$i],
+                $col_default[$i]
             );
             if (!is_bool($message)) {
                 return $message;
@@ -606,464 +735,77 @@ class CentralColumns
     }
 
     /**
-     * get the html for table navigation in Central columns page
-     *
-     * @param int    $total_rows total number of rows in complete result set
-     * @param int    $pos        offset of first result with complete result set
-     * @param string $db         current database
-     *
-     * @return string html for table navigation in Central columns page
-     */
-    public static function getHtmlForTableNavigation($total_rows, $pos, $db)
-    {
-        $max_rows = $GLOBALS['cfg']['MaxRows'];
-        $pageNow = ($pos / $max_rows) + 1;
-        $nbTotalPage = ceil($total_rows / $max_rows);
-        $table_navigation_html = '<table style="display:inline-block;max-width:49%" '
-            . 'class="navigation nospacing nopadding">'
-            . '<tr>'
-            . '<td class="navigation_separator"></td>';
-        if ($pos - $max_rows >= 0) {
-            $table_navigation_html .= '<td>'
-                . '<form action="db_central_columns.php" method="post">'
-                . Url::getHiddenInputs(
-                    $db
-                )
-                . '<input type="hidden" name="pos" value="' . ($pos - $max_rows) . '" />'
-                . '<input type="hidden" name="total_rows" value="' . $total_rows . '"/>'
-                . '<input type="submit" name="navig"'
-                . ' class="ajax" '
-                . 'value="&lt" />'
-                . '</form>'
-                . '</td>';
-        }
-        if ($nbTotalPage > 1) {
-            $table_navigation_html .= '<td>';
-            $table_navigation_html .= '<form action="db_central_columns.php'
-                . '" method="post">'
-                . Url::getHiddenInputs(
-                    $db
-                )
-                . '<input type="hidden" name="total_rows" value="' . $total_rows . '"/>';
-            $table_navigation_html .= Util::pageselector(
-                'pos', $max_rows, $pageNow, $nbTotalPage
-            );
-            $table_navigation_html .= '</form>'
-                . '</td>';
-        }
-        if ($pos + $max_rows < $total_rows) {
-            $table_navigation_html .= '<td>'
-                . '<form action="db_central_columns.php" method="post">'
-                . Url::getHiddenInputs(
-                    $db
-                )
-                . '<input type="hidden" name="pos" value="' . ($pos + $max_rows) . '" />'
-                . '<input type="hidden" name="total_rows" value="' . $total_rows . '"/>'
-                . '<input type="submit" name="navig"'
-                . ' class="ajax" '
-                . 'value="&gt" />'
-                . '</form>'
-                . '</td>';
-        }
-        $table_navigation_html .= '</form>'
-            . '</td>'
-            . '<td class="navigation_separator"></td>'
-            . '<td>'
-            . '<span>' . __('Filter rows') . ':</span>'
-            . '<input type="text" class="filter_rows" placeholder="'
-            . __('Search this table') . '">'
-            . '</td>'
-            . '<td class="navigation_separator"></td>'
-            . '</tr>'
-            . '</table>';
-
-        return $table_navigation_html;
-    }
-
-    /**
-     * function generate and return the table header for central columns page
-     *
-     * @param string  $class       styling class of 'th' elements
-     * @param string  $title       title of the 'th' elements
-     * @param integer $actionCount number of actions
-     *
-     * @return string html for table header in central columns view/edit page
-     */
-    public static function getTableHeader($class='', $title='', $actionCount=0)
-    {
-        $action = '';
-        if ($actionCount > 0) {
-            $action .= '<th class="column_action" colspan="' . $actionCount . '">'
-                . __('Action') . '</th>';
-        }
-        $tableheader = '<thead>';
-        $tableheader .= '<tr>'
-            . '<th class="' . $class . '"></th>'
-            . '<th class="hide"></th>'
-            . $action
-            . '<th class="' . $class . '" title="' . $title . '" data-column="name">'
-            . __('Name') . '<div class="sorticon"></div></th>'
-            . '<th class="' . $class . '" title="' . $title . '" data-column="type">'
-            . __('Type') . '<div class="sorticon"></div></th>'
-            . '<th class="' . $class . '" title="' . $title . '" data-column="length">'
-            . __('Length/Values') . '<div class="sorticon"></div></th>'
-            . '<th class="' . $class . '" title="' . $title . '" data-column="default">'
-            . __('Default') . '<div class="sorticon"></div></th>'
-            . '<th class="' . $class . '" title="' . $title . '" data-column="collation"'
-            . '>' . __('Collation') . '<div class="sorticon"></div></th>'
-            . '<th class="' . $class . '" title="' . $title
-            . '" data-column="attribute">'
-            . __('Attribute') . '<div class="sorticon"></div></th>'
-            . '<th class="' . $class . '" title="' . $title . '" data-column="isnull">'
-            . __('Null') . '<div class="sorticon"></div></th>'
-            . '<th class="' . $class . '" title="' . $title . '" data-column="extra">'
-            . __('A_I') . '<div class="sorticon"></div></th>'
-            . '</tr>';
-        $tableheader .= '</thead>';
-        return $tableheader;
-    }
-
-    /**
      * Function generate and return the table header for
      * multiple edit central columns page
      *
-     * @param array $header_cells headers list
+     * @param array $headers headers list
      *
      * @return string html for table header in central columns multi edit page
      */
-    public static function getEditTableHeader(array $header_cells)
+    private function getEditTableHeader(array $headers): string
     {
-        $html = '<table id="table_columns" class="noclick"'
-            . ' style="min-width: 100%;">';
-        $html .= '<caption class="tblHeaders">' . __('Structure');
-        $html .= '<tr>';
-        foreach ($header_cells as $header_val) {
-            $html .= '<th>' . $header_val . '</th>';
-        }
-        $html .= '</tr>';
-        return $html;
-    }
-
-    /**
-     * build the dropdown select html for tables of given database
-     *
-     * @param string $db current database
-     *
-     * @return string html dropdown for selecting table
-     */
-    public static function getHtmlForTableDropdown($db)
-    {
-        $GLOBALS['dbi']->selectDb($db, $GLOBALS['userlink']);
-        $tables = $GLOBALS['dbi']->getTables($db, $GLOBALS['userlink']);
-        $selectHtml = '<select name="table-select" id="table-select">'
-            . '<option value="" disabled="disabled" selected="selected">'
-            . __('Select a table') . '</option>';
-        foreach ($tables as $table) {
-            $selectHtml .= '<option value="' . htmlspecialchars($table) . '">'
-                . htmlspecialchars($table) . '</option>';
-        }
-        $selectHtml .= '</select>';
-        return $selectHtml;
-    }
-
-    /**
-     * build dropdown select html to select column in selected table,
-     * include only columns which are not already in central list
-     *
-     * @param string $db           current database to which selected table belongs
-     * @param string $selected_tbl selected table
-     *
-     * @return string html to select column
-     */
-    public static function getHtmlForColumnDropdown($db, $selected_tbl)
-    {
-        $existing_cols = self::getFromTable($db, $selected_tbl);
-        $GLOBALS['dbi']->selectDb($db, $GLOBALS['userlink']);
-        $columns = (array) $GLOBALS['dbi']->getColumnNames(
-            $db, $selected_tbl, $GLOBALS['userlink']
-        );
-        $selectColHtml = "";
-        foreach ($columns as $column) {
-            if (!in_array($column, $existing_cols)) {
-                $selectColHtml .= '<option value="' . htmlspecialchars($column) . '">'
-                    . htmlspecialchars($column)
-                    . '</option>';
-            }
-        }
-        return $selectColHtml;
-    }
-
-    /**
-     * html to display the form that let user to add a column on Central columns page
-     *
-     * @param int    $total_rows total number of rows in complete result set
-     * @param int    $pos        offset of first result with complete result set
-     * @param string $db         current database
-     *
-     * @return string html to add a column in the central list
-     */
-    public static function getHtmlForAddCentralColumn($total_rows, $pos, $db)
-    {
-        $columnAdd = '<table style="display:inline-block;margin-left:1%;max-width:50%" '
-            . 'class="navigation nospacing nopadding">'
-            . '<tr>'
-            . '<td class="navigation_separator largescreenonly"></td>'
-            . '<td style="padding:1.5% 0em">'
-            . Util::getIcon(
-                'centralColumns_add.png',
-                __('Add column')
-            )
-            . '<form id="add_column" action="db_central_columns.php" method="post">'
-            . Url::getHiddenInputs(
-                $db
-            )
-            . '<input type="hidden" name="add_column" value="add">'
-            . '<input type="hidden" name="pos" value="' . $pos . '" />'
-            . '<input type="hidden" name="total_rows" value="' . $total_rows . '"/>'
-            . self::getHtmlForTableDropdown($db)
-            . '<select name="column-select" id="column-select">'
-            . '<option value="" selected="selected">'
-            . __('Select a column.') . '</option>'
-            . '</select></form>'
-            . '</td>'
-            . '<td class="navigation_separator largescreenonly"></td>'
-            . '</tr>'
-            . '</table>';
-
-        return $columnAdd;
-    }
-
-    /**
-     * build html for a row in central columns table
-     *
-     * @param array  $row     array contains complete information of a particular row of central list table
-     * @param int    $row_num position the row in the table
-     * @param string $db      current database
-     *
-     * @return string html of a particular row in the central columns table.
-     */
-    public static function getHtmlForCentralColumnsTableRow(array $row, $row_num, $db)
-    {
-        $tableHtml = '<tr data-rownum="' . $row_num . '" id="f_' . $row_num . '">'
-            . Url::getHiddenInputs(
-                $db
-            )
-            . '<input type="hidden" name="edit_save" value="save">'
-            . '<td class="nowrap">'
-            . '<input type="checkbox" class="checkall" name="selected_fld[]" '
-            . 'value="' . htmlspecialchars($row['col_name']) . '" '
-            . 'id="checkbox_row_' . $row_num . '"/>'
-            . '</td>'
-            . '<td id="edit_' . $row_num . '" class="edit center">'
-            . '<a href="#">' . Util::getIcon('b_edit.png', __('Edit')) . '</a></td>'
-            . '<td class="del_row" data-rownum = "' . $row_num . '">'
-            . '<a hrf="#">' . Util::getIcon('b_drop.png', __('Delete')) . '</a>'
-            . '<input type="submit" data-rownum = "' . $row_num . '"'
-            . ' class="edit_cancel_form" value="Cancel"></td>'
-            . '<td id="save_' . $row_num . '" class="hide">'
-            . '<input type="submit" data-rownum = "' . $row_num . '"'
-            . ' class="edit_save_form" value="Save"></td>';
-
-        $tableHtml .=
-            '<td name="col_name" class="nowrap">'
-            . '<span>' . htmlspecialchars($row['col_name']) . '</span>'
-            . '<input name="orig_col_name" type="hidden" '
-            . 'value="' . htmlspecialchars($row['col_name']) . '">'
-            . Template::get('columns_definitions/column_name')
-                ->render(
-                    array(
-                    'columnNumber' => $row_num,
-                    'ci' => 0,
-                    'ci_offset' => 0,
-                    'columnMeta' => array(
-                        'Field'=>$row['col_name']
-                    ),
-                    'cfgRelation' => array(
-                        'centralcolumnswork' => false
-                    )
-                    )
-                )
-            . '</td>';
-        $tableHtml .=
-            '<td name = "col_type" class="nowrap"><span>'
-            . htmlspecialchars($row['col_type']) . '</span>'
-            . Template::get('columns_definitions/column_type')
-                ->render(
-                    array(
-                    'column_number' => $row_num,
-                    'ci' => 1,
-                    'ci_offset' => 0,
-                    'type_upper' => mb_strtoupper($row['col_type']),
-                    'column_meta' => array()
-                    )
-                )
-            . '</td>';
-        $tableHtml .=
-            '<td class="nowrap" name="col_length">'
-            . '<span>' . ($row['col_length']?htmlspecialchars($row['col_length']):"")
-            . '</span>'
-            . Template::get('columns_definitions/column_length')->render(
-                array(
-                    'column_number' => $row_num,
-                    'ci' => 2,
-                    'ci_offset' => 0,
-                    'length_values_input_size' => 8,
-                    'length_to_display' => $row['col_length']
-                )
-            )
-            . '</td>';
-
-        $meta = array();
-        if (!isset($row['col_default']) || $row['col_default'] == '') {
-            $meta['DefaultType'] = 'NONE';
-        } else {
-            if ($row['col_default'] == 'CURRENT_TIMESTAMP'
-                || $row['col_default'] == 'NULL'
-            ) {
-                $meta['DefaultType'] = $row['col_default'];
-            } else {
-                $meta['DefaultType'] = 'USER_DEFINED';
-                $meta['DefaultValue'] = $row['col_default'];
-            }
-        }
-        $tableHtml .=
-            '<td class="nowrap" name="col_default"><span>' . (isset($row['col_default'])
-                ? htmlspecialchars($row['col_default']) : 'None')
-            . '</span>'
-            . Template::get('columns_definitions/column_default')
-                ->render(
-                    array(
-                    'columnNumber' => $row_num,
-                    'ci' => 3,
-                    'ci_offset' => 0,
-                    'type_upper' => mb_strtoupper($row['col_type']),
-                    'columnMeta' => $meta
-                    )
-                )
-            . '</td>';
-
-        $tableHtml .=
-            '<td name="collation" class="nowrap">'
-            . '<span>' . htmlspecialchars($row['col_collation']) . '</span>'
-            . Charsets::getCollationDropdownBox(
-                'field_collation[' . $row_num . ']',
-                'field_' . $row_num . '_4', $row['col_collation'], false
-            )
-            . '</td>';
-        $tableHtml .=
-            '<td class="nowrap" name="col_attribute">'
-            . '<span>' .
-            ($row['col_attribute']
-                ? htmlspecialchars($row['col_attribute']) : "" )
-            . '</span>'
-            . Template::get('columns_definitions/column_attribute')
-                ->render(
-                    array(
-                    'columnNumber' => $row_num,
-                    'ci' => 5,
-                    'ci_offset' => 0,
-                    'extracted_columnspec' => array(),
-                    'columnMeta' => $row['col_attribute'],
-                    'submit_attribute' => false,
-                    )
-                )
-            . '</td>';
-        $tableHtml .=
-            '<td class="nowrap" name="col_isNull">'
-            . '<span>' . ($row['col_isNull'] ? __('Yes') : __('No'))
-            . '</span>'
-            . Template::get('columns_definitions/column_null')
-                ->render(
-                    array(
-                    'column_number' => $row_num,
-                    'ci' => 6,
-                    'ci_offset' => 0,
-                    'column_meta' => array(
-                        'Null' => $row['col_isNull']
-                    )
-                    )
-                )
-            . '</td>';
-
-        $tableHtml .=
-            '<td class="nowrap" name="col_extra"><span>'
-            . htmlspecialchars($row['col_extra']) . '</span>'
-            . Template::get('columns_definitions/column_extra')->render(
-                array(
-                    'column_number' => $row_num,
-                    'ci' => 7,
-                    'ci_offset' => 0,
-                    'column_meta' => array('Extra'=>$row['col_extra'])
-                )
-            )
-            . '</td>';
-
-        $tableHtml .= '</tr>';
-
-        return $tableHtml;
+        return $this->template->render('database/central_columns/edit_table_header', [
+            'headers' => $headers,
+        ]);
     }
 
     /**
      * build html for editing a row in central columns table
      *
-     * @param array $row     array contains complete information of a particular row of central list table
+     * @param array $row     array contains complete information of a
+     *                       particular row of central list table
      * @param int   $row_num position the row in the table
      *
      * @return string html of a particular row in the central columns table.
      */
-    public static function getHtmlForCentralColumnsEditTableRow(array $row, $row_num)
+    private function getHtmlForEditTableRow(array $row, int $row_num): string
     {
         $tableHtml = '<tr>'
             . '<input name="orig_col_name[' . $row_num . ']" type="hidden" '
             . 'value="' . htmlspecialchars($row['col_name']) . '">'
             . '<td name="col_name" class="nowrap">'
-            . Template::get('columns_definitions/column_name')
-                ->render(
-                    array(
-                    'columnNumber' => $row_num,
-                    'ci' => 0,
-                    'ci_offset' => 0,
-                    'columnMeta' => array(
-                        'Field' => $row['col_name']
-                    ),
-                    'cfgRelation' => array(
-                        'centralcolumnswork' => false
-                    )
-                    )
-                )
+            . $this->template->render('columns_definitions/column_name', [
+                'column_number' => $row_num,
+                'ci' => 0,
+                'ci_offset' => 0,
+                'column_meta' => [
+                    'Field' => $row['col_name']
+                ],
+                'cfg_relation' => [
+                    'centralcolumnswork' => false
+                ],
+                'max_rows' => $this->maxRows,
+            ])
             . '</td>';
         $tableHtml .=
             '<td name = "col_type" class="nowrap">'
-            . Template::get('columns_definitions/column_type')
-                ->render(
-                    array(
-                    'column_number' => $row_num,
-                    'ci' => 1,
-                    'ci_offset' => 0,
-                    'type_upper' => mb_strtoupper($row['col_type']),
-                    'column_meta' => array()
-                    )
-                )
+            . $this->template->render('columns_definitions/column_type', [
+                'column_number' => $row_num,
+                'ci' => 1,
+                'ci_offset' => 0,
+                'type_upper' => mb_strtoupper($row['col_type']),
+                'column_meta' => [],
+            ])
             . '</td>';
         $tableHtml .=
             '<td class="nowrap" name="col_length">'
-            . Template::get('columns_definitions/column_length')->render(
-                array(
-                    'column_number' => $row_num,
-                    'ci' => 2,
-                    'ci_offset' => 0,
-                    'length_values_input_size' => 8,
-                    'length_to_display' => $row['col_length']
-                )
-            )
+            . $this->template->render('columns_definitions/column_length', [
+                'column_number' => $row_num,
+                'ci' => 2,
+                'ci_offset' => 0,
+                'length_values_input_size' => 8,
+                'length_to_display' => $row['col_length'],
+            ])
             . '</td>';
-        $meta = array();
+        $meta = [];
         if (!isset($row['col_default']) || $row['col_default'] == '') {
             $meta['DefaultType'] = 'NONE';
         } else {
             if ($row['col_default'] == 'CURRENT_TIMESTAMP'
-                || $row['col_default'] == 'NULL'
+                || $row['col_default'] == 'current_timestamp()'
             ) {
+                $meta['DefaultType'] = 'CURRENT_TIMESTAMP';
+            } elseif ($row['col_default'] == 'NULL') {
                 $meta['DefaultType'] = $row['col_default'];
             } else {
                 $meta['DefaultType'] = 'USER_DEFINED';
@@ -1072,65 +814,60 @@ class CentralColumns
         }
         $tableHtml .=
             '<td class="nowrap" name="col_default">'
-            . Template::get('columns_definitions/column_default')
-                ->render(
-                    array(
-                    'columnNumber' => $row_num,
-                    'ci' => 3,
-                    'ci_offset' => 0,
-                    'type_upper' => mb_strtoupper($row['col_default']),
-                    'columnMeta' => $meta
-                    )
-                )
+            . $this->template->render('columns_definitions/column_default', [
+                'column_number' => $row_num,
+                'ci' => 3,
+                'ci_offset' => 0,
+                'type_upper' => mb_strtoupper((string) $row['col_default']),
+                'column_meta' => $meta,
+                'char_editing' => $this->charEditing,
+            ])
             . '</td>';
         $tableHtml .=
             '<td name="collation" class="nowrap">'
             . Charsets::getCollationDropdownBox(
+                $this->dbi,
+                $this->disableIs,
                 'field_collation[' . $row_num . ']',
-                'field_' . $row_num . '_4', $row['col_collation'], false
+                'field_' . $row_num . '_4',
+                $row['col_collation'],
+                false
             )
             . '</td>';
         $tableHtml .=
             '<td class="nowrap" name="col_attribute">'
-            . Template::get('columns_definitions/column_attribute')
-                ->render(
-                    array(
-                    'columnNumber' => $row_num,
-                    'ci' => 5,
-                    'ci_offset' => 0,
-                    'extracted_columnspec' => array(
-                        'attribute' => $row['col_attribute']
-                    ),
-                    'columnMeta' => array(),
-                    'submit_attribute' => false,
-                    )
-                )
+            . $this->template->render('columns_definitions/column_attribute', [
+                'column_number' => $row_num,
+                'ci' => 5,
+                'ci_offset' => 0,
+                'extracted_columnspec' => [
+                    'attribute' => $row['col_attribute'],
+                ],
+                'column_meta' => [],
+                'submit_attribute' => false,
+                'attribute_types' => $this->dbi->types->getAttributes(),
+            ])
             . '</td>';
         $tableHtml .=
             '<td class="nowrap" name="col_isNull">'
-            . Template::get('columns_definitions/column_null')
-                ->render(
-                    array(
-                    'column_number' => $row_num,
-                    'ci' => 6,
-                    'ci_offset' => 0,
-                    'column_meta' => array(
-                        'Null' => $row['col_isNull']
-                    )
-                    )
-                )
+            . $this->template->render('columns_definitions/column_null', [
+                'column_number' => $row_num,
+                'ci' => 6,
+                'ci_offset' => 0,
+                'column_meta' => [
+                    'Null' => $row['col_isNull'],
+                ],
+            ])
             . '</td>';
 
         $tableHtml .=
             '<td class="nowrap" name="col_extra">'
-            . Template::get('columns_definitions/column_extra')->render(
-                array(
-                    'column_number' => $row_num,
-                    'ci' => 7,
-                    'ci_offset' => 0,
-                    'column_meta' => array('Extra' => $row['col_extra'])
-                )
-            )
+            . $this->template->render('columns_definitions/column_extra', [
+                'column_number' => $row_num,
+                'ci' => 7,
+                'ci_offset' => 0,
+                'column_meta' => ['Extra' => $row['col_extra']],
+            ])
             . '</td>';
         $tableHtml .= '</tr>';
         return $tableHtml;
@@ -1146,38 +883,42 @@ class CentralColumns
      * @return string encoded list of columns present in central list for the given
      *                database
      */
-    public static function getListRaw($db, $table)
+    public function getListRaw(string $db, string $table): string
     {
-        $cfgCentralColumns = self::getParams();
+        $cfgCentralColumns = $this->getParams();
         if (empty($cfgCentralColumns)) {
-            return json_encode(array());
+            return json_encode([]);
         }
         $centralTable = $cfgCentralColumns['table'];
         if (empty($table) || $table == '') {
             $query = 'SELECT * FROM ' . Util::backquote($centralTable) . ' '
-                . 'WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\';';
+                . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\';';
         } else {
-            $GLOBALS['dbi']->selectDb($db, $GLOBALS['userlink']);
-            $columns = (array) $GLOBALS['dbi']->getColumnNames(
-                $db, $table, $GLOBALS['userlink']
+            $this->dbi->selectDb($db);
+            $columns = (array) $this->dbi->getColumnNames(
+                $db,
+                $table
             );
             $cols = '';
             foreach ($columns as $col_select) {
-                $cols .= '\'' . $GLOBALS['dbi']->escapeString($col_select) . '\',';
+                $cols .= '\'' . $this->dbi->escapeString($col_select) . '\',';
             }
             $cols = trim($cols, ',');
             $query = 'SELECT * FROM ' . Util::backquote($centralTable) . ' '
-                . 'WHERE db_name = \'' . $GLOBALS['dbi']->escapeString($db) . '\'';
+                . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\'';
             if ($cols) {
                 $query .= ' AND col_name NOT IN (' . $cols . ')';
             }
             $query .= ';';
         }
-        $GLOBALS['dbi']->selectDb($cfgCentralColumns['db'], $GLOBALS['controllink']);
-        $columns_list = (array)$GLOBALS['dbi']->fetchResult(
-            $query, null, null, $GLOBALS['controllink']
+        $this->dbi->selectDb($cfgCentralColumns['db'], DatabaseInterface::CONNECT_CONTROL);
+        $columns_list = (array)$this->dbi->fetchResult(
+            $query,
+            null,
+            null,
+            DatabaseInterface::CONNECT_CONTROL
         );
-        self::handleColumnExtra($columns_list);
+        $this->handleColumnExtra($columns_list);
         return json_encode($columns_list);
     }
 
@@ -1189,23 +930,25 @@ class CentralColumns
      *
      * @return string $html_output
      */
-    public static function getTableFooter($pmaThemeImage, $text_dir)
+    public function getTableFooter(string $pmaThemeImage, string $text_dir): string
     {
-        $html_output = Template::get('select_all')
-            ->render(
-                array(
-                    'pma_theme_image' => $pmaThemeImage,
-                    'text_dir'        => $text_dir,
-                    'form_name'       => 'tableslistcontainer',
-                )
-            );
+        $html_output = $this->template->render('select_all', [
+            'pma_theme_image' => $pmaThemeImage,
+            'text_dir' => $text_dir,
+            'form_name' => 'tableslistcontainer',
+        ]);
         $html_output .= Util::getButtonOrImage(
-            'edit_central_columns', 'mult_submit change_central_columns',
-            __('Edit'), 'b_edit.png', 'edit central columns'
+            'edit_central_columns',
+            'mult_submit change_central_columns',
+            __('Edit'),
+            'b_edit',
+            'edit central columns'
         );
         $html_output .= Util::getButtonOrImage(
-            'delete_central_columns', 'mult_submit',
-            __('Delete'), 'b_drop.png',
+            'delete_central_columns',
+            'mult_submit',
+            __('Delete'),
+            'b_drop',
             'remove_from_central_columns'
         );
         return $html_output;
@@ -1217,7 +960,7 @@ class CentralColumns
      *
      * @return string html for table footer in central columns multi edit page
      */
-    public static function getEditTableFooter()
+    private function getEditTableFooter(): string
     {
         $html_output = '<fieldset class="tblFooters">'
             . '<input type="submit" '
@@ -1234,7 +977,7 @@ class CentralColumns
      *
      * @return void
      */
-    public static function handleColumnExtra(array &$columns_list)
+    private function handleColumnExtra(array &$columns_list): void
     {
         foreach ($columns_list as &$row) {
             $vals = explode(',', $row['col_extra']);
@@ -1260,128 +1003,6 @@ class CentralColumns
     }
 
     /**
-     * build html for adding a new user defined column to central list
-     *
-     * @param string  $db         current database
-     * @param integer $total_rows number of rows in central columns
-     *
-     * @return string html of the form to let user add a new user defined column to the
-     *                list
-     */
-    public static function getHtmlForAddNewColumn($db, $total_rows)
-    {
-        $addNewColumn = '<div id="add_col_div" class="topmargin"><a href="#">'
-            . '<span>+</span> ' . __('Add new column') . '</a>'
-            . '<form id="add_new" class="new_central_col '
-            . ($total_rows != 0 ? 'hide"' : '"')
-            . 'method="post" action="db_central_columns.php">'
-            . Url::getHiddenInputs(
-                $db
-            )
-            . '<input type="hidden" name="add_new_column" value="add_new_column">'
-            . '<div class="responsivetable">'
-            . '<table>';
-        $addNewColumn .= self::getTableHeader();
-        $addNewColumn .= '<tr>'
-            . '<td></td>'
-            . '<td name="col_name" class="nowrap">'
-            . Template::get('columns_definitions/column_name')
-                ->render(
-                    array(
-                    'columnNumber' => 0,
-                    'ci' => 0,
-                    'ci_offset' => 0,
-                    'columnMeta' => array(),
-                    'cfgRelation' => array(
-                        'centralcolumnswork' => false
-                    )
-                    )
-                )
-            . '</td>'
-            . '<td name = "col_type" class="nowrap">'
-            . Template::get('columns_definitions/column_type')
-                ->render(
-                    array(
-                    'column_number' => 0,
-                    'ci' => 1,
-                    'ci_offset' => 0,
-                    'type_upper' => '',
-                    'column_meta' => array()
-                    )
-                )
-            . '</td>'
-            . '<td class="nowrap" name="col_length">'
-            . Template::get('columns_definitions/column_length')->render(
-                array(
-                    'column_number' => 0,
-                    'ci' => 2,
-                    'ci_offset' => 0,
-                    'length_values_input_size' => 8,
-                    'length_to_display' => ''
-                )
-            )
-            . '</td>'
-            . '<td class="nowrap" name="col_default">'
-            . Template::get('columns_definitions/column_default')
-                ->render(
-                    array(
-                    'columnNumber' => 0,
-                    'ci' => 3,
-                    'ci_offset' => 0,
-                    'type_upper' => '',
-                    'columnMeta' => array()
-                    )
-                )
-            . '</td>'
-            . '<td name="collation" class="nowrap">'
-            . Charsets::getCollationDropdownBox(
-                'field_collation[0]',
-                'field_0_4', null, false
-            )
-            . '</td>'
-            . '<td class="nowrap" name="col_attribute">'
-            . Template::get('columns_definitions/column_attribute')
-                ->render(
-                    array(
-                    'columnNumber' => 0,
-                    'ci' => 5,
-                    'ci_offset' => 0,
-                    'extracted_columnspec' => array(),
-                    'columnMeta' => array(),
-                    'submit_attribute' => false,
-                    )
-                )
-            . '</td>'
-            . '<td class="nowrap" name="col_isNull">'
-            . Template::get('columns_definitions/column_null')
-                ->render(
-                    array(
-                    'column_number' => 0,
-                    'ci' => 6,
-                    'ci_offset' => 0,
-                    'column_meta' => array()
-                    )
-                )
-            . '</td>'
-            . '<td class="nowrap" name="col_extra">'
-            . Template::get('columns_definitions/column_extra')->render(
-                array(
-                    'column_number' => 0,
-                    'ci' => 7,
-                    'ci_offset' => 0,
-                    'column_meta' => array()
-                )
-            )
-            . '</td>'
-            . ' <td>'
-            . '<input id="add_column_save" type="submit" '
-            . ' value="Save"/></td>'
-            . '</tr>';
-        $addNewColumn .= '</table></div></form></div>';
-        return $addNewColumn;
-    }
-
-    /**
      * Get HTML for editing page central columns
      *
      * @param array  $selected_fld Array containing the selected fields
@@ -1389,32 +1010,175 @@ class CentralColumns
      *
      * @return string HTML for complete editing page for central columns
      */
-    public static function getHtmlForEditingPage(array $selected_fld, $selected_db)
+    public function getHtmlForEditingPage(array $selected_fld, string $selected_db): string
     {
         $html = '<form id="multi_edit_central_columns">';
-        $header_cells = array(
+        $header_cells = [
             __('Name'), __('Type'), __('Length/Values'), __('Default'),
             __('Collation'), __('Attributes'), __('Null'), __('A_I')
-        );
-        $html .= self::getEditTableHeader($header_cells);
-        $selected_fld_safe = array();
+        ];
+        $html .= $this->getEditTableHeader($header_cells);
+        $selected_fld_safe = [];
         foreach ($selected_fld as $key) {
-            $selected_fld_safe[] = $GLOBALS['dbi']->escapeString($key);
+            $selected_fld_safe[] = $this->dbi->escapeString($key);
         }
         $columns_list = implode("','", $selected_fld_safe);
         $columns_list = "'" . $columns_list . "'";
-        $list_detail_cols = self::findExistingColNames($selected_db, $columns_list, true);
+        $list_detail_cols = $this->findExistingColNames($selected_db, $columns_list, true);
         $row_num = 0;
         foreach ($list_detail_cols as $row) {
-            $tableHtmlRow = self::getHtmlForCentralColumnsEditTableRow(
-                $row, $row_num
+            $tableHtmlRow = $this->getHtmlForEditTableRow(
+                $row,
+                $row_num
             );
             $html .= $tableHtmlRow;
             $row_num++;
         }
         $html .= '</table>';
-        $html .= self::getEditTableFooter();
+        $html .= $this->getEditTableFooter();
         $html .= '</form>';
         return $html;
+    }
+
+    /**
+     * get number of columns of given database from central columns list
+     * starting at offset $from
+     *
+     * @param string $db   selected database
+     * @param int    $from starting offset of first result
+     * @param int    $num  maximum number of results to return
+     *
+     * @return array list of $num columns present in central columns list
+     * starting at offset $from for the given database
+     */
+    public function getColumnsCount(string $db, int $from = 0, int $num = 25): int
+    {
+        $cfgCentralColumns = $this->getParams();
+        if (empty($cfgCentralColumns)) {
+            return [];
+        }
+        $pmadb = $cfgCentralColumns['db'];
+        $this->dbi->selectDb($pmadb, DatabaseInterface::CONNECT_CONTROL);
+        $central_list_table = $cfgCentralColumns['table'];
+        //get current values of $db from central column list
+        $query = 'SELECT COUNT(db_name) FROM ' . Util::backquote($central_list_table) . ' '
+            . 'WHERE db_name = \'' . $this->dbi->escapeString($db) . '\'' .
+            ($num == 0 ? '' : 'LIMIT ' . $from . ', ' . $num) . ';';
+        $result = (array) $this->dbi->fetchResult(
+            $query,
+            null,
+            null,
+            DatabaseInterface::CONNECT_CONTROL
+        );
+
+        if (isset($result[0])) {
+            return (int) $result[0];
+        }
+
+        return -1;
+    }
+
+    /**
+     * build dropdown select html to select column in selected table,
+     * include only columns which are not already in central list
+     *
+     * @param string $db           current database to which selected table belongs
+     * @param string $selected_tbl selected table
+     *
+     * @return string html to select column
+     */
+    public function getHtmlForColumnDropdown($db, $selected_tbl)
+    {
+        $existing_cols = $this->getFromTable($db, $selected_tbl);
+        $this->dbi->selectDb($db);
+        $columns = (array) $this->dbi->getColumnNames(
+            $db, $selected_tbl
+        );
+        $selectColHtml = "";
+        foreach ($columns as $column) {
+            if (!in_array($column, $existing_cols)) {
+                $selectColHtml .= '<option value="' . htmlspecialchars($column) . '">'
+                    . htmlspecialchars($column)
+                    . '</option>';
+            }
+        }
+        return $selectColHtml;
+    }
+
+    /**
+     * build html for adding a new user defined column to central list
+     *
+     * @param string $db            current database
+     * @param int    $total_rows    number of rows in central columns
+     * @param int    $pos           offset of first result with complete result set
+     * @param string $pmaThemeImage table footer theme image directorie
+     * @param string $text_dir      table footer arrow direction
+     *
+     * @return string html of the form to let user add a new user defined column to the
+     *                list
+     */
+    public function getHtmlForMain(
+        string $db,
+        int $total_rows,
+        int $pos,
+        string $pmaThemeImage,
+        string $text_dir
+    ): string {
+        $max_rows = $this->maxRows;
+        $attribute_types = $this->dbi->types->getAttributes();
+
+        $tn_pageNow = ($pos / $this->maxRows) + 1;
+        $tn_nbTotalPage = ceil($total_rows / $this->maxRows);
+        $tn_page_selector = ($tn_nbTotalPage > 1) ? (Util::pageselector(
+            'pos',
+            $this->maxRows,
+            $tn_pageNow,
+            $tn_nbTotalPage
+        )) : '';
+        $this->dbi->selectDb($db);
+        $tables = $this->dbi->getTables($db);
+        $rows_list = $this->getColumnsList($db, $pos, $max_rows);
+
+        $rows_meta = [];
+        $types_upper = [];
+        $row_num = 0;
+        foreach ($rows_list as $row) {
+            $rows_meta[$row_num] = [];
+            if (!isset($row['col_default']) || $row['col_default'] == '') {
+                $rows_meta[$row_num]['DefaultType'] = 'NONE';
+            } else {
+                if ($row['col_default'] == 'CURRENT_TIMESTAMP'
+                    || $row['col_default'] == 'current_timestamp()'
+                ) {
+                    $rows_meta[$row_num]['DefaultType'] = 'CURRENT_TIMESTAMP';
+                } elseif ($row['col_default'] == 'NULL') {
+                    $rows_meta[$row_num]['DefaultType'] = $row['col_default'];
+                } else {
+                    $rows_meta[$row_num]['DefaultType'] = 'USER_DEFINED';
+                    $rows_meta[$row_num]['DefaultValue'] = $row['col_default'];
+                }
+            }
+            $types_upper[$row_num] = mb_strtoupper((string)$row['col_type']);
+            $row_num++;
+        }
+
+        return $this->template->render('database/central_columns/main', [
+            "db" => $db,
+            "dbi" => $this->dbi,
+            "total_rows" => $total_rows,
+            "max_rows" => $max_rows,
+            "pos" => $pos,
+            "char_editing" => $this->charEditing,
+            "attribute_types" => $attribute_types,
+            "tn_nbTotalPage" => $tn_nbTotalPage,
+            "tn_page_selector" => $tn_page_selector,
+            "tables" => $tables,
+            "rows_list" => $rows_list,
+            "rows_meta" => $rows_meta,
+            "types_upper" => $types_upper,
+            "disableIs" => $this->disableIs,
+            "pmaThemeImage" => $pmaThemeImage,
+            "text_dir" => $text_dir,
+        ]);
     }
 }

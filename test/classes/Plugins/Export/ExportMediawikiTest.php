@@ -5,14 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Export\ExportMediawiki;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionMethod;
 use ReflectionProperty;
-
-require_once 'libraries/config.default.php';
 
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportMediawiki class
@@ -20,7 +21,7 @@ require_once 'libraries/config.default.php';
  * @package PhpMyAdmin-test
  * @group medium
  */
-class ExportMediawikiTest extends \PMATestCase
+class ExportMediawikiTest extends PmaTestCase
 {
     protected $object;
 
@@ -29,7 +30,7 @@ class ExportMediawikiTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['output_kanji_conversion'] = false;
@@ -152,11 +153,11 @@ class ExportMediawikiTest extends \PMATestCase
         );
 
         $this->assertEquals(
-            array(
+            [
                 'structure' => __('structure'),
                 'data' => __('data'),
                 'structure_and_data' => __('structure and data')
-            ),
+            ],
             $sgHeader->getValues()
         );
 
@@ -266,24 +267,24 @@ class ExportMediawikiTest extends \PMATestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $columns = array(
-            array(
+        $columns = [
+            [
                 'Null' => 'Yes',
                 'Field' => 'name1',
                 'Key' => 'PRI',
                 'Type' => 'set(abc)enum123',
                 'Default' => '',
                 'Extra' => ''
-            ),
-            array(
+            ],
+            [
                 'Null' => 'NO',
                 'Field' => 'fields',
                 'Key' => 'COMP',
                 'Type' => '',
                 'Default' => 'def',
                 'Extra' => 'ext'
-            )
-        );
+            ]
+        ];
 
         $dbi->expects($this->at(0))
             ->method('getColumns')
@@ -297,7 +298,12 @@ class ExportMediawikiTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportStructure(
-                'db', 'table', "\n", "example.com", "create_table", "test"
+                'db',
+                'table',
+                "\n",
+                "example.com",
+                "create_table",
+                "test"
             )
         );
         $result = ob_get_clean();
@@ -347,11 +353,11 @@ class ExportMediawikiTest extends \PMATestCase
         $dbi->expects($this->once())
             ->method('getColumnNames')
             ->with('db', 'table')
-            ->will($this->returnValue(array('name1', 'fields')));
+            ->will($this->returnValue(['name1', 'fields']));
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('SELECT', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('SELECT', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -362,12 +368,12 @@ class ExportMediawikiTest extends \PMATestCase
         $dbi->expects($this->at(3))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array('r1', 'r2')));
+            ->will($this->returnValue(['r1', 'r2']));
 
         $dbi->expects($this->at(4))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array('r3', '')));
+            ->will($this->returnValue(['r3', '']));
 
         $dbi->expects($this->at(4))
             ->method('fetchRow')
@@ -381,7 +387,11 @@ class ExportMediawikiTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'db', 'table', "\n", "example.com", "SELECT"
+                'db',
+                'table',
+                "\n",
+                "example.com",
+                "SELECT"
             )
         );
         $result = ob_get_clean();

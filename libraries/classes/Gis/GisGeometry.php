@@ -5,6 +5,7 @@
  *
  * @package PhpMyAdmin-GIS
  */
+declare(strict_types=1);
 
 namespace PhpMyAdmin\Gis;
 
@@ -28,23 +29,23 @@ abstract class GisGeometry
      * @return string the code related to a row in the GIS dataset
      * @access public
      */
-    public abstract function prepareRowAsSvg($spatial, $label, $color, array $scale_data);
+    abstract public function prepareRowAsSvg($spatial, $label, $color, array $scale_data);
 
     /**
      * Adds to the PNG image object, the data related to a row in the GIS dataset.
      *
-     * @param string $spatial    GIS data object
-     * @param string $label      label for the GIS data object
-     * @param string $color      color for the GIS data object
-     * @param array  $scale_data array containing data related to scaling
-     * @param object $image      image object
+     * @param string      $spatial    GIS POLYGON object
+     * @param string|null $label      Label for the GIS POLYGON object
+     * @param string      $color      Color for the GIS POLYGON object
+     * @param array       $scale_data Array containing data related to scaling
+     * @param resource    $image      Image object
      *
-     * @return object the modified image object
+     * @return resource the modified image object
      * @access public
      */
-    public abstract function prepareRowAsPng(
+    abstract public function prepareRowAsPng(
         $spatial,
-        $label,
+        ?string $label,
         $color,
         array $scale_data,
         $image
@@ -53,18 +54,18 @@ abstract class GisGeometry
     /**
      * Adds to the TCPDF instance, the data related to a row in the GIS dataset.
      *
-     * @param string $spatial    GIS data object
-     * @param string $label      label for the GIS data object
-     * @param string $color      color for the GIS data object
-     * @param array  $scale_data array containing data related to scaling
-     * @param TCPDF  $pdf        TCPDF instance
+     * @param string      $spatial    GIS data object
+     * @param string|null $label      label for the GIS data object
+     * @param string      $color      color for the GIS data object
+     * @param array       $scale_data array containing data related to scaling
+     * @param TCPDF       $pdf        TCPDF instance
      *
      * @return TCPDF the modified TCPDF instance
      * @access public
      */
-    public abstract function prepareRowAsPdf(
+    abstract public function prepareRowAsPdf(
         $spatial,
-        $label,
+        ?string $label,
         $color,
         array $scale_data,
         $pdf
@@ -83,7 +84,7 @@ abstract class GisGeometry
      * @return string the JavaScript related to a row in the GIS dataset
      * @access public
      */
-    public abstract function prepareRowAsOl(
+    abstract public function prepareRowAsOl(
         $spatial,
         $srid,
         $label,
@@ -99,7 +100,7 @@ abstract class GisGeometry
      * @return array array containing the min, max values for x and y coordinates
      * @access public
      */
-    public abstract function scaleRow($spatial);
+    abstract public function scaleRow($spatial);
 
     /**
      * Generates the WKT with the set of parameters passed by the GIS editor.
@@ -111,7 +112,7 @@ abstract class GisGeometry
      * @return string WKT with the set of parameters passed by the GIS editor
      * @access public
      */
-    public abstract function generateWkt(array $gis_data, $index, $empty = '');
+    abstract public function generateWkt(array $gis_data, $index, $empty = '');
 
     /**
      * Returns OpenLayers.Bounds object that correspond to the bounds of GIS data.
@@ -198,7 +199,7 @@ abstract class GisGeometry
             $wkt = $value;
         }
 
-        return array('srid' => $srid, 'wkt' => $wkt);
+        return ['srid' => $srid, 'wkt' => $wkt];
     }
 
     /**
@@ -213,7 +214,7 @@ abstract class GisGeometry
      */
     protected function extractPoints($point_set, $scale_data, $linear = false)
     {
-        $points_arr = array();
+        $points_arr = [];
 
         // Separate each point
         $points = explode(",", $point_set);
@@ -240,7 +241,7 @@ abstract class GisGeometry
             }
 
             if (!$linear) {
-                $points_arr[] = array($x, $y);
+                $points_arr[] = [$x, $y];
             } else {
                 $points_arr[] = $x;
                 $points_arr[] = $y;

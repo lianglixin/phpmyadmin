@@ -4,16 +4,19 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Engines\MrgMyisam;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\MrgMyisam
  *
  * @package PhpMyAdmin-test
  */
-class MrgMyisamTest extends \PMATestCase
+class MrgMyisamTest extends PmaTestCase
 {
     /**
      * @access protected
@@ -56,6 +59,5 @@ class MrgMyisamTest extends \PMATestCase
             $this->object->getMysqlHelpPage(),
             'merge-storage-engine'
         );
-
     }
 }

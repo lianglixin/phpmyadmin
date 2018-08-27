@@ -557,7 +557,8 @@ AJAX.registerOnload('indexes.js', function () {
     $(document).on('click', '#save_index_frm', function (event) {
         event.preventDefault();
         var $form = $('#index_frm');
-        var submitData = $form.serialize() + '&do_save_data=1&ajax_request=true&ajax_page_request=true';
+        var argsep = PMA_commonParams.get('arg_separator');
+        var submitData = $form.serialize() + argsep + 'do_save_data=1' + argsep + 'ajax_request=true' + argsep + 'ajax_page_request=true';
         var $msgbox = PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
         AJAX.source = $form;
         $.post($form.attr('action'), submitData, AJAX.responseHandler);
@@ -600,10 +601,7 @@ AJAX.registerOnload('indexes.js', function () {
 
         $anchor.PMA_confirm(question, $anchor.attr('href'), function (url) {
             var $msg = PMA_ajaxShowMessage(PMA_messages.strDroppingPrimaryKeyIndex, false);
-            var params = {
-                'is_js_confirmed': 1,
-                'ajax_request': true
-            };
+            var params = getJSConfirmCommonParam(this, $anchor.getPostData());
             $.post(url, params, function (data) {
                 if (typeof data !== 'undefined' && data.success === true) {
                     PMA_ajaxRemoveMessage($msg);
@@ -631,7 +629,7 @@ AJAX.registerOnload('indexes.js', function () {
                         PMA_highlightSQL($('#page_content'));
                     }
                     PMA_commonActions.refreshMain(false, function () {
-                        $('a.ajax[href^=#indexes]').click();
+                        $('a.ajax[href^=#indexes]').trigger('click');
                     });
                     PMA_reloadNavigation();
                 } else {
@@ -668,11 +666,11 @@ AJAX.registerOnload('indexes.js', function () {
             }
             title = PMA_messages.strEditIndex;
         }
-        url += '&ajax_request=true';
+        url += PMA_commonParams.get('arg_separator') + 'ajax_request=true';
         indexEditorDialog(url, title, function () {
             // refresh the page using ajax
             PMA_commonActions.refreshMain(false, function () {
-                $('a.ajax[href^=#indexes]').click();
+                $('a.ajax[href^=#indexes]').trigger('click');
             });
         });
     });

@@ -106,30 +106,24 @@ function markField (field) {
  *
  * @param {Element} field
  * @param {String}  field_type  see {@link #getFieldType}
- * @param {String|Boolean}  [value]
+ * @param {String|Boolean}  value
  */
 function setFieldValue (field, field_type, value) {
     var $field = $(field);
     switch (field_type) {
     case 'text':
     case 'number':
-        $field.val(value !== undefined ? value : $field.attr('defaultValue'));
+        $field.val(value);
         break;
     case 'checkbox':
-        $field.prop('checked', (value !== undefined ? value : $field.attr('defaultChecked')));
+        $field.prop('checked', value);
         break;
     case 'select':
         var options = $field.prop('options');
         var i;
         var imax = options.length;
-        if (value === undefined) {
-            for (i = 0; i < imax; i++) {
-                options[i].selected = options[i].defaultSelected;
-            }
-        } else {
-            for (i = 0; i < imax; i++) {
-                options[i].selected = (value.indexOf(options[i].value) !== -1);
-            }
+        for (i = 0; i < imax; i++) {
+            options[i].selected = (value.indexOf(options[i].value) !== -1);
         }
         break;
     }
@@ -522,7 +516,7 @@ function setupValidation () {
         var tagName = $el.attr('tagName');
         // text fields can be validated after each change
         if (tagName === 'INPUT' && $el.attr('type') === 'text') {
-            $el.keyup(function () {
+            $el.on('keyup', function () {
                 validate_field_and_fieldset($el, true);
                 markField($el);
             });
@@ -595,7 +589,7 @@ function setupConfigTabs () {
         // add tabs events and activate one tab (the first one or indicated by location hash)
         $tabs.find('li').removeClass('active');
         $tabs.find('a')
-            .click(function (e) {
+            .on('click', function (e) {
                 e.preventDefault();
                 setTab($(this).attr('href').substr(1));
             })
@@ -612,7 +606,7 @@ function adjustPrefsNotification () {
     var $prefsAutoShowing = ($prefsAutoLoad.css('display') !== 'none');
 
     if ($prefsAutoShowing && $tableNameControl.length) {
-        $tableNameControl.css('top', '120px');
+        $tableNameControl.css('top', '55px');
     }
 }
 
@@ -648,10 +642,10 @@ AJAX.registerOnload('config.js', function () {
 //
 
 AJAX.registerOnload('config.js', function () {
-    $('.optbox input[type=button][name=submit_reset]').click(function () {
+    $('.optbox input[type=button][name=submit_reset]').on('click', function () {
         var fields = $(this).closest('fieldset').find('input, select, textarea');
         for (var i = 0, imax = fields.length; i < imax; i++) {
-            setFieldValue(fields[i], getFieldType(fields[i]));
+            setFieldValue(fields[i], getFieldType(fields[i]), defaultValues[fields[i].id]);
         }
     });
 });
@@ -727,7 +721,7 @@ AJAX.registerOnload('config.js', function () {
     $radios
         .prop('disabled', false)
         .add('#export_text_file, #import_text_file')
-        .click(function () {
+        .on('click', function () {
             var enable_id = $(this).attr('id');
             var disable_id;
             if (enable_id.match(/local_storage$/)) {
@@ -747,7 +741,7 @@ AJAX.registerOnload('config.js', function () {
     if (ls_exists) {
         updatePrefsDate();
     }
-    $('form.prefs-form').change(function () {
+    $('form.prefs-form').on('change', function () {
         var $form = $(this);
         var disabled = false;
         if (!ls_supported) {
@@ -841,7 +835,7 @@ function offerPrefsAutoimport () {
     if (!$cnt.length || !has_config) {
         return;
     }
-    $cnt.find('a').click(function (e) {
+    $cnt.find('a').on('click', function (e) {
         e.preventDefault();
         var $a = $(this);
         if ($a.attr('href') === '#no') {

@@ -6,8 +6,10 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
 
 use PhpMyAdmin\Di\Container;
+use PhpMyAdmin\Partition;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Table;
@@ -23,10 +25,14 @@ if (!defined('PHPMYADMIN')) {
  * Check parameters
  */
 Util::checkParameters(
-    array('server', 'db', 'table', 'action', 'num_fields')
+    ['server', 'db', 'table', 'action', 'num_fields']
 );
 
 global $db, $table;
+
+$relation = new Relation();
+$transformations = new Transformations();
+$template = new Template();
 
 /**
  * Initialize to avoid code execution path warnings
@@ -39,25 +45,26 @@ if (!isset($mime_map)) {
     $mime_map = null;
 }
 if (!isset($columnMeta)) {
-    $columnMeta = array();
+    $columnMeta = [];
 }
 
 $length_values_input_size = 8;
 
-$content_cells = array();
+$content_cells = [];
 
 /** @var string $db */
-$form_params = array(
+$form_params = [
     'db' => $db
-);
+];
 
 if ($action == 'tbl_create.php') {
     $form_params['reload'] = 1;
 } else {
     if ($action == 'tbl_addfield.php') {
         $form_params = array_merge(
-            $form_params, array(
-            'field_where' => Util::getValueByKey($_REQUEST, 'field_where'))
+            $form_params,
+            [
+            'field_where' => Util::getValueByKey($_REQUEST, 'field_where')]
         );
         if (isset($_REQUEST['field_where'])) {
             $form_params['after_field'] = $_REQUEST['after_field'];
@@ -72,10 +79,10 @@ if (isset($num_fields)) {
 
 $form_params = array_merge(
     $form_params,
-    array(
+    [
         'orig_field_where' => Util::getValueByKey($_REQUEST, 'field_where'),
         'orig_after_field' => Util::getValueByKey($_REQUEST, 'after_field'),
-    )
+    ]
 );
 
 if (isset($selected) && is_array($selected)) {
@@ -86,21 +93,32 @@ if (isset($selected) && is_array($selected)) {
 
 $is_backup = ($action != 'tbl_create.php' && $action != 'tbl_addfield.php');
 
-$cfgRelation = Relation::getRelationsParam();
+$cfgRelation = $relation->getRelationsParam();
 
-$comments_map = Relation::getComments($db, $table);
+$comments_map = $relation->getComments($db, $table);
 
-$move_columns = array();
+$move_columns = [];
 if (isset($fields_meta)) {
     /** @var PhpMyAdmin\DatabaseInterface $dbi */
     $dbi = Container::getDefaultContainer()->get('dbi');
     $move_columns = $dbi->getTable($db, $table)->getColumnsMeta();
 }
 
-$available_mime = array();
+$available_mime = [];
 if ($cfgRelation['mimework'] && $GLOBALS['cfg']['BrowseMIME']) {
-    $mime_map = Transformations::getMIME($db, $table);
-    $available_mime = Transformations::getAvailableMIMEtypes();
+    $mime_map = $transformations->getMime($db, $table);
+    $available_mime = $transformations->getAvailableMimeTypes();
+}
+
+// this will be used on templates/columns_definitions/transformation.twig
+$mime_type = 'input_transformation';
+if (isset($available_mime[$mime_type]) and is_iterable($available_mime[$mime_type])) {
+    foreach ($available_mime[$mime_type] as $mimekey => $transform) {
+        $available_mime[$mime_type . '_file_quoted'][$mimekey] = preg_quote(
+            $available_mime[$mime_type . '_file'][$mimekey],
+            '@'
+        );
+    }
 }
 
 //  workaround for field_fulltext, because its submitted indices contain
@@ -118,71 +136,90 @@ if (isset($_REQUEST['submit_num_fields'])
     $regenerate = 1;
 }
 
-$foreigners = Relation::getForeigners($db, $table, '', 'foreign');
+$foreigners = $relation->getForeigners($db, $table, '', 'foreign');
 $child_references = null;
 // From MySQL 5.6.6 onwards columns with foreign keys can be renamed.
 // Hence, no need to get child references
 if ($GLOBALS['dbi']->getVersion() < 50606) {
-    $child_references = Relation::getChildReferences($db, $table);
+    $child_references = $relation->getChildReferences($db, $table);
 }
 
 for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
-
     $type = '';
     $length = '';
-    $columnMeta = array();
+    $columnMeta = [];
     $submit_attribute = null;
-    $extracted_columnspec = array();
+    $extracted_columnspec = [];
 
     if (!empty($regenerate)) {
-
         $columnMeta = array_merge(
             $columnMeta,
-            array(
+            [
                 'Field'        => Util::getValueByKey(
-                    $_REQUEST, "field_name.${columnNumber}", false
+                    $_REQUEST,
+                    "field_name.${columnNumber}",
+                    false
                 ),
                 'Type'         => Util::getValueByKey(
-                    $_REQUEST, "field_type.${columnNumber}", false
+                    $_REQUEST,
+                    "field_type.${columnNumber}",
+                    false
                 ),
                 'Collation'    => Util::getValueByKey(
-                    $_REQUEST, "field_collation.${columnNumber}", ''
+                    $_REQUEST,
+                    "field_collation.${columnNumber}",
+                    ''
                 ),
                 'Null'         => Util::getValueByKey(
-                    $_REQUEST, "field_null.${columnNumber}", ''
+                    $_REQUEST,
+                    "field_null.${columnNumber}",
+                    ''
                 ),
                 'DefaultType'  => Util::getValueByKey(
-                    $_REQUEST, "field_default_type.${columnNumber}", 'NONE'
+                    $_REQUEST,
+                    "field_default_type.${columnNumber}",
+                    'NONE'
                 ),
                 'DefaultValue' => Util::getValueByKey(
-                    $_REQUEST, "field_default_value.${columnNumber}", ''
+                    $_REQUEST,
+                    "field_default_value.${columnNumber}",
+                    ''
                 ),
                 'Extra'        => Util::getValueByKey(
-                    $_REQUEST, "field_extra.${columnNumber}", false
+                    $_REQUEST,
+                    "field_extra.${columnNumber}",
+                    false
                 ),
                 'Virtuality'   => Util::getValueByKey(
-                    $_REQUEST, "field_virtuality.${columnNumber}", ''
+                    $_REQUEST,
+                    "field_virtuality.${columnNumber}",
+                    ''
                 ),
                 'Expression'   => Util::getValueByKey(
-                    $_REQUEST, "field_expression.${columnNumber}", ''
+                    $_REQUEST,
+                    "field_expression.${columnNumber}",
+                    ''
                 ),
-            )
+            ]
         );
 
         $columnMeta['Key'] = '';
         $parts = explode(
-            '_', Util::getValueByKey($_REQUEST, "field_key.${columnNumber}", ''), 2
+            '_',
+            Util::getValueByKey($_REQUEST, "field_key.${columnNumber}", ''),
+            2
         );
         if (count($parts) == 2 && $parts[1] == $columnNumber) {
             $columnMeta['Key'] = Util::getValueByKey(
-                array(
+                [
                     'primary' => 'PRI',
                     'index' => 'MUL',
                     'unique' => 'UNI',
                     'fulltext' => 'FULLTEXT',
                     'spatial' => 'SPATIAL'
-                ),
-                $parts[0], ''
+                ],
+                $parts[0],
+                ''
             );
         }
 
@@ -192,44 +229,49 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
                 ? 'FULLTEXT' : false;
 
         switch ($columnMeta['DefaultType']) {
-        case 'NONE':
-            $columnMeta['Default'] = null;
-            break;
-        case 'USER_DEFINED':
-            $columnMeta['Default'] = $columnMeta['DefaultValue'];
-            break;
-        case 'NULL':
-        case 'CURRENT_TIMESTAMP':
-            $columnMeta['Default'] = $columnMeta['DefaultType'];
-            break;
+            case 'NONE':
+                $columnMeta['Default'] = null;
+                break;
+            case 'USER_DEFINED':
+                $columnMeta['Default'] = $columnMeta['DefaultValue'];
+                break;
+            case 'NULL':
+            case 'CURRENT_TIMESTAMP':
+            case 'current_timestamp()':
+                $columnMeta['Default'] = $columnMeta['DefaultType'];
+                break;
         }
 
         $length = Util::getValueByKey($_REQUEST, "field_length.${columnNumber}", $length);
         $submit_attribute = Util::getValueByKey(
-            $_REQUEST, "field_attribute.${columnNumber}", false
+            $_REQUEST,
+            "field_attribute.${columnNumber}",
+            false
         );
         $comments_map[$columnMeta['Field']] = Util::getValueByKey(
-            $_REQUEST, "field_comments.${columnNumber}"
+            $_REQUEST,
+            "field_comments.${columnNumber}"
         );
 
         $mime_map[$columnMeta['Field']] = array_merge(
             $mime_map[$columnMeta['Field']],
-            array(
+            [
                 'mimetype' => Util::getValueByKey($_REQUEST, "field_mimetype.${$columnNumber}"),
                 'transformation' => Util::getValueByKey(
-                    $_REQUEST, "field_transformation.${$columnNumber}"
+                    $_REQUEST,
+                    "field_transformation.${$columnNumber}"
                 ),
                 'transformation_options' => Util::getValueByKey(
-                    $_REQUEST, "field_transformation_options.${$columnNumber}"
+                    $_REQUEST,
+                    "field_transformation_options.${$columnNumber}"
                 ),
-            )
+            ]
         );
-
     } elseif (isset($fields_meta[$columnNumber])) {
         $columnMeta = $fields_meta[$columnNumber];
-        $virtual = array(
+        $virtual = [
             'VIRTUAL', 'PERSISTENT', 'VIRTUAL GENERATED', 'STORED GENERATED'
-        );
+        ];
         if (in_array($columnMeta['Extra'], $virtual)) {
             $tableObj = new Table($GLOBALS['table'], $GLOBALS['db']);
             $expressions = $tableObj->getColumnGenerationExpression(
@@ -238,28 +280,29 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
             $columnMeta['Expression'] = $expressions[$columnMeta['Field']];
         }
         switch ($columnMeta['Default']) {
-        case null:
-            if (is_null($columnMeta['Default'])) { // null
-                if ($columnMeta['Null'] == 'YES') {
-                    $columnMeta['DefaultType'] = 'NULL';
-                    $columnMeta['DefaultValue'] = '';
-                } else {
-                    $columnMeta['DefaultType'] = 'NONE';
-                    $columnMeta['DefaultValue'] = '';
+            case null:
+                if (is_null($columnMeta['Default'])) { // null
+                    if ($columnMeta['Null'] == 'YES') {
+                        $columnMeta['DefaultType'] = 'NULL';
+                        $columnMeta['DefaultValue'] = '';
+                    } else {
+                        $columnMeta['DefaultType'] = 'NONE';
+                        $columnMeta['DefaultValue'] = '';
+                    }
+                } else { // empty
+                    $columnMeta['DefaultType'] = 'USER_DEFINED';
+                    $columnMeta['DefaultValue'] = $columnMeta['Default'];
                 }
-            } else { // empty
+                break;
+            case 'CURRENT_TIMESTAMP':
+            case 'current_timestamp()':
+                $columnMeta['DefaultType'] = 'CURRENT_TIMESTAMP';
+                $columnMeta['DefaultValue'] = '';
+                break;
+            default:
                 $columnMeta['DefaultType'] = 'USER_DEFINED';
                 $columnMeta['DefaultValue'] = $columnMeta['Default'];
-            }
-            break;
-        case 'CURRENT_TIMESTAMP':
-            $columnMeta['DefaultType'] = 'CURRENT_TIMESTAMP';
-            $columnMeta['DefaultValue'] = '';
-            break;
-        default:
-            $columnMeta['DefaultType'] = 'USER_DEFINED';
-            $columnMeta['DefaultValue'] = $columnMeta['Default'];
-            break;
+                break;
         }
     }
 
@@ -286,7 +329,7 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
         && isset($form_params['table'])
         && $GLOBALS['dbi']->getVersion() < 50606
     ) {
-        $columnMeta['column_status'] = Relation::checkChildForeignReferences(
+        $columnMeta['column_status'] = $relation->checkChildForeignReferences(
             $form_params['db'],
             $form_params['table'],
             $columnMeta['Field'],
@@ -307,7 +350,6 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
      * old column attributes
      */
     if ($is_backup) {
-
         // old column name
         if (isset($columnMeta['Field'])) {
             $form_params['field_orig[' . $columnNumber . ']']
@@ -341,42 +383,72 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
         // old column default
         $form_params = array_merge(
             $form_params,
-            array(
+            [
                 "field_default_value_orig[${columnNumber}]" => Util::getValueByKey(
-                    $columnMeta, 'Default', ''
+                    $columnMeta,
+                    'Default',
+                    ''
                 ),
                 "field_default_type_orig[${columnNumber}]"  => Util::getValueByKey(
-                    $columnMeta, 'DefaultType', ''
+                    $columnMeta,
+                    'DefaultType',
+                    ''
                 ),
                 "field_collation_orig[${columnNumber}]"     => Util::getValueByKey(
-                    $columnMeta, 'Collation', ''
+                    $columnMeta,
+                    'Collation',
+                    ''
                 ),
                 "field_attribute_orig[${columnNumber}]"     => trim(
                     Util::getValueByKey($extracted_columnspec, 'attribute', '')
                 ),
                 "field_null_orig[${columnNumber}]"          => Util::getValueByKey(
-                    $columnMeta, 'Null', ''
+                    $columnMeta,
+                    'Null',
+                    ''
                 ),
                 "field_extra_orig[${columnNumber}]"         => Util::getValueByKey(
-                    $columnMeta, 'Extra', ''
+                    $columnMeta,
+                    'Extra',
+                    ''
                 ),
                 "field_comments_orig[${columnNumber}]"      => Util::getValueByKey(
-                    $columnMeta, 'Comment', ''
+                    $columnMeta,
+                    'Comment',
+                    ''
                 ),
                 "field_virtuality_orig[${columnNumber}]"    => Util::getValueByKey(
-                    $columnMeta, 'Virtuality', ''
+                    $columnMeta,
+                    'Virtuality',
+                    ''
                 ),
                 "field_expression_orig[${columnNumber}]"    => Util::getValueByKey(
-                    $columnMeta, 'Expression', ''
+                    $columnMeta,
+                    'Expression',
+                    ''
                 ),
-            )
+            ]
         );
     }
 
-    $content_cells[$columnNumber] = array(
-        'columnNumber' => $columnNumber,
-        'columnMeta' => $columnMeta,
-        'type_upper' => mb_strtoupper($type),
+    $default_value = '';
+    $type_upper = mb_strtoupper($type);
+
+    // For a TIMESTAMP, do not show the string "CURRENT_TIMESTAMP" as a default value
+    if (isset($columnMeta['DefaultValue'])) {
+        $default_value = $columnMeta['DefaultValue'];
+    }
+    if ($type_upper == 'BIN)') {
+        $default_value = Util::convertBitDefaultValue($columnMeta['DefaultValue']);
+    } elseif ($type_upper == 'BINARY' || $type_upper == 'VARBINARY') {
+        $default_value = bin2hex($columnMeta['DefaultValue']);
+    }
+
+    $content_cells[$columnNumber] = [
+        'column_number' => $columnNumber,
+        'column_meta' => $columnMeta,
+        'type_upper' => $type_upper,
+        'default_value' => $default_value,
         'length_values_input_size' => $length_values_input_size,
         'length' => $length,
         'extracted_columnspec' => $extracted_columnspec,
@@ -385,33 +457,54 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
         'fields_meta' => isset($fields_meta) ? $fields_meta : null,
         'is_backup' => $is_backup,
         'move_columns' => $move_columns,
-        'cfgRelation' => $cfgRelation,
+        'cfg_relation' => $cfgRelation,
         'available_mime' => $available_mime,
-        'mime_map' => isset($mime_map) ? $mime_map : array()
-    );
+        'mime_map' => isset($mime_map) ? $mime_map : []
+    ];
 } // end for
 
 include 'libraries/tbl_partition_definition.inc.php';
-$html = Template::get('columns_definitions/column_definitions_form')
-    ->render(
-        array(
-            'is_backup'        => $is_backup,
-            'fields_meta'      => isset($fields_meta) ? $fields_meta : null,
-            'mimework'         => $cfgRelation['mimework'],
-            'action'           => $action,
-            'form_params'      => $form_params,
-            'content_cells'    => $content_cells,
-            'partitionDetails' => $partitionDetails
-        )
-    );
+$html = $template->render('columns_definitions/column_definitions_form', [
+    'is_backup' => $is_backup,
+    'fields_meta' => isset($fields_meta) ? $fields_meta : null,
+    'mimework' => $cfgRelation['mimework'],
+    'action' => $action,
+    'form_params' => $form_params,
+    'content_cells' => $content_cells,
+    'partition_details' => $partitionDetails,
+    'primary_indexes' => isset($_REQUEST['primary_indexes']) ? $_REQUEST['primary_indexes'] : null,
+    'unique_indexes' => isset($_REQUEST['unique_indexes']) ? $_REQUEST['unique_indexes'] : null,
+    'indexes' => isset($_REQUEST['indexes']) ? $_REQUEST['indexes'] : null,
+    'fulltext_indexes' => isset($_REQUEST['fulltext_indexes']) ? $_REQUEST['fulltext_indexes'] : null,
+    'spatial_indexes' => isset($_REQUEST['spatial_indexes']) ? $_REQUEST['spatial_indexes'] : null,
+    'table' => isset($_REQUEST['table']) ? $_REQUEST['table'] : null,
+    'comment' => isset($_REQUEST['comment']) ? $_REQUEST['comment'] : null,
+    'tbl_collation' => isset($_REQUEST['tbl_collation']) ? $_REQUEST['tbl_collation'] : null,
+    'tbl_storage_engine' => isset($_REQUEST['tbl_storage_engine']) ? $_REQUEST['tbl_storage_engine'] : null,
+    'connection' => isset($_REQUEST['connection']) ? $_REQUEST['connection'] : null,
+    'change_column' => isset($_REQUEST['change_column']) ? $_REQUEST['change_column'] : null,
+    'is_virtual_columns_supported' => Util::isVirtualColumnsSupported(),
+    'browse_mime' => isset($GLOBALS['cfg']['BrowseMIME']) ? $GLOBALS['cfg']['BrowseMIME'] : null,
+    'server_type' => Util::getServerType(),
+    'max_rows' => intval($GLOBALS['cfg']['MaxRows']),
+    'char_editing' => isset($GLOBALS['cfg']['CharEditing']) ? $GLOBALS['cfg']['CharEditing'] : null,
+    'attribute_types' => $GLOBALS['dbi']->types->getAttributes(),
+    'privs_available' => (isset($GLOBALS['col_priv']) ? $GLOBALS['col_priv'] : false
+        && isset($GLOBALS['is_reload_priv']) ? $GLOBALS['is_reload_priv'] : false
+    ),
+    'max_length' => $GLOBALS['dbi']->getVersion() >= 50503 ? 1024 : 255,
+    'have_partitioning' => Partition::havePartitioning(),
+    'dbi' => $GLOBALS['dbi'],
+    'disable_is' => $GLOBALS['cfg']['Server']['DisableIS'],
+]);
 
 unset($form_params);
 
 $response = Response::getInstance();
 $response->getHeader()->getScripts()->addFiles(
-    array(
+    [
         'vendor/jquery/jquery.uitablefilter.js',
         'indexes.js'
-    )
+    ]
 );
 $response->addHTML($html);

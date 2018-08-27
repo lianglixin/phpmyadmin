@@ -4,10 +4,13 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Import;
 
 use PhpMyAdmin\File;
 use PhpMyAdmin\Plugins\Import\ImportSql;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /*
  * we must set $GLOBALS['server'] here
@@ -20,7 +23,7 @@ $GLOBALS['server'] = 0;
  *
  * @package PhpMyAdmin-test
  */
-class ImportSqlTest extends \PMATestCase
+class ImportSqlTest extends PmaTestCase
 {
     /**
      * @access protected
@@ -106,6 +109,5 @@ class ImportSqlTest extends \PMATestCase
             true,
             $GLOBALS['finished']
         );
-
     }
 }

@@ -5,11 +5,14 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
 
 use PhpMyAdmin\CreateAddField;
+use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Url;
+use PhpMyAdmin\Util;
 
 /**
  * Get some core libraries
@@ -22,16 +25,17 @@ $scripts  = $header->getScripts();
 $scripts->addFile('tbl_structure.js');
 
 // Check parameters
-PhpMyAdmin\Util::checkParameters(array('db', 'table'));
+Util::checkParameters(['db', 'table']);
 
+$transformations = new Transformations();
 
 /**
  * Defines the url to return to in case of error in a sql statement
  */
 $err_url = 'tbl_sql.php' . Url::getCommon(
-    array(
+    [
         'db' => $db, 'table' => $table
-    )
+    ]
 );
 
 /**
@@ -63,7 +67,9 @@ if (isset($_REQUEST['do_save_data'])) {
     //tbl_structure.php below
     unset($_REQUEST['do_save_data']);
 
-    list($result, $sql_query) = CreateAddField::tryColumnCreationQuery($db, $table, $err_url);
+    $createAddField = new CreateAddField($GLOBALS['dbi']);
+
+    list($result, $sql_query) = $createAddField->tryColumnCreationQuery($db, $table, $err_url);
 
     if ($result === true) {
         // Update comment table for mime types [MIME]
@@ -75,8 +81,9 @@ if (isset($_REQUEST['do_save_data'])) {
                 if (isset($_REQUEST['field_name'][$fieldindex])
                     && strlen($_REQUEST['field_name'][$fieldindex]) > 0
                 ) {
-                    Transformations::setMIME(
-                        $db, $table,
+                    $transformations->setMime(
+                        $db,
+                        $table,
                         $_REQUEST['field_name'][$fieldindex],
                         $mimetype,
                         $_REQUEST['field_transformation'][$fieldindex],
@@ -89,17 +96,17 @@ if (isset($_REQUEST['do_save_data'])) {
         }
 
         // Go back to the structure sub-page
-        $message = PhpMyAdmin\Message::success(
+        $message = Message::success(
             __('Table %1$s has been altered successfully.')
         );
         $message->addParam($table);
         $response->addJSON(
             'message',
-            PhpMyAdmin\Util::getMessage($message, $sql_query, 'success')
+            Util::getMessage($message, $sql_query, 'success')
         );
         exit;
     } else {
-        $error_message_html = PhpMyAdmin\Util::mysqlDie(
+        $error_message_html = Util::mysqlDie(
             '',
             '',
             false,

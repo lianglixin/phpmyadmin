@@ -6,9 +6,10 @@
  * @package    PhpMyAdmin-theme
  * @subpackage Original
  */
+declare(strict_types=1);
 
 // unplanned execution path
-if (! defined('PMA_MINIMUM_COMMON') && ! defined('TESTSUITE')) {
+if (! defined('PHPMYADMIN') && ! defined('TESTSUITE')) {
     exit();
 }
 ?>
@@ -16,7 +17,7 @@ if (! defined('PMA_MINIMUM_COMMON') && ! defined('TESTSUITE')) {
 
 /* general tags */
 html {
-    font-size: <?php echo $theme->getFontSize(); ?>
+    font-size: 82%;
 }
 
 input,
@@ -57,6 +58,10 @@ body#loginform {
 
 .all85{
     width: 85%;
+}
+
+.auth_config_tbl{
+    margin: 0 auto;
 }
 
 <?php if (! empty($GLOBALS['cfg']['FontFamilyFixed'])) { ?>
@@ -132,6 +137,14 @@ form {
 
 textarea {
     overflow:           visible;
+}
+
+th.fillPage {
+    width: 80%;
+}
+
+textarea.charField {
+    width: 95%;
 }
 
 fieldset {
@@ -270,13 +283,17 @@ button.mult_submit {
 }
 
 /* odd items 1,3,5,7,... */
-table tr:nth-child(odd) {
-        background: <?php echo $GLOBALS['cfg']['BgOne']; ?>;
+table tr:nth-child(odd),
+#table_index tbody:nth-of-type(odd) tr,
+#table_index tbody:nth-of-type(odd) th {
+    background: <?php echo $GLOBALS['cfg']['BgOne']; ?>;
 }
 
 /* even items 2,4,6,8,... */
-table tr:nth-child(even) {
-        background: <?php echo $GLOBALS['cfg']['BgTwo']; ?>;
+table tr:nth-child(even),
+#table_index tbody:nth-of-type(even) tr,
+#table_index tbody:nth-of-type(even) th {
+    background: <?php echo $GLOBALS['cfg']['BgTwo']; ?>;
 }
 
 table tr th,
@@ -301,6 +318,8 @@ table tr:not(.nopointer):hover,
 }
 
 /* hovered table rows */
+#table_index tbody:hover tr,
+#table_index tbody:hover th,
 table tr.hover:not(.nopointer) th {
     background:   <?php echo $GLOBALS['cfg']['BrowsePointerBackground']; ?>;
     color:   <?php echo $GLOBALS['cfg']['BrowsePointerColor']; ?>;
@@ -388,8 +407,11 @@ img.lightbulb {
 
 /* leave some space between icons and text */
 .icon {
+    image-rendering: pixelated;
     vertical-align:     middle;
     margin-<?php echo $left; ?>:        0.3em;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 /* no extra space in table cells */
@@ -427,13 +449,13 @@ div.error {
     if ($GLOBALS['text_dir'] === 'ltr') { ?>
         background-position: 10px 50%;
         padding:            0.1em 0.1em 0.1em 42px;
-    <?php
+        <?php
     } else { ?>
         background-position: 99% 50%;
         padding:            0.1em 40px 0.1em 0.1em;
         <?php
     }
-?>
+    ?>
 }
 div.success img.icon,
 div.notice img.icon,
@@ -502,7 +524,7 @@ fieldset.confirmation legend {
         padding:            0.2em 25px 0.2em 0.2em;
         <?php
     }
-?>
+    ?>
 }
 /* end messageboxes */
 
@@ -607,6 +629,28 @@ body#loginform div.container {
     margin: 0 auto;
 }
 
+div.container.modal_form {
+    margin: 0 auto;
+    width: 30em;
+    text-align: center;
+    background: #fff;
+    z-index: 999;
+}
+
+#login_form {
+    text-align: left;
+}
+
+div#modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: #fff;
+    z-index: 900;
+}
+
 form.login label {
     float: <?php echo $left; ?>;
     width: 10em;
@@ -619,6 +663,40 @@ form.login label {
 
 .column_attribute {
     font-size: 70%;
+}
+
+.cfg_dbg_demo{
+    margin: 0.5em 1em 0.5em 1em;
+}
+
+.central_columns_navigation{
+    padding:1.5% 0em !important;
+}
+
+.central_columns_add_column{
+    display:inline-block;
+    margin-left:1%;
+    max-width:50%
+}
+
+.message_errors_found{
+    margin-top: 20px;
+}
+
+.repl_gui_skip_err_cnt{
+    width: 30px;
+}
+
+.font_weight_bold{
+    font-weight: bold;
+}
+
+.color_gray{
+    color: gray;
+}
+
+.pma_sliding_message{
+    display: inline-block;
 }
 
 /******************************************************************************/
@@ -667,6 +745,9 @@ ul#topmenu2 a {
 
 span.caution {
     color: #FF0000;
+}
+span.success {
+    color: green;
 }
 fieldset.caution a {
     color:              #FF0000;
@@ -1101,6 +1182,15 @@ div#logTable table {
 
 /* end serverstatus */
 
+#sectionlinks {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #CCC;
+}
+#sectionlinks a {
+    margin-<?php echo $right; ?>: 7px;
+}
+
 /* server variables */
 #serverVariables {
     width: 100%;
@@ -1356,6 +1446,10 @@ div.sqlvalidate  {
     background:         <?php echo $GLOBALS['cfg']['BgOne']; ?>;
 }
 
+.result_query div.sqlOuter {
+    text-align: <?php echo $left; ?>;
+}
+
 #PMA_slidingMessage code.sql {
     border:             <?php echo $GLOBALS['cfg']['MainColor']; ?> solid 1px;
     border-top:         0;
@@ -1528,6 +1622,10 @@ select.invalid_value,
 
 .export_table_name {
     vertical-align: middle;
+}
+
+.exportoptions h2 {
+    word-wrap: break-word;
 }
 
 .exportoptions h3, .importoptions h3 {
@@ -1994,9 +2092,10 @@ fieldset .disabled-field td {
 .toggleButton .container {
     position: absolute;
 }
-.toggleButton .container td {
+.toggleButton .container td,
+.toggleButton .container tr {
     background-image: none;
-    background: none;
+    background: none !important;
 }
 .toggleButton .toggleOn {
     color: #fff;
@@ -2052,6 +2151,13 @@ fieldset .disabled-field td {
     border: 1px solid #aaa;
     float: <?php echo $right; ?>;
     overflow: hidden;
+    width: 450px;
+    height: 300px;
+}
+
+#openlayersmap{
+    width: 450px;
+    height: 300px;
 }
 
 .placeholderDrag {
@@ -3352,4 +3458,10 @@ body .ui-dialog .ui-button-text-only .ui-button-text {
     #serverinfo .item {
         margin: 4px;
     }
+}
+
+/* templates/database/designer */
+/* side menu */
+#name-panel {
+    overflow:hidden;
 }

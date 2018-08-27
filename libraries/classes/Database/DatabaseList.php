@@ -6,6 +6,8 @@
  * @package PhpMyAdmin
  *
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Database;
 
 use PhpMyAdmin\ListDatabase;
@@ -14,9 +16,6 @@ use PhpMyAdmin\ListDatabase;
  * holds the DatabaseList class
  *
  * @package PhpMyAdmin
- *
- * @property object $userlink
- * @property object $controllink
  */
 class DatabaseList
 {
@@ -26,20 +25,6 @@ class DatabaseList
      * @var ListDatabase
      */
     protected $databases = null;
-
-    /**
-     * DBMS user link
-     *
-     * @var object
-     */
-    protected $userlink = null;
-
-    /**
-     * DBMS control link
-     *
-     * @var object
-     */
-    protected $controllink = null;
 
     /**
      * magic access to protected/inaccessible members/properties
@@ -52,36 +37,11 @@ class DatabaseList
     public function __get($param)
     {
         switch ($param) {
-        case 'databases' :
-            return $this->getDatabaseList();
-        case 'userlink' :
-            return $this->userlink;
-        case 'controllink' :
-            return $this->controllink;
+            case 'databases':
+                return $this->getDatabaseList();
         }
 
         return null;
-    }
-
-    /**
-     * magic access to protected/inaccessible members/properties
-     *
-     * @param string $param parameter name
-     * @param mixed  $value value to set
-     *
-     * @return void
-     * @see https://secure.php.net/language.oop5.overloading
-     */
-    public function __set($param, $value)
-    {
-        switch ($param) {
-        case 'userlink' :
-            $this->userlink = $value;
-            break;
-        case 'controllink' :
-            $this->controllink = $value;
-            break;
-        }
     }
 
     /**
@@ -92,9 +52,7 @@ class DatabaseList
     public function getDatabaseList()
     {
         if (null === $this->databases) {
-            $this->databases = new ListDatabase(
-                $this->userlink
-            );
+            $this->databases = new ListDatabase();
         }
 
         return $this->databases;

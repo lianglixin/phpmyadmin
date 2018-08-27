@@ -5,21 +5,22 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Navigation;
 
 use PhpMyAdmin\Navigation\Navigation;
-use PhpMyAdmin\Theme;
-use PhpMyAdmin\Url;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Navigation class
  *
  * @package PhpMyAdmin-test
  */
-class NavigationTest extends \PMATestCase
+class NavigationTest extends PmaTestCase
 {
     /**
-     * @var PhpMyAdmin\Navigation\Navigation
+     * @var \PhpMyAdmin\Navigation\Navigation
      */
     protected $object;
 
@@ -120,20 +121,20 @@ class NavigationTest extends \PMATestCase
             ->method('fetchArray')
             ->will(
                 $this->returnValue(
-                    array(
+                    [
                         'item_name' => 'tableName',
                         'item_type' => 'table'
-                    )
+                    ]
                 )
             );
         $dbi->expects($this->at(4))
             ->method('fetchArray')
             ->will(
                 $this->returnValue(
-                    array(
+                    [
                         'item_name' => 'viewName',
                         'item_type' => 'view'
-                    )
+                    ]
                 )
             );
         $dbi->expects($this->at(5))

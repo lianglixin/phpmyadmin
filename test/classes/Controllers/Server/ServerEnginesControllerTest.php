@@ -5,10 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Controllers\Server;
 
 use PhpMyAdmin\Controllers\Server\ServerEnginesController;
+use PhpMyAdmin\Di\Container;
 use PhpMyAdmin\StorageEngine;
+use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PhpMyAdmin\Theme;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
@@ -19,14 +24,19 @@ use ReflectionClass;
  *
  * @package PhpMyAdmin-test
  */
-class ServerEnginesControllerTest extends \PMATestCase
+class ServerEnginesControllerTest extends PmaTestCase
 {
+    /**
+     * @var \PhpMyAdmin\Di\Container
+     */
+    private $container;
+
     /**
      * Prepares environment for the test.
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$_REQUEST
         $_REQUEST['log'] = "index1";
@@ -34,24 +44,29 @@ class ServerEnginesControllerTest extends \PMATestCase
 
         //$GLOBALS
         $GLOBALS['server'] = 0;
-        $GLOBALS['table'] = "table";
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = 'table';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
+        $GLOBALS['cfg']['Server'] = ['DisableIS' => false];
 
-        //$_SESSION
+        $this->container = Container::getDefaultContainer();
+        $this->container->set('PhpMyAdmin\Response', new ResponseStub());
+        $this->container->alias('response', 'PhpMyAdmin\Response');
     }
 
     /**
-     * Tests for _getHtmlForAllServerEngines() method
+     * Tests for indexAction() method
      *
      * @return void
      */
-    public function testGetHtmlForAllServerEngines()
+    public function testHtmlForAllServerEngines()
     {
-        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Server\ServerEnginesController');
-        $method = $class->getMethod('_getHtmlForAllServerEngines');
-        $method->setAccessible(true);
-
-        $ctrl = new ServerEnginesController();
-        $html = $method->invoke($ctrl);
+        $class = new ServerEnginesController(
+            $this->container->get('response'),
+            $this->container->get('dbi')
+        );
+        $class->indexAction();
+        $html = $this->container->get('response')->getHTMLResult();
 
         //validate 1: Item header
         $this->assertContains(
@@ -97,22 +112,26 @@ class ServerEnginesControllerTest extends \PMATestCase
      *
      * @return void
      */
-    public function testGetHtmlForServerEngine()
+    public function testHtmlForServerEngine()
     {
         $_REQUEST['engine'] = "Pbxt";
         $_REQUEST['page'] = "page";
+
+        $class = new ReflectionClass('PhpMyAdmin\Controllers\Server\ServerEnginesController');
+        $method = $class->getMethod('_getHtmlForShowEngine');
+        $method->setAccessible(true);
+
         //Mock DBI
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
             ->getMock();
         $GLOBALS['dbi'] = $dbi;
 
-        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Server\ServerEnginesController');
-        $method = $class->getMethod('_getHtmlForServerEngine');
-        $method->setAccessible(true);
-
         $engine_plugin = StorageEngine::getEngine("Pbxt");
-        $ctrl = new ServerEnginesController();
+        $ctrl = new ServerEnginesController(
+            $this->container->get('response'),
+            $this->container->get('dbi')
+        );
         $html = $method->invoke($ctrl, $engine_plugin);
 
         //validate 1: Engine title
@@ -140,14 +159,14 @@ class ServerEnginesControllerTest extends \PMATestCase
         );
         $this->assertContains(
             Url::getCommon(
-                array('engine' => $_REQUEST['engine'], 'page' => "Documentation")
+                ['engine' => $_REQUEST['engine'], 'page' => "Documentation"]
             ),
             $html
         );
 
         //validate 5: other items
         $this->assertContains(
-            Url::getCommon(array('engine' => $_REQUEST['engine'])),
+            Url::getCommon(['engine' => $_REQUEST['engine']]),
             $html
         );
         $this->assertContains(

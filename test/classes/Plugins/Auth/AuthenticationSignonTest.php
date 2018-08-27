@@ -5,19 +5,20 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Auth;
 
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Plugins\Auth\AuthenticationSignon;
-
-require_once 'libraries/config.default.php';
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationSignon class
  *
  * @package PhpMyAdmin-test
  */
-class AuthenticationSignonTest extends \PMATestCase
+class AuthenticationSignonTest extends PmaTestCase
 {
     protected $object;
 
@@ -26,11 +27,14 @@ class AuthenticationSignonTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['server'] = 0;
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = 'table';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
         $this->object = new AuthenticationSignon();
     }
 
@@ -46,7 +50,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::auth
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::showLoginForm
      *
      * @return void
      */
@@ -55,7 +59,7 @@ class AuthenticationSignonTest extends \PMATestCase
         $GLOBALS['cfg']['Server']['SignonURL'] = '';
 
         ob_start();
-        $this->object->auth();
+        $this->object->showLoginForm();
         $result = ob_get_clean();
 
         $this->assertContains(
@@ -65,7 +69,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::auth
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::showLoginForm
      *
      * @return void
      */
@@ -80,7 +84,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::auth
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::showLoginForm
      *
      * @return void
      */
@@ -88,7 +92,7 @@ class AuthenticationSignonTest extends \PMATestCase
     {
         $this->mockResponse('Location: https://example.com/SignonURL');
 
-        $GLOBALS['header'] = array();
+        $GLOBALS['header'] = [];
         $GLOBALS['cfg']['Server']['SignonURL'] = 'https://example.com/SignonURL';
         $GLOBALS['cfg']['Server']['LogoutURL'] = '';
 
@@ -96,7 +100,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authCheck
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::readCredentials
      *
      * @return void
      */
@@ -106,12 +110,12 @@ class AuthenticationSignonTest extends \PMATestCase
         $_SESSION['LAST_SIGNON_URL'] = 'https://example.com/SignonDiffURL';
 
         $this->assertFalse(
-            $this->object->authCheck()
+            $this->object->readCredentials()
         );
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authCheck
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::readCredentials
      *
      * @return void
      */
@@ -121,23 +125,23 @@ class AuthenticationSignonTest extends \PMATestCase
         $_SESSION['LAST_SIGNON_URL'] = 'https://example.com/SignonURL';
         $GLOBALS['cfg']['Server']['SignonScript'] = './examples/signon-script.php';
         $GLOBALS['cfg']['Server']['SignonSession'] = 'session123';
-        $GLOBALS['cfg']['Server']['SignonCookieParams'] = array();
+        $GLOBALS['cfg']['Server']['SignonCookieParams'] = [];
         $GLOBALS['cfg']['Server']['host'] = 'localhost';
         $GLOBALS['cfg']['Server']['port'] = '80';
         $GLOBALS['cfg']['Server']['user'] = 'user';
 
         $this->assertTrue(
-            $this->object->authCheck()
+            $this->object->readCredentials()
         );
 
         $this->assertEquals(
             'user',
-            $GLOBALS['PHP_AUTH_USER']
+            $this->object->user
         );
 
         $this->assertEquals(
             'password',
-            $GLOBALS['PHP_AUTH_PW']
+            $this->object->password
         );
 
         $this->assertEquals(
@@ -147,7 +151,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authCheck
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::readCredentials
      *
      * @return void
      */
@@ -157,7 +161,7 @@ class AuthenticationSignonTest extends \PMATestCase
 
         $GLOBALS['cfg']['Server']['SignonURL'] = 'https://example.com/SignonURL';
         $GLOBALS['cfg']['Server']['SignonSession'] = 'session123';
-        $GLOBALS['cfg']['Server']['SignonCookieParams'] = array();
+        $GLOBALS['cfg']['Server']['SignonCookieParams'] = [];
         $GLOBALS['cfg']['Server']['host'] = 'localhost';
         $GLOBALS['cfg']['Server']['port'] = '80';
         $GLOBALS['cfg']['Server']['user'] = 'user';
@@ -167,7 +171,7 @@ class AuthenticationSignonTest extends \PMATestCase
         $_SESSION['PMA_single_signon_password'] = 'pass123';
         $_SESSION['PMA_single_signon_host'] = 'local';
         $_SESSION['PMA_single_signon_port'] = '12';
-        $_SESSION['PMA_single_signon_cfgupdate'] = array('foo' => 'bar');
+        $_SESSION['PMA_single_signon_cfgupdate'] = ['foo' => 'bar'];
         $_SESSION['PMA_single_signon_token'] = 'pmaToken';
         $sessionName = session_name();
         $sessionID = session_id();
@@ -175,15 +179,15 @@ class AuthenticationSignonTest extends \PMATestCase
         $this->object->logOut();
 
         $this->assertEquals(
-            array(
+            [
                 'SignonURL' => 'https://example.com/SignonURL',
                 'SignonScript' => '',
                 'SignonSession' => 'session123',
-                'SignonCookieParams' => array(),
+                'SignonCookieParams' => [],
                 'host' => 'localhost',
                 'port' => '80',
                 'user' => 'user',
-            ),
+            ],
             $GLOBALS['cfg']['Server']
         );
 
@@ -197,13 +201,14 @@ class AuthenticationSignonTest extends \PMATestCase
             session_id()
         );
 
-        $this->assertFalse(
-            isset($_SESSION['LAST_SIGNON_URL'])
+        $this->assertArrayNotHasKey(
+            'LAST_SIGNON_URL',
+            $_SESSION
         );
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authCheck
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::readCredentials
      *
      * @return void
      */
@@ -211,7 +216,7 @@ class AuthenticationSignonTest extends \PMATestCase
     {
         $GLOBALS['cfg']['Server']['SignonURL'] = 'https://example.com/SignonURL';
         $GLOBALS['cfg']['Server']['SignonSession'] = 'session123';
-        $GLOBALS['cfg']['Server']['SignonCookieParams'] = array();
+        $GLOBALS['cfg']['Server']['SignonCookieParams'] = [];
         $GLOBALS['cfg']['Server']['host'] = 'localhost';
         $GLOBALS['cfg']['Server']['port'] = '80';
         $GLOBALS['cfg']['Server']['user'] = 'user';
@@ -222,36 +227,36 @@ class AuthenticationSignonTest extends \PMATestCase
         $_SESSION['PMA_single_signon_password'] = 'pass123';
         $_SESSION['PMA_single_signon_host'] = 'local';
         $_SESSION['PMA_single_signon_port'] = '12';
-        $_SESSION['PMA_single_signon_cfgupdate'] = array('foo' => 'bar');
+        $_SESSION['PMA_single_signon_cfgupdate'] = ['foo' => 'bar'];
         $_SESSION['PMA_single_signon_token'] = 'pmaToken';
 
         $this->assertTrue(
-            $this->object->authCheck()
+            $this->object->readCredentials()
         );
 
         $this->assertEquals(
             'user123',
-            $GLOBALS['PHP_AUTH_USER']
+            $this->object->user
         );
 
         $this->assertEquals(
             'pass123',
-            $GLOBALS['PHP_AUTH_PW']
+            $this->object->password
         );
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authSetUser
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::storeCredentials
      *
      * @return void
      */
     public function testAuthSetUser()
     {
-        $GLOBALS['PHP_AUTH_USER'] = 'testUser123';
-        $GLOBALS['PHP_AUTH_PW'] = 'testPass123';
+        $this->object->user = 'testUser123';
+        $this->object->password = 'testPass123';
 
         $this->assertTrue(
-            $this->object->authSetUser()
+            $this->object->storeCredentials()
         );
 
         $this->assertEquals(
@@ -266,7 +271,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authFails
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::showFailure
      *
      * @return void
      */
@@ -277,15 +282,13 @@ class AuthenticationSignonTest extends \PMATestCase
 
         $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Auth\AuthenticationSignon')
             ->disableOriginalConstructor()
-            ->setMethods(array('auth'))
+            ->setMethods(['showLoginForm'])
             ->getMock();
 
         $this->object->expects($this->exactly(1))
-            ->method('auth');
+            ->method('showLoginForm');
 
-        $GLOBALS['login_without_password_is_forbidden'] = true;
-
-        $this->object->authFails();
+        $this->object->showFailure('empty-denied');
 
         $this->assertEquals(
             'Login without a password is forbidden by configuration '
@@ -295,7 +298,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authFails
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::showFailure
      *
      * @return void
      */
@@ -306,16 +309,13 @@ class AuthenticationSignonTest extends \PMATestCase
 
         $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Auth\AuthenticationSignon')
             ->disableOriginalConstructor()
-            ->setMethods(array('auth'))
+            ->setMethods(['showLoginForm'])
             ->getMock();
 
         $this->object->expects($this->exactly(1))
-            ->method('auth');
+            ->method('showLoginForm');
 
-        $GLOBALS['login_without_password_is_forbidden'] = null;
-        $GLOBALS['allowDeny_forbidden'] = true;
-
-        $this->object->authFails();
+        $this->object->showFailure('allow-denied');
 
         $this->assertEquals(
             'Access denied!',
@@ -324,7 +324,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authFails
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::showFailure
      *
      * @return void
      */
@@ -335,17 +335,15 @@ class AuthenticationSignonTest extends \PMATestCase
 
         $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Auth\AuthenticationSignon')
             ->disableOriginalConstructor()
-            ->setMethods(array('auth'))
+            ->setMethods(['showLoginForm'])
             ->getMock();
 
         $this->object->expects($this->exactly(1))
-            ->method('auth');
+            ->method('showLoginForm');
 
-        $GLOBALS['allowDeny_forbidden'] = null;
-        $GLOBALS['no_activity'] = true;
         $GLOBALS['cfg']['LoginCookieValidity'] = '1440';
 
-        $this->object->authFails();
+        $this->object->showFailure('no-activity');
 
         $this->assertEquals(
             'No activity within 1440 seconds; please log in again.',
@@ -354,7 +352,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authFails
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::showFailure
      *
      * @return void
      */
@@ -365,11 +363,11 @@ class AuthenticationSignonTest extends \PMATestCase
 
         $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Auth\AuthenticationSignon')
             ->disableOriginalConstructor()
-            ->setMethods(array('auth'))
+            ->setMethods(['showLoginForm'])
             ->getMock();
 
         $this->object->expects($this->exactly(1))
-            ->method('auth');
+            ->method('showLoginForm');
 
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
@@ -380,9 +378,8 @@ class AuthenticationSignonTest extends \PMATestCase
             ->will($this->returnValue('error<123>'));
 
         $GLOBALS['dbi'] = $dbi;
-        $GLOBALS['no_activity'] = null;
 
-        $this->object->authFails();
+        $this->object->showFailure('');
 
         $this->assertEquals(
             'error&lt;123&gt;',
@@ -391,7 +388,7 @@ class AuthenticationSignonTest extends \PMATestCase
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::authFails
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationSignon::showFailure
      *
      * @return void
      */
@@ -402,11 +399,11 @@ class AuthenticationSignonTest extends \PMATestCase
 
         $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Auth\AuthenticationSignon')
             ->disableOriginalConstructor()
-            ->setMethods(array('auth'))
+            ->setMethods(['showLoginForm'])
             ->getMock();
 
         $this->object->expects($this->exactly(1))
-            ->method('auth');
+            ->method('showLoginForm');
 
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
@@ -418,7 +415,7 @@ class AuthenticationSignonTest extends \PMATestCase
 
         $GLOBALS['dbi'] = $dbi;
 
-        $this->object->authFails();
+        $this->object->showFailure('');
 
         $this->assertEquals(
             'Cannot log in to the MySQL server',

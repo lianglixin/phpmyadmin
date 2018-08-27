@@ -5,9 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Error;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Theme;
 
 /**
@@ -15,9 +18,10 @@ use PhpMyAdmin\Theme;
  *
  * @package PhpMyAdmin-test
  */
-class ErrorTest extends \PMATestCase
+class ErrorTest extends PmaTestCase
 {
     /**
+     * @var Error
      * @access protected
      */
     protected $object;
@@ -31,7 +35,7 @@ class ErrorTest extends \PMATestCase
      */
     protected function setUp()
     {
-        $this->object = new Error('2', 'Compile Error', 'error.txt', 15);
+        $this->object = new Error(2, 'Compile Error', 'error.txt', 15);
     }
 
     /**
@@ -53,7 +57,7 @@ class ErrorTest extends \PMATestCase
      */
     public function testSetBacktrace()
     {
-        $bt = array(array('file'=>'bt1','line'=>2, 'function'=>'bar', 'args'=>array('foo'=>$this)));
+        $bt = [['file' => 'bt1','line' => 2, 'function' => 'bar', 'args' => ['foo' => $this]]];
         $this->object->setBacktrace($bt);
         $bt[0]['args']['foo'] = '<Class:PhpMyAdmin\Tests\ErrorTest>';
         $this->assertEquals($bt, $this->object->getBacktrace());
@@ -73,6 +77,9 @@ class ErrorTest extends \PMATestCase
     /**
      * Test for setFile
      *
+     * @param string $file     actual
+     * @param string $expected expected
+     *
      * @return void
      *
      * @dataProvider filePathProvider
@@ -90,11 +97,11 @@ class ErrorTest extends \PMATestCase
      */
     public function filePathProvider()
     {
-        return array(
-            array('./ChangeLog', './ChangeLog'),
-            array(__FILE__, './test/classes/ErrorTest.php'),
-            array('./NONEXISTING', 'NONEXISTING'),
-        );
+        return [
+            ['./ChangeLog', './ChangeLog'],
+            [__FILE__, './test/classes/ErrorTest.php'],
+            ['./NONEXISTING', 'NONEXISTING'],
+        ];
     }
 
     /**
@@ -118,7 +125,7 @@ class ErrorTest extends \PMATestCase
     public function testGetBacktraceDisplay()
     {
         $this->assertContains(
-            'PHPUnit_Framework_TestResult->run(<Class:PhpMyAdmin\Tests\ErrorTest>)<br />',
+            'PHPUnit\Framework\TestResult->run(<Class:PhpMyAdmin\Tests\ErrorTest>)<br />',
             $this->object->getBacktraceDisplay()
         );
     }
@@ -163,19 +170,19 @@ class ErrorTest extends \PMATestCase
      */
     public function testGetBacktrace()
     {
-        $bt = array(
-            array('file'=>'bt1','line'=>2, 'function'=>'bar', 'args'=>array('foo'=>1)),
-            array('file'=>'bt2','line'=>2, 'function'=>'bar', 'args'=>array('foo'=>2)),
-            array('file'=>'bt3','line'=>2, 'function'=>'bar', 'args'=>array('foo'=>3)),
-            array('file'=>'bt4','line'=>2, 'function'=>'bar', 'args'=>array('foo'=>4)),
-        );
+        $bt = [
+            ['file' => 'bt1','line' => 2, 'function' => 'bar', 'args' => ['foo' => 1]],
+            ['file' => 'bt2','line' => 2, 'function' => 'bar', 'args' => ['foo' => 2]],
+            ['file' => 'bt3','line' => 2, 'function' => 'bar', 'args' => ['foo' => 3]],
+            ['file' => 'bt4','line' => 2, 'function' => 'bar', 'args' => ['foo' => 4]],
+        ];
 
         $this->object->setBacktrace($bt);
 
         // case: full backtrace
-        $this->assertEquals(4, count($this->object->getBacktrace()));
+        $this->assertCount(4, $this->object->getBacktrace());
 
         // case: first 2 frames
-        $this->assertEquals(2, count($this->object->getBacktrace(2)));
+        $this->assertCount(2, $this->object->getBacktrace(2));
     }
 }

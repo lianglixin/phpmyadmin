@@ -7,9 +7,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Controllers\Table;
 
 use PhpMyAdmin\Di\Container;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PhpMyAdmin\Theme;
 use ReflectionClass;
@@ -21,7 +24,7 @@ use ReflectionClass;
  *
  * @package PhpMyAdmin-test
  */
-class TableStructureControllerTest extends \PMATestCase
+class TableStructureControllerTest extends PmaTestCase
 {
     /**
      * @var \PhpMyAdmin\Tests\Stubs\Response
@@ -33,7 +36,7 @@ class TableStructureControllerTest extends \PMATestCase
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$_REQUEST
         $_REQUEST['log'] = "index1";
@@ -41,11 +44,11 @@ class TableStructureControllerTest extends \PMATestCase
 
         //$GLOBALS
         $GLOBALS['server'] = 1;
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = 'table';
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
-
-        $GLOBALS['table'] = "table";
-
-        //$_SESSION
+        $GLOBALS['cfg']['Server']['user'] = 'pma_user';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
 
         $table = $this->getMockBuilder('PhpMyAdmin\Table')
             ->disableOriginalConstructor()
@@ -89,7 +92,8 @@ class TableStructureControllerTest extends \PMATestCase
         $container->set('dbi', $GLOBALS['dbi']);
         $container->factory('PhpMyAdmin\Controllers\Table\TableStructureController');
         $container->alias(
-            'TableStructureController', 'PhpMyAdmin\Controllers\Table\TableStructureController'
+            'TableStructureController',
+            'PhpMyAdmin\Controllers\Table\TableStructureController'
         );
         $ctrl = $container->get('TableStructureController');
         // No primary key in db.table2
@@ -118,10 +122,10 @@ class TableStructureControllerTest extends \PMATestCase
                         if ($callCount == 0) {
                             $callCount++;
 
-                            return array(
+                            return [
                                 'Key_name'    => 'PRIMARY',
                                 'Column_name' => 'column',
-                            );
+                            ];
                         } else {
                             return null;
                         }
@@ -137,7 +141,8 @@ class TableStructureControllerTest extends \PMATestCase
         $container->set('dbi', $GLOBALS['dbi']);
         $container->factory('PhpMyAdmin\Controllers\Table\TableStructureController');
         $container->alias(
-            'TableStructureController', 'PhpMyAdmin\Controllers\Table\TableStructureController'
+            'TableStructureController',
+            'PhpMyAdmin\Controllers\Table\TableStructureController'
         );
         $ctrl = $container->get('TableStructureController');
         // With db.table, it has a primary key `column`
@@ -163,7 +168,8 @@ class TableStructureControllerTest extends \PMATestCase
         $container->set('dbi', $GLOBALS['dbi']);
         $container->factory('PhpMyAdmin\Controllers\Table\TableStructureController');
         $container->alias(
-            'TableStructureController', 'PhpMyAdmin\Controllers\Table\TableStructureController'
+            'TableStructureController',
+            'PhpMyAdmin\Controllers\Table\TableStructureController'
         );
         $ctrl = $container->get('TableStructureController');
 
@@ -189,7 +195,8 @@ class TableStructureControllerTest extends \PMATestCase
         $container->set('dbi', $GLOBALS['dbi']);
         $container->factory('PhpMyAdmin\Controllers\Table\TableStructureController');
         $container->alias(
-            'TableStructureController', 'PhpMyAdmin\Controllers\Table\TableStructureController'
+            'TableStructureController',
+            'PhpMyAdmin\Controllers\Table\TableStructureController'
         );
         $ctrl = $container->get('TableStructureController');
 
@@ -218,7 +225,7 @@ class TableStructureControllerTest extends \PMATestCase
             $method->invoke($ctrl)
         );
 
-        $_REQUEST['selected'] = array('a', 'b');
+        $_REQUEST['selected'] = ['a', 'b'];
         $method->invoke($ctrl);
         $this->assertEquals(
             $_REQUEST['selected'],
@@ -249,22 +256,23 @@ class TableStructureControllerTest extends \PMATestCase
         $container->set('dbi', $dbi);
         $container->factory('PhpMyAdmin\Controllers\Table\TableStructureController');
         $container->alias(
-            'TableStructureController', 'PhpMyAdmin\Controllers\Table\TableStructureController'
+            'TableStructureController',
+            'PhpMyAdmin\Controllers\Table\TableStructureController'
         );
         $ctrl = $container->get('TableStructureController');
 
         $submit_mult = "index";
         $db = "PMA_db";
         $table = "PMA_table";
-        $selected = array(
+        $selected = [
             "table1", "table2"
-        );
+        ];
         $action = 'db_delete_row';
 
         list($what, $query_type, $is_unset_submit_mult, $mult_btn, $centralColsError)
             = $method->invokeArgs(
                 $ctrl,
-                array($submit_mult, $db, $table, $selected, $action)
+                [$submit_mult, $db, $table, $selected, $action]
             );
 
         //validate 1: $what
@@ -302,7 +310,7 @@ class TableStructureControllerTest extends \PMATestCase
         list($what, $query_type, $is_unset_submit_mult, $mult_btn, $centralColsError)
             = $method->invokeArgs(
                 $ctrl,
-                array($submit_mult, $db, $table, $selected, $action)
+                [$submit_mult, $db, $table, $selected, $action]
             );
 
         //validate 1: $what

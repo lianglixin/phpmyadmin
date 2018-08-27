@@ -4,11 +4,14 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Config;
 use PhpMyAdmin\ErrorHandler;
 use PhpMyAdmin\Footer;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Theme;
 use ReflectionClass;
 
@@ -17,13 +20,13 @@ use ReflectionClass;
  *
  * @package PhpMyAdmin-test
  */
-class FooterTest extends \PMATestCase
+class FooterTest extends PmaTestCase
 {
 
     /**
      * @var array store private attributes of PhpMyAdmin\Footer
      */
-    public $privates = array();
+    public $privates = [];
 
     /**
      * @access protected
@@ -46,7 +49,7 @@ class FooterTest extends \PMATestCase
         $GLOBALS['text_dir'] = 'ltr';
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['PMA_Config']->enableBc();
-        $GLOBALS['collation_connection'] = 'utf8_general_ci';
+        $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfg']['Server']['verbose'] = 'verbose host';
         $GLOBALS['server'] = '1';
         $_GET['reload_left_frame'] = '1';
@@ -56,7 +59,6 @@ class FooterTest extends \PMATestCase
         unset($GLOBALS['sql_query']);
         $GLOBALS['error_handler'] = new ErrorHandler();
         unset($_POST);
-
     }
 
     /**
@@ -77,7 +79,7 @@ class FooterTest extends \PMATestCase
      * @param string $name   method name
      * @param array  $params parameters for the invocation
      *
-     * @return the output from the private method.
+     * @return mixed the output from the private method.
      */
     private function _callPrivateFunction($name, $params)
     {
@@ -97,18 +99,18 @@ class FooterTest extends \PMATestCase
     public function testGetDebugMessage()
     {
         $GLOBALS['cfg']['DBG']['sql'] = true;
-        $_SESSION['debug']['queries'] = array(
-            array(
+        $_SESSION['debug']['queries'] = [
+            [
                 'count' => 1,
                 'time' => 0.2,
                 'query' => 'SELECT * FROM `pma_bookmark` WHERE 1',
-            ),
-            array(
+            ],
+            [
                 'count' => 1,
                 'time' => 2.5,
                 'query' => 'SELECT * FROM `db` WHERE 1',
-            ),
-        );
+            ],
+        ];
 
         $this->assertEquals(
             '{"queries":[{"count":1,"time":0.2,"query":"SELECT * FROM `pma_bookmark` WHERE 1"},'
@@ -124,15 +126,15 @@ class FooterTest extends \PMATestCase
      */
     public function testRemoveRecursion()
     {
-        $object = (object) array();
-        $object->child = (object) array();
+        $object = (object) [];
+        $object->child = (object) [];
         $object->child->parent = $object;
 
         $this->_callPrivateFunction(
             '_removeRecursion',
-            array(
+            [
                 &$object
-            )
+            ]
         );
 
         $this->assertEquals(
@@ -154,14 +156,14 @@ class FooterTest extends \PMATestCase
 
         $this->assertEquals(
             '<div id="selflink" class="print_ignore"><a href="index.php?db=&amp;'
-            . 'table=&amp;server=1&amp;target=&amp;lang=en&amp;collation_connection='
-            . 'utf8_general_ci" title="Open new phpMyAdmin window" '
+            . 'table=&amp;server=1&amp;target=&amp;lang=en'
+            . '" title="Open new phpMyAdmin window" '
             . 'target="_blank" rel="noopener noreferrer">Open new phpMyAdmin window</a></div>',
             $this->_callPrivateFunction(
                 '_getSelfLink',
-                array(
+                [
                     $this->object->getSelfUrl()
-                )
+                ]
             )
         );
     }
@@ -179,16 +181,16 @@ class FooterTest extends \PMATestCase
 
         $this->assertEquals(
             '<div id="selflink" class="print_ignore"><a href="index.php?db=&amp;'
-            . 'table=&amp;server=1&amp;target=&amp;lang=en&amp;collation_connection='
-            . 'utf8_general_ci" title="Open new phpMyAdmin window" '
+            . 'table=&amp;server=1&amp;target=&amp;lang=en'
+            . '" title="Open new phpMyAdmin window" '
             . 'target="_blank" rel="noopener noreferrer"><img src="themes/dot.gif" title="Open new '
             . 'phpMyAdmin window" alt="Open new phpMyAdmin window" '
             . 'class="icon ic_window-new" /></a></div>',
             $this->_callPrivateFunction(
                 '_getSelfLink',
-                array(
+                [
                     $this->object->getSelfUrl()
-                )
+                ]
             )
         );
     }

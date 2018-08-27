@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Partition;
@@ -44,7 +46,8 @@ $url_params['goto'] = $url_params['back'] = 'tbl_operations.php';
 /**
  * Gets relation settings
  */
-$cfgRelation = Relation::getRelationsParam();
+$relation = new Relation();
+$cfgRelation = $relation->getRelationsParam();
 
 // reselect current db (needed in some cases probably due to
 // the calling of PhpMyAdmin\Relation)
@@ -92,14 +95,16 @@ $pma_table = $GLOBALS['dbi']->getTable(
     $GLOBALS['table']
 );
 $reread_info = false;
-$table_alters = array();
+$table_alters = [];
+
+$operations = new Operations();
 
 /**
  * If the table has to be moved to some other database
  */
 if (isset($_REQUEST['submit_move']) || isset($_REQUEST['submit_copy'])) {
     //$_message = '';
-    Operations::moveOrCopyTable($db, $table);
+    $operations->moveOrCopyTable($db, $table);
     // This was ended in an Ajax call
     exit;
 }
@@ -115,7 +120,7 @@ if (isset($_REQUEST['table_maintenance'])) {
  */
 if (isset($_REQUEST['submitoptions'])) {
     $_message = '';
-    $warning_messages = array();
+    $warning_messages = [];
 
     if (isset($_REQUEST['new_name'])) {
         // Get original names before rename operation
@@ -126,8 +131,11 @@ if (isset($_REQUEST['submitoptions'])) {
             if (isset($_REQUEST['adjust_privileges'])
                 && ! empty($_REQUEST['adjust_privileges'])
             ) {
-                Operations::adjustPrivilegesRenameOrMoveTable(
-                    $oldDb, $oldTable, $_REQUEST['db'], $_REQUEST['new_name']
+                $operations->adjustPrivilegesRenameOrMoveTable(
+                    $oldDb,
+                    $oldTable,
+                    $_REQUEST['db'],
+                    $_REQUEST['new_name']
                 );
             }
 
@@ -164,7 +172,7 @@ if (isset($_REQUEST['submitoptions'])) {
         ? $create_options['row_format']
         : $pma_table->getRowFormat();
 
-    $table_alters = Operations::getTableAltersArray(
+    $table_alters = $operations->getTableAltersArray(
         $pma_table,
         $create_options['pack_keys'],
         (empty($create_options['checksum']) ? '0' : '1'),
@@ -184,7 +192,7 @@ if (isset($_REQUEST['submitoptions'])) {
         $result        .= $GLOBALS['dbi']->query($sql_query) ? true : false;
         $reread_info    = true;
         unset($table_alters);
-        $warning_messages = Operations::getWarningMessagesArray();
+        $warning_messages = $operations->getWarningMessagesArray();
     }
 
     if (isset($_REQUEST['tbl_collation'])
@@ -192,8 +200,10 @@ if (isset($_REQUEST['submitoptions'])) {
         && isset($_REQUEST['change_all_collations'])
         && ! empty($_REQUEST['change_all_collations'])
     ) {
-        Operations::changeAllColumnsCollation(
-            $GLOBALS['db'], $GLOBALS['table'], $_REQUEST['tbl_collation']
+        $operations->changeAllColumnsCollation(
+            $GLOBALS['db'],
+            $GLOBALS['table'],
+            $_REQUEST['tbl_collation']
         );
     }
 }
@@ -201,7 +211,7 @@ if (isset($_REQUEST['submitoptions'])) {
  * Reordering the table has been requested by the user
  */
 if (isset($_REQUEST['submitorderby']) && ! empty($_REQUEST['order_field'])) {
-    list($sql_query, $result) = Operations::getQueryAndResultForReorderingTable();
+    list($sql_query, $result) = $operations->getQueryAndResultForReorderingTable();
 } // end if
 
 /**
@@ -210,7 +220,7 @@ if (isset($_REQUEST['submitorderby']) && ! empty($_REQUEST['order_field'])) {
 if (isset($_REQUEST['submit_partition'])
     && ! empty($_REQUEST['partition_operation'])
 ) {
-    list($sql_query, $result) = Operations::getQueryAndResultForPartition();
+    list($sql_query, $result) = $operations->getQueryAndResultForPartition();
 } // end if
 
 if ($reread_info) {
@@ -251,7 +261,8 @@ if (isset($result) && empty($message_to_show)) {
             $response->addJSON('message', $_message);
             if (!empty($sql_query)) {
                 $response->addJSON(
-                    'sql_query', Util::getMessage(null, $sql_query)
+                    'sql_query',
+                    Util::getMessage(null, $sql_query)
                 );
             }
             exit;
@@ -263,7 +274,7 @@ if (isset($result) && empty($message_to_show)) {
     }
 
     if (! empty($warning_messages)) {
-        $_message = new Message;
+        $_message = new Message();
         $_message->addMessagesString($warning_messages);
         $_message->isError(true);
         if ($response->isAjax()) {
@@ -271,7 +282,8 @@ if (isset($result) && empty($message_to_show)) {
             $response->addJSON('message', $_message);
             if (!empty($sql_query)) {
                 $response->addJSON(
-                    'sql_query', Util::getMessage(null, $sql_query)
+                    'sql_query',
+                    Util::getMessage(null, $sql_query)
                 );
             }
             exit;
@@ -333,13 +345,13 @@ if ($tbl_storage_engine == 'INNODB') {
     }
 }
 if (! $hideOrderTable) {
-    $response->addHTML(Operations::getHtmlForOrderTheTable($columns));
+    $response->addHTML($operations->getHtmlForOrderTheTable($columns));
 }
 
 /**
  * Move table
  */
-$response->addHTML(Operations::getHtmlForMoveTable());
+$response->addHTML($operations->getHtmlForMoveTable());
 
 if (mb_strstr($show_comment, '; InnoDB free') === false) {
     if (mb_strstr($show_comment, 'InnoDB free') === false) {
@@ -363,8 +375,11 @@ if (mb_strstr($show_comment, '; InnoDB free') === false) {
 // check for version
 
 $response->addHTML(
-    Operations::getTableOptionDiv(
-        $pma_table, $comment, $tbl_collation, $tbl_storage_engine,
+    $operations->getTableOptionDiv(
+        $pma_table,
+        $comment,
+        $tbl_collation,
+        $tbl_storage_engine,
         $create_options['pack_keys'],
         $auto_increment,
         (empty($create_options['delay_key_write']) ? '0' : '1'),
@@ -377,18 +392,18 @@ $response->addHTML(
 /**
  * Copy table
  */
-$response->addHTML(Operations::getHtmlForCopytable());
+$response->addHTML($operations->getHtmlForCopytable());
 
 /**
  * Table maintenance
  */
 $response->addHTML(
-    Operations::getHtmlForTableMaintenance($pma_table, $url_params)
+    $operations->getHtmlForTableMaintenance($pma_table, $url_params)
 );
 
 if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
-    $truncate_table_url_params = array();
-    $drop_table_url_params = array();
+    $truncate_table_url_params = [];
+    $drop_table_url_params = [];
 
     if (! $tbl_is_view
         && ! (isset($db_is_system_schema) && $db_is_system_schema)
@@ -397,7 +412,7 @@ if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
             . Util::backquote($GLOBALS['table']);
         $truncate_table_url_params = array_merge(
             $url_params,
-            array(
+            [
                 'sql_query' => $this_sql_query,
                 'goto' => 'tbl_structure.php',
                 'reload' => '1',
@@ -405,7 +420,7 @@ if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
                     __('Table %s has been emptied.'),
                     htmlspecialchars($table)
                 ),
-            )
+            ]
         );
     }
     if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
@@ -413,7 +428,7 @@ if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
             . Util::backquote($GLOBALS['table']);
         $drop_table_url_params = array_merge(
             $url_params,
-            array(
+            [
                 'sql_query' => $this_sql_query,
                 'goto' => 'db_operations.php',
                 'reload' => '1',
@@ -428,11 +443,11 @@ if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
                 // table name is needed to avoid running
                 // PhpMyAdmin\RelationCleanup::database() on the whole db later
                 'table' => $GLOBALS['table'],
-            )
+            ]
         );
     }
     $response->addHTML(
-        Operations::getHtmlForDeleteDataOrTable(
+        $operations->getHtmlForDeleteDataOrTable(
             $truncate_table_url_params,
             $drop_table_url_params
         )
@@ -444,7 +459,7 @@ if (Partition::havePartitioning()) {
     // show the Partition maintenance section only if we detect a partition
     if (! is_null($partition_names[0])) {
         $response->addHTML(
-            Operations::getHtmlForPartitionMaintenance($partition_names, $url_params)
+            $operations->getHtmlForPartitionMaintenance($partition_names, $url_params)
         );
     } // end if
 } // end if
@@ -458,12 +473,11 @@ unset($partition_names);
 
 if ($cfgRelation['relwork'] && ! $pma_table->isEngine("INNODB")) {
     $GLOBALS['dbi']->selectDb($GLOBALS['db']);
-    $foreign = Relation::getForeigners($GLOBALS['db'], $GLOBALS['table'], '', 'internal');
+    $foreign = $relation->getForeigners($GLOBALS['db'], $GLOBALS['table'], '', 'internal');
 
     if (! empty($foreign)) {
         $response->addHTML(
-            Operations::getHtmlForReferentialIntegrityCheck($foreign, $url_params)
+            $operations->getHtmlForReferentialIntegrityCheck($foreign, $url_params)
         );
     } // end if ($foreign)
-
 } // end  if (!empty($cfg['Server']['relation']))

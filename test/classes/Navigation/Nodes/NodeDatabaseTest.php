@@ -5,9 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Navigation\Nodes;
 
 use PhpMyAdmin\Navigation\NodeFactory;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Theme;
 
 /**
@@ -15,19 +18,19 @@ use PhpMyAdmin\Theme;
  *
  * @package PhpMyAdmin-test
  */
-class NodeDatabaseTest extends \PMATestCase
+class NodeDatabaseTest extends PmaTestCase
 {
     /**
      * SetUp for test cases
      *
      * @return void
      */
-    public function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['cfg']['DefaultTabDatabase'] = 'structure';
         $GLOBALS['cfg']['MaxNavigationItems'] = 250;
-        $GLOBALS['cfg']['Server'] = array();
+        $GLOBALS['cfg']['Server'] = [];
         $GLOBALS['cfg']['Server']['DisableIS'] = true;
     }
 
@@ -107,10 +110,7 @@ class NodeDatabaseTest extends \PMATestCase
             'testFunction',
             $functions
         );
-        $this->assertEquals(
-            1,
-            count($functions)
-        );
+        $this->assertCount(1, $functions);
 
         $this->assertEmpty($parent->getData('procedures', 0));
         $this->assertEmpty($parent->getData('events', 0));

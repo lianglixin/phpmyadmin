@@ -5,9 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Config;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Theme;
 
 /**
@@ -15,7 +18,7 @@ use PhpMyAdmin\Theme;
  *
  * @package PhpMyAdmin-test
  */
-class ThemeTest extends \PMATestCase
+class ThemeTest extends PmaTestCase
 {
     /**
      * @var Theme
@@ -23,7 +26,7 @@ class ThemeTest extends \PMATestCase
     protected $object;
 
     /**
-     * @var backup for session theme
+     * @var Theme backup for session theme
      */
     protected $backup;
 
@@ -43,7 +46,6 @@ class ThemeTest extends \PMATestCase
         $GLOBALS['text_dir'] = 'ltr';
         include 'themes/pmahomme/layout.inc.php';
         $GLOBALS['server'] = '99';
-        $GLOBALS['collation_connection'] = 'utf-8';
     }
 
     /**
@@ -93,7 +95,7 @@ class ThemeTest extends \PMATestCase
         $this->object->setPath('./test/classes/_data/gen_version_info');
         $this->assertTrue($this->object->loadInfo());
         $this->assertEquals('Test Theme', $this->object->getName());
-        $this->assertEquals('4.8', $this->object->getVersion());
+        $this->assertEquals('5.0', $this->object->getVersion());
     }
 
     /**
@@ -157,10 +159,10 @@ class ThemeTest extends \PMATestCase
      */
     public function listThemes()
     {
-        return array(
-            array('./themes/original'),
-            array('./themes/pmahomme/'),
-        );
+        return [
+            ['./themes/original'],
+            ['./themes/pmahomme/'],
+        ];
     }
 
     /**
@@ -287,36 +289,20 @@ class ThemeTest extends \PMATestCase
      *
      * @return void
      */
-    public function testPrintPreview()
+    public function testGetPrintPreview()
     {
-        $this->assertEquals(
-            $this->object->getPrintPreview(),
-            '<div class="theme_preview"><h2> (0.0.0.0) </h2><p><a class="take_'
-            . 'theme" name="" href="index.php?set_theme=&amp;server=99&amp;lang=en'
-            . '&amp;collation_connection=utf-8'
-            . '">No preview available.[ <strong>take it</strong> ]'
-            . '</a></p></div>'
+        $this->assertContains(
+            '<h2>' . "\n" . '         (0.0.0.0)',
+            $this->object->getPrintPreview()
         );
-    }
-
-    /**
-     * Test for getFontSize
-     *
-     * @return void
-     */
-    public function testGetFontSize()
-    {
-        $this->assertEquals(
-            $this->object->getFontSize(),
-            '82%'
+        $this->assertContains(
+            'name="" href="index.php?set_theme=&amp;server=99&amp;lang=en">',
+            $this->object->getPrintPreview()
         );
-
-        $GLOBALS['PMA_Config']->set('fontsize', '12px');
-        $this->assertEquals(
-            $this->object->getFontSize(),
-            '12px'
+        $this->assertContains(
+            'No preview available.',
+            $this->object->getPrintPreview()
         );
-
     }
 
     /**
@@ -342,17 +328,18 @@ class ThemeTest extends \PMATestCase
     /**
      * Test for getImgPath
      *
-     * @param string $file   file name for image
-     * @param string $output expected output
+     * @param string $file     file name for image
+     * @param string $fallback fallback image
+     * @param string $output   expected output
      *
      * @return void
      *
      * @dataProvider providerForGetImgPath
      */
-    public function testGetImgPath($file, $output)
+    public function testGetImgPath($file, $fallback, $output)
     {
         $this->assertEquals(
-            $this->object->getImgPath($file),
+            $this->object->getImgPath($file, $fallback),
             $output
         );
     }
@@ -364,20 +351,27 @@ class ThemeTest extends \PMATestCase
      */
     public function providerForGetImgPath()
     {
-        return array(
-            array(
+        return [
+            [
+                null,
                 null,
                 ''
-            ),
-            array(
+            ],
+            [
                 'screen.png',
+                null,
                 './themes/pmahomme/img/screen.png'
-            ),
-            array(
+            ],
+            [
                 'arrow_ltr.png',
+                null,
                 './themes/pmahomme/img/arrow_ltr.png'
-            )
-
-        );
+            ],
+            [
+                'logo_right.png',
+                'pma_logo.png',
+                './themes/pmahomme/img/pma_logo.png'
+            ],
+        ];
     }
 }

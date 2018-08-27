@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Tracker;
 use PhpMyAdmin\Tracking;
@@ -21,6 +23,8 @@ $scripts->addFile('tbl_tracking.js');
 
 define('TABLE_MAY_BE_ABSENT', true);
 require './libraries/tbl_common.inc.php';
+
+$tracking = new Tracking();
 
 if (Tracker::isActive()
     && Tracker::isTracked($GLOBALS["db"], $GLOBALS["table"])
@@ -41,16 +45,23 @@ if (Tracker::isActive()
 $url_query .= '&amp;goto=tbl_tracking.php&amp;back=tbl_tracking.php';
 $url_params['goto'] = 'tbl_tracking.php';
 $url_params['back'] = 'tbl_tracking.php';
+$data               = [];
+$entries            = [];
+$filter_ts_from     = '';
+$filter_ts_to       = '';
+$filter_users       = [];
+$selection_schema   = false;
+$selection_data     = false;
+$selection_both     = false;
 
 // Init vars for tracking report
 if (isset($_REQUEST['report']) || isset($_REQUEST['report_export'])) {
     $data = Tracker::getTrackedData(
-        $_REQUEST['db'], $_REQUEST['table'], $_REQUEST['version']
+        $_REQUEST['db'],
+        $_REQUEST['table'],
+        $_REQUEST['version']
     );
 
-    $selection_schema = false;
-    $selection_data   = false;
-    $selection_both  = false;
 
     if (! isset($_REQUEST['logtype'])) {
         $_REQUEST['logtype'] = 'schema_and_data';
@@ -78,17 +89,17 @@ if (isset($_REQUEST['report']) || isset($_REQUEST['report_export'])) {
 
 // Prepare export
 if (isset($_REQUEST['report_export'])) {
-    $entries = Tracking::getEntries($data, $filter_ts_from, $filter_ts_to, $filter_users);
+    $entries = $tracking->getEntries($data, $filter_ts_from, $filter_ts_to, $filter_users);
 }
 
 // Export as file download
 if (isset($_REQUEST['report_export'])
     && $_REQUEST['export_type'] == 'sqldumpfile'
 ) {
-    Tracking::exportAsFileDownload($entries);
+    $tracking->exportAsFileDownload($entries);
 }
 
-$html = '<br />';
+$html = '<br/>';
 
 /**
  * Actions
@@ -97,7 +108,7 @@ if (isset($_REQUEST['submit_mult'])) {
     if (! empty($_REQUEST['selected_versions'])) {
         if ($_REQUEST['submit_mult'] == 'delete_version') {
             foreach ($_REQUEST['selected_versions'] as $version) {
-                Tracking::deleteTrackingVersion($version);
+                $tracking->deleteTrackingVersion($version);
             }
             $html .= Message::success(
                 __('Tracking versions deleted successfully.')
@@ -111,45 +122,45 @@ if (isset($_REQUEST['submit_mult'])) {
 }
 
 if (isset($_REQUEST['submit_delete_version'])) {
-    $html .= Tracking::deleteTrackingVersion($_REQUEST['version']);
+    $html .= $tracking->deleteTrackingVersion($_REQUEST['version']);
 }
 
 // Create tracking version
 if (isset($_REQUEST['submit_create_version'])) {
-    $html .= Tracking::createTrackingVersion();
+    $html .= $tracking->createTrackingVersion();
 }
 
 // Deactivate tracking
 if (isset($_REQUEST['toggle_activation'])
     && $_REQUEST['toggle_activation'] == 'deactivate_now'
 ) {
-    $html .= Tracking::changeTracking('deactivate');
+    $html .= $tracking->changeTracking('deactivate');
 }
 
 // Activate tracking
 if (isset($_REQUEST['toggle_activation'])
     && $_REQUEST['toggle_activation'] == 'activate_now'
 ) {
-    $html .= Tracking::changeTracking('activate');
+    $html .= $tracking->changeTracking('activate');
 }
 
 // Export as SQL execution
 if (isset($_REQUEST['report_export']) && $_REQUEST['export_type'] == 'execution') {
-    $sql_result = Tracking::exportAsSqlExecution($entries);
+    $sql_result = $tracking->exportAsSqlExecution($entries);
     $msg = Message::success(__('SQL statements executed.'));
     $html .= $msg->getDisplay();
 }
 
 // Export as SQL dump
 if (isset($_REQUEST['report_export']) && $_REQUEST['export_type'] == 'sqldump') {
-    $html .= Tracking::exportAsSqlDump($entries);
+    $html .= $tracking->exportAsSqlDump($entries);
 }
 
 /*
  * Schema snapshot
  */
 if (isset($_REQUEST['snapshot'])) {
-    $html .= Tracking::getHtmlForSchemaSnapshot($url_query);
+    $html .= $tracking->getHtmlForSchemaSnapshot($url_query);
 }
 // end of snapshot report
 
@@ -159,49 +170,33 @@ if (isset($_REQUEST['snapshot'])) {
 if (isset($_REQUEST['report'])
     && (isset($_REQUEST['delete_ddlog']) || isset($_REQUEST['delete_dmlog']))
 ) {
-    $html .= Tracking::deleteTrackingReportRows($data);
+    $html .= $tracking->deleteTrackingReportRows($data);
 }
 
 if (isset($_REQUEST['report']) || isset($_REQUEST['report_export'])) {
-    $html .= Tracking::getHtmlForTrackingReport(
-        $url_query, $data, $url_params, $selection_schema, $selection_data,
-        $selection_both, $filter_ts_to, $filter_ts_from, $filter_users
+    $html .= $tracking->getHtmlForTrackingReport(
+        $url_query,
+        $data,
+        $url_params,
+        $selection_schema,
+        $selection_data,
+        $selection_both,
+        $filter_ts_to,
+        $filter_ts_from,
+        $filter_users
     );
 } // end of report
 
 
 /*
- * List selectable tables
+ * Main page
  */
-$selectable_tables_sql_result = Tracking::getSqlResultForSelectableTables();
-if ($GLOBALS['dbi']->numRows($selectable_tables_sql_result) > 0) {
-    $html .= Tracking::getHtmlForSelectableTables(
-        $selectable_tables_sql_result, $url_query
-    );
-}
-$html .= '<br />';
-
-/*
- * List versions of current table
- */
-$sql_result = Tracking::getListOfVersionsOfTable();
-$last_version = Tracking::getTableLastVersionNumber($sql_result);
-if ($last_version > 0) {
-    $html .= Tracking::getHtmlForTableVersionDetails(
-        $sql_result, $last_version, $url_params,
-        $url_query, $pmaThemeImage, $text_dir
-    );
-}
-
-$type = $GLOBALS['dbi']->getTable($GLOBALS['db'], $GLOBALS['table'])
-    ->isView() ? 'view' : 'table';
-$html .= Tracking::getHtmlForDataDefinitionAndManipulationStatements(
-    'tbl_tracking.php' . $url_query,
-    $last_version,
-    $GLOBALS['db'],
-    array($GLOBALS['table']),
-    $type
-);
+ $html .= $tracking->getHtmlForMainPage(
+     $url_query,
+     $url_params,
+     $pmaThemeImage,
+     $text_dir
+ );
 
 $html .= '<br class="clearfloat"/>';
 

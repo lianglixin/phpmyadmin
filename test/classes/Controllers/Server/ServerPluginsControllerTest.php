@@ -5,10 +5,14 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Controllers\Server;
 
 use PhpMyAdmin\Controllers\Server\ServerPluginsController;
 use PhpMyAdmin\Di\Container;
+use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PhpMyAdmin\Theme;
 use ReflectionClass;
 
@@ -17,23 +21,24 @@ use ReflectionClass;
  *
  * @package PhpMyAdmin-test
  */
-class ServerPluginsControllerTest extends \PMATestCase
+class ServerPluginsControllerTest extends PmaTestCase
 {
     /**
      * Prepares environment for the test.
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$_REQUEST
         $_REQUEST['log'] = "index1";
         $_REQUEST['pos'] = 3;
 
         //$GLOBALS
-        $GLOBALS['table'] = "table";
-
-        //$_SESSION
+        $GLOBALS['server'] = 0;
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = 'table';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
     }
 
     /**
@@ -46,7 +51,7 @@ class ServerPluginsControllerTest extends \PMATestCase
         /**
          * Prepare plugin list
          */
-        $row = array();
+        $row = [];
         $row["plugin_name"] = "plugin_name1";
         $row["plugin_type"] = "plugin_type1";
         $row["plugin_type_version"] = "plugin_version1";
@@ -74,13 +79,18 @@ class ServerPluginsControllerTest extends \PMATestCase
             ->will($this->returnValue(true));
 
         $container = Container::getDefaultContainer();
+        $container->set('PhpMyAdmin\Response', new ResponseStub());
+        $container->alias('response', 'PhpMyAdmin\Response');
         $container->set('dbi', $dbi);
 
         $class = new ReflectionClass('\PhpMyAdmin\Controllers\Server\ServerPluginsController');
         $method = $class->getMethod('_getPluginsHtml');
         $method->setAccessible(true);
 
-        $ctrl = new ServerPluginsController();
+        $ctrl = new ServerPluginsController(
+            $container->get('response'),
+            $container->get('dbi')
+        );
         $html = $method->invoke($ctrl);
 
         //validate 1:Items

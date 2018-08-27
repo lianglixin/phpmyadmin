@@ -65,7 +65,7 @@ while [ $# -gt 0 ] ; do
             echo "If --tag is specified, release tag is automatically created (use this for all releases including pre-releases)"
             echo "If --stable is specified, the STABLE branch is updated with this release"
             echo "If --test is specified, the testsuite is executed before creating the release"
-            echo "If --ci is specified, the testsuite is executed and no actual release is crated"
+            echo "If --ci is specified, the testsuite is executed and no actual release is created"
             echo ""
             echo "Examples:"
             echo "  create-release.sh 2.9.0-rc1 QA_2_9"
@@ -222,13 +222,20 @@ rm -f .travis.yml .coveralls.yml .scrutinizer.yml .jshintrc .weblate codecov.yml
 rm -f README.rst
 
 if [ ! -d libraries/tcpdf ] ; then
-    echo "* Running composer"
-    composer update --no-dev
+    PHP_REQ=`sed -n '/"php"/ s/.*"\(\^\|>=\)\([0-9]\.[0-9]\).*/\2/p' composer.json`
+
+    if [ -z "$PHP_REQ" ] ; then
+        echo "Failed to figure out required PHP version from composer.json"
+        exit 2
+    fi
     # Okay, there is no way to tell composer to install
     # suggested package. Let's require it and then revert
     # composer.json to original state.
     cp composer.json composer.json.backup
-    composer require --update-no-dev tecnickcom/tcpdf
+    echo "* Running composer"
+    composer config platform.php "$PHP_REQ"
+    composer update --no-dev
+    composer require --update-no-dev tecnickcom/tcpdf pragmarx/google2fa bacon/bacon-qr-code samyoul/u2f-php-server
     mv composer.json.backup composer.json
     echo "* Cleanup of composer packages"
     rm -rf \
@@ -265,6 +272,11 @@ if [ ! -d libraries/tcpdf ] ; then
         git add --force composer.lock
         git commit -s -m "Adding composer lock for $version"
     fi
+fi
+
+if [ -f package.json ] ; then
+    echo "* Running Yarn"
+    yarn install --production
 fi
 
 # Remove git metadata
@@ -321,7 +333,8 @@ for kit in $KITS ; do
         mv htmldoc doc/html
         rm doc/html/.buildinfo doc/html/objects.inv
         # Javascript sources
-        rm -rf js/vendor/jquery/src/ js/vendor/openlayers/src/
+        rm -rf js/vendor/openlayers/src/
+        rm -rf node_modules
     fi
 
     # Remove developer scripts
@@ -372,7 +385,7 @@ git worktree prune
 
 # Signing of files with default GPG key
 echo "* Signing files"
-for file in *.gz *.zip *.xz ; do
+for file in phpMyAdmin-$version-*.gz phpMyAdmin-$version-*.zip phpMyAdmin-$version-*.xz ; do
     if [ $do_sign -eq 1 ] ; then
         gpg --detach-sign --armor $file
     fi
@@ -409,8 +422,15 @@ if [ $do_tag -eq 1 ] ; then
     echo "* Tagging release as $tagname"
     git tag -s -a -m "Released $version" $tagname $branch
     echo "   Dont forget to push tags using: git push --tags"
+    echo "* Cleanup of $branch"
+    # Remove composer.lock, but we need to create fresh worktree for that
+    git worktree add --force $workdir $branch
+    cd $workdir
     git rm --force composer.lock
     git commit -s -m "Removing composer.lock"
+    cd ../..
+    rm -rf $workdir
+    git worktree prune
 fi
 
 # Mark as stable release
@@ -424,26 +444,28 @@ cat <<END
 Todo now:
 ---------
 
-1. If not already done, tag the repository with the new revision number
-   for a plain release or a release candidate:
-    version 2.7.0 gets RELEASE_2_7_0
-    version 2.7.1-rc1 gets RELEASE_2_7_1RC1
+ 1. Push the new tag upstream, with a command like git push origin --tags
 
- 2. prepare a release/phpMyAdmin-$version-notes.html explaining in short the goal of
+ 2. Push the new STABLE branch upstream
+
+ 3. prepare a release/phpMyAdmin-$version-notes.html explaining in short the goal of
     this release and paste into it the ChangeLog for this release, followed
     by the notes of all previous incremental versions (i.e. 4.4.9 through 4.4.0)
- 3. upload the files to our file server, use scripts/upload-release, eg.:
+
+ 4. upload the files to our file server, use scripts/upload-release, eg.:
 
         ./scripts/upload-release $version release
- 4. add a news item to our website; a good idea is to include a link to the release notes such as https://www.phpmyadmin.net/files/4.4.10/
- 5. send a short mail (with list of major changes) to
+
+ 5. add a news item to our website; a good idea is to include a link to the release notes such as https://www.phpmyadmin.net/files/4.4.10/
+
+ 6. send a short mail (with list of major changes) to
         developers@phpmyadmin.net
         news@phpmyadmin.net
 
     Don't forget to update the Description section in the announcement,
     based on documentation.
 
- 6. increment rc count or version in the repository :
+ 7. increment rc count or version in the repository :
         - in $CONFIG_LIB Config::__constructor() the line
               " \$this->set( 'PMA_VERSION', '2.7.1-dev' ); "
         - in Documentation.html (if it exists) the 2 lines
@@ -452,12 +474,12 @@ Todo now:
         - in doc/conf.py (if it exists) the line
               " version = '2.7.1-dev' "
 
- 7. on https://github.com/phpmyadmin/phpmyadmin/milestones close the milestone corresponding to the released version (if this is a stable release) and open a new one for the next minor release
+ 8. on https://github.com/phpmyadmin/phpmyadmin/milestones close the milestone corresponding to the released version (if this is a stable release) and open a new one for the next minor release
 
- 8. for a stable version, update demo/php/versions.ini in the scripts repository so that the demo server shows current versions
+ 9. for a major release, update demo/php/versions.ini in the scripts repository so that the demo server shows current versions
 
- 9. in case of a new major release ('y' in x.y.0), update the pmaweb/settings.py in website repository to include the new major releases
+10. in case of a new major release ('y' in x.y.0), update the pmaweb/settings.py in website repository to include the new major releases
 
-10. update the Dockerfile in the docker repository to reflect the new version
+11. update the Dockerfile in the docker repository to reflect the new version and create a new annotated tag (such as with git tag -s -a 4.7.9-1 -m "Version 4.7.9-1")
 
 END

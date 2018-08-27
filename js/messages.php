@@ -5,6 +5,7 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
 
 if (!defined('TESTSUITE')) {
     chdir('..');
@@ -27,7 +28,6 @@ if (!defined('TESTSUITE')) {
 
 // But this one is needed for Sanitize::escapeJsString()
 use PhpMyAdmin\Sanitize;
-
 
 $buffer = PhpMyAdmin\OutputBuffering::getInstance();
 $buffer->start();
@@ -69,6 +69,8 @@ $js_messages['strConfirmDeleteQBESearch']
     = __('Do you really want to delete the search "%s"?');
 $js_messages['strConfirmNavigation']
     = __('You have unsaved changes; are you sure you want to leave this page?');
+$js_messages['strConfirmRowChange']
+    = __('You are trying to reduce the number of rows, but have already entered data in those rows which will be lost. Do you wish to continue?');
 $js_messages['strDropUserWarning']
     = __('Do you really want to revoke the selected user(s) ?');
 $js_messages['strDeleteCentralColumnWarning']
@@ -402,10 +404,10 @@ $js_messages['NoExportable']
 
 /* For ENUM/SET editor*/
 $js_messages['enum_editor'] = __('ENUM/SET editor');
-$js_messages['enum_columnVals'] =__('Values for column %s');
+$js_messages['enum_columnVals'] = __('Values for column %s');
 $js_messages['enum_newColumnVals'] = __('Values for a new column');
-$js_messages['enum_hint'] =__('Enter each value in a separate field.');
-$js_messages['enum_addValue'] =__('Add %d value(s)');
+$js_messages['enum_hint'] = __('Enter each value in a separate field.');
+$js_messages['enum_addValue'] = __('Add %d value(s)');
 
 /* For import.js */
 $js_messages['strImportCSV'] = __(
@@ -419,7 +421,8 @@ $js_messages['strEdit'] = __('Edit');
 $js_messages['strDelete'] = __('Delete');
 $js_messages['strNotValidRowNumber'] = __('%d is not valid row number.');
 $js_messages['strBrowseForeignValues'] = __('Browse foreign values');
-$js_messages['strNoAutoSavedQuery'] = __('No auto-saved query');
+$js_messages['strNoAutoSavedQuery'] = __('No previously auto-saved query is available. Loading default query.');
+$js_messages['strPreviousSaveQuery'] = __('You have a previously saved query. Click Get auto-saved query to load the query.');
 $js_messages['strBookmarkVariable'] = __('Variable %d:');
 
 /* For Central list of columns */
@@ -547,7 +550,7 @@ $js_messages['strLockToolTip'] = __(
     . ' you will be prompted for confirmation before abandoning changes'
 );
 
-/* Designer (js/pmd/move.js) */
+/* Designer (js/designer/move.js) */
 $js_messages['strSelectReferencedKey'] = __('Select referenced key');
 $js_messages['strSelectForeignKey'] = __('Select Foreign Key');
 $js_messages['strPleaseSelectPrimaryOrUniqueKey']
@@ -557,6 +560,7 @@ $js_messages['strLeavingDesigner'] = __(
     'You haven\'t saved the changes in the layout. They will be lost if you'
     . ' don\'t save them. Do you want to continue?'
 );
+$js_messages['strQueryEmpty'] = __('value/subQuery is empty');
 $js_messages['strAddTables'] = __('Add tables from other databases');
 $js_messages['strPageName'] = __('Page name');
 $js_messages['strSavePage'] = __('Save page');
@@ -572,7 +576,7 @@ $js_messages['strSuccessfulPageDelete'] = __('Successfully deleted the page');
 $js_messages['strExportRelationalSchema'] = __('Export relational schema');
 $js_messages['strModificationSaved'] = __('Modifications have been saved');
 
-/* Visual query builder (js/pmd/move.js) */
+/* Visual query builder (js/designer/move.js) */
 $js_messages['strAddOption'] = __('Add an option for column "%s".');
 $js_messages['strObjectsCreated'] = __('%d object(s) created.');
 $js_messages['strSubmit'] = __('Submit');
@@ -623,18 +627,18 @@ $js_messages['back'] = __('Back');
 
 // this approach does not work when the parameter is changed via user prefs
 switch ($GLOBALS['cfg']['GridEditing']) {
-case 'double-click':
-    $js_messages['strGridEditFeatureHint'] = __(
-        'You can also edit most values<br />by double-clicking directly on them.'
-    );
-    break;
-case 'click':
-    $js_messages['strGridEditFeatureHint'] = __(
-        'You can also edit most values<br />by clicking directly on them.'
-    );
-    break;
-default:
-    break;
+    case 'double-click':
+        $js_messages['strGridEditFeatureHint'] = __(
+            'You can also edit most values<br />by double-clicking directly on them.'
+        );
+        break;
+    case 'click':
+        $js_messages['strGridEditFeatureHint'] = __(
+            'You can also edit most values<br />by clicking directly on them.'
+        );
+        break;
+    default:
+        break;
 }
 $js_messages['strGoToLink'] = __('Go to link:');
 $js_messages['strColNameCopyTitle'] = __('Copy column name.');
@@ -697,10 +701,10 @@ $js_messages['phpErrorsFound'] = '<div class="error">'
     . '<div>'
     . '<input id="pma_ignore_errors_popup" type="submit" value="'
     . __('Ignore')
-    . '" class="floatright" style="margin-top: 20px;">'
+    . '" class="floatright message_errors_found">'
     . '<input id="pma_ignore_all_errors_popup" type="submit" value="'
     . __('Ignore All')
-    . '" class="floatright" style="margin-top: 20px;">'
+    . '" class="floatright message_errors_found">'
     . '</div></div>';
 
 $js_messages['phpErrorsBeingSubmitted'] = '<div class="error">'
@@ -742,6 +746,10 @@ $js_messages['strWeak'] = __('Weak');
 $js_messages['strGood'] = __('Good');
 $js_messages['strStrong'] = __('Strong');
 
+/* U2F errors */
+$js_messages['strU2FTimeout'] = __('Timed out waiting for security key activation.');
+$js_messages['strU2FError'] = __('Failed security key activation (%s).');
+
 echo "var PMA_messages = new Array();\n";
 foreach ($js_messages as $name => $js_message) {
     Sanitize::printJsValue("PMA_messages['" . $name . "']", $js_message);
@@ -780,7 +788,7 @@ Sanitize::printJsValue(
 Sanitize::printJsValue("$.datepicker.regional['']['currentText']", __('Today'));
 Sanitize::printJsValue(
     "$.datepicker.regional['']['monthNames']",
-    array(
+    [
         __('January'),
         __('February'),
         __('March'),
@@ -793,11 +801,11 @@ Sanitize::printJsValue(
         __('October'),
         __('November'),
         __('December')
-    )
+    ]
 );
 Sanitize::printJsValue(
     "$.datepicker.regional['']['monthNamesShort']",
-    array(
+    [
         /* l10n: Short month name */
         __('Jan'),
         /* l10n: Short month name */
@@ -822,11 +830,11 @@ Sanitize::printJsValue(
         __('Nov'),
         /* l10n: Short month name */
         __('Dec')
-    )
+    ]
 );
 Sanitize::printJsValue(
     "$.datepicker.regional['']['dayNames']",
-    array(
+    [
         __('Sunday'),
         __('Monday'),
         __('Tuesday'),
@@ -834,11 +842,11 @@ Sanitize::printJsValue(
         __('Thursday'),
         __('Friday'),
         __('Saturday')
-    )
+    ]
 );
 Sanitize::printJsValue(
     "$.datepicker.regional['']['dayNamesShort']",
-    array(
+    [
         /* l10n: Short week day name */
         __('Sun'),
         /* l10n: Short week day name */
@@ -853,11 +861,11 @@ Sanitize::printJsValue(
         __('Fri'),
         /* l10n: Short week day name */
         __('Sat')
-    )
+    ]
 );
 Sanitize::printJsValue(
     "$.datepicker.regional['']['dayNamesMin']",
-    array(
+    [
         /* l10n: Minimal week day name */
         __('Su'),
         /* l10n: Minimal week day name */
@@ -872,7 +880,7 @@ Sanitize::printJsValue(
         __('Fr'),
         /* l10n: Minimal week day name */
         __('Sa')
-    )
+    ]
 );
 /* l10n: Column header for week of the year in calendar */
 Sanitize::printJsValue("$.datepicker.regional['']['weekHeader']", __('Wk'));

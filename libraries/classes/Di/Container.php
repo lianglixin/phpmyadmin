@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin\Di
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Di;
 
 use Psr\Container\ContainerInterface;
@@ -19,7 +21,7 @@ class Container implements ContainerInterface
     /**
      * @var Item[] $content
      */
-    protected $content = array();
+    protected $content = [];
 
     /**
      * @var Container
@@ -52,7 +54,7 @@ class Container implements ContainerInterface
      *
      * @return mixed
      */
-    public function get($name, array $params = array())
+    public function get($name, array $params = [])
     {
         if (!$this->has($name)) {
             throw new NotFoundException("No entry was found for $name identifier.");
@@ -60,7 +62,7 @@ class Container implements ContainerInterface
 
         if (isset($this->content[$name])) {
             return $this->content[$name]->get($params);
-        } else if (isset($GLOBALS[$name])) {
+        } elseif (isset($GLOBALS[$name])) {
             return $GLOBALS[$name];
         } else {
             throw new ContainerException("Error while retrieving the entry.");

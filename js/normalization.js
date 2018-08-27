@@ -215,7 +215,7 @@ function goTo2NFFinish (pd) {
             if (data.success === true) {
                 if (data.queryError === false) {
                     if (normalizeto === '3nf') {
-                        $('#pma_navigation_reload').click();
+                        $('#pma_navigation_reload').trigger('click');
                         goTo3NFStep1(tables);
                         return true;
                     }
@@ -227,7 +227,7 @@ function goTo2NFFinish (pd) {
                 } else {
                     PMA_ajaxShowMessage(data.extra, false);
                 }
-                $('#pma_navigation_reload').click();
+                $('#pma_navigation_reload').trigger('click');
             } else {
                 PMA_ajaxShowMessage(data.error, false);
             }
@@ -266,7 +266,7 @@ function goTo3NFFinish (newTables) {
                 } else {
                     PMA_ajaxShowMessage(data.extra, false);
                 }
-                $('#pma_navigation_reload').click();
+                $('#pma_navigation_reload').trigger('click');
             } else {
                 PMA_ajaxShowMessage(data.error, false);
             }
@@ -314,7 +314,7 @@ function goTo2NFStep2 (pd, primary_key) {
     }
     $('#mainContent #extra').html(extra);
     $('.tblFooters').html('<input type="button" value="' + PMA_messages.strBack + '" id="backEditPd"/><input type="button" id="goTo2NFFinish" value="' + PMA_messages.strGo + '"/>');
-    $('#goTo2NFFinish').click(function () {
+    $('#goTo2NFFinish').on('click', function () {
         goTo2NFFinish(pd);
     });
 }
@@ -363,7 +363,7 @@ function goTo3NFStep2 (pd, tablesTds) {
     }
     $('#mainContent #extra').html(extra);
     $('.tblFooters').html('<input type="button" value="' + PMA_messages.strBack + '" id="backEditPd"/><input type="button" id="goTo3NFFinish" value="' + PMA_messages.strGo + '"/>');
-    $('#goTo3NFFinish').click(function () {
+    $('#goTo3NFFinish').on('click', function () {
         if (!pdFound) {
             goTo3NFFinish([]);
         } else {
@@ -451,7 +451,7 @@ function moveRepeatingGroup (repeatingCols) {
                     goToStep3();
                 }
                 PMA_ajaxShowMessage(data.message, false);
-                $('#pma_navigation_reload').click();
+                $('#pma_navigation_reload').trigger('click');
             } else {
                 PMA_ajaxShowMessage(data.error, false);
             }
@@ -482,7 +482,7 @@ AJAX.registerOnload('normalization.js', function () {
         }
     });
 
-    $('#splitGo').click(function () {
+    $('#splitGo').on('click', function () {
         if (!selectedCol || selectedCol === '') {
             return false;
         }
@@ -524,8 +524,9 @@ AJAX.registerOnload('normalization.js', function () {
             $('#newCols #field_0_1').focus();
             return false;
         }
+        var argsep = PMA_commonParams.get('arg_separator');
         datastring = $('#newCols :input').serialize();
-        datastring += '&ajax_request=1&do_save_data=1&field_where=last';
+        datastring += argsep + 'ajax_request=1' + argsep + 'do_save_data=1' + argsep + 'field_where=last';
         $.post('tbl_addfield.php', datastring, function (data) {
             if (data.success) {
                 $.post(
@@ -590,7 +591,8 @@ AJAX.registerOnload('normalization.js', function () {
     });
     $('.tblFooters').on('click', '#saveNewPrimary', function () {
         var datastring = $('#newCols :input').serialize();
-        datastring += '&field_key[0]=primary_0&ajax_request=1&do_save_data=1&field_where=last';
+        var argsep = PMA_commonParams.get('arg_separator');
+        datastring += argsep + 'field_key[0]=primary_0' + argsep + 'ajax_request=1' + argsep + 'do_save_data=1' + argsep + 'field_where=last';
         $.post('tbl_addfield.php', datastring, function (data) {
             if (data.success === true) {
                 $('#mainContent h4').html(PMA_messages.strPrimaryKeyAdded);

@@ -142,26 +142,35 @@ var AJAX = {
      * @return void
      */
     lockPageHandler: function (event) {
-        // Don't lock on enter.
-        if (0 === event.charCode) {
-            return;
-        }
-
-        var lockId = $(this).data('lock-id');
-        if (typeof lockId === 'undefined') {
-            return;
-        }
-        /*
-         * @todo Fix Code mirror does not give correct full value (query)
-         * in textarea, it returns only the change in content.
-         */
         var newHash = null;
-        if (event.data.value === 1) {
-            newHash = AJAX.hash($(this).val());
+        var oldHash = null;
+        var lockId;
+        // CodeMirror lock
+        if (event.data.value === 3) {
+            newHash = event.data.content;
+            oldHash = true;
+            lockId = 'cm';
         } else {
-            newHash = AJAX.hash($(this).is(':checked'));
+            // Don't lock on enter.
+            if (0 === event.charCode) {
+                return;
+            }
+
+            lockId = $(this).data('lock-id');
+            if (typeof lockId === 'undefined') {
+                return;
+            }
+            /*
+             * @todo Fix Code mirror does not give correct full value (query)
+             * in textarea, it returns only the change in content.
+             */
+            if (event.data.value === 1) {
+                newHash = AJAX.hash($(this).val());
+            } else {
+                newHash = AJAX.hash($(this).is(':checked'));
+            }
+            oldHash = $(this).data('val-hash');
         }
-        var oldHash = $(this).data('val-hash');
         // Set lock if old value !== new value
         // otherwise release lock
         if (oldHash !== newHash) {
@@ -172,7 +181,7 @@ var AJAX = {
         // Show lock icon if locked targets is not empty.
         // otherwise remove lock icon
         if (!jQuery.isEmptyObject(AJAX.lockedTargets)) {
-            $('#lock_page_icon').html(PMA_getImage('s_lock.png',PMA_messages.strLockToolTip).toString());
+            $('#lock_page_icon').html(PMA_getImage('s_lock', PMA_messages.strLockToolTip).toString());
         } else {
             $('#lock_page_icon').html('');
         }
@@ -236,10 +245,17 @@ var AJAX = {
         // the click event is not triggered by script
         if (typeof event !== 'undefined' && event.type === 'click' &&
             event.isTrigger !== true &&
-            !jQuery.isEmptyObject(AJAX.lockedTargets) &&
-            confirm(PMA_messages.strConfirmNavigation) === false
+            !jQuery.isEmptyObject(AJAX.lockedTargets)
         ) {
-            return false;
+            if (confirm(PMA_messages.strConfirmNavigation) === false) {
+                return false;
+            } else {
+                if (isStorageSupported('localStorage')) {
+                    window.localStorage.removeItem('auto_saved_sql');
+                } else {
+                    Cookies.set('auto_saved_sql', '');
+                }
+            }
         }
         AJAX.resetLock();
         var isLink = !! href || false;
@@ -273,9 +289,14 @@ var AJAX = {
         $('html, body').animate({ scrollTop: 0 }, 'fast');
 
         var url = isLink ? href : $(this).attr('action');
-        var params = 'ajax_request=true&ajax_page_request=true';
+        var argsep = PMA_commonParams.get('arg_separator');
+        var params = 'ajax_request=true' + argsep + 'ajax_page_request=true';
+        var dataPost = AJAX.source.getPostData();
         if (! isLink) {
-            params += '&' + $(this).serialize();
+            params += argsep + $(this).serialize();
+        } else if (dataPost) {
+            params += argsep + dataPost;
+            isLink = false;
         }
         if (! (history && history.pushState)) {
             // Add a list of menu hashes that we have in the cache to the request
@@ -315,12 +336,114 @@ var AJAX = {
             if (typeof onsubmit !== 'function' || onsubmit.apply(this, [event])) {
                 AJAX.active = true;
                 AJAX.$msgbox = PMA_ajaxShowMessage();
-                var method = $(this).attr('method');
-                if (typeof method !== 'undefined' && method.toLowerCase() === 'post') {
-                    $.post(url, params, AJAX.responseHandler);
+                if ($(this).attr('id') === 'login_form') {
+                    $.post(url, params, AJAX.loginResponseHandler);
                 } else {
-                    $.get(url, params, AJAX.responseHandler);
+                    $.post(url, params, AJAX.responseHandler);
                 }
+            }
+        }
+    },
+    /**
+     * Response handler to handle login request from login modal after session expiration
+     *
+     * To refer to self use 'AJAX', instead of 'this' as this function
+     * is called in the jQuery context.
+     *
+     * @param object data Event data
+     *
+     * @return void
+     */
+    loginResponseHandler: function (data) {
+        if (typeof data === 'undefined' || data === null) {
+            return;
+        }
+        PMA_ajaxRemoveMessage(AJAX.$msgbox);
+
+        PMA_commonParams.set('token', data.new_token);
+
+        AJAX.scriptHandler.load([]);
+
+        if (data._displayMessage) {
+            $('#page_content').prepend(data._displayMessage);
+            PMA_highlightSQL($('#page_content'));
+        }
+
+        $('#pma_errors').remove();
+
+        var msg = '';
+        if (data._errSubmitMsg) {
+            msg = data._errSubmitMsg;
+        }
+        if (data._errors) {
+            $('<div/>', { id : 'pma_errors', class : 'clearfloat' })
+                .insertAfter('#selflink')
+                .append(data._errors);
+            // bind for php error reporting forms (bottom)
+            $('#pma_ignore_errors_bottom').on('click', function (e) {
+                e.preventDefault();
+                PMA_ignorePhpErrors();
+            });
+            $('#pma_ignore_all_errors_bottom').on('click', function (e) {
+                e.preventDefault();
+                PMA_ignorePhpErrors(false);
+            });
+            // In case of 'sendErrorReport'='always'
+            // submit the hidden error reporting form.
+            if (data._sendErrorAlways === '1' &&
+                data._stopErrorReportLoop !== '1'
+            ) {
+                $('#pma_report_errors_form').submit();
+                PMA_ajaxShowMessage(PMA_messages.phpErrorsBeingSubmitted, false);
+                $('html, body').animate({ scrollTop:$(document).height() }, 'slow');
+            } else if (data._promptPhpErrors) {
+                // otherwise just prompt user if it is set so.
+                msg = msg + PMA_messages.phpErrorsFound;
+                // scroll to bottom where all the errors are displayed.
+                $('html, body').animate({ scrollTop:$(document).height() }, 'slow');
+            }
+        }
+
+        PMA_ajaxShowMessage(msg, false);
+        // bind for php error reporting forms (popup)
+        $('#pma_ignore_errors_popup').on('click', function () {
+            PMA_ignorePhpErrors();
+        });
+        $('#pma_ignore_all_errors_popup').on('click', function () {
+            PMA_ignorePhpErrors(false);
+        });
+
+        if (typeof data.success !== 'undefined' && data.success) {
+            // reload page if user trying to login has changed
+            if (PMA_commonParams.get('user') !== data._params.user) {
+                window.location = 'index.php';
+                PMA_ajaxShowMessage(PMA_messages.strLoading, false);
+                AJAX.active = false;
+                AJAX.xhr = null;
+                return;
+            }
+            // remove the login modal if the login is successful otherwise show error.
+            if (typeof data.logged_in !== 'undefined' && data.logged_in === 1) {
+                if ($('#modalOverlay').length) {
+                    $('#modalOverlay').remove();
+                }
+                $('fieldset.disabled_for_expiration').removeAttr('disabled').removeClass('disabled_for_expiration');
+                AJAX.fireTeardown('functions.js');
+                AJAX.fireOnload('functions.js');
+            }
+            if (typeof data.new_token !== 'undefined') {
+                $('input[name=token]').val(data.new_token);
+            }
+        } else if (typeof data.logged_in !== 'undefined' && data.logged_in === 0) {
+            $('#modalOverlay').replaceWith(data.error);
+        } else {
+            PMA_ajaxShowMessage(data.error, false);
+            AJAX.active = false;
+            AJAX.xhr = null;
+            PMA_handleRedirectAndReload(data);
+            if (data.fieldWithError) {
+                $(':input.error').removeClass('error');
+                $('#' + data.fieldWithError).addClass('error');
             }
         }
     },
@@ -522,9 +645,10 @@ var AJAX = {
         _scriptsToBeLoaded: [],
         /**
          * @var array _scriptsToBeFired The list of files for which
-         *                              to fire the onload event
+         *                              to fire the onload and unload events
          */
         _scriptsToBeFired: [],
+        _scriptsCompleted: false,
         /**
          * Records that a file has been downloaded
          *
@@ -552,6 +676,7 @@ var AJAX = {
          */
         load: function (files, callback) {
             var self = this;
+            var i;
             // Clear loaded scripts if they are from another version of phpMyAdmin.
             // Depends on common params being set before loading scripts in responseHandler
             if (self._scriptsVersion === null) {
@@ -560,72 +685,72 @@ var AJAX = {
                 self._scripts = [];
                 self._scriptsVersion = PMA_commonParams.get('PMA_VERSION');
             }
-            self._scriptsToBeLoaded = [];
+            self._scriptsCompleted = false;
             self._scriptsToBeFired = [];
-            for (var i in files) {
+            // We need to first complete list of files to load
+            // as next loop will directly fire requests to load them
+            // and that triggers removal of them from
+            // self._scriptsToBeLoaded
+            for (i in files) {
                 self._scriptsToBeLoaded.push(files[i].name);
                 if (files[i].fire) {
                     self._scriptsToBeFired.push(files[i].name);
                 }
             }
-            // Generate a request string
-            var request = [];
-            var needRequest = false;
-            for (var index in self._scriptsToBeLoaded) {
-                var script = self._scriptsToBeLoaded[index];
+            for (i in files) {
+                var script = files[i].name;
                 // Only for scripts that we don't already have
                 if ($.inArray(script, self._scripts) === -1) {
-                    needRequest = true;
                     this.add(script);
-                    request.push('scripts%5B%5D=' + script);
-                    if (request.length >= 10) {
-                        // Download scripts in chunks
-                        this.appendScript(request);
-                        request = [];
-                        needRequest = false;
-                    }
+                    this.appendScript(script, callback);
+                } else {
+                    self.done(script, callback);
                 }
             }
-            request.push('call_done=1');
-            request.push('v=' + encodeURIComponent(PMA_commonParams.get('PMA_VERSION')));
-            // Download the composite js file, if necessary
-            if (needRequest) {
-                this.appendScript(request);
-            } else {
-                self.done(callback);
-            }
+            // Trigger callback if there is nothing else to load
+            self.done(null, callback);
         },
         /**
          * Called whenever all files are loaded
          *
          * @return void
          */
-        done: function (callback) {
-            if ($.isFunction(callback)) {
-                callback();
-            }
+        done: function (script, callback) {
             if (typeof ErrorReport !== 'undefined') {
                 ErrorReport.wrap_global_functions();
             }
-            for (var i in this._scriptsToBeFired) {
-                AJAX.fireOnload(this._scriptsToBeFired[i]);
+            if ($.inArray(script, this._scriptsToBeFired)) {
+                AJAX.fireOnload(script);
             }
-            AJAX.active = false;
+            if ($.inArray(script, this._scriptsToBeLoaded)) {
+                this._scriptsToBeLoaded.splice($.inArray(script, this._scriptsToBeLoaded), 1);
+            }
+            if (script === null) {
+                this._scriptsCompleted = true;
+            }
+            /* We need to wait for last signal (with null) or last script load */
+            AJAX.active = (this._scriptsToBeLoaded.length > 0) || ! this._scriptsCompleted;
+            /* Run callback on last script */
+            if (! AJAX.active && $.isFunction(callback)) {
+                callback();
+            }
         },
         /**
          * Appends a script element to the head to load the scripts
          *
          * @return void
          */
-        appendScript: function (request) {
+        appendScript: function (name, callback) {
             var head = document.head || document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
+            var self = this;
 
-            request.push('call_done=1');
-            request.push('v=' + encodeURIComponent(PMA_commonParams.get('PMA_VERSION')));
             script.type = 'text/javascript';
-            script.src = 'js/get_scripts.js.php?' + request.join('&');
+            script.src = 'js/' + name + '?' + 'v=' + encodeURIComponent(PMA_commonParams.get('PMA_VERSION'));
             script.async = false;
+            script.onload = function () {
+                self.done(name, callback);
+            };
             head.appendChild(script);
         },
         /**
@@ -747,7 +872,7 @@ $(function () {
             var state = event.originalEvent.state;
             if (state && state.menu) {
                 AJAX.$msgbox = PMA_ajaxShowMessage();
-                var params = 'ajax_request=true&ajax_page_request=true';
+                var params = 'ajax_request=true' + PMA_commonParams.get('arg_separator') + 'ajax_page_request=true';
                 var url = state.url || location.href;
                 $.get(url, params, AJAX.responseHandler);
                 // TODO: Check if sometimes menu is not retrieved from server,

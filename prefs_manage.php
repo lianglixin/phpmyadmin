@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Config\ConfigFile;
 use PhpMyAdmin\Config\Forms\User\UserFormList;
 use PhpMyAdmin\Core;
@@ -22,8 +24,10 @@ use PhpMyAdmin\Util;
  */
 require_once 'libraries/common.inc.php';
 
+$userPreferences = new UserPreferences();
+
 $cf = new ConfigFile($GLOBALS['PMA_Config']->base_settings);
-UserPreferences::pageInit($cf);
+$userPreferences->pageInit($cf);
 $response = Response::getInstance();
 
 $error = '';
@@ -35,7 +39,7 @@ if (isset($_POST['submit_export'])
     $response->disable();
     $filename = 'phpMyAdmin-config-' . urlencode(Core::getenv('HTTP_HOST')) . '.json';
     Core::downloadHeader($filename, 'application/json');
-    $settings = UserPreferences::load();
+    $settings = $userPreferences->load();
     echo json_encode($settings['config_data'], JSON_PRETTY_PRINT);
     exit;
 } elseif (isset($_POST['submit_export'])
@@ -46,20 +50,20 @@ if (isset($_POST['submit_export'])
     $response->disable();
     $filename = 'phpMyAdmin-config-' . urlencode(Core::getenv('HTTP_HOST')) . '.php';
     Core::downloadHeader($filename, 'application/php');
-    $settings = UserPreferences::load();
-    echo '/* ' . _('phpMyAdmin configuration snippet') . " */\n\n";
-    echo '/* ' . _('Paste it to your config.inc.php') . " */\n\n";
+    $settings = $userPreferences->load();
+    echo '/* ' . __('phpMyAdmin configuration snippet') . " */\n\n";
+    echo '/* ' . __('Paste it to your config.inc.php') . " */\n\n";
     foreach ($settings['config_data'] as $key => $val) {
         echo '$cfg[\'' . str_replace('/', '\'][\'', $key) . '\'] = ';
         echo var_export($val, true) . ";\n";
     }
     exit;
-} else if (isset($_POST['submit_get_json'])) {
-    $settings = UserPreferences::load();
+} elseif (isset($_POST['submit_get_json'])) {
+    $settings = $userPreferences->load();
     $response->addJSON('prefs', json_encode($settings['config_data']));
     $response->addJSON('mtime', $settings['mtime']);
     exit;
-} else if (isset($_POST['submit_import'])) {
+} elseif (isset($_POST['submit_import'])) {
     // load from JSON file
     $json = '';
     if (isset($_POST['import_type'])
@@ -145,8 +149,8 @@ if (isset($_POST['submit_export'])
             exit;
         }
 
-        // check for ThemeDefault and fontsize
-        $params = array();
+        // check for ThemeDefault
+        $params = [];
         $tmanager = ThemeManager::getInstance();
         if (isset($config['ThemeDefault'])
             && $tmanager->theme->getId() != $config['ThemeDefault']
@@ -155,24 +159,14 @@ if (isset($_POST['submit_export'])
             $tmanager->setActiveTheme($config['ThemeDefault']);
             $tmanager->setThemeCookie();
         }
-        if (isset($config['fontsize'])
-            && $config['fontsize'] != $GLOBALS['PMA_Config']->get('fontsize')
-        ) {
-            $params['set_fontsize'] = $config['fontsize'];
-        }
         if (isset($config['lang'])
             && $config['lang'] != $GLOBALS['lang']
         ) {
             $params['lang'] = $config['lang'];
         }
-        if (isset($config['collation_connection'])
-            && $config['collation_connection'] != $GLOBALS['collation_connection']
-        ) {
-            $params['collation_connection'] = $config['collation_connection'];
-        }
 
         // save settings
-        $result = UserPreferences::save($cf->getConfigArray());
+        $result = $userPreferences->save($cf->getConfigArray());
         if ($result === true) {
             if ($return_url) {
                 $query =  PhpMyAdmin\Util::splitURLQuery($return_url);
@@ -191,22 +185,19 @@ if (isset($_POST['submit_export'])
             }
             // reload config
             $GLOBALS['PMA_Config']->loadUserPreferences();
-            UserPreferences::redirect($return_url, $params);
+            $userPreferences->redirect($return_url, $params);
             exit;
         } else {
             $error = $result;
         }
     }
-} else if (isset($_POST['submit_clear'])) {
-    $result = UserPreferences::save(array());
+} elseif (isset($_POST['submit_clear'])) {
+    $result = $userPreferences->save([]);
     if ($result === true) {
-        $params = array();
-        if ($GLOBALS['PMA_Config']->get('fontsize') != '82%') {
-            $GLOBALS['PMA_Config']->removeCookie('pma_fontsize');
-        }
+        $params = [];
         $GLOBALS['PMA_Config']->removeCookie('pma_collaction_connection');
         $GLOBALS['PMA_Config']->removeCookie('pma_lang');
-        UserPreferences::redirect('prefs_manage.php', $params);
+        $userPreferences->redirect('prefs_manage.php', $params);
         exit;
     } else {
         $error = $result;
@@ -282,7 +273,7 @@ if (@file_exists('setup/index.php') && ! @file_exists(CONFIG_FILE)) {
             // show only if setup script is available, allows to disable this message
             // by simply removing setup directory
             // Also do not show in config exists (and setup would refuse to work)
-            ?>
+    ?>
             <div class="group">
             <h2><?php echo __('More settings') ?></h2>
             <div class="group-cnt">
@@ -291,14 +282,16 @@ if (@file_exists('setup/index.php') && ! @file_exists(CONFIG_FILE)) {
                     __(
                         'You can set more settings by modifying config.inc.php, eg. '
                         . 'by using %sSetup script%s.'
-                    ), '<a href="setup/index.php" target="_blank">', '</a>'
+                    ),
+                    '<a href="setup/index.php" target="_blank">',
+                    '</a>'
                 ) , PhpMyAdmin\Util::showDocu('setup', 'setup-script');
                 ?>
             </div>
             </div>
         <?php
 }
-        ?>
+?>
     </div>
     <div id="main_pane_right">
         <div class="group">

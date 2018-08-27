@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\ListAbstract;
@@ -16,7 +18,7 @@ require_once './libraries/check_user_privileges.inc.php';
  * handles database lists
  *
  * <code>
- * $ListDatabase = new ListDatabase($userlink);
+ * $ListDatabase = new ListDatabase();
  * </code>
  *
  * @todo this object should be attached to the PMA_Server object
@@ -27,27 +29,10 @@ require_once './libraries/check_user_privileges.inc.php';
 class ListDatabase extends ListAbstract
 {
     /**
-     * @var mixed   database link resource|object to be used
-     * @access protected
-     */
-    protected $db_link = null;
-
-    /**
-     * @var mixed   user database link resource|object
-     * @access protected
-     */
-    protected $db_link_user = null;
-
-    /**
      * Constructor
-     *
-     * @param mixed $db_link_user user database link resource|object
      */
-    public function __construct($db_link_user = null)
+    public function __construct()
     {
-        $this->db_link = $db_link_user;
-        $this->db_link_user = $db_link_user;
-
         parent::__construct();
         $this->build();
     }
@@ -79,7 +64,7 @@ class ListDatabase extends ListAbstract
      */
     protected function retrieve($like_db_name = null)
     {
-        $database_list = array();
+        $database_list = [];
         $command = "";
         if (! $GLOBALS['cfg']['Server']['DisableIS']) {
             $command .= "SELECT `SCHEMA_NAME` FROM `INFORMATION_SCHEMA`.`SCHEMATA`";
@@ -95,7 +80,8 @@ class ListDatabase extends ListAbstract
             } else {
                 foreach ($GLOBALS['dbs_to_test'] as $db) {
                     $database_list = array_merge(
-                        $database_list, $this->retrieve($db)
+                        $database_list,
+                        $this->retrieve($db)
                     );
                 }
             }
@@ -103,7 +89,9 @@ class ListDatabase extends ListAbstract
 
         if ($command) {
             $database_list = $GLOBALS['dbi']->fetchResult(
-                $command, null, null, $this->db_link
+                $command,
+                null,
+                null
             );
         }
 
@@ -143,19 +131,18 @@ class ListDatabase extends ListAbstract
         if (is_string($GLOBALS['cfg']['Server']['only_db'])
             && strlen($GLOBALS['cfg']['Server']['only_db']) > 0
         ) {
-            $GLOBALS['cfg']['Server']['only_db'] = array(
+            $GLOBALS['cfg']['Server']['only_db'] = [
                 $GLOBALS['cfg']['Server']['only_db']
-            );
+            ];
         }
 
         if (! is_array($GLOBALS['cfg']['Server']['only_db'])) {
             return false;
         }
 
-        $items = array();
+        $items = [];
 
         foreach ($GLOBALS['cfg']['Server']['only_db'] as $each_only_db) {
-
             // check if the db name contains wildcard,
             // thus containing not escaped _ or %
             if (! preg_match('/(^|[^\\\\])(_|%)/', $each_only_db)) {

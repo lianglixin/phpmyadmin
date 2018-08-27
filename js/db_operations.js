@@ -52,7 +52,7 @@ AJAX.registerOnload('db_operations.js', function () {
 
         $form.PMA_confirm(question, $form.attr('action'), function (url) {
             PMA_ajaxShowMessage(PMA_messages.strRenamingDatabases, false);
-            $.post(url, $('#rename_db_form').serialize() + '&is_js_confirmed=1', function (data) {
+            $.post(url, $('#rename_db_form').serialize() + PMA_commonParams.get('arg_separator') + 'is_js_confirmed=1', function (data) {
                 if (typeof data !== 'undefined' && data.success === true) {
                     PMA_ajaxShowMessage(data.message);
                     PMA_commonParams.set('db', data.newname);
@@ -108,7 +108,7 @@ AJAX.registerOnload('db_operations.js', function () {
      * Change tables columns visible only if change tables is checked
      */
     $('#span_change_all_tables_columns_collations').hide();
-    $('#checkbox_change_all_tables_collations').on('click', function() {
+    $('#checkbox_change_all_tables_collations').on('click', function () {
         $('#span_change_all_tables_columns_collations').toggle();
     });
 
@@ -120,7 +120,7 @@ AJAX.registerOnload('db_operations.js', function () {
         var $form = $(this);
         PMA_prepareForAjaxRequest($form);
         PMA_ajaxShowMessage(PMA_messages.strChangingCharset);
-        $.post($form.attr('action'), $form.serialize() + '&submitcollation=1', function (data) {
+        $.post($form.attr('action'), $form.serialize() + PMA_commonParams.get('arg_separator') + 'submitcollation=1', function (data) {
             if (typeof data !== 'undefined' && data.success === true) {
                 PMA_ajaxShowMessage(data.message);
             } else {
@@ -134,6 +134,7 @@ AJAX.registerOnload('db_operations.js', function () {
      */
     $(document).on('click', '#drop_db_anchor.ajax', function (event) {
         event.preventDefault();
+        var $link = $(this);
         /**
          * @var question    String containing the question to be asked for confirmation
          */
@@ -142,10 +143,8 @@ AJAX.registerOnload('db_operations.js', function () {
             PMA_messages.strDoYouReally,
             'DROP DATABASE `' + escapeHtml(PMA_commonParams.get('db') + '`')
         );
-        var params = {
-            'is_js_confirmed': '1',
-            'ajax_request': true
-        };
+        var params = getJSConfirmCommonParam(this, $link.getPostData());
+
         $(this).PMA_confirm(question, $(this).attr('href'), function (url) {
             PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
             $.post(url, params, function (data) {

@@ -46,7 +46,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
             }
         });
     }
-    $('#tableslistcontainer').find('button[name="delete_central_columns"]').click(function (event) {
+    $('#tableslistcontainer').find('button[name="delete_central_columns"]').on('click', function (event) {
         event.preventDefault();
         var multi_delete_columns = $('.checkall:checkbox:checked').serialize();
         if (multi_delete_columns === '') {
@@ -57,14 +57,15 @@ AJAX.registerOnload('db_central_columns.js', function () {
         $('#del_col_name').val(multi_delete_columns);
         $('#del_form').submit();
     });
-    $('#tableslistcontainer').find('button[name="edit_central_columns"]').click(function (event) {
+    $('#tableslistcontainer').find('button[name="edit_central_columns"]').on('click', function (event) {
         event.preventDefault();
         var editColumnList = $('.checkall:checkbox:checked').serialize();
         if (editColumnList === '') {
             PMA_ajaxShowMessage(PMA_messages.strRadioUnchecked);
             return false;
         }
-        var editColumnData = editColumnList + '&edit_central_columns_page=true&ajax_request=true&ajax_page_request=true&db=' + PMA_commonParams.get('db');
+        var argsep = PMA_commonParams.get('arg_separator');
+        var editColumnData = editColumnList + '' + argsep + 'edit_central_columns_page=true' + argsep + 'ajax_request=true' + argsep + 'ajax_page_request=true' + argsep + 'db=' + PMA_commonParams.get('db');
         PMA_ajaxShowMessage();
         AJAX.source = $(this);
         $.get('db_central_columns.php', editColumnData, AJAX.responseHandler);
@@ -72,7 +73,8 @@ AJAX.registerOnload('db_central_columns.js', function () {
     $('#multi_edit_central_columns').submit(function (event) {
         event.preventDefault();
         event.stopPropagation();
-        var multi_column_edit_data = $('#multi_edit_central_columns').serialize() + '&multi_edit_central_column_save=true&ajax_request=true&ajax_page_request=true&db=' + encodeURIComponent(PMA_commonParams.get('db'));
+        var argsep = PMA_commonParams.get('arg_separator');
+        var multi_column_edit_data = $('#multi_edit_central_columns').serialize() + argsep + 'multi_edit_central_column_save=true' + argsep + 'ajax_request=true' + argsep + 'ajax_page_request=true' + argsep + 'db=' + encodeURIComponent(PMA_commonParams.get('db'));
         PMA_ajaxShowMessage();
         AJAX.source = $(this);
         $.post('db_central_columns.php', multi_column_edit_data, AJAX.responseHandler);
@@ -96,7 +98,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
         }).get();
         $.uiTableFilter($('#table_columns'), $(this).val(), cols, null, 'td span');
     });
-    $('.edit').click(function () {
+    $('.edit').on('click', function () {
         var rownum = $(this).parent().data('rownum');
         $('#save_' + rownum).show();
         $(this).hide();
@@ -110,7 +112,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
             $('#f_' + rownum + ' .default_type').siblings('.default_value').hide();
         }
     });
-    $('.del_row').click(function (event) {
+    $('.del_row').on('click', function (event) {
         event.preventDefault();
         event.stopPropagation();
         var $td = $(this);
@@ -121,7 +123,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
             $('#del_form').submit();
         });
     });
-    $('.edit_cancel_form').click(function (event) {
+    $('.edit_cancel_form').on('click', function (event) {
         event.preventDefault();
         event.stopPropagation();
         var rownum = $(this).data('rownum');
@@ -131,7 +133,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
         $('#f_' + rownum + ' input, #f_' + rownum + ' select,#f_' + rownum + ' .default_value, #f_' + rownum + ' .open_enum_editor').hide();
         $('#tableslistcontainer').find('.checkall').show();
     });
-    $('.edit_save_form').click(function (event) {
+    $('.edit_save_form').on('click', function (event) {
         event.preventDefault();
         event.stopPropagation();
         var rownum = $(this).data('rownum');
@@ -152,7 +154,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
         $.ajax({
             type: 'POST',
             url: 'db_central_columns.php',
-            data: datastring + '&ajax_request=true',
+            data: datastring + PMA_commonParams.get('arg_separator') + 'ajax_request=true',
             dataType: 'json',
             success: function (data) {
                 if (data.message !== '1') {
@@ -163,6 +165,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
                         false
                     );
                 } else {
+                    $('#f_' + rownum + ' td input[id=checkbox_row_' + rownum + ']').val($('#f_' + rownum + ' input[name=col_name]').val()).html();
                     $('#f_' + rownum + ' td[name=col_name] span').text($('#f_' + rownum + ' input[name=col_name]').val()).html();
                     $('#f_' + rownum + ' td[name=col_type] span').text($('#f_' + rownum + ' select[name=col_type]').val()).html();
                     $('#f_' + rownum + ' td[name=col_length] span').text($('#f_' + rownum + ' input[name=col_length]').val()).html();
@@ -188,7 +191,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
             }
         });
     });
-    $('#table-select').change(function (e) {
+    $('#table-select').on('change', function (e) {
         var selectvalue = $(this).val();
         var default_column_select = $('#column-select').find('option:first');
         var href = 'db_central_columns.php';
@@ -207,13 +210,14 @@ AJAX.registerOnload('db_central_columns.js', function () {
             });
         }
     });
-    $('#column-select').change(function (e) {
-        var selectvalue = $(this).val();
-        if (selectvalue !== '') {
-            $('#add_column').submit();
+    $('#add_column').submit(function (e) {
+        var selectvalue = $('#column-select').val();
+        if (selectvalue === '') {
+            e.preventDefault();
+            e.stopPropagation();
         }
     });
-    $('#add_col_div').find('>a').click(function (event) {
+    $('#add_col_div').find('>a').on('click', function (event) {
         $('#add_new').slideToggle('slow');
         var $addColDivLinkSpan = $('#add_col_div').find('>a span');
         if ($addColDivLinkSpan.html() === '+') {
@@ -225,7 +229,7 @@ AJAX.registerOnload('db_central_columns.js', function () {
     $('#add_new').submit(function (event) {
         $('#add_new').toggle();
     });
-    $('#tableslistcontainer').find('select.default_type').change(function () {
+    $('#tableslistcontainer').find('select.default_type').on('change', function () {
         if ($(this).val() === 'USER_DEFINED') {
             $(this).siblings('.default_value').attr('name','col_default');
             $(this).attr('name','col_default_sel');

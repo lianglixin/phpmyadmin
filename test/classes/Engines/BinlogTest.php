@@ -4,16 +4,19 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Engines\Binlog;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Binlog
  *
  * @package PhpMyAdmin-test
  */
-class BinlogTest extends \PMATestCase
+class BinlogTest extends PmaTestCase
 {
     /**
      * @access protected

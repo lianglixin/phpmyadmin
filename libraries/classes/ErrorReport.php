@@ -1,122 +1,152 @@
 <?php
 /* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
- * Error reporting functions used to generate and submit error reports
+ * Holds the PhpMyAdmin\ErrorReport class
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
-use PhpMyAdmin\Util;
+use PhpMyAdmin\Utils\HttpRequest;
 
 /**
- * PhpMyAdmin\ErrorReport class
+ * Error reporting functions used to generate and submit error reports
  *
  * @package PhpMyAdmin
  */
 class ErrorReport
 {
     /**
-     * the url where to submit reports to
+     * The URL where to submit reports to
+     *
+     * @var string
      */
-    const SUBMISSION_URL = "https://reports.phpmyadmin.net/incidents/create";
+    private $submissionUrl;
 
     /**
-     * returns the pretty printed error report data collected from the
+     * @var HttpRequest
+     */
+    private $httpRequest;
+
+    /**
+     * @var Relation $relation
+     */
+    private $relation;
+
+    /**
+     * @var Template
+     */
+    public $template;
+
+    /**
+     * Constructor
+     *
+     * @param HttpRequest $httpRequest HttpRequest instance
+     */
+    public function __construct(HttpRequest $httpRequest)
+    {
+        $this->httpRequest = $httpRequest;
+        $this->submissionUrl = 'https://reports.phpmyadmin.net/incidents/create';
+        $this->relation = new Relation();
+        $this->template = new Template();
+    }
+
+    /**
+     * Returns the pretty printed error report data collected from the
      * current configuration or from the request parameters sent by the
      * error reporting js code.
      *
-     * @return String the report
+     * @return string the report
      */
-    public static function getPrettyReportData()
+    private function getPrettyData(): string
     {
-        $report = self::getReportData();
+        $report = $this->getData();
 
         return json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 
     /**
-     * returns the error report data collected from the current configuration or
+     * Returns the error report data collected from the current configuration or
      * from the request parameters sent by the error reporting js code.
      *
-     * @param string $exception_type whether exception is 'js' or 'php'
+     * @param string $exceptionType whether exception is 'js' or 'php'
      *
      * @return array error report if success, Empty Array otherwise
      */
-    public static function getReportData($exception_type = 'js')
+    public function getData(string $exceptionType = 'js'): array
     {
-        $relParams = Relation::getRelationsParam();
+        $relParams = $this->relation->getRelationsParam();
         // common params for both, php & js exceptions
-        $report = array(
-                "pma_version" => PMA_VERSION,
-                "browser_name" => PMA_USR_BROWSER_AGENT,
-                "browser_version" => PMA_USR_BROWSER_VER,
-                "user_os" => PMA_USR_OS,
-                "server_software" => $_SERVER['SERVER_SOFTWARE'],
-                "user_agent_string" => $_SERVER['HTTP_USER_AGENT'],
-                "locale" => $_COOKIE['pma_lang'],
-                "configuration_storage" =>
-                    is_null($relParams['db']) ? "disabled" :
-                    "enabled",
-                "php_version" => phpversion()
-                );
+        $report = [
+            "pma_version" => PMA_VERSION,
+            "browser_name" => PMA_USR_BROWSER_AGENT,
+            "browser_version" => PMA_USR_BROWSER_VER,
+            "user_os" => PMA_USR_OS,
+            "server_software" => $_SERVER['SERVER_SOFTWARE'],
+            "user_agent_string" => $_SERVER['HTTP_USER_AGENT'],
+            "locale" => $_COOKIE['pma_lang'],
+            "configuration_storage" =>
+                is_null($relParams['db']) ? "disabled" : "enabled",
+            "php_version" => phpversion()
+        ];
 
-        if ($exception_type == 'js') {
+        if ($exceptionType == 'js') {
             if (empty($_REQUEST['exception'])) {
-                return array();
+                return [];
             }
             $exception = $_REQUEST['exception'];
-            $exception["stack"] = self::translateStacktrace($exception["stack"]);
-            List($uri, $script_name) = self::sanitizeUrl($exception["url"]);
+            $exception["stack"] = $this->translateStacktrace($exception["stack"]);
+            list($uri, $scriptName) = $this->sanitizeUrl((string)$exception["url"]);
             $exception["uri"] = $uri;
             unset($exception["url"]);
 
-            $report ["exception_type"] = 'js';
-            $report ["exception"] = $exception;
-            $report ["script_name"] = $script_name;
-            $report ["microhistory"] = $_REQUEST['microhistory'];
+            $report["exception_type"] = 'js';
+            $report["exception"] = $exception;
+            $report["script_name"] = $scriptName;
+            $report["microhistory"] = $_REQUEST['microhistory'];
 
             if (! empty($_REQUEST['description'])) {
                 $report['steps'] = $_REQUEST['description'];
             }
-        } elseif ($exception_type == 'php') {
-            $errors = array();
+        } elseif ($exceptionType == 'php') {
+            $errors = [];
             // create php error report
             $i = 0;
             if (!isset($_SESSION['prev_errors'])
                 || $_SESSION['prev_errors'] == ''
             ) {
-                return array();
+                return [];
             }
             foreach ($_SESSION['prev_errors'] as $errorObj) {
-                /* @var $errorObj PhpMyAdmin\Error */
+                /* @var $errorObj \PhpMyAdmin\Error */
                 if ($errorObj->getLine()
                     && $errorObj->getType()
                     && $errorObj->getNumber() != E_USER_WARNING
                 ) {
-                    $errors[$i++] = array(
+                    $errors[$i++] = [
                         "lineNum" => $errorObj->getLine(),
                         "file" => $errorObj->getFile(),
                         "type" => $errorObj->getType(),
                         "msg" => $errorObj->getOnlyMessage(),
                         "stackTrace" => $errorObj->getBacktrace(5),
                         "stackhash" => $errorObj->getHash()
-                        );
-
+                    ];
                 }
             }
 
             // if there were no 'actual' errors to be submitted.
-            if ($i==0) {
-                return array();   // then return empty array
+            if ($i == 0) {
+                return []; // then return empty array
             }
-            $report ["exception_type"] = 'php';
+            $report["exception_type"] = 'php';
             $report["errors"] = $errors;
         } else {
-            return array();
+            return [];
         }
 
         return $report;
@@ -130,11 +160,11 @@ class ErrorReport
      * hostname and identifying query params. The second is the name of the
      * php script in the url
      *
-     * @param String $url the url to sanitize
+     * @param string $url the url to sanitize
      *
      * @return array the uri and script name
      */
-    public static function sanitizeUrl($url)
+    private function sanitizeUrl(string $url): array
     {
         $components = parse_url($url);
         if (isset($components["fragment"])
@@ -148,25 +178,25 @@ class ErrorReport
         // get script name
         preg_match("<([a-zA-Z\-_\d]*\.php)$>", $components["path"], $matches);
         if (count($matches) < 2) {
-            $script_name = 'index.php';
+            $scriptName = 'index.php';
         } else {
-            $script_name = $matches[1];
+            $scriptName = $matches[1];
         }
 
         // remove deployment specific details to make uri more generic
         if (isset($components["query"])) {
-            parse_str($components["query"], $query_array);
-            unset($query_array["db"]);
-            unset($query_array["table"]);
-            unset($query_array["token"]);
-            unset($query_array["server"]);
-            $query = http_build_query($query_array);
+            parse_str($components["query"], $queryArray);
+            unset($queryArray["db"]);
+            unset($queryArray["table"]);
+            unset($queryArray["token"]);
+            unset($queryArray["server"]);
+            $query = http_build_query($queryArray);
         } else {
             $query = '';
         }
 
-        $uri = $script_name . "?" . $query;
-        return array($uri, $script_name);
+        $uri = $scriptName . "?" . $query;
+        return [$uri, $scriptName];
     }
 
     /**
@@ -174,12 +204,12 @@ class ErrorReport
      *
      * @param array $report the report info to be sent
      *
-     * @return String the reply of the server
+     * @return string the reply of the server
      */
-    public static function send(array $report)
+    public function send(array $report): string
     {
-        $response = Util::httpRequest(
-            self::SUBMISSION_URL,
+        $response = $this->httpRequest->create(
+            $this->submissionUrl,
             "POST",
             false,
             json_encode($report),
@@ -189,97 +219,14 @@ class ErrorReport
     }
 
     /**
-     * Returns number of lines in given javascript file.
-     *
-     * @param string $filename javascript filename
-     *
-     * @return Number of lines
-     *
-     * @todo Should gracefully handle non existing files
-     */
-    public static function countLines($filename)
-    {
-        /**
-         * The generated file that contains the line numbers for the js files
-         * If you change any of the js files you can run the scripts/line-counts.sh
-         */
-        if (is_readable('js/line_counts.php')) {
-            include_once 'js/line_counts.php';
-        }
-
-        global $LINE_COUNT;
-        if (defined('LINE_COUNTS')) {
-            return $LINE_COUNT[$filename];
-        }
-
-        // ensure that the file is inside the phpMyAdmin folder
-        $depath = 1;
-        foreach (explode('/', $filename) as $part) {
-            if ($part == '..') {
-                $depath--;
-            } elseif ($part != '.' || $part === '') {
-                $depath++;
-            }
-            if ($depath < 0) {
-                return 0;
-            }
-        }
-
-        $linecount = 0;
-        $handle = fopen('./js/' . $filename, 'r');
-        while (!feof($handle)) {
-            $line = fgets($handle);
-            if ($line === false) {
-                break;
-            }
-            $linecount++;
-        }
-        fclose($handle);
-        return $linecount;
-    }
-
-    /**
-     * returns the translated line number and the file name from the cumulative line
-     * number and an array of files
-     *
-     * uses the $LINE_COUNT global array of file names and line numbers
-     *
-     * @param array   $filenames         list of files in order of concatenation
-     * @param Integer $cumulative_number the cumulative line number in the
-     *                                   concatenated files
-     *
-     * @return array the filename and line number
-     * Returns two variables in an array:
-     * - A String $filename the filename where the requested cumulative number
-     *   exists
-     * - Integer $linenumber the translated line number in the returned file
-     */
-    public static function getLineNumber(array $filenames, $cumulative_number)
-    {
-        $cumulative_sum = 0;
-        foreach ($filenames as $filename) {
-            $filecount = self::countLines($filename);
-            if ($cumulative_number <= $cumulative_sum + $filecount + 2) {
-                $linenumber = $cumulative_number - $cumulative_sum;
-                break;
-            }
-            $cumulative_sum += $filecount + 2;
-        }
-        if (! isset($filename)) {
-            $filename = '';
-        }
-        return array($filename, $linenumber);
-    }
-
-    /**
-     * translates the cumulative line numbers in the stack trace as well as sanitize
+     * Translates the cumulative line numbers in the stack trace as well as sanitize
      * urls and trim long lines in the context
      *
      * @param array $stack the stack trace
      *
      * @return array $stack the modified stack trace
      */
-    public static function translateStacktrace(array $stack)
+    private function translateStacktrace(array $stack): array
     {
         foreach ($stack as &$level) {
             foreach ($level["context"] as &$line) {
@@ -287,19 +234,10 @@ class ErrorReport
                     $line = mb_substr($line, 0, 75) . "//...";
                 }
             }
-            if (preg_match("<js/get_scripts.js.php\?(.*)>", $level["url"], $matches)) {
-                parse_str($matches[1], $vars);
-                List($file_name, $line_number) = self::getLineNumber(
-                    $vars["scripts"], $level["line"]
-                );
-                $level["filename"] = $file_name;
-                $level["line"] = $line_number;
-            } else {
-                unset($level["context"]);
-                List($uri, $script_name) = self::sanitizeUrl($level["url"]);
-                $level["uri"] = $uri;
-                $level["scriptname"] = $script_name;
-            }
+            unset($level["context"]);
+            list($uri, $scriptName) = $this->sanitizeUrl($level["url"]);
+            $level["uri"] = $uri;
+            $level["scriptname"] = $scriptName;
             unset($level["url"]);
         }
         unset($level);
@@ -307,25 +245,24 @@ class ErrorReport
     }
 
     /**
-     * generates the error report form to collect user description and preview the
+     * Generates the error report form to collect user description and preview the
      * report before being sent
      *
-     * @return String the form
+     * @return string the form
      */
-    public static function getForm()
+    public function getForm(): string
     {
-        $datas = array(
-            'report_data' => self::getPrettyReportData(),
+        $datas = [
+            'report_data' => $this->getPrettyData(),
             'hidden_inputs' => Url::getHiddenInputs(),
             'hidden_fields' => null,
-        );
+        ];
 
-        $reportData = self::getReportData();
+        $reportData = $this->getData();
         if (!empty($reportData)) {
-            $datas['hidden_fields'] = Url::getHiddenFields($reportData);
+            $datas['hidden_fields'] = Url::getHiddenFields($reportData, '', true);
         }
 
-        return Template::get('error/report_form')
-            ->render($datas);
+        return $this->template->render('error/report_form', $datas);
     }
 }

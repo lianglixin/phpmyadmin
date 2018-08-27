@@ -5,8 +5,11 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin;
 
+use PhpMyAdmin\Template;
 use PhpMyAdmin\ThemeManager;
 use PhpMyAdmin\Url;
 
@@ -25,37 +28,37 @@ class Theme
      * @var string theme version
      * @access  protected
      */
-    var $version = '0.0.0.0';
+    public $version = '0.0.0.0';
 
     /**
      * @var string theme name
      * @access  protected
      */
-    var $name = '';
+    public $name = '';
 
     /**
      * @var string theme id
      * @access  protected
      */
-    var $id = '';
+    public $id = '';
 
     /**
      * @var string theme path
      * @access  protected
      */
-    var $path = '';
+    public $path = '';
 
     /**
      * @var string image path
      * @access  protected
      */
-    var $img_path = '';
+    public $img_path = '';
 
     /**
      * @var integer last modification time for info file
      * @access  protected
      */
-    var $mtime_info = 0;
+    public $mtime_info = 0;
 
     /**
      * needed because sometimes, the mtime for different themes
@@ -63,23 +66,37 @@ class Theme
      * @var integer filesize for info file
      * @access  protected
      */
-    var $filesize_info = 0;
+    public $filesize_info = 0;
 
     /**
      * @var array List of css files to load
      * @access private
      */
-    private $_cssFiles = array(
+    public $_cssFiles = [
         'common',
         'enum_editor',
         'gis',
         'navigation',
-        'pmd',
+        'designer',
         'rte',
         'codemirror',
         'jqplot',
-        'resizable-menu'
-    );
+        'resizable-menu',
+        'icons',
+    ];
+
+    /**
+     * @var Template
+     */
+    public $template;
+
+    /**
+     * Theme constructor.
+     */
+    public function __construct()
+    {
+        $this->template = new Template();
+    }
 
     /**
      * Loads theme information
@@ -87,7 +104,7 @@ class Theme
      * @return boolean whether loading them info was successful or not
      * @access  public
      */
-    function loadInfo()
+    public function loadInfo()
     {
         $infofile = $this->getPath() . '/theme.json';
         if (! @file_exists($infofile)) {
@@ -108,7 +125,7 @@ class Theme
             return false;
         }
         // Check that all required data are there
-        $members = array('name', 'version', 'supports');
+        $members = ['name', 'version', 'supports'];
         foreach ($members as $member) {
             if (! isset($data[$member])) {
                 return false;
@@ -142,7 +159,7 @@ class Theme
      * @static
      * @access public
      */
-    static public function load($folder)
+    public static function load($folder)
     {
         $theme = new Theme();
 
@@ -328,12 +345,13 @@ class Theme
      * If filename is given, it possibly fallbacks to fallback
      * theme for it if image does not exist.
      *
-     * @param string $file file name for image
+     * @param string $file     file name for image
+     * @param string $fallback fallback image
      *
      * @access public
      * @return string image path for this theme
      */
-    public function getImgPath($file = null)
+    public function getImgPath($file = null, $fallback = null)
     {
         if (is_null($file)) {
             return $this->img_path;
@@ -341,6 +359,10 @@ class Theme
 
         if (is_readable($this->img_path . $file)) {
             return $this->img_path . $file;
+        }
+
+        if (! is_null($fallback)) {
+            return $this->getImgPath($fallback);
         }
 
         return './themes/' . ThemeManager::FALLBACK_THEME . '/img/' . $file;
@@ -369,85 +391,19 @@ class Theme
         foreach ($this->_cssFiles as $file) {
             $path = $this->getPath() . "/css/$file.css.php";
             $fallback = "./themes/"
-                . ThemeManager::FALLBACK_THEME .  "/css/$file.css.php";
+                . ThemeManager::FALLBACK_THEME . "/css/$file.css.php";
 
             if (is_readable($path)) {
                 echo "\n/* FILE: " , $file , ".css.php */\n";
                 include $path;
-            } else if (is_readable($fallback)) {
+            } elseif (is_readable($fallback)) {
                 echo "\n/* FILE: " , $file , ".css.php */\n";
                 include $fallback;
             } else {
                 $success = false;
             }
         }
-
-        $sprites = $this->getSpriteData();
-        /* Check if there is a valid data file for sprites */
-        if (count($sprites) > 0) {
-
-            $bg = $this->getImgPath() . 'sprites.png?v=' . urlencode(PMA_VERSION);
-            ?>
-            /* Icon sprites */
-            .icon {
-            margin: 0;
-            margin-<?php echo $left; ?>: .3em;
-            padding: 0 !important;
-            width: 16px;
-            height: 16px;
-            background-image: url('<?php echo $bg; ?>') !important;
-            background-repeat: no-repeat !important;
-            background-position: top left !important;
-            }
-            <?php
-
-            $template = ".ic_%s { background-position: 0 -%upx !important;%s%s }\n";
-            foreach ($sprites as $name => $data) {
-                // generate the CSS code for each icon
-                $width = '';
-                $height = '';
-                // if either the height or width of an icon is 16px,
-                // then it's pointless to set this as a parameter,
-                //since it will be inherited from the "icon" class
-                if ($data['width'] != 16) {
-                    $width = " width: " . $data['width'] . "px;";
-                }
-                if ($data['height'] != 16) {
-                    $height = " height: " . $data['height'] . "px;";
-                }
-                printf(
-                    $template,
-                    $name,
-                    ($data['position'] * 16),
-                    $width,
-                    $height
-                );
-            }
-        }
-
         return $success;
-    }
-
-    /**
-     * Loads sprites data
-     *
-     * @return array with sprites
-     */
-    public function getSpriteData()
-    {
-        $sprites = array();
-        $filename = $this->getPath() . '/sprites.lib.php';
-        if (is_readable($filename)) {
-
-            // This defines sprites array
-            include $filename;
-
-            // Backwards compatibility for themes from 4.6 and older
-            if (function_exists('PMA_sprites')) {
-                $sprites = PMA_sprites();
-            }
-        }
-        return $sprites;
     }
 
     /**
@@ -458,46 +414,20 @@ class Theme
      */
     public function getPrintPreview()
     {
-        $url_params = array('set_theme' => $this->getId());
-        $url = 'index.php' . Url::getCommon($url_params);
-
-        $retval  = '<div class="theme_preview">';
-        $retval .= '<h2>';
-        $retval .= htmlspecialchars($this->getName());
-        $retval .= ' (' . htmlspecialchars($this->getVersion()) . ') ';
-        $retval .= '</h2>';
-        $retval .= '<p>';
-        $retval .= '<a class="take_theme" ';
-        $retval .= 'name="' . htmlspecialchars($this->getId()) . '" ';
-        $retval .=  'href="' . $url . '">';
-        if (@file_exists($this->getPath() . '/screen.png')) {
-            // if screen exists then output
-            $retval .= '<img src="' . $this->getPath() . '/screen.png" border="1"';
-            $retval .= ' alt="' . htmlspecialchars($this->getName()) . '"';
-            $retval .= ' title="' . htmlspecialchars($this->getName()) . '" />';
-            $retval .= '<br />';
-        } else {
-            $retval .= __('No preview available.');
+        $url_params = ['set_theme' => $this->getId()];
+        $screen = null;
+        $path = $this->getPath() . '/screen.png';
+        if (@file_exists($path)) {
+            $screen = $path;
         }
-        $retval .= '[ <strong>' . __('take it') . '</strong> ]';
-        $retval .= '</a>';
-        $retval .= '</p>';
-        $retval .= '</div>';
-        return $retval;
-    }
 
-    /**
-     * Gets currently configured font size.
-     *
-     * @return String with font size.
-     */
-    function getFontSize()
-    {
-        $fs = $GLOBALS['PMA_Config']->get('fontsize');
-        if (!is_null($fs)) {
-            return $fs;
-        }
-        return '82%';
+        return $this->template->render('theme_preview', [
+            'url_params' => $url_params,
+            'name' => $this->getName(),
+            'version' => $this->getVersion(),
+            'id' => $this->getId(),
+            'screen' => $screen,
+        ]);
     }
 
     /**
@@ -508,9 +438,9 @@ class Theme
      *
      * @return string CSS code.
      */
-    function getCssGradient($start_color, $end_color)
+    public function getCssGradient($start_color, $end_color)
     {
-        $result = array();
+        $result = [];
         // Opera 9.5+, IE 9
         $result[] = 'background-image: url(./themes/svg_gradient.php?from='
             . $start_color . '&to=' . $end_color . ');';

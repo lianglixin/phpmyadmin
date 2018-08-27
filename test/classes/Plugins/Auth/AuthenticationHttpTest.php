@@ -5,19 +5,20 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Auth;
 
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Plugins\Auth\AuthenticationHttp;
-
-require_once 'libraries/config.default.php';
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationHttp class
  *
  * @package PhpMyAdmin-test
  */
-class AuthenticationHttpTest extends \PMATestCase
+class AuthenticationHttpTest extends PmaTestCase
 {
     /**
      * @var AuthenticationHttp
@@ -29,12 +30,15 @@ class AuthenticationHttpTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['PMA_Config']->enableBc();
-        $GLOBALS['cfg']['Servers'] = array();
+        $GLOBALS['cfg']['Servers'] = [];
         $GLOBALS['server'] = 0;
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = 'table';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
         $GLOBALS['lang'] = "en";
         $GLOBALS['text_dir'] = "ltr";
         $GLOBALS['token_provided'] = true;
@@ -53,12 +57,20 @@ class AuthenticationHttpTest extends \PMATestCase
         unset($this->object);
     }
 
-    public function doMockResponse($set_minimal, $body_id, $set_title)
+    /**
+     * @param mixed       $set_minimal set minimal
+     * @param mixed       $body_id     body id
+     * @param mixed       $set_title   set title
+     * @param mixed[] ... $headers     headers
+     *
+     * @return void
+     */
+    public function doMockResponse($set_minimal, $body_id, $set_title, ...$headers)
     {
         // mock footer
         $mockFooter = $this->getMockBuilder('PhpMyAdmin\Footer')
             ->disableOriginalConstructor()
-            ->setMethods(array('setMinimal'))
+            ->setMethods(['setMinimal'])
             ->getMock();
 
         $mockFooter->expects($this->exactly($set_minimal))
@@ -70,7 +82,7 @@ class AuthenticationHttpTest extends \PMATestCase
         $mockHeader = $this->getMockBuilder('PhpMyAdmin\Header')
             ->disableOriginalConstructor()
             ->setMethods(
-                array('setBodyId', 'setTitle', 'disableMenuAndConsole', 'addHTML')
+                ['setBodyId', 'setTitle', 'disableMenuAndConsole', 'addHTML']
             )
             ->getMock();
 
@@ -87,7 +99,6 @@ class AuthenticationHttpTest extends \PMATestCase
             ->with();
 
         // set mocked headers and footers
-        $headers = array_slice(func_get_args(), 3);
         $mockResponse = $this->mockResponse($headers);
 
         $mockResponse->expects($this->exactly($set_title))
@@ -108,13 +119,13 @@ class AuthenticationHttpTest extends \PMATestCase
             $this->object->logOut();
         } else {
             $this->assertFalse(
-                $this->object->auth()
+                $this->object->showLoginForm()
             );
         }
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationHttp::auth
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationHttp::showLoginForm
      *
      * @return void
      */
@@ -125,52 +136,69 @@ class AuthenticationHttpTest extends \PMATestCase
         $GLOBALS['cfg']['Server']['LogoutURL'] = 'https://example.com/logout';
 
         $this->doMockResponse(
-            0, 0, 0,
-            array('Location: https://example.com/logout')
+            0,
+            0,
+            0,
+            ['Location: https://example.com/logout']
         );
     }
 
+    /**
+     * @return void
+     */
     public function testAuthVerbose()
     {
         $_REQUEST['old_usr'] = '';
         $GLOBALS['cfg']['Server']['verbose'] = 'verboseMessagê';
 
         $this->doMockResponse(
-            1, 1, 1,
-            array('WWW-Authenticate: Basic realm="phpMyAdmin verboseMessag"'),
-            array('status: 401 Unauthorized'),
+            1,
+            1,
+            1,
+            ['WWW-Authenticate: Basic realm="phpMyAdmin verboseMessag"'],
+            ['status: 401 Unauthorized'],
             401
         );
     }
 
+    /**
+     * @return void
+     */
     public function testAuthHost()
     {
         $GLOBALS['cfg']['Server']['verbose'] = '';
         $GLOBALS['cfg']['Server']['host'] = 'hòst';
 
         $this->doMockResponse(
-            1, 1, 1,
-            array('WWW-Authenticate: Basic realm="phpMyAdmin hst"'),
-            array('status: 401 Unauthorized'),
+            1,
+            1,
+            1,
+            ['WWW-Authenticate: Basic realm="phpMyAdmin hst"'],
+            ['status: 401 Unauthorized'],
             401
         );
     }
 
+    /**
+     * @return void
+     */
     public function testAuthRealm()
     {
         $GLOBALS['cfg']['Server']['host'] = '';
         $GLOBALS['cfg']['Server']['auth_http_realm'] = 'rêäealmmessage';
 
         $this->doMockResponse(
-            1, 1, 1,
-            array('WWW-Authenticate: Basic realm="realmmessage"'),
-            array('status: 401 Unauthorized'),
+            1,
+            1,
+            1,
+            ['WWW-Authenticate: Basic realm="realmmessage"'],
+            ['status: 401 Unauthorized'],
             401
         );
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationHttp::authCheck
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationHttp::readCredentials
      *
      * @param string $user           test username
      * @param string $pass           test password
@@ -182,14 +210,18 @@ class AuthenticationHttpTest extends \PMATestCase
      * @param string $old_usr        value for $_REQUEST['old_usr']
      *
      * @return void
-     * @dataProvider authCheckProvider
+     * @dataProvider readCredentialsProvider
      */
-    public function testAuthCheck($user, $pass, $userIndex, $passIndex,
-        $expectedReturn, $expectedUser, $expectedPass, $old_usr = ''
+    public function testAuthCheck(
+        $user,
+        $pass,
+        $userIndex,
+        $passIndex,
+        $expectedReturn,
+        $expectedUser,
+        $expectedPass,
+        $old_usr = ''
     ) {
-        $GLOBALS['PHP_AUTH_USER'] = '';
-        $GLOBALS['PHP_AUTH_PW'] = '';
-
         $_SERVER[$userIndex] = $user;
         $_SERVER[$passIndex] = $pass;
 
@@ -197,17 +229,17 @@ class AuthenticationHttpTest extends \PMATestCase
 
         $this->assertEquals(
             $expectedReturn,
-            $this->object->authCheck()
+            $this->object->readCredentials()
         );
 
         $this->assertEquals(
             $expectedUser,
-            $GLOBALS['PHP_AUTH_USER']
+            $this->object->user
         );
 
         $this->assertEquals(
             $expectedPass,
-            $GLOBALS['PHP_AUTH_PW']
+            $this->object->password
         );
 
         $_SERVER[$userIndex] = null;
@@ -219,10 +251,10 @@ class AuthenticationHttpTest extends \PMATestCase
      *
      * @return array Test data
      */
-    public function authCheckProvider()
+    public function readCredentialsProvider()
     {
-        return array(
-            array(
+        return [
+            [
                 'Basic ' . base64_encode('foo:bar'),
                 'pswd',
                 'PHP_AUTH_USER',
@@ -231,8 +263,8 @@ class AuthenticationHttpTest extends \PMATestCase
                 '',
                 'bar',
                 'foo'
-            ),
-            array(
+            ],
+            [
                 'Basic ' . base64_encode('foobar'),
                 'pswd',
                 'REMOTE_USER',
@@ -240,8 +272,8 @@ class AuthenticationHttpTest extends \PMATestCase
                 true,
                 'Basic Zm9vYmFy',
                 'pswd'
-            ),
-            array(
+            ],
+            [
                 'Basic ' . base64_encode('foobar:'),
                 'pswd',
                 'AUTH_USER',
@@ -249,8 +281,8 @@ class AuthenticationHttpTest extends \PMATestCase
                 true,
                 'foobar',
                 false
-            ),
-            array(
+            ],
+            [
                 'Basic ' . base64_encode(':foobar'),
                 'pswd',
                 'HTTP_AUTHORIZATION',
@@ -258,8 +290,8 @@ class AuthenticationHttpTest extends \PMATestCase
                 true,
                 'Basic OmZvb2Jhcg==',
                 'pswd'
-            ),
-            array(
+            ],
+            [
                 'BasicTest',
                 'pswd',
                 'Authorization',
@@ -267,12 +299,12 @@ class AuthenticationHttpTest extends \PMATestCase
                 true,
                 'BasicTest',
                 'pswd'
-            ),
-        );
+            ],
+        ];
     }
 
     /**
-     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationHttp::authSetUser
+     * Test for PhpMyAdmin\Plugins\Auth\AuthenticationHttp::storeCredentials
      *
      * @return void
      */
@@ -280,13 +312,13 @@ class AuthenticationHttpTest extends \PMATestCase
     {
         // case 1
 
-        $GLOBALS['PHP_AUTH_USER'] = 'testUser';
-        $GLOBALS['PHP_AUTH_PW'] = 'testPass';
+        $this->object->user = 'testUser';
+        $this->object->password = 'testPass';
         $GLOBALS['server'] = 2;
         $GLOBALS['cfg']['Server']['user'] = 'testUser';
 
         $this->assertTrue(
-            $this->object->authSetUser()
+            $this->object->storeCredentials()
         );
 
         $this->assertEquals(
@@ -299,12 +331,9 @@ class AuthenticationHttpTest extends \PMATestCase
             $GLOBALS['cfg']['Server']['password']
         );
 
-        $this->assertFalse(
-            isset($GLOBALS['PHP_AUTH_PW'])
-        );
-
-        $this->assertFalse(
-            isset($_SERVER['PHP_AUTH_PW'])
+        $this->assertArrayNotHasKey(
+            'PHP_AUTH_PW',
+            $_SERVER
         );
 
         $this->assertEquals(
@@ -313,29 +342,29 @@ class AuthenticationHttpTest extends \PMATestCase
         );
 
         // case 2
-        $GLOBALS['PHP_AUTH_USER'] = 'testUser';
-        $GLOBALS['PHP_AUTH_PW'] = 'testPass';
-        $GLOBALS['cfg']['Servers'][1] = array(
+        $this->object->user = 'testUser';
+        $this->object->password = 'testPass';
+        $GLOBALS['cfg']['Servers'][1] = [
             'host' => 'a',
             'user' => 'testUser',
             'foo' => 'bar'
-        );
+        ];
 
-        $GLOBALS['cfg']['Server']= array(
+        $GLOBALS['cfg']['Server'] = [
             'host' => 'a',
             'user' => 'user2'
-        );
+        ];
 
         $this->assertTrue(
-            $this->object->authSetUser()
+            $this->object->storeCredentials()
         );
 
         $this->assertEquals(
-            array(
+            [
                 'user' => 'testUser',
                 'password' => 'testPass',
                 'host' => 'a',
-            ),
+            ],
             $GLOBALS['cfg']['Server']
         );
 
@@ -346,29 +375,29 @@ class AuthenticationHttpTest extends \PMATestCase
 
         // case 3
         $GLOBALS['server'] = 3;
-        $GLOBALS['PHP_AUTH_USER'] = 'testUser';
-        $GLOBALS['PHP_AUTH_PW'] = 'testPass';
-        $GLOBALS['cfg']['Servers'][1] = array(
+        $this->object->user = 'testUser';
+        $this->object->password = 'testPass';
+        $GLOBALS['cfg']['Servers'][1] = [
             'host' => 'a',
             'user' => 'testUsers',
             'foo' => 'bar'
-        );
+        ];
 
-        $GLOBALS['cfg']['Server']= array(
+        $GLOBALS['cfg']['Server'] = [
             'host' => 'a',
             'user' => 'user2'
-        );
+        ];
 
         $this->assertTrue(
-            $this->object->authSetUser()
+            $this->object->storeCredentials()
         );
 
         $this->assertEquals(
-            array(
+            [
                 'user' => 'testUser',
                 'password' => 'testPass',
                 'host' => 'a'
-            ),
+            ],
             $GLOBALS['cfg']['Server']
         );
 
@@ -408,7 +437,7 @@ class AuthenticationHttpTest extends \PMATestCase
         $GLOBALS['errno'] = 31;
 
         ob_start();
-        $this->object->authFails();
+        $this->object->showFailure('');
         $result = ob_get_clean();
 
         $this->assertContains(
@@ -418,7 +447,7 @@ class AuthenticationHttpTest extends \PMATestCase
 
         $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Auth\AuthenticationHttp')
             ->disableOriginalConstructor()
-            ->setMethods(array('authForm'))
+            ->setMethods(['authForm'])
             ->getMock();
 
         $this->object->expects($this->exactly(2))
@@ -427,14 +456,10 @@ class AuthenticationHttpTest extends \PMATestCase
         $GLOBALS['cfg']['Server']['host'] = 'host';
         $GLOBALS['errno'] = 1045;
 
-        $this->assertTrue(
-            $this->object->authFails()
-        );
+        $this->object->showFailure('');
 
         // case 3
         $GLOBALS['errno'] = 1043;
-        $this->assertTrue(
-            $this->object->authFails()
-        );
+        $this->object->showFailure('');
     }
 }

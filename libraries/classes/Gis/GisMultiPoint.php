@@ -5,6 +5,7 @@
  *
  * @package PhpMyAdmin-GIS
  */
+declare(strict_types=1);
 
 namespace PhpMyAdmin\Gis;
 
@@ -63,24 +64,24 @@ class GisMultiPoint extends GisGeometry
                 mb_strlen($spatial) - 12
             );
 
-        return $this->setMinMax($multipoint, array());
+        return $this->setMinMax($multipoint, []);
     }
 
     /**
      * Adds to the PNG image object, the data related to a row in the GIS dataset.
      *
-     * @param string $spatial     GIS MULTIPOINT object
-     * @param string $label       Label for the GIS MULTIPOINT object
-     * @param string $point_color Color for the GIS MULTIPOINT object
-     * @param array  $scale_data  Array containing data related to scaling
-     * @param object $image       Image object
+     * @param string      $spatial     GIS POLYGON object
+     * @param string|null $label       Label for the GIS POLYGON object
+     * @param string      $point_color Color for the GIS POLYGON object
+     * @param array       $scale_data  Array containing data related to scaling
+     * @param resource    $image       Image object
      *
-     * @return object the modified image object
+     * @return resource the modified image object
      * @access public
      */
     public function prepareRowAsPng(
         $spatial,
-        $label,
+        ?string $label,
         $point_color,
         array $scale_data,
         $image
@@ -127,18 +128,18 @@ class GisMultiPoint extends GisGeometry
     /**
      * Adds to the TCPDF instance, the data related to a row in the GIS dataset.
      *
-     * @param string $spatial     GIS MULTIPOINT object
-     * @param string $label       Label for the GIS MULTIPOINT object
-     * @param string $point_color Color for the GIS MULTIPOINT object
-     * @param array  $scale_data  Array containing data related to scaling
-     * @param TCPDF  $pdf         TCPDF instance
+     * @param string      $spatial     GIS MULTIPOINT object
+     * @param string|null $label       Label for the GIS MULTIPOINT object
+     * @param string      $point_color Color for the GIS MULTIPOINT object
+     * @param array       $scale_data  Array containing data related to scaling
+     * @param TCPDF       $pdf         TCPDF instance
      *
      * @return TCPDF the modified TCPDF instance
      * @access public
      */
     public function prepareRowAsPdf(
         $spatial,
-        $label,
+        ?string $label,
         $point_color,
         array $scale_data,
         $pdf
@@ -147,7 +148,7 @@ class GisMultiPoint extends GisGeometry
         $red = hexdec(mb_substr($point_color, 1, 2));
         $green = hexdec(mb_substr($point_color, 3, 2));
         $blue = hexdec(mb_substr($point_color, 4, 2));
-        $line = array('width' => 1.25, 'color' => array($red, $green, $blue));
+        $line = ['width' => 1.25, 'color' => [$red, $green, $blue]];
 
         // Trim to remove leading 'MULTIPOINT(' and trailing ')'
         $multipoint
@@ -189,13 +190,13 @@ class GisMultiPoint extends GisGeometry
      */
     public function prepareRowAsSvg($spatial, $label, $point_color, array $scale_data)
     {
-        $point_options = array(
+        $point_options = [
             'name'         => $label,
             'class'        => 'multipoint vector',
             'fill'         => 'white',
             'stroke'       => $point_color,
             'stroke-width' => 2,
-        );
+        ];
 
         // Trim to remove leading 'MULTIPOINT(' and trailing ')'
         $multipoint
@@ -213,7 +214,7 @@ class GisMultiPoint extends GisGeometry
                     . $point[1] . '" r="3"';
                 $point_options['id'] = $label . rand();
                 foreach ($point_options as $option => $val) {
-                    $row .= ' ' . $option . '="' . trim($val) . '"';
+                    $row .= ' ' . $option . '="' . trim((string) $val) . '"';
                 }
                 $row .= '/>';
             }
@@ -242,7 +243,7 @@ class GisMultiPoint extends GisGeometry
         $point_color,
         array $scale_data
     ) {
-        $style_options = array(
+        $style_options = [
             'pointRadius'  => 3,
             'fillColor'    => '#ffffff',
             'strokeColor'  => $point_color,
@@ -250,7 +251,7 @@ class GisMultiPoint extends GisGeometry
             'label'        => $label,
             'labelYOffset' => -8,
             'fontSize'     => 10,
-        );
+        ];
         if ($srid == 0) {
             $srid = 4326;
         }
@@ -349,7 +350,7 @@ class GisMultiPoint extends GisGeometry
      */
     public function generateParams($value, $index = -1)
     {
-        $params = array();
+        $params = [];
         if ($index == -1) {
             $index = 0;
             $data = GisGeometry::generateParams($value);

@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Url;
 
 if (! defined('PHPMYADMIN')) {
@@ -34,11 +36,10 @@ $err_url = 'index.php' . $GLOBALS['url_query'];
 /**
  * @global boolean Checks for superuser privileges
  */
-$GLOBALS['is_superuser'] = $GLOBALS['dbi']->isSuperuser();
 $GLOBALS['is_grantuser'] = $GLOBALS['dbi']->isUserType('grant');
 $GLOBALS['is_createuser'] = $GLOBALS['dbi']->isUserType('create');
 
 // now, select the mysql db
-if ($GLOBALS['is_superuser']) {
-    $GLOBALS['dbi']->selectDb('mysql', $GLOBALS['userlink']);
+if ($GLOBALS['dbi']->isSuperuser()) {
+    $GLOBALS['dbi']->selectDb('mysql');
 }

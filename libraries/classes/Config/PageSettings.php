@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Config;
 
 use PhpMyAdmin\Config\ConfigFile;
@@ -48,6 +50,11 @@ class PageSettings
     private $_HTML = '';
 
     /**
+     * @var UserPreferences
+     */
+    private $userPreferences;
+
+    /**
      * Constructor
      *
      * @param string $formGroupName The name of config form group to display
@@ -55,8 +62,10 @@ class PageSettings
      */
     public function __construct($formGroupName, $elemId = null)
     {
-        $form_class = PageFormList::get($formGroupName);
-        if (is_null($form_class)) {
+        $this->userPreferences = new UserPreferences();
+
+        $formClass = PageFormList::get($formGroupName);
+        if (is_null($formClass)) {
             return;
         }
 
@@ -70,36 +79,36 @@ class PageSettings
         $this->_groupName = $formGroupName;
 
         $cf = new ConfigFile($GLOBALS['PMA_Config']->base_settings);
-        UserPreferences::pageInit($cf);
+        $this->userPreferences->pageInit($cf);
 
-        $form_display = new $form_class($cf);
+        $formDisplay = new $formClass($cf);
 
         // Process form
         $error = null;
         if (isset($_POST['submit_save'])
             && $_POST['submit_save'] == $formGroupName
         ) {
-            $this->_processPageSettings($form_display, $cf, $error);
+            $this->_processPageSettings($formDisplay, $cf, $error);
         }
 
         // Display forms
-        $this->_HTML = $this->_getPageSettingsDisplay($form_display, $error);
+        $this->_HTML = $this->_getPageSettingsDisplay($formDisplay, $error);
     }
 
     /**
      * Process response to form
      *
-     * @param FormDisplay  &$form_display Form
-     * @param ConfigFile   &$cf           Configuration file
-     * @param Message|null &$error        Error message
+     * @param FormDisplay  &$formDisplay Form
+     * @param ConfigFile   &$cf          Configuration file
+     * @param Message|null &$error       Error message
      *
      * @return void
      */
-    private function _processPageSettings(&$form_display, &$cf, &$error)
+    private function _processPageSettings(&$formDisplay, &$cf, &$error)
     {
-        if ($form_display->process(false) && !$form_display->hasErrors()) {
+        if ($formDisplay->process(false) && !$formDisplay->hasErrors()) {
             // save settings
-            $result = UserPreferences::save($cf->getConfigArray());
+            $result = $this->userPreferences->save($cf->getConfigArray());
             if ($result === true) {
                 // reload page
                 $response = Response::getInstance();
@@ -116,25 +125,25 @@ class PageSettings
     /**
      * Store errors in _errorHTML
      *
-     * @param FormDisplay  &$form_display Form
-     * @param Message|null &$error        Error message
+     * @param FormDisplay  &$formDisplay Form
+     * @param Message|null &$error       Error message
      *
      * @return void
      */
-    private function _storeError(&$form_display, &$error)
+    private function _storeError(&$formDisplay, &$error)
     {
         $retval = '';
         if ($error) {
             $retval .= $error->getDisplay();
         }
-        if ($form_display->hasErrors()) {
+        if ($formDisplay->hasErrors()) {
             // form has errors
             $retval .= '<div class="error config-form">'
                 . '<b>' . __(
                     'Cannot save settings, submitted configuration form contains '
                     . 'errors!'
                 ) . '</b>'
-                . $form_display->displayErrors()
+                . $formDisplay->displayErrors()
                 . '</div>';
         }
         $this->_errorHTML = $retval;
@@ -143,29 +152,29 @@ class PageSettings
     /**
      * Display page-related settings
      *
-     * @param FormDisplay &$form_display Form
-     * @param Message     &$error        Error message
+     * @param FormDisplay &$formDisplay Form
+     * @param Message     &$error       Error message
      *
      * @return string
      */
-    private function _getPageSettingsDisplay(&$form_display, &$error)
+    private function _getPageSettingsDisplay(&$formDisplay, &$error)
     {
         $response = Response::getInstance();
 
         $retval = '';
 
-        $this->_storeError($form_display, $error);
+        $this->_storeError($formDisplay, $error);
 
         $retval .= '<div id="' . $this->_elemId . '">';
         $retval .= '<div class="page_settings">';
-        $retval .= $form_display->getDisplay(
+        $retval .= $formDisplay->getDisplay(
             true,
             true,
             false,
             $response->getFooter()->getSelfUrl(),
-            array(
+            [
                 'submit_save' => $this->_groupName
-            )
+            ]
         );
         $retval .= '</div>';
         $retval .= '</div>';

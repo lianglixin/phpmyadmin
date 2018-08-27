@@ -5,14 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Export\ExportCsv;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionMethod;
 use ReflectionProperty;
-
-require_once 'libraries/config.default.php';
 
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportCsv class
@@ -20,7 +21,7 @@ require_once 'libraries/config.default.php';
  * @package PhpMyAdmin-test
  * @group medium
  */
-class ExportCsvTest extends \PMATestCase
+class ExportCsvTest extends PmaTestCase
 {
     protected $object;
 
@@ -29,7 +30,7 @@ class ExportCsvTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
         $this->object = new ExportCsv();
@@ -242,7 +243,6 @@ class ExportCsvTest extends \PMATestCase
             'structure_or_data',
             $property->getName()
         );
-
     }
 
     /**
@@ -496,7 +496,11 @@ class ExportCsvTest extends \PMATestCase
         ob_start();
         $this->assertFalse(
             $this->object->exportData(
-                'testDB', 'testTable', "\n", 'example.com', 'test'
+                'testDB',
+                'testTable',
+                "\n",
+                'example.com',
+                'test'
             )
         );
         $result = ob_get_clean();
@@ -508,7 +512,7 @@ class ExportCsvTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('test', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('test', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -524,7 +528,7 @@ class ExportCsvTest extends \PMATestCase
         $dbi->expects($this->at(3))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array(null, 'b', 'c', false, 'e', 'f')));
+            ->will($this->returnValue([null, 'b', 'c', false, 'e', 'f']));
 
         $dbi->expects($this->at(4))
             ->method('fetchRow')
@@ -543,7 +547,11 @@ class ExportCsvTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'testDB', 'testTable', "\n", 'example.com', 'test'
+                'testDB',
+                'testTable',
+                "\n",
+                'example.com',
+                'test'
             )
         );
         $result = ob_get_clean();
@@ -561,7 +569,7 @@ class ExportCsvTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('test', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('test', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -577,7 +585,7 @@ class ExportCsvTest extends \PMATestCase
         $dbi->expects($this->at(3))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array(1 => 'a')));
+            ->will($this->returnValue([1 => 'a']));
 
         $dbi->expects($this->at(4))
             ->method('fetchRow')
@@ -590,7 +598,11 @@ class ExportCsvTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'testDB', 'testTable', "\n", 'example.com', 'test'
+                'testDB',
+                'testTable',
+                "\n",
+                'example.com',
+                'test'
             )
         );
         $result = ob_get_clean();
@@ -608,7 +620,7 @@ class ExportCsvTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('test', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('test', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -624,7 +636,7 @@ class ExportCsvTest extends \PMATestCase
         $dbi->expects($this->at(3))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array("test\015\012\n")));
+            ->will($this->returnValue(["test\015\012\n"]));
 
         $dbi->expects($this->at(4))
             ->method('fetchRow')
@@ -640,7 +652,11 @@ class ExportCsvTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'testDB', 'testTable', "\n", 'example.com', 'test'
+                'testDB',
+                'testTable',
+                "\n",
+                'example.com',
+                'test'
             )
         );
         $result = ob_get_clean();
@@ -658,7 +674,7 @@ class ExportCsvTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('test', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('test', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -674,7 +690,7 @@ class ExportCsvTest extends \PMATestCase
         $dbi->expects($this->at(3))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array("test\015\n")));
+            ->will($this->returnValue(["test\015\n"]));
 
         $dbi->expects($this->at(4))
             ->method('fetchRow')
@@ -689,7 +705,11 @@ class ExportCsvTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'testDB', 'testTable', "\n", 'example.com', 'test'
+                'testDB',
+                'testTable',
+                "\n",
+                'example.com',
+                'test'
             )
         );
         $result = ob_get_clean();
@@ -707,7 +727,7 @@ class ExportCsvTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('test', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('test', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -722,7 +742,7 @@ class ExportCsvTest extends \PMATestCase
         $dbi->expects($this->at(4))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array("test\015\n", "test\n")));
+            ->will($this->returnValue(["test\015\n", "test\n"]));
 
         $dbi->expects($this->at(5))
             ->method('fetchRow')
@@ -737,7 +757,11 @@ class ExportCsvTest extends \PMATestCase
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'testDB', 'testTable', "\n", 'example.com', 'test'
+                'testDB',
+                'testTable',
+                "\n",
+                'example.com',
+                'test'
             )
         );
         $result = ob_get_clean();

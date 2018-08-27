@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Server\UserGroups;
@@ -12,7 +14,8 @@ use PhpMyAdmin\Server\Users;
 
 require_once 'libraries/common.inc.php';
 
-Relation::getRelationsParam();
+$relation = new Relation();
+$relation->getRelationsParam();
 if (! $GLOBALS['cfgRelation']['menuswork']) {
     exit;
 }
@@ -25,7 +28,7 @@ $scripts->addFile('server_user_groups.js');
 /**
  * Only allowed to superuser
  */
-if (! $GLOBALS['is_superuser']) {
+if (! $GLOBALS['dbi']->isSuperuser()) {
     $response->addHTML(
         PhpMyAdmin\Message::error(__('No Privileges'))
             ->getDisplay()

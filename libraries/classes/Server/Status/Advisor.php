@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Server\Status;
 
 use PhpMyAdmin\Advisor as PmaAdvisor;
@@ -26,7 +28,7 @@ class Advisor
     public static function getHtml()
     {
         $output  = '<a href="#openAdvisorInstructions">';
-        $output .= Util::getIcon('b_help.png', __('Instructions'));
+        $output .= Util::getIcon('b_help', __('Instructions'));
         $output .= '</a>';
         $output .= '<div id="statustabs_advisor"></div>';
         $output .= '<div id="advisorInstructionsDialog" class="hide">';

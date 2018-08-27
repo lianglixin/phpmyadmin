@@ -5,31 +5,43 @@
  *
  * @package PhpMyAdmin\Twig
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Twig;
 
-use Twig_Extension;
-use Twig_SimpleFunction;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 /**
  * Class SanitizeExtension
  *
  * @package PhpMyAdmin\Twig
  */
-class SanitizeExtension extends Twig_Extension
+class SanitizeExtension extends AbstractExtension
 {
     /**
-     * Returns a list of functions to add to the existing list.
+     * Returns a list of filters to add to the existing list.
      *
-     * @return Twig_SimpleFunction[]
+     * @return TwigFilter[]
      */
-    public function getFunctions()
+    public function getFilters()
     {
-        return array(
-            new Twig_SimpleFunction(
-                'Sanitize_escapeJsString',
+        return [
+            new TwigFilter(
+                'escape_js_string',
                 'PhpMyAdmin\Sanitize::escapeJsString',
-                array('is_safe' => array('html'))
+                ['is_safe' => ['html']]
             ),
-        );
+            new TwigFilter(
+                'js_format',
+                'PhpMyAdmin\Sanitize::jsFormat',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFilter(
+                'sanitize',
+                'PhpMyAdmin\Sanitize::sanitize',
+                ['is_safe' => ['html']]
+            ),
+        ];
     }
 }

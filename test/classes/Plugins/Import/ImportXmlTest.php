@@ -4,10 +4,13 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Import;
 
 use PhpMyAdmin\File;
 use PhpMyAdmin\Plugins\Import\ImportXml;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /*
  * we must set $GLOBALS['server'] here
@@ -20,7 +23,7 @@ $GLOBALS['server'] = 0;
  *
  * @package PhpMyAdmin-test
  */
-class ImportXmlTest extends \PMATestCase
+class ImportXmlTest extends PmaTestCase
 {
     /**
      * @access protected
@@ -89,14 +92,13 @@ class ImportXmlTest extends \PMATestCase
             $properties->getMimeType()
         );
         $this->assertEquals(
-            array(),
+            [],
             $properties->getOptions()
         );
         $this->assertEquals(
             __('Options'),
             $properties->getOptionsText()
         );
-
     }
 
     /**
@@ -158,6 +160,5 @@ class ImportXmlTest extends \PMATestCase
             true,
             $GLOBALS['finished']
         );
-
     }
 }

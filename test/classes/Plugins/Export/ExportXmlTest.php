@@ -5,15 +5,16 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Export\ExportXml;
 use PhpMyAdmin\Table;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionMethod;
 use ReflectionProperty;
-
-require_once 'libraries/config.default.php';
 
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportXml class
@@ -21,7 +22,7 @@ require_once 'libraries/config.default.php';
  * @package PhpMyAdmin-test
  * @group medium
  */
-class ExportXmlTest extends \PMATestCase
+class ExportXmlTest extends PmaTestCase
 {
     protected $object;
 
@@ -30,14 +31,14 @@ class ExportXmlTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
         $GLOBALS['output_kanji_conversion'] = false;
         $GLOBALS['buffer_needed'] = false;
         $GLOBALS['asfile'] = false;
         $GLOBALS['save_on_server'] = false;
-        $GLOBALS['plugin_param'] = array();
+        $GLOBALS['plugin_param'] = [];
         $GLOBALS['plugin_param']['export_type'] = 'table';
         $GLOBALS['plugin_param']['single_table'] = false;
         $GLOBALS['cfgRelation']['relation'] = true;
@@ -219,14 +220,14 @@ class ExportXmlTest extends \PMATestCase
         $GLOBALS['crlf'] = "\n";
         $GLOBALS['db'] = 'd<"b';
 
-        $result = array(
-            0 => array(
+        $result = [
+            0 => [
                 'DEFAULT_COLLATION_NAME' => 'utf8_general_ci',
                 'DEFAULT_CHARACTER_SET_NAME' => 'utf-8',
 
-            ),
-            'table' => array(null, '"tbl"')
-        );
+            ],
+            'table' => [null, '"tbl"']
+        ];
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
             ->getMock();
@@ -244,24 +245,24 @@ class ExportXmlTest extends \PMATestCase
             ->with('d<"b', 'table')
             ->will(
                 $this->returnValue(
-                    array(
-                        array(
+                    [
+                        [
                             'create' => 'crt',
                             'name' => 'trname'
-                        )
-                    )
+                        ]
+                    ]
                 )
             );
 
         $dbi->expects($this->exactly(2))
             ->method('getProceduresOrFunctions')
             ->willReturnOnConsecutiveCalls(
-                array(
+                [
                     'fn'
-                ),
-                array(
+                ],
+                [
                     'pr'
-                )
+                ]
             );
 
         $dbi->expects($this->exactly(2))
@@ -279,7 +280,7 @@ class ExportXmlTest extends \PMATestCase
 
         $GLOBALS['dbi'] = $dbi;
 
-        $GLOBALS['tables'] = array();
+        $GLOBALS['tables'] = [];
         $GLOBALS['table'] = 'table';
 
         ob_start();
@@ -328,20 +329,20 @@ class ExportXmlTest extends \PMATestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $result_1 = array(
-            array(
+        $result_1 = [
+            [
                 'DEFAULT_COLLATION_NAME' => 'utf8_general_ci',
                 'DEFAULT_CHARACTER_SET_NAME' => 'utf-8',
 
-            )
-        );
-        $result_2 = array(
-            't1' => array(null, '"tbl"')
-        );
+            ]
+        ];
+        $result_2 = [
+            't1' => [null, '"tbl"']
+        ];
 
-        $result_3 = array(
-            't2' => array(null, '"tbl"')
-        );
+        $result_3 = [
+            't2' => [null, '"tbl"']
+        ];
 
         $dbi->expects($this->exactly(5))
             ->method('fetchResult')
@@ -359,7 +360,7 @@ class ExportXmlTest extends \PMATestCase
 
         $GLOBALS['dbi'] = $dbi;
 
-        $GLOBALS['tables'] = array('t1', 't2');
+        $GLOBALS['tables'] = ['t1', 't2'];
 
         ob_start();
         $this->assertTrue(
@@ -491,7 +492,7 @@ class ExportXmlTest extends \PMATestCase
 
         $dbi->expects($this->once())
             ->method('query')
-            ->with('SELECT', null, DatabaseInterface::QUERY_UNBUFFERED)
+            ->with('SELECT', DatabaseInterface::CONNECT_USER, DatabaseInterface::QUERY_UNBUFFERED)
             ->will($this->returnValue(true));
 
         $dbi->expects($this->once())
@@ -514,14 +515,18 @@ class ExportXmlTest extends \PMATestCase
         $dbi->expects($this->at(6))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array(null, '<a>')));
+            ->will($this->returnValue([null, '<a>']));
 
         $GLOBALS['dbi'] = $dbi;
 
         ob_start();
         $this->assertTrue(
             $this->object->exportData(
-                'db', 'ta<ble', "\n", "example.com", "SELECT"
+                'db',
+                'ta<ble',
+                "\n",
+                "example.com",
+                "SELECT"
             )
         );
         $result = ob_get_clean();

@@ -5,16 +5,19 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Di;
 
 use PhpMyAdmin\Di\NotFoundException;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Di\NotFoundException class
  *
  * @package PhpMyAdmin-test
  */
-class NotFoundExceptionTest extends \PMATestCase
+class NotFoundExceptionTest extends PmaTestCase
 {
     /**
      * @access protected

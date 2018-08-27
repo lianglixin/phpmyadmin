@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Display;
 
 use PhpMyAdmin\Core;
@@ -13,7 +15,7 @@ use PhpMyAdmin\Plugins;
 use PhpMyAdmin\Theme;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * class PhpMyAdmin\Tests\Display\ExportTest
@@ -25,12 +27,14 @@ use PHPUnit_Framework_TestCase as TestCase;
  */
 class ExportTest extends TestCase
 {
+    private $export;
+
     /**
      * Test for setUp
      *
      * @return void
      */
-    public function setUp()
+    protected function setUp()
     {
         //$GLOBALS
         $GLOBALS['cfg']['MaxRows'] = 10;
@@ -48,6 +52,7 @@ class ExportTest extends TestCase
         $GLOBALS['cfg']['BZipDump'] = false;
         $GLOBALS['cfg']['Export']['asfile'] = true;
         $GLOBALS['cfg']['Export']['file_template_server'] = "file_template_server";
+        $GLOBALS['cfg']['AvailableCharsets'] = [];
         $GLOBALS['PMA_PHP_SELF'] = Core::getenv('PHP_SELF');
         $GLOBALS['PMA_recoding_engine'] = "InnerDB";
         $GLOBALS['server'] = 0;
@@ -67,14 +72,16 @@ class ExportTest extends TestCase
             ->will($this->returnValue('user value for test'));
 
         $GLOBALS['PMA_Config'] = $pmaconfig;
+
+        $this->export = new Export();
     }
 
     /**
-     * Test for Export::getHtmlForHiddenInput
+     * Test for Export::getHtmlForHiddenInputs
      *
      * @return void
      */
-    public function testPMAGetHtmlForHiddenInput()
+    public function testGetHtmlForHiddenInputs()
     {
         $export_type = "server";
         $db = "PMA";
@@ -83,7 +90,7 @@ class ExportTest extends TestCase
         $sql_query_str = "sql_query_str";
 
         //Call the test function
-        $html = Export::getHtmlForHiddenInput(
+        $html = $this->export->getHtmlForHiddenInputs(
             $export_type,
             $db,
             $table,
@@ -109,11 +116,11 @@ class ExportTest extends TestCase
     }
 
     /**
-     * Test for Export::getHtmlForExportOptions
+     * Test for Export::getHtmlForOptions
      *
      * @return void
      */
-    public function testPMAGetHtmlForExportOptions()
+    public function testGetHtmlForOptions()
     {
         global $cfg;
         $cfg['Export']['method'] = "XML";
@@ -126,16 +133,16 @@ class ExportTest extends TestCase
         $num_tables_str = "10";
         $unlim_num_rows_str = "unlim_num_rows_str";
         $single_table = "single_table";
-        $GLOBALS['dbi']->cacheTableContent(array($db, $table, 'ENGINE'), 'MERGE');
+        $GLOBALS['dbi']->cacheTableContent([$db, $table, 'ENGINE'], 'MERGE');
 
-        $columns_info = array(
-            'test_column1' => array(
+        $columns_info = [
+            'test_column1' => [
                 'COLUMN_NAME' => 'test_column1'
-            ),
-            'test_column2' => array(
+            ],
+            'test_column2' => [
                 'COLUMN_NAME' => 'test_column2'
-            )
-        );
+            ]
+        ];
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
             ->getMock();
@@ -143,7 +150,7 @@ class ExportTest extends TestCase
         $dbi->expects($this->any())->method('getColumnsFull')
             ->will($this->returnValue($columns_info));
         $dbi->expects($this->any())->method('getCompatibilities')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
 
         $GLOBALS['dbi'] = $dbi;
 
@@ -151,14 +158,14 @@ class ExportTest extends TestCase
         $export_list = Plugins::getPlugins(
             "export",
             'libraries/classes/Plugins/Export/',
-            array(
+            [
                 'export_type' => $export_type,
-                'single_table' => isset($single_table)
-            )
+                'single_table' => true,// isset($single_table)
+            ]
         );
 
         //Call the test function
-        $html = Export::getHtmlForExportOptions(
+        $html = $this->export->getHtmlForOptions(
             $export_type,
             $db,
             $table,
@@ -168,7 +175,7 @@ class ExportTest extends TestCase
             $unlim_num_rows_str
         );
 
-        //validate 2: Export::getHtmlForExportOptionsMethod
+        //validate 2: Export::getHtmlForOptionsMethod
         $this->assertContains(
             $cfg['Export']['method'],
             $html
@@ -186,7 +193,7 @@ class ExportTest extends TestCase
             $html
         );
 
-        //validate 3: Export::getHtmlForExportOptionsSelection
+        //validate 3: Export::getHtmlForOptionsSelection
         $this->assertContains(
             '<div class="exportoptions" id="databases_and_tables">',
             $html
@@ -200,14 +207,14 @@ class ExportTest extends TestCase
             $html
         );
 
-        //validate 4: Export::getHtmlForExportOptionsQuickExport
+        //validate 4: Export::getHtmlForOptionsQuickExport
         $this->assertContains(
-            '<input type="checkbox" name="onserver" value="saveit" ',
+            '<input type="checkbox" name="onserver" value="saveit"',
             $html
         );
         $dir = htmlspecialchars(Util::userDir($cfg['SaveDir']));
         $this->assertContains(
-            'Save on server in the directory <b>' . $dir . '</b>',
+            'Save on server in the directory <strong>' . $dir . '</strong>',
             $html
         );
 
@@ -234,7 +241,7 @@ class ExportTest extends TestCase
             $html
         );
 
-        //validate 6: Export::getHtmlForExportOptionsOutput
+        //validate 6: Export::getHtmlForOptionsOutput
         $this->assertContains(
             '<div class="exportoptions" id="output">',
             $html
@@ -244,7 +251,7 @@ class ExportTest extends TestCase
             $html
         );
 
-        //validate 7: Export::getHtmlForExportOptionsFormat
+        //validate 7: Export::getHtmlForOptionsFormat
         $this->assertContains(
             '<div class="exportoptions" id="format">',
             $html
@@ -260,20 +267,20 @@ class ExportTest extends TestCase
      *
      * @return void
      */
-    public function testPMAGetHtmlForAliasModalDialog()
+    public function testGetHtmlForAliasModalDialog()
     {
-        $columns_info = array(
-            'test\'_db' => array(
-                'test_<b>table' => array(
-                    'co"l1' => array(
+        $columns_info = [
+            'test\'_db' => [
+                'test_<b>table' => [
+                    'co"l1' => [
                         'COLUMN_NAME' => 'co"l1'
-                    ),
-                    'col<2' => array(
+                    ],
+                    'col<2' => [
                         'COLUMN_NAME' => 'col<2'
-                    )
-                )
-            )
-        );
+                    ]
+                ]
+            ]
+        ];
 
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
@@ -284,7 +291,7 @@ class ExportTest extends TestCase
 
         $GLOBALS['dbi'] = $dbi;
 
-        $html = Export::getHtmlForAliasModalDialog();
+        $html = $this->export->getHtmlForAliasModalDialog();
 
         $this->assertContains(
             '<div id="alias_modal" class="hide" title="'

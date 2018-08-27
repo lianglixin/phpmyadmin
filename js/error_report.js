@@ -15,6 +15,10 @@ var ErrorReport = {
      * @return void
      */
     error_handler: function (exception) {
+        // issue: 14359
+        if (JSON.stringify(ErrorReport._last_exception) === JSON.stringify(exception)) {
+            return;
+        }
         if (exception.name === null || typeof(exception.name) === 'undefined') {
             exception.name = ErrorReport._extractExceptionName(exception);
         }
@@ -121,7 +125,7 @@ var ErrorReport = {
             '<div style="position:fixed;bottom:0;left:0;right:0;margin:0;' +
             'z-index:1000" class="error" id="error_notification"></div>'
         ).append(
-            PMA_getImage('s_error.png') + PMA_messages.strErrorOccurred
+            PMA_getImage('s_error') + PMA_messages.strErrorOccurred
         );
 
         var $buttons = $('<div class="floatright"></div>');
@@ -131,20 +135,20 @@ var ErrorReport = {
         button_html += '</button>';
 
         button_html += '<a id="change_error_settings">';
-        button_html += PMA_getImage('s_cog.png', PMA_messages.strChangeReportSettings);
+        button_html += PMA_getImage('s_cog', PMA_messages.strChangeReportSettings);
         button_html += '</a>';
 
         button_html += '<a href="#" id="ignore_error">';
-        button_html += PMA_getImage('b_close.png', PMA_messages.strIgnore);
+        button_html += PMA_getImage('b_close', PMA_messages.strIgnore);
         button_html += '</a>';
 
         $buttons.html(button_html);
 
         $div.append($buttons);
         $div.appendTo(document.body);
-        $('#change_error_settings').on('click', ErrorReport._redirect_to_settings);
-        $('#show_error_report').on('click', ErrorReport._createReportDialog);
-        $('#ignore_error').on('click', ErrorReport._removeErrorNotification);
+        $(document).on('click', '#change_error_settings', ErrorReport._redirect_to_settings);
+        $(document).on('click', '#show_error_report', ErrorReport._createReportDialog);
+        $(document).on('click', '#ignore_error', ErrorReport._removeErrorNotification);
     },
     /**
      * Removes the notification if it was displayed before

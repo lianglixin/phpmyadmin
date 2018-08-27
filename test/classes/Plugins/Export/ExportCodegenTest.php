@@ -5,14 +5,15 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\Plugins\Export\ExportCodegen;
+use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
-
-require_once 'libraries/config.default.php';
 
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportCodegen class
@@ -20,8 +21,11 @@ require_once 'libraries/config.default.php';
  * @package PhpMyAdmin-test
  * @group medium
  */
-class ExportCodegenTest extends \PMATestCase
+class ExportCodegenTest extends PmaTestCase
 {
+    /**
+     * @var ExportCodegen
+     */
     protected $object;
 
     /**
@@ -29,10 +33,10 @@ class ExportCodegenTest extends \PMATestCase
      *
      * @return void
      */
-    function setup()
+    protected function setUp()
     {
         $GLOBALS['server'] = 0;
-        $this->object = new ExportCodegen(null);
+        $this->object = new ExportCodegen();
     }
 
     /**
@@ -64,18 +68,18 @@ class ExportCodegenTest extends \PMATestCase
         $attrCgHandlers->setAccessible(true);
 
         $this->assertEquals(
-            array(
+            [
                 "NHibernate C# DO",
                 "NHibernate XML"
-            ),
+            ],
             $attrCgFormats->getValue($this->object)
         );
 
         $this->assertEquals(
-            array(
+            [
                 "_handleNHibernateCSBody",
                 "_handleNHibernateXMLBody"
-            ),
+            ],
             $attrCgHandlers->getValue($this->object)
         );
     }
@@ -177,10 +181,10 @@ class ExportCodegenTest extends \PMATestCase
         );
 
         $this->assertEquals(
-            array(
+            [
                 "NHibernate C# DO",
                 "NHibernate XML"
-            ),
+            ],
             $select->getValues()
         );
     }
@@ -254,7 +258,11 @@ class ExportCodegenTest extends \PMATestCase
 
         ob_start();
         $this->object->exportData(
-            'testDB', 'testTable', "\n", 'example.com', 'test'
+            'testDB',
+            'testTable',
+            "\n",
+            'example.com',
+            'test'
         );
         $result = ob_get_clean();
 
@@ -281,7 +289,11 @@ class ExportCodegenTest extends \PMATestCase
         $GLOBALS['codegen_format'] = 4;
 
         $this->object->exportData(
-            'testDB', 'testTable', "\n", 'example.com', 'test'
+            'testDB',
+            'testTable',
+            "\n",
+            'example.com',
+            'test'
         );
 
         $this->expectOutputString(
@@ -331,7 +343,7 @@ class ExportCodegenTest extends \PMATestCase
         $dbi->expects($this->at(1))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array('a', 'b', 'c', false, 'e', 'f')));
+            ->will($this->returnValue(['a', 'b', 'c', false, 'e', 'f']));
 
         $dbi->expects($this->at(2))
             ->method('fetchRow')
@@ -396,12 +408,12 @@ class ExportCodegenTest extends \PMATestCase
         $dbi->expects($this->at(1))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array('a', 'b', 'c', false, 'e', 'f')));
+            ->will($this->returnValue(['a', 'b', 'c', false, 'e', 'f']));
 
         $dbi->expects($this->at(2))
             ->method('fetchRow')
             ->with(true)
-            ->will($this->returnValue(array('g', 'h', 'i', 'PRI', 'j', 'k')));
+            ->will($this->returnValue(['g', 'h', 'i', 'PRI', 'j', 'k']));
 
         $dbi->expects($this->at(3))
             ->method('fetchRow')
@@ -449,10 +461,10 @@ class ExportCodegenTest extends \PMATestCase
         $getter->setAccessible(true);
         $setter->setAccessible(true);
 
-        $setter->invoke($this->object, array(1, 2));
+        $setter->invoke($this->object, [1, 2]);
 
         $this->assertEquals(
-            array(1, 2),
+            [1, 2],
             $getter->invoke($this->object)
         );
     }
@@ -474,10 +486,10 @@ class ExportCodegenTest extends \PMATestCase
         $getter->setAccessible(true);
         $setter->setAccessible(true);
 
-        $setter->invoke($this->object, array(1, 2));
+        $setter->invoke($this->object, [1, 2]);
 
         $this->assertEquals(
-            array(1, 2),
+            [1, 2],
             $getter->invoke($this->object)
         );
     }

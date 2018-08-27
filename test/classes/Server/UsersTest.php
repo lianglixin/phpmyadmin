@@ -5,10 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Server;
 
 use PhpMyAdmin\Server\Users;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
  * PhpMyAdmin\Tests\Server\UsersTest class
@@ -26,6 +28,9 @@ class UsersTest extends TestCase
      */
     public function testGetHtmlForSubMenusOnUsersPage()
     {
+        $GLOBALS['server'] = 1;
+        $GLOBALS['cfg']['ServerDefault'] = 1;
+        $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $html = Users::getHtmlForSubMenusOnUsersPage('server_privileges.php');
 
         //validate 1: topmenu2

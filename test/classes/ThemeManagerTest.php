@@ -5,9 +5,12 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Config;
+use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\ThemeManager;
 
 /**
@@ -15,21 +18,20 @@ use PhpMyAdmin\ThemeManager;
  *
  * @package PhpMyAdmin-test
  */
-class ThemeManagerTest extends \PMATestCase
+class ThemeManagerTest extends PmaTestCase
 {
     /**
      * SetUp for test cases
      *
      * @return void
      */
-    public function setup()
+    protected function setUp()
     {
         $GLOBALS['cfg']['ThemePerServer'] = false;
         $GLOBALS['cfg']['ThemeDefault'] = 'pmahomme';
         $GLOBALS['cfg']['ServerDefault'] = 0;
         $GLOBALS['server'] = 99;
         $GLOBALS['PMA_Config'] = new Config();
-        $GLOBALS['collation_connection'] = 'utf8_general_ci';
 
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()

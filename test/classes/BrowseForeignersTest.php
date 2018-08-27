@@ -5,10 +5,13 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\BrowseForeigners;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 /**
  * Tests for PhpMyAdmin\BrowseForeigners
@@ -17,14 +20,36 @@ use PHPUnit_Framework_TestCase as TestCase;
  */
 class BrowseForeignersTest extends TestCase
 {
+    private $browseForeigners;
+
     /**
      * Setup for test cases
      *
      * @return void
      */
-    public function setup()
+    protected function setUp()
     {
-        $GLOBALS['cfg']['MaxRows'] = 25;
+        $this->browseForeigners = new BrowseForeigners(50, 25, 100, false, '');
+    }
+
+    /**
+     * Call protected functions by setting visibility to public.
+     *
+     * @param string           $name   method name
+     * @param array            $params parameters for the invocation
+     * @param BrowseForeigners $object BrowseForeigners instance object
+     *
+     * @return mixed the output from the protected method.
+     */
+    private function callProtectedMethod($name, $params, BrowseForeigners $object = null)
+    {
+        $class = new ReflectionClass(BrowseForeigners::class);
+        $method = $class->getMethod($name);
+        $method->setAccessible(true);
+        return $method->invokeArgs(
+            $object !== null ? $object : $this->browseForeigners,
+            $params
+        );
     }
 
     /**
@@ -32,73 +57,40 @@ class BrowseForeignersTest extends TestCase
      *
      * @return void
      */
-    function testGetForeignLimit()
+    public function testGetForeignLimit()
     {
         $this->assertNull(
-            BrowseForeigners::getForeignLimit('Show all')
+            $this->browseForeigners->getForeignLimit('Show all')
         );
 
         $this->assertEquals(
             'LIMIT 0, 25 ',
-            BrowseForeigners::getForeignLimit(null)
+            $this->browseForeigners->getForeignLimit(null)
         );
 
         $_REQUEST['pos'] = 10;
 
         $this->assertEquals(
             'LIMIT 10, 25 ',
-            BrowseForeigners::getForeignLimit(null)
+            $this->browseForeigners->getForeignLimit(null)
         );
 
-        $GLOBALS['cfg']['MaxRows'] = 50;
+        $browseForeigners = new BrowseForeigners(
+            50,
+            50,
+            100,
+            false,
+            ''
+        );
 
         $this->assertEquals(
             'LIMIT 10, 50 ',
-            BrowseForeigners::getForeignLimit(null)
+            $browseForeigners->getForeignLimit(null)
         );
 
         $this->assertEquals(
             'LIMIT 10, 50 ',
-            BrowseForeigners::getForeignLimit('xyz')
-        );
-    }
-
-    /**
-     * Test for BrowseForeigners::getHtmlForShowAll
-     *
-     * @return void
-     */
-    function testGetHtmlForShowAll()
-    {
-        $this->assertEquals(
-            '',
-            BrowseForeigners::getHtmlForShowAll(null)
-        );
-
-        $foreignData = array();
-        $foreignData['disp_row'] = array();
-        $GLOBALS['cfg']['ShowAll'] = false;
-
-        $this->assertEquals(
-            '',
-            BrowseForeigners::getHtmlForShowAll($foreignData)
-        );
-
-        $GLOBALS['cfg']['ShowAll'] = true;
-        $foreignData['the_total'] = 0;
-
-        $this->assertEquals(
-            '',
-            BrowseForeigners::getHtmlForShowAll($foreignData)
-        );
-
-        $foreignData['the_total'] = 30;
-
-        $this->assertEquals(
-            '<input type="submit" id="foreign_showAll" '
-            . 'name="foreign_showAll" '
-            . 'value="' . 'Show all' . '" />',
-            BrowseForeigners::getHtmlForShowAll($foreignData)
+            $browseForeigners->getForeignLimit('xyz')
         );
     }
 
@@ -107,25 +99,34 @@ class BrowseForeignersTest extends TestCase
      *
      * @return void
      */
-    function testGetHtmlForGotoPage()
+    public function testGetHtmlForGotoPage()
     {
         $this->assertEquals(
             '',
-            BrowseForeigners::getHtmlForGotoPage(null)
+            $this->callProtectedMethod(
+                'getHtmlForGotoPage',
+                [null]
+            )
         );
 
         $_REQUEST['pos'] = 15;
-        $foreignData = array();
-        $foreignData['disp_row'] = array();
+        $foreignData = [];
+        $foreignData['disp_row'] = [];
         $foreignData['the_total'] = 5;
 
         $this->assertEquals(
             '',
-            BrowseForeigners::getHtmlForGotoPage($foreignData)
+            $this->callProtectedMethod(
+                'getHtmlForGotoPage',
+                [$foreignData]
+            )
         );
 
         $foreignData['the_total'] = 30;
-        $result = BrowseForeigners::getHtmlForGotoPage($foreignData);
+        $result = $this->callProtectedMethod(
+            'getHtmlForGotoPage',
+            [$foreignData]
+        );
 
         $this->assertStringStartsWith(
             'Page number:',
@@ -155,79 +156,31 @@ class BrowseForeignersTest extends TestCase
     }
 
     /**
-     * Test for BrowseForeigners::getHtmlForColumnElement
-     *
-     * @return void
-     */
-    function testGetHtmlForColumnElement()
-    {
-        $cssClass = '';
-        $isSelected = false;
-        $keyname = '';
-        $description = 'foo';
-        $title = '';
-        $result = BrowseForeigners::getHtmlForColumnElement(
-            $cssClass, $isSelected, $keyname,
-            $description, $title
-        );
-
-        $this->assertContains(
-            '<td>',
-            $result
-        );
-
-        $this->assertContains(
-            '<a class="foreign_value" data-key="" href="#" '
-            . 'title="Use this value">',
-            $result
-        );
-
-        $cssClass = 'class="baz"';
-        $isSelected = true;
-        $keyname = 'bar';
-        $title = 'foo';
-        $result = BrowseForeigners::getHtmlForColumnElement(
-            $cssClass, $isSelected, $keyname,
-            $description, $title
-        );
-
-        $this->assertContains(
-            '<td class="baz">',
-            $result
-        );
-
-        $this->assertContains(
-            '<strong>',
-            $result
-        );
-
-        $this->assertContains(
-            '<a class="foreign_value" data-key="bar" href="#" '
-            . 'title="Use this value: foo">',
-            $result
-        );
-    }
-
-    /**
      * Test for BrowseForeigners::getDescriptionAndTitle
      *
      * @return void
      */
-    function testGetDescriptionAndTitle()
+    public function testGetDescriptionAndTitle()
     {
-        $GLOBALS['cfg']['LimitChars'] = 30;
         $desc = 'foobar<baz';
 
         $this->assertEquals(
-            array('foobar&lt;baz', ''),
-            BrowseForeigners::getDescriptionAndTitle($desc)
+            ['foobar&lt;baz', ''],
+            $this->callProtectedMethod(
+                'getDescriptionAndTitle',
+                [$desc]
+            )
         );
 
-        $GLOBALS['cfg']['LimitChars'] = 5;
+        $browseForeigners = new BrowseForeigners(5, 25, 100, false, '');
 
         $this->assertEquals(
-            array('fooba...', 'foobar&lt;baz'),
-            BrowseForeigners::getDescriptionAndTitle($desc)
+            ['fooba...', 'foobar&lt;baz'],
+            $this->callProtectedMethod(
+                'getDescriptionAndTitle',
+                [$desc],
+                $browseForeigners
+            )
         );
     }
 
@@ -236,19 +189,24 @@ class BrowseForeignersTest extends TestCase
      *
      * @return void
      */
-    function testGetHtmlForRelationalFieldSelection()
+    public function testGetHtmlForRelationalFieldSelection()
     {
         $db = '';
         $table = '';
         $field = 'foo';
-        $foreignData = array();
+        $foreignData = [];
         $foreignData['disp_row'] = '';
         $fieldkey = 'bar';
         $current_value = '';
         $_REQUEST['rownumber'] = 1;
         $_REQUEST['foreign_filter'] = '5';
-        $result = BrowseForeigners::getHtmlForRelationalFieldSelection(
-            $db, $table, $field, $foreignData, $fieldkey, $current_value
+        $result = $this->browseForeigners->getHtmlForRelationalFieldSelection(
+            $db,
+            $table,
+            $field,
+            $foreignData,
+            $fieldkey,
+            $current_value
         );
 
         $this->assertContains(
@@ -311,11 +269,15 @@ class BrowseForeignersTest extends TestCase
             $result
         );
 
-        $foreignData['disp_row'] = array();
+        $foreignData['disp_row'] = [];
         $foreignData['the_total'] = 5;
-        $GLOBALS['cfg']['ShowAll'] = false;
-        $result = BrowseForeigners::getHtmlForRelationalFieldSelection(
-            $db, $table, $field, $foreignData, $fieldkey, $current_value
+        $result = $this->browseForeigners->getHtmlForRelationalFieldSelection(
+            $db,
+            $table,
+            $field,
+            $foreignData,
+            $fieldkey,
+            $current_value
         );
 
         $this->assertContains(
@@ -327,6 +289,5 @@ class BrowseForeignersTest extends TestCase
             '<th>',
             $result
         );
-
     }
 }

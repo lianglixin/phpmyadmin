@@ -5,17 +5,20 @@
  *
  * @package PhpMyAdmin-test
  */
+declare(strict_types=1);
+
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Core;
 use PhpMyAdmin\Engines\Pbxt;
+use PhpMyAdmin\Tests\PmaTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Pbxt;
  *
  * @package PhpMyAdmin-test
  */
-class PbxtTest extends \PMATestCase
+class PbxtTest extends PmaTestCase
 {
     /**
      * @access protected
@@ -56,8 +59,8 @@ class PbxtTest extends \PMATestCase
     {
         $this->assertEquals(
             $this->object->getVariables(),
-            array(
-                'pbxt_index_cache_size' => array(
+            [
+                'pbxt_index_cache_size' => [
                     'title' => __('Index cache size'),
                     'desc'  => __(
                         'This is the amount of memory allocated to the'
@@ -65,8 +68,8 @@ class PbxtTest extends \PMATestCase
                         . ' allocated here is used only for caching index pages.'
                     ),
                     'type'  => 1
-                ),
-                'pbxt_record_cache_size' => array(
+                ],
+                'pbxt_record_cache_size' => [
                     'title' => __('Record cache size'),
                     'desc'  => __(
                         'This is the amount of memory allocated to the'
@@ -75,8 +78,8 @@ class PbxtTest extends \PMATestCase
                         . ' the handle data (.xtd) and row pointer (.xtr) files.'
                     ),
                     'type'  => 1
-                ),
-                'pbxt_log_cache_size' => array(
+                ],
+                'pbxt_log_cache_size' => [
                     'title' => __('Log cache size'),
                     'desc'  => __(
                         'The amount of memory allocated to the'
@@ -84,16 +87,16 @@ class PbxtTest extends \PMATestCase
                         . ' data. The default is 16MB.'
                     ),
                     'type'  => 1
-                ),
-                'pbxt_log_file_threshold' => array(
+                ],
+                'pbxt_log_file_threshold' => [
                     'title' => __('Log file threshold'),
                     'desc'  => __(
                         'The size of a transaction log before rollover,'
                         . ' and a new log is created. The default value is 16MB.'
                     ),
                     'type'  => 1
-                ),
-                'pbxt_transaction_buffer_size' => array(
+                ],
+                'pbxt_transaction_buffer_size' => [
                     'title' => __('Transaction buffer size'),
                     'desc'  => __(
                         'The size of the global transaction log buffer'
@@ -101,8 +104,8 @@ class PbxtTest extends \PMATestCase
                         . ' The default is 1MB.'
                     ),
                     'type'  => 1
-                ),
-                'pbxt_checkpoint_frequency' => array(
+                ],
+                'pbxt_checkpoint_frequency' => [
                     'title' => __('Checkpoint frequency'),
                     'desc'  => __(
                         'The amount of data written to the transaction'
@@ -110,8 +113,8 @@ class PbxtTest extends \PMATestCase
                         . ' The default value is 24MB.'
                     ),
                     'type'  => 1
-                ),
-                'pbxt_data_log_threshold' => array(
+                ],
+                'pbxt_data_log_threshold' => [
                     'title' => __('Data log threshold'),
                     'desc'  => __(
                         'The maximum size of a data log file. The default'
@@ -121,8 +124,8 @@ class PbxtTest extends \PMATestCase
                         . ' amount of data that can be stored in the database.'
                     ),
                     'type'  => 1
-                ),
-                'pbxt_garbage_threshold' => array(
+                ],
+                'pbxt_garbage_threshold' => [
                     'title' => __('Garbage threshold'),
                     'desc'  => __(
                         'The percentage of garbage in a data log file'
@@ -130,8 +133,8 @@ class PbxtTest extends \PMATestCase
                         . ' 99. The default is 50.'
                     ),
                     'type'  => 2
-                ),
-                'pbxt_log_buffer_size' => array(
+                ],
+                'pbxt_log_buffer_size' => [
                     'title' => __('Log buffer size'),
                     'desc'  => __(
                         'The size of the buffer used when writing a data'
@@ -140,18 +143,18 @@ class PbxtTest extends \PMATestCase
                         . ' to write a data log.'
                     ),
                     'type'  => 1
-                ),
-                'pbxt_data_file_grow_size' => array(
+                ],
+                'pbxt_data_file_grow_size' => [
                     'title' => __('Data file grow size'),
                     'desc'  => __('The grow size of the handle data (.xtd) files.'),
                     'type'  => 1
-                ),
-                'pbxt_row_file_grow_size' => array(
+                ],
+                'pbxt_row_file_grow_size' => [
                     'title' => __('Row file grow size'),
                     'desc'  => __('The grow size of the row pointer (.xtr) files.'),
                     'type'  => 1
-                ),
-                'pbxt_log_file_count' => array(
+                ],
+                'pbxt_log_file_count' => [
                     'title' => __('Log file count'),
                     'desc'  => __(
                         'This is the number of transaction log files'
@@ -161,8 +164,8 @@ class PbxtTest extends \PMATestCase
                         . ' highest number.'
                     ),
                     'type'  => 2
-                ),
-            )
+                ],
+            ]
         );
     }
 
@@ -191,29 +194,29 @@ class PbxtTest extends \PMATestCase
      */
     public function providerFortTestResolveTypeSize()
     {
-        return array(
-            array(
+        return [
+            [
                 '8MB',
-                array (
+                 [
                     0 => '8,192',
                     1 => 'KiB'
-                )
-            ),
-            array(
+                 ]
+            ],
+            [
                 '10mb',
-                array (
+                 [
                     0 => '-1',
                     1 => 'B'
-                )
-            ),
-            array(
+                 ]
+            ],
+            [
                 'A4',
-                array (
+                 [
                     0 => '0',
                     1 => 'B'
-                )
-            )
-        );
+                 ]
+            ]
+        ];
     }
 
     /**
@@ -225,9 +228,9 @@ class PbxtTest extends \PMATestCase
     {
         $this->assertEquals(
             $this->object->getInfoPages(),
-            array(
+            [
                 'Documentation' => 'Documentation'
-            )
+            ]
         );
     }
 

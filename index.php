@@ -5,6 +5,8 @@
  *
  * @package PhpMyAdmin
  */
+declare(strict_types=1);
+
 use PhpMyAdmin\Charsets;
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Core;
@@ -19,6 +21,7 @@ use PhpMyAdmin\Server\Select;
 use PhpMyAdmin\ThemeManager;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use PhpMyAdmin\UserPreferences;
 
 /**
  * Gets some core libraries and displays a top message if required
@@ -28,13 +31,13 @@ require_once 'libraries/common.inc.php';
 /**
  * pass variables to child pages
  */
-$drops = array(
+$drops = [
     'lang',
     'server',
     'collation_connection',
     'db',
     'table'
-);
+];
 foreach ($drops as $each_drop) {
     if (array_key_exists($each_drop, $_GET)) {
         unset($_GET[$each_drop]);
@@ -47,16 +50,16 @@ unset($drops, $each_drop);
  * Such scripts must not be loaded on home page.
  *
  */
-$target_blacklist = array (
+$target_blacklist =  [
     'import.php', 'export.php'
-);
+];
 
 // If we have a valid target, let's load that script instead
 if (! empty($_REQUEST['target'])
     && is_string($_REQUEST['target'])
     && ! preg_match('/^index/', $_REQUEST['target'])
     && ! in_array($_REQUEST['target'], $target_blacklist)
-    && in_array($_REQUEST['target'], $goto_whitelist)
+    && Core::checkPageValidity($_REQUEST['target'], [], true)
 ) {
     include $_REQUEST['target'];
     exit;
@@ -66,16 +69,45 @@ if (isset($_REQUEST['ajax_request']) && ! empty($_REQUEST['access_time'])) {
     exit;
 }
 
+// if user selected a theme
+if (isset($_POST['set_theme'])) {
+    $tmanager = ThemeManager::getInstance();
+    $tmanager->setActiveTheme($_POST['set_theme']);
+    $tmanager->setThemeCookie();
+
+    $userPreferences = new UserPreferences();
+    $prefs = $userPreferences->load();
+    $prefs["config_data"]["ThemeDefault"] = $_POST['set_theme'];
+    $userPreferences->save($prefs["config_data"]);
+
+    header('Location: index.php' . Url::getCommonRaw());
+    exit();
+}
+// Change collation connection
+if (isset($_POST['collation_connection'])) {
+    $GLOBALS['PMA_Config']->setUserValue(
+        null,
+        'DefaultConnectionCollation',
+        $_POST['collation_connection'],
+        'utf8mb4_unicode_ci'
+    );
+    header('Location: index.php' . Url::getCommonRaw());
+    exit();
+}
+
+
 // See FAQ 1.34
 if (! empty($_REQUEST['db'])) {
     $page = null;
     if (! empty($_REQUEST['table'])) {
         $page = Util::getScriptNameForOption(
-            $GLOBALS['cfg']['DefaultTabTable'], 'table'
+            $GLOBALS['cfg']['DefaultTabTable'],
+            'table'
         );
     } else {
         $page = Util::getScriptNameForOption(
-            $GLOBALS['cfg']['DefaultTabDatabase'], 'database'
+            $GLOBALS['cfg']['DefaultTabDatabase'],
+            'database'
         );
     }
     include $page;
@@ -159,7 +191,7 @@ if ($server > 0 || count($cfg['Servers']) > 1
     if ($cfg['DBG']['demo']) {
         echo '<div class="group">';
         echo '<h2>' , __('phpMyAdmin Demo Server') , '</h2>';
-        echo '<p style="margin: 0.5em 1em 0.5em 1em">';
+        echo '<p class="cfg_dbg_demo">';
         printf(
             __(
                 'You are using the demo server. You can do anything here, but '
@@ -184,7 +216,7 @@ if ($server > 0 || count($cfg['Servers']) > 1
         || ($server == 0 && count($cfg['Servers']) == 1)))
     ) {
         echo '<li id="li_select_server" class="no_bullets" >';
-        echo Util::getImage('s_host.png') , " "
+        echo Util::getImage('s_host') , " "
             , Select::render(true, true);
         echo '</li>';
     }
@@ -200,7 +232,7 @@ if ($server > 0 || count($cfg['Servers']) > 1
             if ($cfg['ShowChgPassword']) {
                 $conditional_class = 'ajax';
                 Core::printListItem(
-                    Util::getImage('s_passwd.png') . "&nbsp;" . __(
+                    Util::getImage('s_passwd') . "&nbsp;" . __(
                         'Change password'
                     ),
                     'li_change_password',
@@ -214,17 +246,19 @@ if ($server > 0 || count($cfg['Servers']) > 1
             }
         } // end if
         echo '    <li id="li_select_mysql_collation" class="no_bullets" >';
-        echo '        <form method="post" action="index.php">' , "\n"
+        echo '        <form class="disableAjax" method="post" action="index.php">' , "\n"
            . Url::getHiddenInputs(null, null, 4, 'collation_connection')
            . '            <label for="select_collation_connection">' . "\n"
-           . '                ' . Util::getImage('s_asci.png')
+           . '                ' . Util::getImage('s_asci')
             . "&nbsp;" . __('Server connection collation') . "\n"
            // put the doc link in the form so that it appears on the same line
            . Util::showMySQLDocu('Charset-connection')
-           . ': ' .  "\n"
+           . ': ' . "\n"
            . '            </label>' . "\n"
 
            . Charsets::getCollationDropdownBox(
+               $GLOBALS['dbi'],
+               $GLOBALS['cfg']['Server']['DisableIS'],
                'collation_connection',
                'select_collation_connection',
                $collation_connection,
@@ -247,7 +281,7 @@ $language_manager = LanguageManager::getInstance();
 if (empty($cfg['Lang']) && $language_manager->hasChoice()) {
     echo '<li id="li_select_lang" class="no_bullets">';
 
-    echo Util::getImage('s_lang.png') , " "
+    echo Util::getImage('s_lang') , " "
         , $language_manager->getSelectorDisplay();
     echo '</li>';
 }
@@ -256,13 +290,10 @@ if (empty($cfg['Lang']) && $language_manager->hasChoice()) {
 
 if ($GLOBALS['cfg']['ThemeManager']) {
     echo '<li id="li_select_theme" class="no_bullets">';
-    echo Util::getImage('s_theme.png') , " "
+    echo Util::getImage('s_theme') , " "
             ,  ThemeManager::getInstance()->getHtmlSelectBox();
     echo '</li>';
 }
-echo '<li id="li_select_fontsize">';
-echo Config::getFontsizeForm();
-echo '</li>';
 
 echo '</ul>';
 
@@ -271,7 +302,7 @@ echo '</ul>';
 if ($server > 0) {
     echo '<ul>';
     Core::printListItem(
-        Util::getImage('b_tblops.png') . "&nbsp;" . __(
+        Util::getImage('b_tblops') . "&nbsp;" . __(
             'More settings'
         ),
         'li_user_preferences',
@@ -292,7 +323,6 @@ echo '<div id="main_pane_right">';
 
 
 if ($server > 0 && $GLOBALS['cfg']['ShowServerInfo']) {
-
     echo '<div class="group">';
     echo '<h2>' , __('Database server') , '</h2>';
     echo '<ul>' , "\n";
@@ -327,7 +357,10 @@ if ($server > 0 && $GLOBALS['cfg']['ShowServerInfo']) {
     echo '        ' , __('Server charset:') , ' '
        . '        <span lang="en" dir="ltr">';
     $unicode = Charsets::$mysql_charset_map['utf-8'];
-    $charsets = Charsets::getMySQLCharsetsDescriptions();
+    $charsets = Charsets::getMySQLCharsetsDescriptions(
+        $GLOBALS['dbi'],
+        $GLOBALS['cfg']['Server']['DisableIS']
+    );
     echo '           ' , $charsets[$unicode], ' (' . $unicode, ')';
     echo '        </span>'
        . '    </li>'
@@ -459,7 +492,7 @@ echo '</div>';
  * mbstring is used for handling multibytes inside parser, so it is good
  * to tell user something might be broken without it, see bug #1063149.
  */
-if (! @extension_loaded('mbstring')) {
+if (! extension_loaded('mbstring')) {
     trigger_error(
         __(
             'The mbstring PHP extension was not found and you seem to be using'
@@ -488,8 +521,8 @@ if ($cfg['LoginCookieValidityDisableWarning'] == false) {
     /**
      * Check whether session.gc_maxlifetime limits session validity.
      */
-    $gc_time = (int)@ini_get('session.gc_maxlifetime');
-    if ($gc_time < $GLOBALS['cfg']['LoginCookieValidity'] ) {
+    $gc_time = (int)ini_get('session.gc_maxlifetime');
+    if ($gc_time < $GLOBALS['cfg']['LoginCookieValidity']) {
         trigger_error(
             __(
                 'Your PHP parameter [a@https://secure.php.net/manual/en/session.' .
@@ -518,6 +551,20 @@ if ($GLOBALS['cfg']['LoginCookieStore'] != 0
         E_USER_WARNING
     );
 }
+
+/**
+ * Warning if using the default MySQL controluser account
+ */
+if ($server != 0
+    && isset($GLOBALS['cfg']['Server']['controluser']) && $GLOBALS['cfg']['Server']['controluser'] == 'pma'
+    && isset($GLOBALS['cfg']['Server']['controlpass']) && $GLOBALS['cfg']['Server']['controlpass'] == 'pmapass'
+) {
+    trigger_error(
+        __('Your server is running with default values for the controluser and password (controlpass) and is open to intrusion; you really should fix this security weakness by changing the password for controluser \'pma\'.'),
+        E_USER_WARNING
+    );
+}
+
 
 /**
  * Check if user does not have defined blowfish secret and it is being used.
@@ -557,8 +604,10 @@ if (@file_exists('config')) {
     );
 }
 
+$relation = new Relation();
+
 if ($server > 0) {
-    $cfgRelation = Relation::getRelationsParam();
+    $cfgRelation = $relation->getRelationsParam();
     if (! $cfgRelation['allworks']
         && $cfg['PmaNoRelation_DisableWarning'] == false
     ) {
@@ -589,8 +638,8 @@ if ($server > 0) {
  * Warning about Suhosin only if its simulation mode is not enabled
  */
 if ($cfg['SuhosinDisableWarning'] == false
-    && @ini_get('suhosin.request.max_value_length')
-    && @ini_get('suhosin.simulation') == '0'
+    && ini_get('suhosin.request.max_value_length')
+    && ini_get('suhosin.simulation') == '0'
 ) {
     trigger_error(
         sprintf(
