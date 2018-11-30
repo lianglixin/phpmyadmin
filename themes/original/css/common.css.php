@@ -423,9 +423,13 @@ td .icon {
     margin-<?php echo $right; ?>: 0.3em;
     margin-<?php echo $left; ?>: 0.6em;
 }
+.with-selected {
+    margin-<?php echo $left; ?>: 2em;
+}
 
 /* message boxes: error, confirmation */
 #pma_errors, #pma_demo, #pma_footer {
+    position: relative;
     padding: 0 0.5em;
 }
 
@@ -664,6 +668,10 @@ form.login label {
 .column_attribute {
     font-size: 70%;
 }
+.column_name {
+    font-size: 80%;
+    margin: 5px 2px;
+}
 
 .cfg_dbg_demo{
     margin: 0.5em 1em 0.5em 1em;
@@ -693,6 +701,10 @@ form.login label {
 
 .color_gray{
     color: gray;
+}
+
+.max_height_400 {
+    max-height: 400px;
 }
 
 .pma_sliding_message{

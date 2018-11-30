@@ -23,7 +23,7 @@ use PhpMyAdmin\Util;
 class Common
 {
     /**
-     * @var Relation $relation
+     * @var Relation
      */
     private $relation;
 
@@ -40,7 +40,7 @@ class Common
     public function __construct(DatabaseInterface $dbi)
     {
         $this->dbi = $dbi;
-        $this->relation = new Relation();
+        $this->relation = new Relation($this->dbi);
     }
 
     /**
@@ -288,7 +288,7 @@ class Common
     {
         $cfgRelation = $this->relation->getRelationsParam();
         if (! $cfgRelation['pdfwork']) {
-            return null;
+            return array();
         }
 
         $query = "
@@ -301,14 +301,13 @@ class Common
                 . "." . Util::backquote($cfgRelation['table_coords']) . "
             WHERE pdf_page_number = " . intval($pg);
 
-        $tab_pos = $this->dbi->fetchResult(
+        return $this->dbi->fetchResult(
             $query,
             'name',
             null,
             DatabaseInterface::CONNECT_CONTROL,
             DatabaseInterface::QUERY_STORE
         );
-        return $tab_pos;
     }
 
     /**
@@ -463,12 +462,11 @@ class Common
     {
         $cfgRelation = $this->relation->getRelationsParam();
         if ($cfgRelation['pdfwork']) {
-            $pageNumber = $this->relation->createPage(
+            return $this->relation->createPage(
                 $pageName,
                 $cfgRelation,
                 $db
             );
-            return $pageNumber;
         }
         return null;
     }

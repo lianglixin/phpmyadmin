@@ -10,9 +10,38 @@ phpMyAdmin - ChangeLog
 - issue #14296 Enable strict mode in PHP files
 - issue #13627 Increase field width for editing varchar fields
 - issue #12603 Show warning for users with the default values for controluser and controlpass
+- issue #14589 Fix rendering of column comments in Safari, improve display in all browsers
+- issue #14330 New features for csv import plugin
+- issue #14417 Automatically add index while editing an existing row and setting auto increment
+- issue #13057 Add export option to drop user security definers from views
+- issue #14404 Drop view and or replace added to exporting view
+- issue #14594 Database "Search" selects all tables by default
+- issue #12158 Auto expand the single database
+- issue #13067 Inconsistency with submit buttons
+- issue #14683 Improper message in Show Hidden Navigation Tree Items
+- issue #14695 Remove unlabeled default collation from the bottom of the database list; this information is available elsewhere
+- issue #14677 Security confirm() before running UPDATE statement without WHERE condition
+- issue #13023 Show errors at the bottom of the page and add copy query button for errors in processing sql queries
+- issue #14633 Use Sass instead of PHP to compile CSS
+- issue #14053 Fix missed padding on query results
 
 4.8.4 (not yet released)
 - issue #14452 Remove hash param in edit query URL
+- issue #14295 Issue in Changing theme
+- issue #13267 Ensure that database names with '.' are handled properly when DisableIS is true
+- issue #14438 Invisible Icon "Show Full Queries"
+- issue #14133 CSS issue in Designer
+- issue #14447 Error while copying database (pma__column_info)
+- issue #14571 "No database selected" - DROP a view
+- issue #14636 Move operation causes SELECT * FROM `undefined`
+- issue #14630 Enum '0' produces incorrect search SQL
+- issue #14223 Fix TypeError in database designer
+- issue #13621 QBE selenium tests broken since merge of #13342
+- issue #14672 When logging with $cfg['AuthLog'] to syslog, successful login messages were not logged even if $cfg['AuthLogSuccess'] was true.
+- issue #14339 Fix infinite loop when sorting table rows by key.
+- issue #14658 Regression on multi table query functionality (foreign keys)
+- issue #14617 Fix designer errors when database is empty
+- issue #13032 Fix designer errors when database contains special chars
 
 4.8.3 (2018-08-22)
 - issue #14314 Error when naming a database '0'

@@ -141,7 +141,7 @@ class Tracking
      */
     public function getListOfVersionsOfTable()
     {
-        $relation = new Relation();
+        $relation = new Relation($GLOBALS['dbi']);
         $cfgRelation = $relation->getRelationsParam();
         $sql_query = " SELECT * FROM " .
             Util::backquote($cfgRelation['db']) . "." .
@@ -234,7 +234,7 @@ class Tracking
      */
     public function getSqlResultForSelectableTables()
     {
-        $relation = new Relation();
+        $relation = new Relation($GLOBALS['dbi']);
         $cfgRelation = $relation->getRelationsParam();
 
         $sql_query = " SELECT DISTINCT db_name, table_name FROM " .
@@ -1155,7 +1155,7 @@ class Tracking
      *
      * @param array $version version info
      *
-     * @return string $version_status The status message
+     * @return string The status message
      */
     public function getVersionStatus(array $version)
     {
@@ -1170,7 +1170,7 @@ class Tracking
      * Get HTML for tracked and untracked tables
      *
      * @param string $db            current database
-     * @param array  $requestDb     $_REQUEST['db']
+     * @param string $requestDb     $_REQUEST['db']
      * @param string $urlQuery      url query string
      * @param string $pmaThemeImage path to theme's image folder
      * @param string $textDir       text direction
@@ -1184,7 +1184,7 @@ class Tracking
         string $pmaThemeImage,
         string $textDir
     ) {
-        $relation = new Relation();
+        $relation = new Relation($GLOBALS['dbi']);
         $cfgRelation = $relation->getRelationsParam();
 
         // Prepare statement to get HEAD version
@@ -1246,7 +1246,7 @@ class Tracking
      * @param string  $db         Current database
      * @param boolean $testing    Testing
      *
-     * @return array $untracked_tables
+     * @return array
      */
     public function extractTableNames(array $table_list, $db, $testing = false)
     {
@@ -1273,7 +1273,7 @@ class Tracking
      *
      * @param string $db current database
      *
-     * @return array $untracked_tables
+     * @return array
      */
     public function getUntrackedTables($db)
     {

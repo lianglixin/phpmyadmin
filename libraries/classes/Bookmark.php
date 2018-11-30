@@ -172,7 +172,7 @@ class Bookmark
     /**
      * Returns the number of variables in a bookmark
      *
-     * @return number number of variables
+     * @return int number of variables
      */
     public function getVariableCount(): int
     {
@@ -228,7 +228,7 @@ class Bookmark
             return $cfgBookmark;
         }
 
-        $relation = new Relation();
+        $relation = new Relation($GLOBALS['dbi']);
         $cfgRelation = $relation->getRelationsParam();
         if ($cfgRelation['bookmarkwork']) {
             $cfgBookmark = [
