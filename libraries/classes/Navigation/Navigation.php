@@ -78,7 +78,7 @@ class Navigation
             // closes the tags that were opened by the navigation header
             $retval .= '</div>'; // pma_navigation_tree
             $retval .= '<div id="pma_navi_settings_container">';
-            if (!defined('PMA_DISABLE_NAVI_SETTINGS')) {
+            if (! defined('PMA_DISABLE_NAVI_SETTINGS')) {
                 $retval .= PageSettings::getNaviSettings();
             }
             $retval .= '</div>'; //pma_navi_settings_container
@@ -227,7 +227,7 @@ class Navigation
                 if ((empty($itemType) || $itemType == $t)
                     && isset($hidden[$t])
                 ) {
-                    $html .= (! $first ? '<br/>' : '')
+                    $html .= (! $first ? '<br>' : '')
                         . '<strong>' . $lable . '</strong>';
                     $html .= '<table width="100%"><tbody>';
                     foreach ($hidden[$t] as $hiddenItem) {

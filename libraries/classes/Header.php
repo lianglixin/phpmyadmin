@@ -166,6 +166,7 @@ class Header
         $this->_scripts->addFile('vendor/sprintf.js');
         $this->_scripts->addFile('ajax.js');
         $this->_scripts->addFile('keyhandler.js');
+        $this->_scripts->addFile('vendor/bootstrap/bootstrap.bundle.min.js');
         $this->_scripts->addFile('vendor/jquery/jquery-ui.min.js');
         $this->_scripts->addFile('vendor/js.cookie.js');
         $this->_scripts->addFile('vendor/jquery/jquery.mousewheel.js');
@@ -254,8 +255,8 @@ class Header
             'pftext' => $pftext,
             'confirm' => $GLOBALS['cfg']['Confirm'],
             'LoginCookieValidity' => $GLOBALS['cfg']['LoginCookieValidity'],
-            'session_gc_maxlifetime' => (int)ini_get('session.gc_maxlifetime'),
-            'logged_in' => (isset($GLOBALS['dbi']) ? $GLOBALS['dbi']->isUserType('logged') : false),
+            'session_gc_maxlifetime' => (int) ini_get('session.gc_maxlifetime'),
+            'logged_in' => isset($GLOBALS['dbi']) ? $GLOBALS['dbi']->isUserType('logged') : false,
             'is_https' => $GLOBALS['PMA_Config']->isHttps(),
             'rootPath' => $GLOBALS['PMA_Config']->getRootPath(),
             'arg_separator' => Url::getArgSeparator(),
@@ -542,8 +543,8 @@ class Header
          * Sends http headers
          */
         $GLOBALS['now'] = gmdate('D, d M Y H:i:s') . ' GMT';
-        if (!empty($GLOBALS['cfg']['CaptchaLoginPrivateKey'])
-            && !empty($GLOBALS['cfg']['CaptchaLoginPublicKey'])
+        if (! empty($GLOBALS['cfg']['CaptchaLoginPrivateKey'])
+            && ! empty($GLOBALS['cfg']['CaptchaLoginPublicKey'])
         ) {
             $captcha_url
                 = ' https://apis.google.com https://www.google.com/recaptcha/'

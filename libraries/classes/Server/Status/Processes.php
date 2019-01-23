@@ -41,7 +41,20 @@ class Processes
         $retval .= Data::getHtmlForRefreshList(
             'refreshRate',
             5,
-            [2, 3, 4, 5, 10, 20, 40, 60, 120, 300, 600, 1200]
+            [
+                2,
+                3,
+                4,
+                5,
+                10,
+                20,
+                40,
+                60,
+                120,
+                300,
+                600,
+                1200,
+            ]
         );
         $retval .= '</label>';
         $retval .= '<a id="toggleRefresh" href="#">';
@@ -78,40 +91,40 @@ class Processes
         $sortable_columns = [
             [
                 'column_name' => __('ID'),
-                'order_by_field' => 'Id'
+                'order_by_field' => 'Id',
             ],
             [
                 'column_name' => __('User'),
-                'order_by_field' => 'User'
+                'order_by_field' => 'User',
             ],
             [
                 'column_name' => __('Host'),
-                'order_by_field' => 'Host'
+                'order_by_field' => 'Host',
             ],
             [
                 'column_name' => __('Database'),
-                'order_by_field' => 'db'
+                'order_by_field' => 'db',
             ],
             [
                 'column_name' => __('Command'),
-                'order_by_field' => 'Command'
+                'order_by_field' => 'Command',
             ],
             [
                 'column_name' => __('Time'),
-                'order_by_field' => 'Time'
+                'order_by_field' => 'Time',
             ],
             [
                 'column_name' => __('Status'),
-                'order_by_field' => 'State'
+                'order_by_field' => 'State',
             ],
             [
                 'column_name' => __('Progress'),
-                'order_by_field' => 'Progress'
+                'order_by_field' => 'Progress',
             ],
             [
                 'column_name' => __('SQL query'),
-                'order_by_field' => 'Info'
-            ]
+                'order_by_field' => 'Info',
+            ],
         ];
         $sortableColCount = count($sortable_columns);
 
@@ -120,14 +133,14 @@ class Processes
             : 'SHOW PROCESSLIST';
         if ((! empty($_POST['order_by_field'])
             && ! empty($_POST['sort_order']))
-            || (! empty($_POST['showExecuting']))
+            || ! empty($_POST['showExecuting'])
         ) {
             $sql_query = 'SELECT * FROM `INFORMATION_SCHEMA`.`PROCESSLIST` ';
         }
         if (! empty($_POST['showExecuting'])) {
             $sql_query .= ' WHERE state != "" ';
         }
-        if (!empty($_POST['order_by_field']) && !empty($_POST['sort_order'])) {
+        if (! empty($_POST['order_by_field']) && ! empty($_POST['sort_order'])) {
             $sql_query .= ' ORDER BY '
                 . Util::backquote($_POST['order_by_field'])
                 . ' ' . $_POST['sort_order'];
@@ -169,10 +182,10 @@ class Processes
                 }
                 $retval .= '<img class="icon ic_s_desc soimg" alt="'
                     . __('Descending') . '" title="" src="themes/dot.gif" '
-                    . 'style="display: ' . $desc_display_style . '" />';
+                    . 'style="display: ' . $desc_display_style . '">';
                 $retval .= '<img class="icon ic_s_asc soimg hide" alt="'
                     . __('Ascending') . '" title="" src="themes/dot.gif" '
-                    . 'style="display: ' . $asc_display_style . '" />';
+                    . 'style="display: ' . $asc_display_style . '">';
             }
 
             $retval .= '</a>';
@@ -180,11 +193,17 @@ class Processes
             if (0 === --$sortableColCount) {
                 $retval .= '<a href="' . $full_text_link . '">';
                 if ($show_full_sql) {
-                    $retval .= Util::getImage('s_partialtext',
-                        __('Truncate Shown Queries'), ['class' => 'icon_fulltext']);
+                    $retval .= Util::getImage(
+                        's_partialtext',
+                        __('Truncate Shown Queries'),
+                        ['class' => 'icon_fulltext']
+                    );
                 } else {
-                    $retval .= Util::getImage('s_fulltext',
-                        __('Show Full Queries'), ['class' => 'icon_fulltext']);
+                    $retval .= Util::getImage(
+                        's_fulltext',
+                        __('Show Full Queries'),
+                        ['class' => 'icon_fulltext']
+                    );
                 }
                 $retval .= '</a>';
             }
@@ -222,11 +241,11 @@ class Processes
 
         $url_params = [
             'ajax_request' => true,
-            'full' => (isset($_POST['full']) ? $_POST['full'] : ''),
-            'column_name' => (isset($_POST['column_name']) ? $_POST['column_name'] : ''),
+            'full' => isset($_POST['full']) ? $_POST['full'] : '',
+            'column_name' => isset($_POST['column_name']) ? $_POST['column_name'] : '',
             'order_by_field'
-                => (isset($_POST['order_by_field']) ? $_POST['order_by_field'] : ''),
-            'sort_order' => (isset($_POST['sort_order']) ? $_POST['sort_order'] : ''),
+                => isset($_POST['order_by_field']) ? $_POST['order_by_field'] : '',
+            'sort_order' => isset($_POST['sort_order']) ? $_POST['sort_order'] : '',
         ];
 
         $retval  = '';
@@ -234,10 +253,10 @@ class Processes
         $retval .= '<legend>' . __('Filters') . '</legend>';
         $retval .= '<form action="server_status_processes.php" method="post">';
         $retval .= Url::getHiddenInputs($url_params);
-        $retval .= '<input type="submit" value="' . __('Refresh') . '" />';
+        $retval .= '<input class="btn btn-secondary" type="submit" value="' . __('Refresh') . '">';
         $retval .= '<div class="formelement">';
         $retval .= '<input' . $showExecuting . ' type="checkbox" name="showExecuting"'
-            . ' id="showExecuting" class="autosubmit"/>';
+            . ' id="showExecuting" class="autosubmit">';
         $retval .= '<label for="showExecuting">';
         $retval .= __('Show only active');
         $retval .= '</label>';
@@ -261,7 +280,7 @@ class Processes
         // Array keys need to modify due to the way it has used
         // to display column values
         if ((! empty($_POST['order_by_field']) && ! empty($_POST['sort_order']))
-            || (! empty($_POST['showExecuting']))
+            || ! empty($_POST['showExecuting'])
         ) {
             foreach (array_keys($process) as $key) {
                 $new_key = ucfirst(mb_strtolower($key));

@@ -151,12 +151,12 @@ class TableStructureController extends TableController
         /**
          * Function implementations for this script
          */
-        include_once 'libraries/check_user_privileges.inc.php';
+        include_once ROOT_PATH . 'libraries/check_user_privileges.inc.php';
 
         $this->response->getHeader()->getScripts()->addFiles(
             [
                 'tbl_structure.js',
-                'indexes.js'
+                'indexes.js',
             ]
         );
 
@@ -270,7 +270,7 @@ class TableStructureController extends TableController
                         $GLOBALS['mult_btn'] = $mult_btn_ret;
                         global $mult_btn;
                     }
-                    include 'libraries/mult_submits.inc.php';
+                    include ROOT_PATH . 'libraries/mult_submits.inc.php';
                     /**
                      * if $submit_mult == 'change', execution will have stopped
                      * at this point
@@ -293,10 +293,7 @@ class TableStructureController extends TableController
          */
         if (isset($_POST['do_save_data'])) {
             $regenerate = $this->updateColumns();
-            if ($regenerate) {
-                // This happens when updating failed
-                // @todo: do something appropriate
-            } else {
+            if (! $regenerate) {
                 // continue to show the table's structure
                 unset($_POST['selected']);
             }
@@ -322,7 +319,7 @@ class TableStructureController extends TableController
             $sql_query = $GLOBALS['sql_query'];
             $cfg = $GLOBALS['cfg'];
             $pmaThemeImage = $GLOBALS['pmaThemeImage'];
-            include 'sql.php';
+            include ROOT_PATH . 'sql.php';
             $GLOBALS['reload'] = true;
         }
 
@@ -339,7 +336,7 @@ class TableStructureController extends TableController
         $db = &$this->db;
         $table = &$this->table;
         $url_params = [];
-        include_once 'libraries/tbl_common.inc.php';
+        include_once ROOT_PATH . 'libraries/tbl_common.inc.php';
         $this->_db_is_system_schema = $db_is_system_schema;
         $this->_url_query = Url::getCommonRaw([
             'db' => $db,
@@ -365,7 +362,7 @@ class TableStructureController extends TableController
             ->getColumnsWithIndex(Index::UNIQUE);
 
         // 3. Get fields
-        $fields = (array)$this->dbi->getColumns(
+        $fields = (array) $this->dbi->getColumns(
             $this->db,
             $this->table,
             null,
@@ -434,7 +431,10 @@ class TableStructureController extends TableController
             }
 
             $virtual = [
-                'VIRTUAL', 'PERSISTENT', 'VIRTUAL GENERATED', 'STORED GENERATED'
+                'VIRTUAL',
+                'PERSISTENT',
+                'VIRTUAL GENERATED',
+                'STORED GENERATED',
             ];
             $data['Virtuality'] = '';
             $data['Expression'] = '';
@@ -471,7 +471,7 @@ class TableStructureController extends TableController
             // insert moved column
             array_splice($column_names, $i, 0, $column);
         }
-        if (empty($changes) && !isset($_REQUEST['preview_sql'])) { // should never happen
+        if (empty($changes) && ! isset($_REQUEST['preview_sql'])) { // should never happen
             $this->response->setRequestStatus(false);
             return;
         }
@@ -486,7 +486,7 @@ class TableStructureController extends TableController
             $this->response->addJSON(
                 'sql_data',
                 $this->template->render('preview_sql', [
-                    'query_data' => $sql_query
+                    'query_data' => $sql_query,
                 ])
             );
         } else { // move column
@@ -511,7 +511,7 @@ class TableStructureController extends TableController
      * @param array  $selected the selected columns
      * @param string $action   target script to call
      *
-     * @return boolean true if error occurred
+     * @return void
      *
      */
     protected function displayHtmlForColumnChange($selected, $action)
@@ -556,14 +556,14 @@ class TableStructureController extends TableController
         /**
          * Form for changing properties.
          */
-        include_once 'libraries/check_user_privileges.inc.php';
-        include 'libraries/tbl_columns_definition_form.inc.php';
+        include_once ROOT_PATH . 'libraries/check_user_privileges.inc.php';
+        include ROOT_PATH . 'libraries/tbl_columns_definition_form.inc.php';
     }
 
     /**
      * Displays HTML for partition change
      *
-     * @return string HTML for partition change
+     * @return void
      */
     protected function displayHtmlForPartitionChange()
     {
@@ -572,7 +572,7 @@ class TableStructureController extends TableController
             $partitionDetails = $this->_extractPartitionDetails();
         }
 
-        include 'libraries/tbl_partition_definition.inc.php';
+        include ROOT_PATH . 'libraries/tbl_partition_definition.inc.php';
         $this->response->addHTML(
             $this->template->render('table/structure/partition_definition_form', [
                 'db' => $this->db,
@@ -659,7 +659,7 @@ class TableStructureController extends TableController
 
         $partitionDetails['partitions'] = [];
 
-        for ($i = 0; $i < intval($partitionDetails['partition_count']); $i++) {
+        for ($i = 0, $iMax = (int) $partitionDetails['partition_count']; $i < $iMax; $i++) {
             if (! isset($stmt->partitions[$i])) {
                 $partitionDetails['partitions'][$i] = [
                     'name' => 'p' . $i,
@@ -704,7 +704,7 @@ class TableStructureController extends TableController
                 $partition['subpartition_count'] = $partitionDetails['subpartition_count'];
                 $partition['subpartitions'] = [];
 
-                for ($j = 0; $j < intval($partitionDetails['subpartition_count']); $j++) {
+                for ($j = 0, $jMax = (int) $partitionDetails['subpartition_count']; $j < $jMax; $j++) {
                     if (! isset($stmt->partitions[$i]->subpartitions[$j])) {
                         $partition['subpartitions'][$j] = [
                             'name' => $partition['name'] . '_s' . $j,
@@ -768,7 +768,7 @@ class TableStructureController extends TableController
             $this->response->addJSON(
                 'message',
                 Message::rawError(
-                    __('Query error') . ':<br />' . $this->dbi->getError()
+                    __('Query error') . ':<br>' . $this->dbi->getError()
                 )
             );
         }
@@ -782,9 +782,14 @@ class TableStructureController extends TableController
     protected function getMultipleFieldCommandType()
     {
         $types = [
-            'change', 'drop', 'primary',
-            'index', 'unique', 'spatial',
-            'fulltext', 'browse'
+            'change',
+            'drop',
+            'primary',
+            'index',
+            'unique',
+            'spatial',
+            'fulltext',
+            'browse',
         ];
 
         foreach ($types as $type) {
@@ -873,7 +878,8 @@ class TableStructureController extends TableController
     {
         $err_url = 'tbl_structure.php' . Url::getCommon(
             [
-                'db' => $this->db, 'table' => $this->table
+                'db' => $this->db,
+                'table' => $this->table,
             ]
         );
         $regenerate = false;
@@ -886,7 +892,7 @@ class TableStructureController extends TableController
                 Index::PRIMARY | Index::UNIQUE
             );
         for ($i = 0; $i < $field_cnt; $i++) {
-            if (!$this->columnNeedsAlterTable($i)) {
+            if (! $this->columnNeedsAlterTable($i)) {
                 continue;
             }
 
@@ -944,7 +950,7 @@ class TableStructureController extends TableController
 
             // To allow replication, we first select the db to use
             // and then run queries on this db.
-            if (!$this->dbi->selectDb($this->db)) {
+            if (! $this->dbi->selectDb($this->db)) {
                 Util::mysqlDie(
                     $this->dbi->getError(),
                     'USE ' . Util::backquote($this->db) . ';',
@@ -1058,7 +1064,7 @@ class TableStructureController extends TableController
                 $this->response->addJSON(
                     'message',
                     Message::rawError(
-                        __('Query error') . ':<br />' . $orig_error
+                        __('Query error') . ':<br>' . $orig_error
                     )
                 );
                 $regenerate = true;
@@ -1176,16 +1182,22 @@ class TableStructureController extends TableController
         }
 
         $fields = [
-            'field_attribute', 'field_collation', 'field_comments',
-            'field_default_value', 'field_default_type', 'field_extra',
-            'field_length', 'field_null', 'field_type'
+            'field_attribute',
+            'field_collation',
+            'field_comments',
+            'field_default_value',
+            'field_default_type',
+            'field_extra',
+            'field_length',
+            'field_null',
+            'field_type',
         ];
         foreach ($fields as $field) {
             if ($_POST[$field][$i] != $_POST[$field . '_orig'][$i]) {
                 return true;
             }
         }
-        return !empty($_POST['field_move_to'][$i]);
+        return ! empty($_POST['field_move_to'][$i]);
     }
 
     /**
@@ -1611,8 +1623,11 @@ class TableStructureController extends TableController
         }
 
         return [
-            $what, $query_type, $is_unset_submit_mult, $mult_btn,
-            $centralColsError
+            $what,
+            $query_type,
+            $is_unset_submit_mult,
+            $mult_btn,
+            $centralColsError,
         ];
     }
 }

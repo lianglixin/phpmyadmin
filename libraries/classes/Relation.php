@@ -91,7 +91,7 @@ class Relation
     public function getRelationsParam()
     {
         if (empty($_SESSION['relation'][$GLOBALS['server']])
-            || (empty($_SESSION['relation'][$GLOBALS['server']]['PMA_VERSION']))
+            || empty($_SESSION['relation'][$GLOBALS['server']]['PMA_VERSION'])
             || $_SESSION['relation'][$GLOBALS['server']]['PMA_VERSION'] != PMA_VERSION
         ) {
             $_SESSION['relation'][$GLOBALS['server']] = $this->checkRelationsParam();
@@ -131,7 +131,7 @@ class Relation
             $retval .= __('Configuration of pmadb…') . ' '
                  . $messages['error']
                  . Util::showDocu('setup', 'linked-tables')
-                 . '<br />' . "\n"
+                 . '<br>' . "\n"
                  . __('General relation features')
                  . ' <font color="green">' . __('Disabled')
                  . '</font>' . "\n";
@@ -152,7 +152,7 @@ class Relation
                 && $this->arePmadbTablesDefined()
             ) {
                 $retval .= $this->getHtmlFixPmaTables(false);
-                $retval .= '<br />';
+                $retval .= '<br>';
             }
 
             $retval .= $this->getDiagMessageForParameter(
@@ -487,9 +487,15 @@ class Relation
 
         $workToTable = [
             'relwork' => 'relation',
-            'displaywork' => ['relation', 'table_info'],
+            'displaywork' => [
+                'relation',
+                'table_info',
+            ],
             'bookmarkwork' => 'bookmarktable',
-            'pdfwork' => ['table_coords', 'pdf_pages'],
+            'pdfwork' => [
+                'table_coords',
+                'pdf_pages',
+            ],
             'commwork' => 'column_info',
             'mimework' => 'column_info',
             'historywork' => 'history',
@@ -498,7 +504,10 @@ class Relation
             'uiprefswork' => 'table_uiprefs',
             'trackingwork' => 'tracking',
             'userconfigwork' => 'userconfig',
-            'menuswork' => ['users', 'usergroups'],
+            'menuswork' => [
+                'users',
+                'usergroups',
+            ],
             'navwork' => 'navigationhiding',
             'savedsearcheswork' => 'savedsearches',
             'centralcolumnswork' => 'central_columns',
@@ -711,7 +720,7 @@ class Relation
         // Check whether column_info table has input transformation columns
         $new_cols = [
             "input_transformation",
-            "input_transformation_options"
+            "input_transformation_options",
         ];
         $query = 'SHOW COLUMNS FROM '
             . Util::backquote($GLOBALS['cfg']['Server']['pmadb'])
@@ -737,26 +746,27 @@ class Relation
             // read upgrade query file
             $query = @file_get_contents(SQL_DIR . 'upgrade_column_info_4_3_0+.sql');
             // replace database name from query to with set in config.inc.php
-            $query = str_replace(
-                '`phpmyadmin`',
-                Util::backquote($GLOBALS['cfg']['Server']['pmadb']),
-                $query
-            );
             // replace pma__column_info table name from query
             // to with set in config.inc.php
             $query = str_replace(
-                '`pma__column_info`',
-                Util::backquote(
-                    $GLOBALS['cfg']['Server']['column_info']
-                ),
+                [
+                    '`phpmyadmin`',
+                    '`pma__column_info`',
+                ],
+                [
+                    Util::backquote($GLOBALS['cfg']['Server']['pmadb']),
+                    Util::backquote($GLOBALS['cfg']['Server']['column_info']),
+                ],
                 $query
             );
             $this->dbi->tryMultiQuery($query, DatabaseInterface::CONNECT_CONTROL);
             // skips result sets of query as we are not interested in it
-            while ($this->dbi->moreResults(DatabaseInterface::CONNECT_CONTROL)
-                && $this->dbi->nextResult(DatabaseInterface::CONNECT_CONTROL)
-            ) {
-            }
+            do {
+                $hasResult = (
+                    $this->dbi->moreResults(DatabaseInterface::CONNECT_CONTROL)
+                    && $this->dbi->nextResult(DatabaseInterface::CONNECT_CONTROL)
+                );
+            } while ($hasResult);
             $error = $this->dbi->getError(DatabaseInterface::CONNECT_CONTROL);
             // return true if no error exists otherwise false
             return empty($error);
@@ -832,10 +842,10 @@ class Relation
         ) {
             if ($isInformationSchema) {
                 $relations_key = 'information_schema_relations';
-                include_once './libraries/information_schema_relations.inc.php';
+                include_once ROOT_PATH . 'libraries/information_schema_relations.inc.php';
             } else {
                 $relations_key = 'mysql_relations';
-                include_once './libraries/mysql_relations.inc.php';
+                include_once ROOT_PATH . 'libraries/mysql_relations.inc.php';
             }
             if (isset($GLOBALS[$relations_key][$table])) {
                 foreach ($GLOBALS[$relations_key][$table] as $field => $relations) {
@@ -874,8 +884,8 @@ class Relation
                 SELECT `display_field`
                 FROM ' . Util::backquote($cfgRelation['db'])
                     . '.' . Util::backquote($cfgRelation['table_info']) . '
-                WHERE `db_name`    = \'' . $this->dbi->escapeString((string)$db) . '\'
-                    AND `table_name` = \'' . $this->dbi->escapeString((string)$table)
+                WHERE `db_name`    = \'' . $this->dbi->escapeString((string) $db) . '\'
+                    AND `table_name` = \'' . $this->dbi->escapeString((string) $table)
                 . '\'';
 
             $row = $this->dbi->fetchSingleRow(
@@ -990,7 +1000,7 @@ class Relation
      *
      * @access  public
      *
-     * @return string   comment
+     * @return array comments
      */
     public function getDbComments()
     {
@@ -1262,14 +1272,14 @@ class Relation
             $data = (string) $data;
 
             if (mb_check_encoding($key, 'utf-8')
-                && !preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', $key)
+                && ! preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', $key)
             ) {
                 $selected = ($key == $data);
                 // show as text if it's valid utf-8
                 $key = htmlspecialchars($key);
             } else {
                 $key = '0x' . bin2hex($key);
-                if (preg_match('/0x/', $data)) {
+                if (false !== strpos($data, "0x")) {
                     $selected = ($key == trim($data));
                 } else {
                     $selected = ($key == '0x' . $data);
@@ -1278,7 +1288,7 @@ class Relation
             }
 
             if (mb_check_encoding($value, 'utf-8')
-                && !preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', $value)
+                && ! preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', $value)
             ) {
                 if (mb_strlen($value) <= $GLOBALS['cfg']['LimitChars']
                 ) {
@@ -1461,7 +1471,7 @@ class Relation
                 ->checkIfMinRecordsExist($GLOBALS['cfg']['ForeignKeyMaxLimit']);
 
             if ($override_total == true
-                || !$moreThanLimit
+                || ! $moreThanLimit
             ) {
                 // foreign_display can be false if no display field defined:
                 $foreign_display = $this->getDisplayField($foreign_db, $foreign_table);
@@ -1490,7 +1500,7 @@ class Relation
 
                 $f_query_limit = ! empty($foreign_limit) ?: '';
 
-                if (!empty($foreign_filter)) {
+                if (! empty($foreign_filter)) {
                     $the_total = $this->dbi->fetchValue(
                         'SELECT COUNT(*)' . $f_query_from . $f_query_filter
                     );
@@ -1832,7 +1842,10 @@ class Relation
 
             $child_references = $this->dbi->fetchResult(
                 $rel_query,
-                ['referenced_column_name', null]
+                [
+                    'referenced_column_name',
+                    null,
+                ]
             );
         }
         return $child_references;
@@ -1890,11 +1903,8 @@ class Relation
             if (sizeof($child_references, 0) > 0) {
                 $column_status['isReferenced'] = true;
                 foreach ($child_references as $columns) {
-                    array_push(
-                        $column_status['references'],
-                        Util::backquote($columns['table_schema'])
-                        . '.' . Util::backquote($columns['table_name'])
-                    );
+                    $column_status['references'][] = Util::backquote($columns['table_schema'])
+                        . '.' . Util::backquote($columns['table_name']);
                 }
             }
 
@@ -2153,7 +2163,10 @@ class Relation
             $have_rel = false;
             $res_rel = [];
         } // end if
-        return [$res_rel, $have_rel];
+        return [
+            $res_rel,
+            $have_rel,
+        ];
     }
 
     /**
@@ -2163,7 +2176,7 @@ class Relation
      */
     public function arePmadbTablesDefined()
     {
-        if (empty($GLOBALS['cfg']['Server']['bookmarktable'])
+        return ! (empty($GLOBALS['cfg']['Server']['bookmarktable'])
             || empty($GLOBALS['cfg']['Server']['relation'])
             || empty($GLOBALS['cfg']['Server']['table_info'])
             || empty($GLOBALS['cfg']['Server']['table_coords'])
@@ -2181,12 +2194,7 @@ class Relation
             || empty($GLOBALS['cfg']['Server']['savedsearches'])
             || empty($GLOBALS['cfg']['Server']['central_columns'])
             || empty($GLOBALS['cfg']['Server']['designer_settings'])
-            || empty($GLOBALS['cfg']['Server']['export_templates'])
-        ) {
-            return false;
-        }
-
-        return true;
+            || empty($GLOBALS['cfg']['Server']['export_templates']));
     }
 
     /**

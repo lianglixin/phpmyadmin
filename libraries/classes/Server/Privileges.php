@@ -168,7 +168,7 @@ class Privileges
     /**
      * Parses privileges into an array, it modifies the array
      *
-     * @param array &$row Results row from
+     * @param array $row Results row from
      *
      * @return void
      */
@@ -253,7 +253,7 @@ class Privileges
                     );
 
                     $privs[] = $this->formatPrivilege($current_grant, $enableHTML)
-                        . ' (' . join(', ', $grant_cols) . ')';
+                        . ' (' . implode(', ', $grant_cols) . ')';
                 } else {
                     $allPrivileges = false;
                 }
@@ -291,42 +291,42 @@ class Privileges
             [
                 'Delete',
                 'DELETE',
-                $GLOBALS['strPrivDescDelete']
+                $GLOBALS['strPrivDescDelete'],
             ],
             [
                 'Create',
                 'CREATE',
-                $GLOBALS['strPrivDescCreateTbl']
+                $GLOBALS['strPrivDescCreateTbl'],
             ],
             [
                 'Drop',
                 'DROP',
-                $GLOBALS['strPrivDescDropTbl']
+                $GLOBALS['strPrivDescDropTbl'],
             ],
             [
                 'Index',
                 'INDEX',
-                $GLOBALS['strPrivDescIndex']
+                $GLOBALS['strPrivDescIndex'],
             ],
             [
                 'Alter',
                 'ALTER',
-                $GLOBALS['strPrivDescAlter']
+                $GLOBALS['strPrivDescAlter'],
             ],
             [
                 'Create View',
                 'CREATE_VIEW',
-                $GLOBALS['strPrivDescCreateView']
+                $GLOBALS['strPrivDescCreateView'],
             ],
             [
                 'Show view',
                 'SHOW_VIEW',
-                $GLOBALS['strPrivDescShowView']
+                $GLOBALS['strPrivDescShowView'],
             ],
             [
                 'Trigger',
                 'TRIGGER',
-                $GLOBALS['strPrivDescTrigger']
+                $GLOBALS['strPrivDescTrigger'],
             ],
         ];
     }
@@ -343,72 +343,72 @@ class Privileges
             [
                 'Select_priv',
                 'SELECT',
-                __('Allows reading data.')
+                __('Allows reading data.'),
             ],
             [
                 'Insert_priv',
                 'INSERT',
-                __('Allows inserting and replacing data.')
+                __('Allows inserting and replacing data.'),
             ],
             [
                 'Update_priv',
                 'UPDATE',
-                __('Allows changing data.')
+                __('Allows changing data.'),
             ],
             [
                 'Delete_priv',
                 'DELETE',
-                __('Allows deleting data.')
+                __('Allows deleting data.'),
             ],
             [
                 'Create_priv',
                 'CREATE',
-                __('Allows creating new databases and tables.')
+                __('Allows creating new databases and tables.'),
             ],
             [
                 'Drop_priv',
                 'DROP',
-                __('Allows dropping databases and tables.')
+                __('Allows dropping databases and tables.'),
             ],
             [
                 'Reload_priv',
                 'RELOAD',
-                __('Allows reloading server settings and flushing the server\'s caches.')
+                __('Allows reloading server settings and flushing the server\'s caches.'),
             ],
             [
                 'Shutdown_priv',
                 'SHUTDOWN',
-                __('Allows shutting down the server.')
+                __('Allows shutting down the server.'),
             ],
             [
                 'Process_priv',
                 'PROCESS',
-                __('Allows viewing processes of all users.')
+                __('Allows viewing processes of all users.'),
             ],
             [
                 'File_priv',
                 'FILE',
-                __('Allows importing data from and exporting data into files.')
+                __('Allows importing data from and exporting data into files.'),
             ],
             [
                 'References_priv',
                 'REFERENCES',
-                __('Has no effect in this MySQL version.')
+                __('Has no effect in this MySQL version.'),
             ],
             [
                 'Index_priv',
                 'INDEX',
-                __('Allows creating and dropping indexes.')
+                __('Allows creating and dropping indexes.'),
             ],
             [
                 'Alter_priv',
                 'ALTER',
-                __('Allows altering the structure of existing tables.')
+                __('Allows altering the structure of existing tables.'),
             ],
             [
                 'Show_db_priv',
                 'SHOW DATABASES',
-                __('Gives access to the complete list of databases.')
+                __('Gives access to the complete list of databases.'),
             ],
             [
                 'Super_priv',
@@ -417,79 +417,79 @@ class Privileges
                     'Allows connecting, even if maximum number of connections '
                     . 'is reached; required for most administrative operations '
                     . 'like setting global variables or killing threads of other users.'
-                )
+                ),
             ],
             [
                 'Create_tmp_table_priv',
                 'CREATE TEMPORARY TABLES',
-                __('Allows creating temporary tables.')
+                __('Allows creating temporary tables.'),
             ],
             [
                 'Lock_tables_priv',
                 'LOCK TABLES',
-                __('Allows locking tables for the current thread.')
+                __('Allows locking tables for the current thread.'),
             ],
             [
                 'Repl_slave_priv',
                 'REPLICATION SLAVE',
-                __('Needed for the replication slaves.')
+                __('Needed for the replication slaves.'),
             ],
             [
                 'Repl_client_priv',
                 'REPLICATION CLIENT',
-                __('Allows the user to ask where the slaves / masters are.')
+                __('Allows the user to ask where the slaves / masters are.'),
             ],
             [
                 'Create_view_priv',
                 'CREATE VIEW',
-                __('Allows creating new views.')
+                __('Allows creating new views.'),
             ],
             [
                 'Event_priv',
                 'EVENT',
-                __('Allows to set up events for the event scheduler.')
+                __('Allows to set up events for the event scheduler.'),
             ],
             [
                 'Trigger_priv',
                 'TRIGGER',
-                __('Allows creating and dropping triggers.')
+                __('Allows creating and dropping triggers.'),
             ],
             // for table privs:
             [
                 'Create View_priv',
                 'CREATE VIEW',
-                __('Allows creating new views.')
+                __('Allows creating new views.'),
             ],
             [
                 'Show_view_priv',
                 'SHOW VIEW',
-                __('Allows performing SHOW CREATE VIEW queries.')
+                __('Allows performing SHOW CREATE VIEW queries.'),
             ],
             // for table privs:
             [
                 'Show view_priv',
                 'SHOW VIEW',
-                __('Allows performing SHOW CREATE VIEW queries.')
+                __('Allows performing SHOW CREATE VIEW queries.'),
             ],
             [
                 'Create_routine_priv',
                 'CREATE ROUTINE',
-                __('Allows creating stored routines.')
+                __('Allows creating stored routines.'),
             ],
             [
                 'Alter_routine_priv',
                 'ALTER ROUTINE',
-                __('Allows altering and dropping stored routines.')
+                __('Allows altering and dropping stored routines.'),
             ],
             [
                 'Create_user_priv',
                 'CREATE USER',
-                __('Allows creating, dropping and renaming user accounts.')
+                __('Allows creating, dropping and renaming user accounts.'),
             ],
             [
                 'Execute_priv',
                 'EXECUTE',
-                __('Allows executing stored routines.')
+                __('Allows executing stored routines.'),
             ],
         ];
     }
@@ -524,7 +524,7 @@ class Privileges
             'priv_for_header' => $priv_for_header,
             'name' => $name,
             'name_for_dfn' => $name_for_dfn,
-            'name_for_current' => $name_for_current
+            'name_for_current' => $name_for_current,
         ]);
     }
 
@@ -732,7 +732,7 @@ class Privileges
                         'Select' => false,
                         'Insert' => false,
                         'Update' => false,
-                        'References' => false
+                        'References' => false,
                     ];
                 }
                 $this->dbi->freeResult($res);
@@ -757,8 +757,8 @@ class Privileges
         if ($submit) {
             $html_output .= '<fieldset id="fieldset_user_privtable_footer" '
                 . 'class="tblFooters">' . "\n"
-                . '<input type="hidden" name="update_privs" value="1" />' . "\n"
-                . '<input type="submit" value="' . __('Go') . '" />' . "\n"
+                . '<input type="hidden" name="update_privs" value="1">' . "\n"
+                . '<input class="btn btn-primary" type="submit" value="' . __('Go') . '">' . "\n"
                 . '</fieldset>' . "\n";
         }
         return $html_output;
@@ -782,14 +782,13 @@ class Privileges
                     'Does not require SSL-encrypted connections.'
                 ),
                 'label'       => 'REQUIRE NONE',
-                'checked'     => (isset($row['ssl_type'])
+                'checked'     => isset($row['ssl_type'])
                     && ($row['ssl_type'] == 'NONE'
                         || $row['ssl_type'] == '')
                     ? 'checked="checked"'
-                    : ''
-                ),
+                    : '',
                 'disabled'    => false,
-                'radio'       => true
+                'radio'       => true,
             ],
             [
                 'name'        => 'ssl_type',
@@ -798,12 +797,11 @@ class Privileges
                     'Requires SSL-encrypted connections.'
                 ),
                 'label'       => 'REQUIRE SSL',
-                'checked'     => (isset($row['ssl_type']) && ($row['ssl_type'] == 'ANY')
+                'checked'     => isset($row['ssl_type']) && ($row['ssl_type'] == 'ANY')
                     ? 'checked="checked"'
-                    : ''
-                ),
+                    : '',
                 'disabled'    => false,
-                'radio'       => true
+                'radio'       => true,
             ],
             [
                 'name'        => 'ssl_type',
@@ -812,65 +810,61 @@ class Privileges
                     'Requires a valid X509 certificate.'
                 ),
                 'label'       => 'REQUIRE X509',
-                'checked'     => (isset($row['ssl_type']) && ($row['ssl_type'] == 'X509')
+                'checked'     => isset($row['ssl_type']) && ($row['ssl_type'] == 'X509')
                     ? 'checked="checked"'
-                    : ''
-                ),
+                    : '',
                 'disabled'    => false,
-                'radio'       => true
+                'radio'       => true,
             ],
             [
                 'name'        => 'ssl_type',
                 'value'       => 'SPECIFIED',
                 'description' => '',
                 'label'       => 'SPECIFIED',
-                'checked'     => ($specified ? 'checked="checked"' : ''),
+                'checked'     => $specified ? 'checked="checked"' : '',
                 'disabled'    => false,
-                'radio'       => true
+                'radio'       => true,
             ],
             [
                 'name'        => 'ssl_cipher',
-                'value'       => (isset($row['ssl_cipher'])
-                    ? htmlspecialchars($row['ssl_cipher']) : ''
-                ),
+                'value'       => isset($row['ssl_cipher'])
+                    ? htmlspecialchars($row['ssl_cipher']) : '',
                 'description' => __(
                     'Requires that a specific cipher method be used for a connection.'
                 ),
                 'label'       => 'REQUIRE CIPHER',
                 'checked'     => '',
                 'disabled'    => ! $specified,
-                'radio'       => false
+                'radio'       => false,
             ],
             [
                 'name'        => 'x509_issuer',
-                'value'       => (isset($row['x509_issuer'])
-                    ? htmlspecialchars($row['x509_issuer']) : ''
-                ),
+                'value'       => isset($row['x509_issuer'])
+                    ? htmlspecialchars($row['x509_issuer']) : '',
                 'description' => __(
                     'Requires that a valid X509 certificate issued by this CA be presented.'
                 ),
                 'label'       => 'REQUIRE ISSUER',
                 'checked'     => '',
                 'disabled'    => ! $specified,
-                'radio'       => false
+                'radio'       => false,
             ],
             [
                 'name'        => 'x509_subject',
-                'value'       => (isset($row['x509_subject'])
-                    ? htmlspecialchars($row['x509_subject']) : ''
-                ),
+                'value'       => isset($row['x509_subject'])
+                    ? htmlspecialchars($row['x509_subject']) : '',
                 'description' => __(
                     'Requires that a valid X509 certificate with this subject be presented.'
                 ),
                 'label'       => 'REQUIRE SUBJECT',
                 'checked'     => '',
                 'disabled'    => ! $specified,
-                'radio'       => false
+                'radio'       => false,
             ],
         ];
 
         return $this->template->render('server/privileges/require_options', [
-            'require_options' => $require_options
+            'require_options' => $require_options,
         ]);
     }
 
@@ -887,42 +881,42 @@ class Privileges
             [
                 'input_name'  => 'max_questions',
                 'name_main'   => 'MAX QUERIES PER HOUR',
-                'value'       => (isset($row['max_questions']) ? $row['max_questions'] : '0'),
+                'value'       => isset($row['max_questions']) ? $row['max_questions'] : '0',
                 'description' => __(
                     'Limits the number of queries the user may send to the server per hour.'
-                )
+                ),
             ],
             [
                 'input_name'  => 'max_updates',
                 'name_main'   => 'MAX UPDATES PER HOUR',
-                'value'       => (isset($row['max_updates']) ? $row['max_updates'] : '0'),
+                'value'       => isset($row['max_updates']) ? $row['max_updates'] : '0',
                 'description' => __(
                     'Limits the number of commands that change any table '
                     . 'or database the user may execute per hour.'
-                )
+                ),
             ],
             [
                 'input_name'  => 'max_connections',
                 'name_main'   => 'MAX CONNECTIONS PER HOUR',
-                'value'       => (isset($row['max_connections']) ? $row['max_connections'] : '0'),
+                'value'       => isset($row['max_connections']) ? $row['max_connections'] : '0',
                 'description' => __(
                     'Limits the number of new connections the user may open per hour.'
-                )
+                ),
             ],
             [
                 'input_name'  => 'max_user_connections',
                 'name_main'   => 'MAX USER_CONNECTIONS',
-                'value'       => (isset($row['max_user_connections']) ?
-                    $row['max_user_connections'] : '0'),
+                'value'       => isset($row['max_user_connections']) ?
+                    $row['max_user_connections'] : '0',
                 'description' => __(
                     'Limits the number of simultaneous connections '
                     . 'the user may have.'
-                )
-            ]
+                ),
+            ],
         ];
 
         $html_output = $this->template->render('server/privileges/resource_limits', [
-            'limits' => $limits
+            'limits' => $limits,
         ]);
 
         $html_output .= '</fieldset>' . "\n";
@@ -1002,18 +996,18 @@ class Privileges
                 __(
                     'Allows user to give to other users or remove from other users '
                     . 'privileges that user possess on this routine.'
-                )
+                ),
             ],
             [
                 'Alter_routine',
                 'ALTER ROUTINE',
-                __('Allows altering and dropping this routine.')
+                __('Allows altering and dropping this routine.'),
             ],
             [
                 'Execute',
                 'EXECUTE',
-                __('Allows executing this routine.')
-            ]
+                __('Allows executing this routine.'),
+            ],
         ];
         return $routinePrivTable;
     }
@@ -1063,9 +1057,9 @@ class Privileges
         unset($res, $row1, $current);
 
         $html_output = '<input type="hidden" name="grant_count" '
-            . 'value="' . count($row) . '" />' . "\n"
+            . 'value="' . count($row) . '">' . "\n"
             . '<input type="hidden" name="column_count" '
-            . 'value="' . count($columns) . '" />' . "\n"
+            . 'value="' . count($columns) . '">' . "\n"
             . '<fieldset id="fieldset_user_priv">' . "\n"
             . '<legend data-submenu-label="' . __('Table') . '">' . __('Table-specific privileges')
             . '</legend>'
@@ -1184,13 +1178,13 @@ class Privileges
                 . mb_substr(
                     $tmp_current_grant,
                     0,
-                    (mb_strlen($tmp_current_grant) - 5)
+                    mb_strlen($tmp_current_grant) - 5
                 );
             $html_output .= (isset($GLOBALS[$privGlobalName])
                     ? $GLOBALS[$privGlobalName]
                     : $GLOBALS[$privGlobalName . 'Tbl']
                 )
-                . '"/>' . "\n";
+                . '">' . "\n";
 
             $privGlobalName1 = 'strPrivDesc'
                 . mb_substr(
@@ -1229,9 +1223,10 @@ class Privileges
      */
     public function getHtmlForGlobalOrDbSpecificPrivs($db, $table, array $row)
     {
-        $privTable_names = [0 => __('Data'),
+        $privTable_names = [
+            0 => __('Data'),
             1 => __('Structure'),
-            2 => __('Administration')
+            2 => __('Administration'),
         ];
         $privTable = [];
         $privTable[0] = $this->getDataPrivilegeTable($db);
@@ -1244,7 +1239,7 @@ class Privileges
                 + count($privTable[2])
                 - (isset($row['Grant_priv']) ? 1 : 0)
             )
-            . '" />';
+            . '">';
         if ($db == '*') {
             $legend     = __('Global privileges');
             $menu_label = __('Global');
@@ -1258,7 +1253,7 @@ class Privileges
         $html_output .= '<fieldset id="fieldset_user_global_rights">'
             . '<legend data-submenu-label="' . $menu_label . '">' . $legend
             . '<input type="checkbox" id="addUsersForm_checkall" '
-            . 'class="checkall_box" title="' . __('Check all') . '" /> '
+            . 'class="checkall_box" title="' . __('Check all') . '"> '
             . '<label for="addUsersForm_checkall">' . __('Check all') . '</label> '
             . '</legend>'
             . '<p><small><i>'
@@ -1288,21 +1283,38 @@ class Privileges
      *
      * @param string $db the database
      *
-     * @return string data privilege table
+     * @return array data privilege table
      */
     public function getDataPrivilegeTable($db)
     {
         $data_privTable = [
-            ['Select', 'SELECT', __('Allows reading data.')],
-            ['Insert', 'INSERT', __('Allows inserting and replacing data.')],
-            ['Update', 'UPDATE', __('Allows changing data.')],
-            ['Delete', 'DELETE', __('Allows deleting data.')]
+            [
+                'Select',
+                'SELECT',
+                __('Allows reading data.'),
+            ],
+            [
+                'Insert',
+                'INSERT',
+                __('Allows inserting and replacing data.'),
+            ],
+            [
+                'Update',
+                'UPDATE',
+                __('Allows changing data.'),
+            ],
+            [
+                'Delete',
+                'DELETE',
+                __('Allows deleting data.'),
+            ],
         ];
         if ($db == '*') {
             $data_privTable[]
-                = ['File',
+                = [
+                    'File',
                     'FILE',
-                    __('Allows importing data from and exporting data into files.')
+                    __('Allows importing data from and exporting data into files.'),
                 ];
         }
         return $data_privTable;
@@ -1314,71 +1326,88 @@ class Privileges
      * @param string $table the table
      * @param array  $row   first row from result or boolean false
      *
-     * @return string structure privilege table
+     * @return array structure privilege table
      */
     public function getStructurePrivilegeTable($table, array $row)
     {
         $structure_privTable = [
-            ['Create',
+            [
+                'Create',
                 'CREATE',
-                ($table == '*'
+                $table == '*'
                     ? __('Allows creating new databases and tables.')
-                    : __('Allows creating new tables.')
-                )
+                    : __('Allows creating new tables.'),
             ],
-            ['Alter',
+            [
+                'Alter',
                 'ALTER',
-                __('Allows altering the structure of existing tables.')
+                __('Allows altering the structure of existing tables.'),
             ],
-            ['Index', 'INDEX', __('Allows creating and dropping indexes.')],
-            ['Drop',
+            [
+                'Index',
+                'INDEX',
+                __('Allows creating and dropping indexes.'),
+            ],
+            [
+                'Drop',
                 'DROP',
-                ($table == '*'
+                $table == '*'
                     ? __('Allows dropping databases and tables.')
-                    : __('Allows dropping tables.')
-                )
+                    : __('Allows dropping tables.'),
             ],
-            ['Create_tmp_table',
+            [
+                'Create_tmp_table',
                 'CREATE TEMPORARY TABLES',
-                __('Allows creating temporary tables.')
+                __('Allows creating temporary tables.'),
             ],
-            ['Show_view',
+            [
+                'Show_view',
                 'SHOW VIEW',
-                __('Allows performing SHOW CREATE VIEW queries.')
+                __('Allows performing SHOW CREATE VIEW queries.'),
             ],
-            ['Create_routine',
+            [
+                'Create_routine',
                 'CREATE ROUTINE',
-                __('Allows creating stored routines.')
+                __('Allows creating stored routines.'),
             ],
-            ['Alter_routine',
+            [
+                'Alter_routine',
                 'ALTER ROUTINE',
-                __('Allows altering and dropping stored routines.')
+                __('Allows altering and dropping stored routines.'),
             ],
-            ['Execute', 'EXECUTE', __('Allows executing stored routines.')],
+            [
+                'Execute',
+                'EXECUTE',
+                __('Allows executing stored routines.'),
+            ],
         ];
         // this one is for a db-specific priv: Create_view_priv
         if (isset($row['Create_view_priv'])) {
-            $structure_privTable[] = ['Create_view',
+            $structure_privTable[] = [
+                'Create_view',
                 'CREATE VIEW',
-                __('Allows creating new views.')
+                __('Allows creating new views.'),
             ];
         }
         // this one is for a table-specific priv: Create View_priv
         if (isset($row['Create View_priv'])) {
-            $structure_privTable[] = ['Create View',
+            $structure_privTable[] = [
+                'Create View',
                 'CREATE VIEW',
-                __('Allows creating new views.')
+                __('Allows creating new views.'),
             ];
         }
         if (isset($row['Event_priv'])) {
             // MySQL 5.1.6
-            $structure_privTable[] = ['Event',
+            $structure_privTable[] = [
+                'Event',
                 'EVENT',
-                __('Allows to set up events for the event scheduler.')
+                __('Allows to set up events for the event scheduler.'),
             ];
-            $structure_privTable[] = ['Trigger',
+            $structure_privTable[] = [
+                'Trigger',
                 'TRIGGER',
-                __('Allows creating and dropping triggers.')
+                __('Allows creating and dropping triggers.'),
             ];
         }
         return $structure_privTable;
@@ -1389,76 +1418,88 @@ class Privileges
      *
      * @param string $db the table
      *
-     * @return string administration privilege table
+     * @return array administration privilege table
      */
     public function getAdministrationPrivilegeTable($db)
     {
         if ($db == '*') {
             $adminPrivTable = [
-                ['Grant',
+                [
+                    'Grant',
                     'GRANT',
                     __(
                         'Allows adding users and privileges '
                         . 'without reloading the privilege tables.'
-                    )
+                    ),
                 ],
             ];
-            $adminPrivTable[] = ['Super',
+            $adminPrivTable[] = [
+                'Super',
                 'SUPER',
                 __(
                     'Allows connecting, even if maximum number '
                     . 'of connections is reached; required for '
                     . 'most administrative operations like '
                     . 'setting global variables or killing threads of other users.'
-                )
+                ),
             ];
-            $adminPrivTable[] = ['Process',
+            $adminPrivTable[] = [
+                'Process',
                 'PROCESS',
-                __('Allows viewing processes of all users.')
+                __('Allows viewing processes of all users.'),
             ];
-            $adminPrivTable[] = ['Reload',
+            $adminPrivTable[] = [
+                'Reload',
                 'RELOAD',
-                __('Allows reloading server settings and flushing the server\'s caches.')
+                __('Allows reloading server settings and flushing the server\'s caches.'),
             ];
-            $adminPrivTable[] = ['Shutdown',
+            $adminPrivTable[] = [
+                'Shutdown',
                 'SHUTDOWN',
-                __('Allows shutting down the server.')
+                __('Allows shutting down the server.'),
             ];
-            $adminPrivTable[] = ['Show_db',
+            $adminPrivTable[] = [
+                'Show_db',
                 'SHOW DATABASES',
-                __('Gives access to the complete list of databases.')
+                __('Gives access to the complete list of databases.'),
             ];
         } else {
             $adminPrivTable = [
-                ['Grant',
+                [
+                    'Grant',
                     'GRANT',
                     __(
                         'Allows user to give to other users or remove from other'
                         . ' users the privileges that user possess yourself.'
-                    )
+                    ),
                 ],
             ];
         }
-        $adminPrivTable[] = ['Lock_tables',
+        $adminPrivTable[] = [
+            'Lock_tables',
             'LOCK TABLES',
-            __('Allows locking tables for the current thread.')
+            __('Allows locking tables for the current thread.'),
         ];
-        $adminPrivTable[] = ['References',
+        $adminPrivTable[] = [
+            'References',
             'REFERENCES',
-            __('Has no effect in this MySQL version.')
+            __('Has no effect in this MySQL version.'),
         ];
         if ($db == '*') {
-            $adminPrivTable[] = ['Repl_client',
+            $adminPrivTable[] = [
+                'Repl_client',
                 'REPLICATION CLIENT',
-                __('Allows the user to ask where the slaves / masters are.')
+                __('Allows the user to ask where the slaves / masters are.'),
             ];
-            $adminPrivTable[] = ['Repl_slave',
+            $adminPrivTable[] = [
+                'Repl_slave',
                 'REPLICATION SLAVE',
-                __('Needed for the replication slaves.')
+                __('Needed for the replication slaves.'),
             ];
-            $adminPrivTable[] = ['Create_user',
+            $adminPrivTable[] = [
+                'Create_user',
                 'CREATE USER',
-                __('Allows creating, dropping and renaming user accounts.')
+                __('Allows creating, dropping and renaming user accounts.'),
             ];
         }
         return $adminPrivTable;
@@ -1513,7 +1554,7 @@ class Privileges
             }
         } else {
             $active_auth_plugins = [
-                'mysql_native_password' => __('Native MySQL authentication')
+                'mysql_native_password' => __('Native MySQL authentication'),
             ];
         }
 
@@ -1621,7 +1662,7 @@ class Privileges
             . (! isset($GLOBALS['pred_username'])
                     || $GLOBALS['pred_username'] == 'userdefined'
                 ? 'required="required"'
-                : '') . ' />' . "\n";
+                : '') . '>' . "\n";
 
         $html_output .= '<div id="user_exists_warning"'
             . ' name="user_exists_warning" class="hide">'
@@ -1649,7 +1690,7 @@ class Privileges
                 '',
                 mb_substr(
                     $_current_user,
-                    (mb_strrpos($_current_user, '@') + 1)
+                    mb_strrpos($_current_user, '@') + 1
                 )
             );
             if ($thishost != 'localhost' && $thishost != '127.0.0.1') {
@@ -1726,7 +1767,7 @@ class Privileges
                     && $GLOBALS['pred_hostname'] == 'userdefined'
                 ? 'required="required"'
                 : '')
-            . ' />' . "\n"
+            . '>' . "\n"
             . Util::showHint(
                 __(
                     'When Host table is used, this field is ignored '
@@ -1760,7 +1801,7 @@ class Privileges
             . '<input type="password" id="text_pma_pw" name="pma_pw" '
             . 'title="' . __('Password') . '" '
             . (isset($GLOBALS['username']) ? '' : 'required="required"')
-            . '/>' . "\n"
+            . '>' . "\n"
             . '<span>Strength:</span> '
             . '<meter max="4" id="password_strength_meter" name="pw_meter"></meter> '
             . '<span id="password_strength" name="pw_strength"></span>' . "\n"
@@ -1775,7 +1816,7 @@ class Privileges
             . '<input type="password" name="pma_pw2" id="text_pma_pw2" '
             . 'title="' . __('Re-type') . '" '
             . (isset($GLOBALS['username']) ? '' : 'required="required"')
-            . '/>' . "\n"
+            . '>' . "\n"
             . '</div>' . "\n"
             . '<div class="item" id="authentication_plugin_div">'
             . '<label for="select_authentication_plugin" >';
@@ -1858,7 +1899,10 @@ class Privileges
                 $hostname_length = $val['CHARACTER_MAXIMUM_LENGTH'];
             }
         }
-        return [$username_length, $hostname_length];
+        return [
+            $username_length,
+            $hostname_length,
+        ];
     }
 
     /**
@@ -2051,7 +2095,7 @@ class Privileges
                     . $hostname . "';";
 
                 // Update the plugin for the user
-                if (!$this->dbi->tryQuery($update_plugin_query)) {
+                if (! $this->dbi->tryQuery($update_plugin_query)) {
                     Util::mysqlDie(
                         $this->dbi->getError(),
                         $update_plugin_query,
@@ -2085,7 +2129,7 @@ class Privileges
                     . '(\'' . $this->dbi->escapeString($_POST['pma_pw']) . '\')');
             }
 
-            if (!$this->dbi->tryQuery($local_query)) {
+            if (! $this->dbi->tryQuery($local_query)) {
                 Util::mysqlDie(
                     $this->dbi->getError(),
                     $sql_query,
@@ -2149,7 +2193,10 @@ class Privileges
         );
         $message->addParam('\'' . $username . '\'@\'' . $hostname . '\'');
 
-        return [$message, $sql_query];
+        return [
+            $message,
+            $sql_query,
+        ];
     }
 
     /**
@@ -2198,26 +2245,28 @@ class Privileges
     public function getWithClauseForAddUserAndUpdatePrivs()
     {
         $sql_query = '';
-        if ((isset($_POST['Grant_priv']) && $_POST['Grant_priv'] == 'Y')
-            || (isset($GLOBALS['Grant_priv']) && $GLOBALS['Grant_priv'] == 'Y')
+        if (((isset($_POST['Grant_priv']) && $_POST['Grant_priv'] == 'Y')
+            || (isset($GLOBALS['Grant_priv']) && $GLOBALS['Grant_priv'] == 'Y'))
+            && ! ((Util::getServerType() == 'MySQL' || Util::getServerType() == 'Percona Server')
+                && $this->dbi->getVersion() >= 80011)
         ) {
             $sql_query .= ' GRANT OPTION';
         }
         if (isset($_POST['max_questions']) || isset($GLOBALS['max_questions'])) {
             $max_questions = isset($_POST['max_questions'])
-                ? (int)$_POST['max_questions'] : (int)$GLOBALS['max_questions'];
+                ? (int) $_POST['max_questions'] : (int) $GLOBALS['max_questions'];
             $max_questions = max(0, $max_questions);
             $sql_query .= ' MAX_QUERIES_PER_HOUR ' . $max_questions;
         }
         if (isset($_POST['max_connections']) || isset($GLOBALS['max_connections'])) {
             $max_connections = isset($_POST['max_connections'])
-                ? (int)$_POST['max_connections'] : (int)$GLOBALS['max_connections'];
+                ? (int) $_POST['max_connections'] : (int) $GLOBALS['max_connections'];
             $max_connections = max(0, $max_connections);
             $sql_query .= ' MAX_CONNECTIONS_PER_HOUR ' . $max_connections;
         }
         if (isset($_POST['max_updates']) || isset($GLOBALS['max_updates'])) {
             $max_updates = isset($_POST['max_updates'])
-                ? (int)$_POST['max_updates'] : (int)$GLOBALS['max_updates'];
+                ? (int) $_POST['max_updates'] : (int) $GLOBALS['max_updates'];
             $max_updates = max(0, $max_updates);
             $sql_query .= ' MAX_UPDATES_PER_HOUR ' . $max_updates;
         }
@@ -2225,12 +2274,12 @@ class Privileges
             || isset($GLOBALS['max_user_connections'])
         ) {
             $max_user_connections = isset($_POST['max_user_connections'])
-                ? (int)$_POST['max_user_connections']
-                : (int)$GLOBALS['max_user_connections'];
+                ? (int) $_POST['max_user_connections']
+                : (int) $GLOBALS['max_user_connections'];
             $max_user_connections = max(0, $max_user_connections);
             $sql_query .= ' MAX_USER_CONNECTIONS ' . $max_user_connections;
         }
-        return (!empty($sql_query) ? ' WITH' . $sql_query : '');
+        return (! empty($sql_query) ? ' WITH' . $sql_query : '');
     }
 
     /**
@@ -2261,7 +2310,7 @@ class Privileges
             'onclick' => false,
             'html_field_id' => 'createdb-1',
         ]);
-        $html_output .= '<br />' . "\n";
+        $html_output .= '<br>' . "\n";
         $html_output .= $this->template->render('checkbox', [
             'html_field_name' => 'createdb-2',
             'label' => __('Grant all privileges on wildcard name (username\\_%).'),
@@ -2269,7 +2318,7 @@ class Privileges
             'onclick' => false,
             'html_field_id' => 'createdb-2',
         ]);
-        $html_output .= '<br />' . "\n";
+        $html_output .= '<br>' . "\n";
 
         if (! empty($dbname)) {
             $html_output .= $this->template->render('checkbox', [
@@ -2280,8 +2329,8 @@ class Privileges
                 'html_field_id' => 'createdb-3',
             ]);
             $html_output .= '<input type="hidden" name="dbname" value="'
-                . htmlspecialchars($dbname) . '" />' . "\n";
-            $html_output .= '<br />' . "\n";
+                . htmlspecialchars($dbname) . '">' . "\n";
+            $html_output .= '<br>' . "\n";
         }
 
         $html_output .= '</fieldset>' . "\n";
@@ -2290,8 +2339,8 @@ class Privileges
         }
         $html_output .= '<fieldset id="fieldset_add_user_footer" class="tblFooters">'
             . "\n"
-            . '<input type="hidden" name="adduser_submit" value="1" />' . "\n"
-            . '<input type="submit" id="adduser_submit" value="' . __('Go') . '" />'
+            . '<input type="hidden" name="adduser_submit" value="1">' . "\n"
+            . '<input class="btn btn-primary" type="submit" id="adduser_submit" value="' . __('Go') . '">'
             . "\n"
             . '</fieldset>' . "\n"
             . '</form>' . "\n";
@@ -2351,7 +2400,10 @@ class Privileges
         $listOfComparedPrivs .=
             ' AND `Event_priv` = \'N\''
             . ' AND `Trigger_priv` = \'N\'';
-        return [$list_of_privileges, $listOfComparedPrivs];
+        return [
+            $list_of_privileges,
+            $listOfComparedPrivs,
+        ];
     }
 
     /**
@@ -2376,7 +2428,7 @@ class Privileges
             $html_output .= '<input type="checkbox" class="checkall" '
                 . 'name="selected_usr[]" '
                 . 'id="checkbox_sel_users_' . ($index_checkbox++) . '" '
-                . 'value="' . $value . '" /></td>';
+                . 'value="' . $value . '"></td>';
 
             $html_output .= '<td>' . htmlspecialchars($row['User'])
                 . '</td>'
@@ -2612,8 +2664,8 @@ class Privileges
     /**
      * merge privilege map and rows from resultset
      *
-     * @param array  &$privMap the privilege map reference
-     * @param object $result   the resultset of query
+     * @param array  $privMap the privilege map reference
+     * @param object $result  the resultset of query
      *
      * @return void
      */
@@ -2701,7 +2753,7 @@ class Privileges
                 $html_output .= '<input type="checkbox" class="checkall" '
                     . 'name="selected_usr[]" '
                     . 'id="checkbox_sel_users_' . ($index_checkbox++) . '" '
-                    . 'value="' . $value . '" /></td>' . "\n";
+                    . 'value="' . $value . '"></td>' . "\n";
 
                 // user
                 $html_output .= '<td';
@@ -2796,14 +2848,14 @@ class Privileges
                     }
                 }
                 $html_output .= '<code>'
-                    . join(
+                    . implode(
                         ',',
                         $this->extractPrivInfo($privs, true, true)
                     )
                     . '</code>';
             } else {
                 $html_output .= '<code>'
-                    . join(
+                    . implode(
                         ',',
                         $this->extractPrivInfo($current, true, false)
                     )
@@ -2895,7 +2947,7 @@ class Privileges
         }
         $params = [
             'username' => $username,
-            'hostname' => $hostname
+            'hostname' => $hostname,
         ];
         switch ($linktype) {
             case 'edit':
@@ -3058,7 +3110,7 @@ class Privileges
                 . 'id="checkbox_sel_users_"'
                 . 'value="'
                 . htmlspecialchars($username)
-                . '&amp;#27;' . htmlspecialchars($hostname) . '" />'
+                . '&amp;#27;' . htmlspecialchars($hostname) . '">'
                 . '</td>' . "\n"
                 . '<td><label for="checkbox_sel_users_">'
                 . (empty($_POST['username'])
@@ -3078,18 +3130,18 @@ class Privileges
 
             $new_user_string .= '</td>' . "\n";
             $new_user_string .= '<td>'
-                . '<code>' . join(', ', $this->extractPrivInfo(null, true)) . '</code>'
+                . '<code>' . implode(', ', $this->extractPrivInfo(null, true)) . '</code>'
                 . '</td>'; //Fill in privileges here
 
             // if $cfg['Servers'][$i]['users'] and $cfg['Servers'][$i]['usergroups'] are
             // enabled
             $cfgRelation = $this->relation->getRelationsParam();
-            if (!empty($cfgRelation['users']) && !empty($cfgRelation['usergroups'])) {
+            if (! empty($cfgRelation['users']) && ! empty($cfgRelation['usergroups'])) {
                 $new_user_string .= '<td class="usrGroup"></td>';
             }
 
             $new_user_string .= '<td>';
-            if ((isset($_POST['Grant_priv']) && $_POST['Grant_priv'] == 'Y')) {
+            if (isset($_POST['Grant_priv']) && $_POST['Grant_priv'] == 'Y') {
                 $new_user_string .= __('Yes');
             } else {
                 $new_user_string .= __('No');
@@ -3145,7 +3197,7 @@ class Privileges
                 $extra_data['db_specific_privs'] = ! $dbname_is_wildcard;
                 $extra_data['db_wildcard_privs'] = $dbname_is_wildcard;
             }
-            $new_privileges = join(', ', $this->extractPrivInfo(null, true));
+            $new_privileges = implode(', ', $this->extractPrivInfo(null, true));
 
             $extra_data['new_privileges'] = $new_privileges;
         }
@@ -3185,7 +3237,7 @@ class Privileges
             '3' => __(
                 '… delete the old one from the user tables '
                 . 'and reload the privileges afterwards.'
-            )
+            ),
         ];
 
         $html_output = '<form action="server_privileges.php" '
@@ -3193,14 +3245,14 @@ class Privileges
             . 'method="post" class="copyUserForm submenu-item">' . "\n"
             . Url::getHiddenInputs('', '')
             . '<input type="hidden" name="old_username" '
-            . 'value="' . htmlspecialchars($username) . '" />' . "\n"
+            . 'value="' . htmlspecialchars($username) . '">' . "\n"
             . '<input type="hidden" name="old_hostname" '
-            . 'value="' . htmlspecialchars($hostname) . '" />' . "\n";
+            . 'value="' . htmlspecialchars($hostname) . '">' . "\n";
 
         $usergroup = $this->getUserGroupForUser($username);
         if ($usergroup !== null) {
             $html_output .= '<input type="hidden" name="old_usergroup" '
-            . 'value="' . htmlspecialchars($usergroup) . '" />' . "\n";
+            . 'value="' . htmlspecialchars($usergroup) . '">' . "\n";
         }
 
         $html_output .= '<fieldset id="fieldset_change_copy_user">' . "\n"
@@ -3224,8 +3276,8 @@ class Privileges
 
         $html_output .= '<fieldset id="fieldset_change_copy_user_footer" '
             . 'class="tblFooters">' . "\n"
-            . '<input type="hidden" name="change_copy" value="1" />' . "\n"
-            . '<input type="submit" value="' . __('Go') . '" />' . "\n"
+            . '<input type="hidden" name="change_copy" value="1">' . "\n"
+            . '<input class="btn btn-primary" type="submit" value="' . __('Go') . '">' . "\n"
             . '</fieldset>' . "\n"
             . '</form>' . "\n";
 
@@ -3251,7 +3303,7 @@ class Privileges
             . Url::getCommon(
                 [
                     'db' => $url_dbname,
-                    'reload' => 1
+                    'reload' => 1,
                 ]
             )
             . '">'
@@ -3304,18 +3356,20 @@ class Privileges
 
         if ($type == 'database') {
             $tables_to_search_for_users = [
-                'tables_priv', 'columns_priv', 'procs_priv'
+                'tables_priv',
+                'columns_priv',
+                'procs_priv',
             ];
             $dbOrTableName = 'Db';
         } elseif ($type == 'table') {
             $user_host_condition .= " AND `Db` LIKE '"
                 . $this->dbi->escapeString($dbname) . "'";
-            $tables_to_search_for_users = ['columns_priv',];
+            $tables_to_search_for_users = ['columns_priv'];
             $dbOrTableName = 'Table_name';
         } else { // routine
             $user_host_condition .= " AND `Db` LIKE '"
                 . $this->dbi->escapeString($dbname) . "'";
-            $tables_to_search_for_users = ['procs_priv',];
+            $tables_to_search_for_users = ['procs_priv'];
             $dbOrTableName = 'Routine_name';
         }
 
@@ -3480,7 +3534,7 @@ class Privileges
                 $onePrivilege['grant']        = $row['Grant_priv'] == 'Y';
                 $onePrivilege['table_privs']   = ! empty($row['Table_priv'])
                     || ! empty($row['Column_priv']);
-                $onePrivilege['privileges'] = join(',', $this->extractPrivInfo($row, true));
+                $onePrivilege['privileges'] = implode(',', $this->extractPrivInfo($row, true));
 
                 $paramDbName = $row['Db'];
             } elseif ($type == 'table') {
@@ -3490,7 +3544,7 @@ class Privileges
                     explode(',', $row['Table_priv'])
                 );
                 $onePrivilege['column_privs']  = ! empty($row['Column_priv']);
-                $onePrivilege['privileges'] = join(',', $this->extractPrivInfo($row, true));
+                $onePrivilege['privileges'] = implode(',', $this->extractPrivInfo($row, true));
 
                 $paramDbName = $dbname;
                 $paramTableName = $row['Table_name'];
@@ -3502,7 +3556,7 @@ class Privileges
                 );
 
                 $privs = $this->parseProcPriv($row['Proc_priv']);
-                $onePrivilege['privileges'] = join(
+                $onePrivilege['privileges'] = implode(
                     ',',
                     $this->extractPrivInfo($privs, true)
                 );
@@ -3552,7 +3606,10 @@ class Privileges
             // we already have the list of databases from libraries/common.inc.php
             // via $pma = new PMA;
             $pred_db_array = $GLOBALS['dblist']->databases;
-            $databases_to_skip = ['information_schema', 'performance_schema'];
+            $databases_to_skip = [
+                'information_schema',
+                'performance_schema',
+            ];
 
             $databases = [];
             if (! empty($pred_db_array)) {
@@ -3670,7 +3727,7 @@ class Privileges
             'export'
         );
         $html_output .= '<input type="hidden" name="initial" '
-            . 'value="' . (isset($_GET['initial']) ? htmlspecialchars($_GET['initial']) : '') . '" />';
+            . 'value="' . (isset($_GET['initial']) ? htmlspecialchars($_GET['initial']) : '') . '">';
         $html_output .= '</div>'
             . '<div class="clearfloat"></div>';
 
@@ -3722,7 +3779,7 @@ class Privileges
                     . $index_checkbox . '" value="'
                     . htmlspecialchars($host['User'] . '&amp;#27;' . $host['Host'])
                     . '"'
-                    . ' /></td>' . "\n";
+                    . '></td>' . "\n";
 
                 $html_output .= '<td><label '
                     . 'for="checkbox_sel_users_' . $index_checkbox . '">'
@@ -3887,7 +3944,11 @@ class Privileges
         $tables = $this->dbi->fetchResult('SHOW TABLES FROM `mysql`;');
 
         $tablesSearchForUsers = [
-            'user', 'db', 'tables_priv', 'columns_priv', 'procs_priv',
+            'user',
+            'db',
+            'tables_priv',
+            'columns_priv',
+            'procs_priv',
         ];
 
         $db_rights_sqls = [];
@@ -3955,7 +4016,7 @@ class Privileges
             // tracking sets this, causing the deleted db to be shown in navi
             unset($GLOBALS['db']);
 
-            $sql_query = join("\n", $queries);
+            $sql_query = implode("\n", $queries);
             if (! empty($drop_user_error)) {
                 $message = Message::rawError($drop_user_error);
             } else {
@@ -3964,7 +4025,10 @@ class Privileges
                 );
             }
         }
-        return [$sql_query, $message];
+        return [
+            $sql_query,
+            $message,
+        ];
     }
 
     /**
@@ -3976,7 +4040,7 @@ class Privileges
      * @param string $dbname    database name
      * @param string $itemType  item type
      *
-     * @return Message success message or error message for update
+     * @return array success message or error message for update
      */
     public function updatePrivileges($username, $hostname, $tablename, $dbname, $itemType)
     {
@@ -3999,7 +4063,7 @@ class Privileges
         if (! (strlen($tablename) > 0
             && 'USAGE' == implode('', $this->extractPrivInfo()))
         ) {
-            $sql_query2 = 'GRANT ' . join(', ', $this->extractPrivInfo())
+            $sql_query2 = 'GRANT ' . implode(', ', $this->extractPrivInfo())
                 . ' ON ' . $itemType . ' ' . $db_and_table
                 . ' TO \'' . $this->dbi->escapeString($username) . '\'@\''
                 . $this->dbi->escapeString($hostname) . '\'';
@@ -4038,7 +4102,10 @@ class Privileges
         $message = Message::success(__('You have updated the privileges for %s.'));
         $message->addParam('\'' . $username . '\'@\'' . $hostname . '\'');
 
-        return [$sql_query, $message];
+        return [
+            $sql_query,
+            $message,
+        ];
     }
 
     /**
@@ -4109,7 +4176,10 @@ class Privileges
             }
         }
 
-        return [$queries, $password];
+        return [
+            $queries,
+            $password,
+        ];
     }
 
     /**
@@ -4160,7 +4230,7 @@ class Privileges
     /**
      * update Message For Reload
      *
-     * @return array
+     * @return Message|null
      */
     public function updateMessageForReload()
     {
@@ -4230,9 +4300,13 @@ class Privileges
         $queries_for_display = null;
         $sql_query = null;
 
-        if (!isset($_POST['adduser_submit']) && !isset($_POST['change_copy'])) {
+        if (! isset($_POST['adduser_submit']) && ! isset($_POST['change_copy'])) {
             return [
-                $message, $queries, $queries_for_display, $sql_query, $_add_user_error
+                $message,
+                $queries,
+                $queries_for_display,
+                $sql_query,
+                $_add_user_error,
             ];
         }
 
@@ -4254,7 +4328,7 @@ class Privileges
                 $_user_name = $this->dbi->fetchValue('SELECT USER()');
                 $hostname = mb_substr(
                     $_user_name,
-                    (mb_strrpos($_user_name, '@') + 1)
+                    mb_strrpos($_user_name, '@') + 1
                 );
                 unset($_user_name);
                 break;
@@ -4273,13 +4347,19 @@ class Privileges
                 $queries,
                 $queries_for_display,
                 $sql_query,
-                $_add_user_error
+                $_add_user_error,
             ];
         }
 
         list(
-            $create_user_real, $create_user_show, $real_sql_query, $sql_query,
-            $password_set_real, $password_set_show
+            $create_user_real,
+            $create_user_show,
+            $real_sql_query,
+            $sql_query,
+            $password_set_real,
+            $password_set_show,
+            $alter_real_sql_query,
+            $alter_sql_query
         ) = $this->getSqlQueriesForDisplayAndAddUser(
             $username,
             $hostname,
@@ -4290,10 +4370,10 @@ class Privileges
             $_error = false;
 
             if (! is_null($create_user_real)) {
-                if (!$this->dbi->tryQuery($create_user_real)) {
+                if (! $this->dbi->tryQuery($create_user_real)) {
                     $_error = true;
                 }
-                if (isset($password_set_real) && !empty($password_set_real)
+                if (isset($password_set_real) && ! empty($password_set_real)
                     && isset($_POST['authentication_plugin'])
                 ) {
                     $this->setProperPasswordHashing(
@@ -4312,9 +4392,11 @@ class Privileges
                 $sql_query,
                 $username,
                 $hostname,
-                $dbname
+                $dbname,
+                $alter_real_sql_query,
+                $alter_sql_query
             );
-            if (!empty($_POST['userGroup']) && $is_menuwork) {
+            if (! empty($_POST['userGroup']) && $is_menuwork) {
                 $this->setUserGroup($GLOBALS['username'], $_POST['userGroup']);
             }
 
@@ -4323,7 +4405,7 @@ class Privileges
                 $queries,
                 $queries_for_display,
                 $sql_query,
-                $_add_user_error
+                $_add_user_error,
             ];
         }
 
@@ -4362,7 +4444,11 @@ class Privileges
         }
 
         return [
-            $message, $queries, $queries_for_display, $sql_query, $_add_user_error
+            $message,
+            $queries,
+            $queries_for_display,
+            $sql_query,
+            $_add_user_error,
         ];
     }
 
@@ -4501,7 +4587,8 @@ class Privileges
         }
 
         return [
-            $username, $hostname,
+            $username,
+            $hostname,
             isset($dbname) ? $dbname : null,
             isset($tablename) ? $tablename : null,
             isset($routinename) ? $routinename : null,
@@ -4559,7 +4646,10 @@ class Privileges
 
         $export .= '</textarea>';
 
-        return [$title, $export];
+        return [
+            $title,
+            $export,
+        ];
     }
 
     /**
@@ -4572,19 +4662,19 @@ class Privileges
      */
     public function getAddUserHtmlFieldset($db = '', $table = '')
     {
-        if (!$GLOBALS['is_createuser']) {
+        if (! $GLOBALS['is_createuser']) {
             return '';
         }
         $rel_params = [];
         $url_params = [
-            'adduser' => 1
+            'adduser' => 1,
         ];
-        if (!empty($db)) {
+        if (! empty($db)) {
             $url_params['dbname']
                 = $rel_params['checkprivsdb']
                     = $db;
         }
-        if (!empty($table)) {
+        if (! empty($table)) {
             $url_params['tablename']
                 = $rel_params['checkprivstable']
                     = $table;
@@ -4592,7 +4682,7 @@ class Privileges
 
         return $this->template->render('server/privileges/add_user_fieldset', [
             'url_params' => $url_params,
-            'rel_params' => $rel_params
+            'rel_params' => $rel_params,
         ]);
     }
 
@@ -4771,7 +4861,7 @@ class Privileges
                 // This message is hardcoded because I will replace it by
                 // a automatic repair feature soon.
                 $raw = 'Your privilege table structure seems to be older than'
-                    . ' this MySQL version!<br />'
+                    . ' this MySQL version!<br>'
                     . 'Please run the <code>mysql_upgrade</code> command'
                     . ' that should be included in your MySQL server distribution'
                     . ' to solve this problem!';
@@ -5036,7 +5126,7 @@ class Privileges
                 'Select' => [],
                 'Insert' => [],
                 'Update' => [],
-                'References' => []
+                'References' => [],
             ];
 
             while ($row2 = $this->dbi->fetchAssoc($res2)) {
@@ -5055,22 +5145,22 @@ class Privileges
                 }
             }
             if (count($tmp_privs2['Select']) > 0 && ! in_array('SELECT', $tmp_privs1)) {
-                $tmp_privs1[] = 'SELECT (`' . join('`, `', $tmp_privs2['Select']) . '`)';
+                $tmp_privs1[] = 'SELECT (`' . implode('`, `', $tmp_privs2['Select']) . '`)';
             }
             if (count($tmp_privs2['Insert']) > 0 && ! in_array('INSERT', $tmp_privs1)) {
-                $tmp_privs1[] = 'INSERT (`' . join('`, `', $tmp_privs2['Insert']) . '`)';
+                $tmp_privs1[] = 'INSERT (`' . implode('`, `', $tmp_privs2['Insert']) . '`)';
             }
             if (count($tmp_privs2['Update']) > 0 && ! in_array('UPDATE', $tmp_privs1)) {
-                $tmp_privs1[] = 'UPDATE (`' . join('`, `', $tmp_privs2['Update']) . '`)';
+                $tmp_privs1[] = 'UPDATE (`' . implode('`, `', $tmp_privs2['Update']) . '`)';
             }
             if (count($tmp_privs2['References']) > 0
                 && ! in_array('REFERENCES', $tmp_privs1)
             ) {
                 $tmp_privs1[]
-                    = 'REFERENCES (`' . join('`, `', $tmp_privs2['References']) . '`)';
+                    = 'REFERENCES (`' . implode('`, `', $tmp_privs2['References']) . '`)';
             }
 
-            $queries[] = 'GRANT ' . join(', ', $tmp_privs1)
+            $queries[] = 'GRANT ' . implode(', ', $tmp_privs1)
                 . ' ON ' . Util::backquote($row['Db']) . '.'
                 . Util::backquote($row['Table_name'])
                 . ' TO \'' . $this->dbi->escapeString($username)
@@ -5106,7 +5196,7 @@ class Privileges
         );
 
         while ($row = $this->dbi->fetchAssoc($res)) {
-            $queries[] = 'GRANT ' . join(', ', $this->extractPrivInfo($row))
+            $queries[] = 'GRANT ' . implode(', ', $this->extractPrivInfo($row))
                 . ' ON ' . Util::backquote($row['Db']) . '.*'
                 . ' TO \'' . $this->dbi->escapeString($username)
                 . '\'@\'' . $this->dbi->escapeString($hostname) . '\''
@@ -5128,12 +5218,14 @@ class Privileges
      * Prepares queries for adding users and
      * also create database and return query and message
      *
-     * @param boolean $_error         whether user create or not
-     * @param string  $real_sql_query SQL query for add a user
-     * @param string  $sql_query      SQL query to be displayed
-     * @param string  $username       username
-     * @param string  $hostname       host name
-     * @param string  $dbname         database name
+     * @param boolean $_error               whether user create or not
+     * @param string  $real_sql_query       SQL query for add a user
+     * @param string  $sql_query            SQL query to be displayed
+     * @param string  $username             username
+     * @param string  $hostname             host name
+     * @param string  $dbname               database name
+     * @param string  $alter_real_sql_query SQL query for ALTER USER
+     * @param string  $alter_sql_query      SQL query for ALTER USER to be displayed
      *
      * @return array, $message
      */
@@ -5143,15 +5235,22 @@ class Privileges
         $sql_query,
         $username,
         $hostname,
-        $dbname
+        $dbname,
+        $alter_real_sql_query,
+        $alter_sql_query
     ) {
-        if ($_error || (!empty($real_sql_query)
-            && !$this->dbi->tryQuery($real_sql_query))
+        if ($_error || (! empty($real_sql_query)
+            && ! $this->dbi->tryQuery($real_sql_query))
         ) {
             $_POST['createdb-1'] = $_POST['createdb-2']
                 = $_POST['createdb-3'] = null;
             $message = Message::rawError($this->dbi->getError());
+        } elseif ($alter_real_sql_query !== '' && ! $this->dbi->tryQuery($alter_real_sql_query)) {
+            $_POST['createdb-1'] = $_POST['createdb-2']
+                = $_POST['createdb-3'] = null;
+            $message = Message::rawError($this->dbi->getError());
         } else {
+            $sql_query .= $alter_sql_query;
             $message = Message::success(__('You have added a new user.'));
         }
 
@@ -5215,7 +5314,10 @@ class Privileges
                 $message = Message::rawError($this->dbi->getError());
             }
         }
-        return [$sql_query, $message];
+        return [
+            $sql_query,
+            $message,
+        ];
     }
 
     /**
@@ -5231,9 +5333,7 @@ class Privileges
             "SELECT PASSWORD('" . $password . "') AS `password`;"
         );
 
-        $hashedPassword = $result['password'];
-
-        return $hashedPassword;
+        return $result['password'];
     }
 
     /**
@@ -5245,7 +5345,7 @@ class Privileges
     public function checkIfMariaDBPwdCheckPluginActive()
     {
         $serverVersion = $this->dbi->getVersion();
-        if (!(Util::getServerType() == 'MariaDB' && $serverVersion >= 100002)) {
+        if (! (Util::getServerType() == 'MariaDB' && $serverVersion >= 100002)) {
             return false;
         }
 
@@ -5276,7 +5376,7 @@ class Privileges
      * @param string $password password
      *
      * @return array ($create_user_real, $create_user_show,$real_sql_query, $sql_query
-     *                $password_set_real, $password_set_show)
+     *                $password_set_real, $password_set_show, $alter_real_sql_query, $alter_sql_query)
      */
     public function getSqlQueriesForDisplayAndAddUser($username, $hostname, $password)
     {
@@ -5330,7 +5430,7 @@ class Privileges
 
         $sql_query_stmt = sprintf(
             'GRANT %s ON *.* TO \'%s\'@\'%s\'',
-            join(', ', $this->extractPrivInfo()),
+            implode(', ', $this->extractPrivInfo()),
             $slashedUsername,
             $slashedHostname
         );
@@ -5369,6 +5469,8 @@ class Privileges
                 $create_user_stmt .= ' USING \'%s\'';
             } elseif ($serverType == 'MariaDB') {
                 $create_user_stmt .= ' IDENTIFIED BY \'%s\'';
+            } elseif (($serverType == 'MySQL' || $serverType == 'Percona Server') && $serverVersion >= 80011) {
+                $create_user_stmt .= ' BY \'%s\'';
             } else {
                 $create_user_stmt .= ' AS \'%s\'';
             }
@@ -5392,9 +5494,8 @@ class Privileges
                     '***'
                 );
             } else {
-                if (! ($serverType == 'MariaDB'
-                    && $isMariaDBPwdPluginActive)
-                ) {
+                if (! (($serverType == 'MariaDB' && $isMariaDBPwdPluginActive)
+                    || ($serverType == 'MySQL' || $serverType == 'Percona Server') && $serverVersion >= 80011)) {
                     $hashedPassword = $this->getHashedPassword($_POST['pma_pw']);
                 } else {
                     // MariaDB with validation plugin needs cleartext password
@@ -5437,21 +5538,53 @@ class Privileges
             }
         }
 
+        $alter_real_sql_query = '';
+        $alter_sql_query = '';
+        if (($serverType == 'MySQL' || $serverType == 'Percona Server') && $serverVersion >= 80011) {
+            $sql_query_stmt = '';
+            if ((isset($_POST['Grant_priv']) && $_POST['Grant_priv'] == 'Y')
+                || (isset($GLOBALS['Grant_priv']) && $GLOBALS['Grant_priv'] == 'Y')
+            ) {
+                $sql_query_stmt = ' WITH GRANT OPTION';
+            }
+            $real_sql_query .= $sql_query_stmt;
+            $sql_query .= $sql_query_stmt;
+
+            $alter_sql_query_stmt = sprintf(
+                'ALTER USER \'%s\'@\'%s\'',
+                $slashedUsername,
+                $slashedHostname
+            );
+            $alter_real_sql_query = $alter_sql_query_stmt;
+            $alter_sql_query = $alter_sql_query_stmt;
+        }
+
         // add REQUIRE clause
         $require_clause = $this->getRequireClause();
-        $real_sql_query .= $require_clause;
-        $sql_query .= $require_clause;
-
         $with_clause = $this->getWithClauseForAddUserAndUpdatePrivs();
-        $real_sql_query .= $with_clause;
-        $sql_query .= $with_clause;
 
+        if (($serverType == 'MySQL' || $serverType == 'Percona Server') && $serverVersion >= 80011) {
+            $alter_real_sql_query .= $require_clause;
+            $alter_sql_query .= $require_clause;
+            $alter_real_sql_query .= $with_clause;
+            $alter_sql_query .= $with_clause;
+        } else {
+            $real_sql_query .= $require_clause;
+            $sql_query .= $require_clause;
+            $real_sql_query .= $with_clause;
+            $sql_query .= $with_clause;
+        }
+
+        if ($alter_real_sql_query !== '') {
+            $alter_real_sql_query .= ';';
+            $alter_sql_query .= ';';
+        }
         $create_user_real .= ';';
         $create_user_show .= ';';
-        $real_sql_query   .= ';';
-        $sql_query        .= ';';
+        $real_sql_query .= ';';
+        $sql_query .= ';';
         // No Global GRANT_OPTION privilege
-        if (!$GLOBALS['is_grantuser']) {
+        if (! $GLOBALS['is_grantuser']) {
             $real_sql_query = '';
             $sql_query = '';
         }
@@ -5470,12 +5603,15 @@ class Privileges
             $password_set_show .= ";";
         }
 
-        return [$create_user_real,
+        return [
+            $create_user_real,
             $create_user_show,
             $real_sql_query,
             $sql_query,
             $password_set_real,
-            $password_set_show
+            $password_set_show,
+            $alter_real_sql_query,
+            $alter_sql_query,
         ];
     }
 

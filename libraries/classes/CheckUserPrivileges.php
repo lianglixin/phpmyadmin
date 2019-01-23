@@ -48,13 +48,13 @@ class CheckUserPrivileges
         $tblname_end_offset = mb_strpos($row, ' TO ');
         $tblname_start_offset = false;
 
-        if ($__tblname_start_offset = mb_strpos($row, '`.', $db_name_offset)) {
-            if ($__tblname_start_offset < $tblname_end_offset) {
+        if (($__tblname_start_offset = mb_strpos($row, '`.', $db_name_offset))
+            && $__tblname_start_offset
+            < $tblname_end_offset) {
                 $tblname_start_offset = $__tblname_start_offset + 1;
-            }
         }
 
-        if (!$tblname_start_offset) {
+        if (! $tblname_start_offset) {
             $tblname_start_offset = mb_strpos($row, '.', $db_name_offset);
         }
 
@@ -69,7 +69,7 @@ class CheckUserPrivileges
         $show_grants_str = mb_substr(
             $row,
             6,
-            (mb_strpos($row, ' ON ') - 6)
+            mb_strpos($row, ' ON ') - 6
         );
 
         $show_grants_tblname = mb_substr(
@@ -82,7 +82,7 @@ class CheckUserPrivileges
         return [
             $show_grants_str,
             $show_grants_dbname,
-            $show_grants_tblname
+            $show_grants_tblname,
         ];
     }
 

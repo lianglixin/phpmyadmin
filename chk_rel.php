@@ -10,15 +10,17 @@ declare(strict_types=1);
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 
-require_once 'libraries/common.inc.php';
+if (! defined('ROOT_PATH')) {
+    define('ROOT_PATH', __DIR__ . DIRECTORY_SEPARATOR);
+}
+
+require_once ROOT_PATH . 'libraries/common.inc.php';
 
 $relation = new Relation($GLOBALS['dbi']);
 
 // If request for creating the pmadb
-if (isset($_POST['create_pmadb'])) {
-    if ($relation->createPmaDatabase()) {
-        $relation->fixPmaTables('phpmyadmin');
-    }
+if (isset($_POST['create_pmadb']) && $relation->createPmaDatabase()) {
+    $relation->fixPmaTables('phpmyadmin');
 }
 
 // If request for creating all PMA tables.

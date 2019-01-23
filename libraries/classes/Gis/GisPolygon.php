@@ -38,7 +38,7 @@ class GisPolygon extends GisGeometry
      */
     public static function singleton()
     {
-        if (!isset(self::$_instance)) {
+        if (! isset(self::$_instance)) {
             $class = __CLASS__;
             self::$_instance = new $class;
         }
@@ -162,7 +162,11 @@ class GisPolygon extends GisGeometry
         $red = hexdec(mb_substr($fill_color, 1, 2));
         $green = hexdec(mb_substr($fill_color, 3, 2));
         $blue = hexdec(mb_substr($fill_color, 4, 2));
-        $color = [$red, $green, $blue];
+        $color = [
+            $red,
+            $green,
+            $blue,
+        ];
 
         // Trim to remove leading 'POLYGON((' and trailing '))'
         $polygon = mb_substr(
@@ -217,7 +221,7 @@ class GisPolygon extends GisGeometry
     {
         $polygon_options = [
             'name'         => $label,
-            'id'           => $label . rand(),
+            'id'           => $label . mt_rand(),
             'class'        => 'polygon vector',
             'stroke'       => 'black',
             'stroke-width' => 0.5,
@@ -523,7 +527,7 @@ class GisPolygon extends GisGeometry
             }
         }
 
-        if (!isset($x0)) {
+        if (! isset($x0)) {
             return false;
         }
 
@@ -533,7 +537,7 @@ class GisPolygon extends GisGeometry
 
         // Always keep $epsilon < 1 to go with the reduction logic down here
         $epsilon = 0.1;
-        $denominator = sqrt(pow(($y1 - $y0), 2) + pow(($x0 - $x1), 2));
+        $denominator = sqrt(pow($y1 - $y0, 2) + pow($x0 - $x1, 2));
         $pointA = [];
         $pointB = [];
 

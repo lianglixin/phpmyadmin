@@ -158,7 +158,7 @@ class TableSearchController extends TableController
                 // strip the "BINARY" attribute, except if we find "BINARY(" because
                 // this would be a BINARY or VARBINARY column type
                 if (! preg_match('@BINARY[\(]@i', $type)) {
-                    $type = preg_replace('@BINARY@i', '', $type);
+                    $type = str_ireplace("BINARY", '', $type);
                 }
                 $type = preg_replace('@ZEROFILL@i', '', $type);
                 $type = preg_replace('@UNSIGNED@i', '', $type);
@@ -230,8 +230,8 @@ class TableSearchController extends TableController
                 /**
              * No selection criteria received -> display the selection form
              */
-                if (!isset($_POST['columnsToDisplay'])
-                && !isset($_POST['displayAllColumns'])
+                if (! isset($_POST['columnsToDisplay'])
+                && ! isset($_POST['displayAllColumns'])
                 ) {
                     $this->displaySelectionFormAction();
                 } else {
@@ -284,7 +284,7 @@ class TableSearchController extends TableController
                 }
 
                 //Set default datalabel if not selected
-                if (!isset($_POST['zoom_submit']) || $_POST['dataLabel'] == '') {
+                if (! isset($_POST['zoom_submit']) || $_POST['dataLabel'] == '') {
                     $dataLabel = $this->relation->getDisplayField($this->db, $this->table);
                 } else {
                     $dataLabel = $_POST['dataLabel'];
@@ -373,7 +373,7 @@ class TableSearchController extends TableController
             'Browse' => Util::getIcon(
                 'b_browse',
                 __('Browse foreign values')
-            )
+            ),
         ];
         $column_names_hashes = [];
 
@@ -570,9 +570,9 @@ class TableSearchController extends TableController
                 'criteria_column_types' => isset($_POST['criteriaColumnTypes']) ? $_POST['criteriaColumnTypes'] : null,
                 'sql_types' => $this->dbi->types,
                 'max_rows' => intval($GLOBALS['cfg']['MaxRows']),
-                'max_plot_limit' => (! empty($_POST['maxPlotLimit'])
+                'max_plot_limit' => ! empty($_POST['maxPlotLimit'])
                     ? intval($_POST['maxPlotLimit'])
-                    : intval($GLOBALS['cfg']['maxRowPlotLimit'])),
+                    : intval($GLOBALS['cfg']['maxRowPlotLimit']),
             ])
         );
     }
@@ -724,7 +724,18 @@ class TableSearchController extends TableController
 
         if (is_array($result)) {
             /* Iterate over possible delimiters to get one */
-            $delimiters = ['/', '@', '#', '~', '!', '$', '%', '^', '&', '_'];
+            $delimiters = [
+                '/',
+                '@',
+                '#',
+                '~',
+                '!',
+                '$',
+                '%',
+                '^',
+                '&',
+                '_',
+            ];
             $found = false;
             for ($i = 0, $l = count($delimiters); $i < $l; $i++) {
                 if (strpos($find, $delimiters[$i]) === false) {
@@ -916,7 +927,7 @@ class TableSearchController extends TableController
             'Browse' => Util::getIcon(
                 'b_browse',
                 __('Browse foreign values')
-            )
+            ),
         ];
         //Gets column's type and collation
         $type = $this->_columnTypes[$column_index];
@@ -1007,7 +1018,7 @@ class TableSearchController extends TableController
             }
         } // end foreach
 
-        if (!empty($fullWhereClause)) {
+        if (! empty($fullWhereClause)) {
             return ' WHERE ' . implode(' AND ', $fullWhereClause);
         }
         return '';
@@ -1211,7 +1222,7 @@ class TableSearchController extends TableController
                     unset($values[$emptyKey]);
                 }
                 $wheres = [];
-                if (!empty($values)) {
+                if (! empty($values)) {
                     $wheres[] = $backquoted_name . ' ' . $func_type
                         . ' (' . implode(',', $values) . ')';
                 }

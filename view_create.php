@@ -15,12 +15,16 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
 
-require_once './libraries/common.inc.php';
+if (! defined('ROOT_PATH')) {
+    define('ROOT_PATH', __DIR__ . DIRECTORY_SEPARATOR);
+}
+
+require_once ROOT_PATH . 'libraries/common.inc.php';
 
 /**
  * Runs common work
  */
-require './libraries/db_common.inc.php';
+require ROOT_PATH . 'libraries/db_common.inc.php';
 $url_params['goto'] = 'tbl_structure.php';
 $url_params['back'] = 'view_create.php';
 
@@ -36,12 +40,12 @@ $view_algorithm_options = [
 
 $view_with_options = [
     'CASCADED',
-    'LOCAL'
+    'LOCAL',
 ];
 
 $view_security_options = [
     'DEFINER',
-    'INVOKER'
+    'INVOKER',
 ];
 
 // View name is a compulsory field
@@ -87,11 +91,9 @@ if (isset($_POST['createview']) || isset($_POST['alterview'])) {
         }
     }
 
-    if (isset($_POST['view']['sql_security'])) {
-        if (in_array($_POST['view']['sql_security'], $view_security_options)) {
-            $sql_query .= $sep . ' SQL SECURITY '
-                . $_POST['view']['sql_security'];
-        }
+    if (isset($_POST['view']['sql_security']) && in_array($_POST['view']['sql_security'], $view_security_options)) {
+        $sql_query .= $sep . ' SQL SECURITY '
+            . $_POST['view']['sql_security'];
     }
 
     $sql_query .= $sep . ' VIEW '
@@ -110,7 +112,7 @@ if (isset($_POST['createview']) || isset($_POST['alterview'])) {
         }
     }
 
-    if (!$GLOBALS['dbi']->tryQuery($sql_query)) {
+    if (! $GLOBALS['dbi']->tryQuery($sql_query)) {
         if (! isset($_POST['ajax_dialog'])) {
             $message = Message::rawError($GLOBALS['dbi']->getError());
             return;
@@ -119,7 +121,7 @@ if (isset($_POST['createview']) || isset($_POST['alterview'])) {
         $response->addJSON(
             'message',
             Message::error(
-                "<i>" . htmlspecialchars($sql_query) . "</i><br /><br />"
+                "<i>" . htmlspecialchars($sql_query) . "</i><br><br>"
                 . $GLOBALS['dbi']->getError()
             )
         );
@@ -161,7 +163,7 @@ if (isset($_POST['createview']) || isset($_POST['alterview'])) {
 
     if (! isset($_POST['ajax_dialog'])) {
         $message = Message::success();
-        include 'tbl_structure.php';
+        include ROOT_PATH . 'tbl_structure.php';
     } else {
         $response->addJSON(
             'message',

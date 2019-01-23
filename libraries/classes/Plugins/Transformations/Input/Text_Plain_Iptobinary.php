@@ -84,7 +84,7 @@ class Text_Plain_Iptobinary extends IOTransformationsPlugin
     ) {
         $html = '';
         $val = '';
-        if (!empty($value)) {
+        if (! empty($value)) {
             $length = strlen($value);
             if ($length == 4 || $length == 16) {
                 $ip = @inet_ntop(pack('A' . $length, $value));
@@ -93,7 +93,7 @@ class Text_Plain_Iptobinary extends IOTransformationsPlugin
                 }
             }
             $html = '<input type="hidden" name="fields_prev' . $column_name_appendix
-                . '" value="' . htmlspecialchars($val) . '"/>';
+                . '" value="' . htmlspecialchars($val) . '">';
         }
         $class = 'transform_IPToBin';
         $html .= '<input type="text" name="fields' . $column_name_appendix . '"'
@@ -101,8 +101,8 @@ class Text_Plain_Iptobinary extends IOTransformationsPlugin
             . ' size="40"'
             . ' dir="' . $text_dir . '"'
             . ' class="' . $class . '"'
-            . ' id="field_' . ($idindex) . '_3"'
-            . ' tabindex="' . ($tabindex + $tabindex_for_value) . '" />';
+            . ' id="field_' . $idindex . '_3"'
+            . ' tabindex="' . ($tabindex + $tabindex_for_value) . '">';
 
         return $html;
     }

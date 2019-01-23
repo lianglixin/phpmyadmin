@@ -14,7 +14,7 @@ use PhpMyAdmin\Sanitize;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
 
-if (!defined('PHPMYADMIN')) {
+if (! defined('PHPMYADMIN')) {
     exit;
 }
 
@@ -33,12 +33,12 @@ $tabs_icons = [
 
 $content = Util::getHtmlTab([
     'link' => 'prefs_manage.php',
-    'text' => __('Manage your settings')
+    'text' => __('Manage your settings'),
 ]) . "\n";
 /* Second authentication factor */
 $content .= Util::getHtmlTab([
     'link' => 'prefs_twofactor.php',
-    'text' => __('Two-factor authentication')
+    'text' => __('Two-factor authentication'),
 ]) . "\n";
 $script_name = basename($GLOBALS['PMA_PHP_SELF']);
 foreach (UserFormList::getAll() as $formset) {
@@ -47,7 +47,7 @@ foreach (UserFormList::getAll() as $formset) {
         'link' => 'prefs_forms.php',
         'text' => $formset_class::getName(),
         'icon' => $tabs_icons[$formset],
-        'active' => ($script_name == 'prefs_forms.php' && $formset == $form_param),
+        'active' => $script_name == 'prefs_forms.php' && $formset == $form_param,
     ];
     $content .= Util::getHtmlTab($tab, ['form' => $formset]) . "\n";
 }
@@ -59,7 +59,7 @@ echo $template->render('list/unordered', [
 echo '<div class="clearfloat"></div>';
 
 // show "configuration saved" message and reload navigation panel if needed
-if (!empty($_GET['saved'])) {
+if (! empty($_GET['saved'])) {
     Message::rawSuccess(__('Configuration has been saved.'))->display();
 }
 

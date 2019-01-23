@@ -127,7 +127,7 @@ class Routines
         /**
          * Display a list of available routines
          */
-        if (! Core::isValid($type, ['FUNCTION','PROCEDURE'])) {
+        if (! Core::isValid($type, ['FUNCTION', 'PROCEDURE'])) {
             $type = null;
         }
         $items = $this->dbi->getRoutines($db, $type);
@@ -262,15 +262,18 @@ class Routines
 
         $sql_query = '';
         $routine_query = $this->getQueryFromRequest();
-        if (!count($errors)) {
+        if (! count($errors)) {
             // Execute the created query
-            if (!empty($_POST['editor_process_edit'])) {
+            if (! empty($_POST['editor_process_edit'])) {
                 $isProcOrFunc = in_array(
                     $_POST['item_original_type'],
-                    ['PROCEDURE', 'FUNCTION']
+                    [
+                        'PROCEDURE',
+                        'FUNCTION',
+                    ]
                 );
 
-                if (!$isProcOrFunc) {
+                if (! $isProcOrFunc) {
                     $errors[] = sprintf(
                         __('Invalid routine type: "%s"'),
                         htmlspecialchars($_POST['item_original_type'])
@@ -289,12 +292,12 @@ class Routines
                         . Util::backquote($_POST['item_original_name'])
                         . ";\n";
                     $result = $this->dbi->tryQuery($drop_routine);
-                    if (!$result) {
+                    if (! $result) {
                         $errors[] = sprintf(
                             __('The following query has failed: "%s"'),
                             htmlspecialchars($drop_routine)
                         )
-                        . '<br />'
+                        . '<br>'
                         . __('MySQL said: ') . $this->dbi->getError();
                     } else {
                         list($newErrors, $message) = $this->create(
@@ -316,12 +319,12 @@ class Routines
             } else {
                 // 'Add a new routine' mode
                 $result = $this->dbi->tryQuery($routine_query);
-                if (!$result) {
+                if (! $result) {
                     $errors[] = sprintf(
                         __('The following query has failed: "%s"'),
                         htmlspecialchars($routine_query)
                     )
-                    . '<br /><br />'
+                    . '<br><br>'
                     . __('MySQL said: ') . $this->dbi->getError();
                 } else {
                     $message = Message::success(
@@ -351,11 +354,11 @@ class Routines
 
         $output = Util::getMessage($message, $sql_query);
         $response = Response::getInstance();
-        if (!$response->isAjax()) {
+        if (! $response->isAjax()) {
             return $errors;
         }
 
-        if (!$message->isSuccess()) {
+        if (! $message->isSuccess()) {
             $response->setRequestStatus(false);
             $response->addJSON('message', $output);
             exit;
@@ -374,7 +377,7 @@ class Routines
             )
         );
         $response->addJSON('new_row', $this->rteList->getRoutineRow($routine));
-        $response->addJSON('insert', !empty($routine));
+        $response->addJSON('insert', ! empty($routine));
         $response->addJSON('message', $output);
         exit;
     }
@@ -429,13 +432,13 @@ class Routines
         array $privilegesBackup
     ) {
         $result = $this->dbi->tryQuery($routine_query);
-        if (!$result) {
+        if (! $result) {
             $errors = [];
             $errors[] = sprintf(
                 __('The following query has failed: "%s"'),
                 htmlspecialchars($routine_query)
             )
-            . '<br />'
+            . '<br>'
             . __('MySQL said: ') . $this->dbi->getError();
             // We dropped the old routine,
             // but were unable to create the new one
@@ -451,7 +454,10 @@ class Routines
                 $errors
             );
 
-            return [$errors, null];
+            return [
+                $errors,
+                null,
+            ];
         }
 
         // Default value
@@ -481,7 +487,10 @@ class Routines
 
         $message = $this->flushPrivileges($resultAdjust);
 
-        return [[], $message];
+        return [
+            [],
+            $message,
+        ];
     }
 
     /**
@@ -528,14 +537,16 @@ class Routines
         global $param_directions, $param_sqldataaccess;
 
         $retval = [];
-        $indices = ['item_name',
-                         'item_original_name',
-                         'item_returnlength',
-                         'item_returnopts_num',
-                         'item_returnopts_text',
-                         'item_definition',
-                         'item_comment',
-                         'item_definer'];
+        $indices = [
+            'item_name',
+            'item_original_name',
+            'item_returnlength',
+            'item_returnopts_num',
+            'item_returnopts_text',
+            'item_definition',
+            'item_comment',
+            'item_definer',
+        ];
         foreach ($indices as $index) {
             $retval[$index] = isset($_POST[$index]) ? $_POST[$index] : '';
         }
@@ -693,7 +704,7 @@ class Routines
         $retval['item_param_opts_text']  = $params['opts'];
 
         // Get extra data
-        if (!$all) {
+        if (! $all) {
             return $retval;
         }
 
@@ -765,7 +776,7 @@ class Routines
                 'item_param_type'      => [0 => ''],
                 'item_param_length'    => [0 => ''],
                 'item_param_opts_num'  => [0 => ''],
-                'item_param_opts_text' => [0 => '']
+                'item_param_opts_text' => [0 => ''],
             ];
         } elseif (! empty($routine)) {
             // regular row for routine editor
@@ -797,7 +808,7 @@ class Routines
         $retval .= "                </select>\n";
         $retval .= "            </td>\n";
         $retval .= "            <td><input name='item_param_name[$index]' type='text'\n"
-            . " value='{$routine['item_param_name'][$i]}' /></td>\n";
+            . " value='{$routine['item_param_name'][$i]}'></td>\n";
         $retval .= "            <td><select name='item_param_type[$index]'>";
         $retval .= Util::getSupportedDatatypes(
             true,
@@ -807,7 +818,7 @@ class Routines
         $retval .= "            <td>\n";
         $retval .= "                <input id='item_param_length_$index'\n"
             . " name='item_param_length[$index]' type='text'\n"
-            . " value='{$routine['item_param_length'][$i]}' />\n";
+            . " value='{$routine['item_param_length'][$i]}'>\n";
         $retval .= "                <div class='enum_hint'>\n";
         $retval .= "                    <a href='#' class='open_enum_editor'>\n";
         $retval .= "                        "
@@ -877,7 +888,7 @@ class Routines
             'item_returnlength',
             'item_definition',
             'item_definer',
-            'item_comment'
+            'item_comment',
         ];
         foreach ($need_escape as $key => $index) {
             $routine[$index] = htmlentities($routine[$index], ENT_QUOTES, 'UTF-8');
@@ -929,10 +940,10 @@ class Routines
         if ($mode == 'edit') {
             $original_routine = "<input name='item_original_name' "
                               . "type='hidden' "
-                              . "value='{$routine['item_original_name']}'/>\n"
+                              . "value='{$routine['item_original_name']}'>\n"
                               . "<input name='item_original_type' "
                               . "type='hidden' "
-                              . "value='{$routine['item_original_type']}'/>\n";
+                              . "value='{$routine['item_original_type']}'>\n";
         }
         $isfunction_class   = '';
         $isprocedure_class  = '';
@@ -951,7 +962,7 @@ class Routines
         $retval .= "<!-- START " . mb_strtoupper($mode)
             . " ROUTINE FORM -->\n\n";
         $retval .= "<form class='rte_form' action='db_routines.php' method='post'>\n";
-        $retval .= "<input name='{$mode}_item' type='hidden' value='1' />\n";
+        $retval .= "<input name='{$mode}_item' type='hidden' value='1'>\n";
         $retval .= $original_routine;
         $retval .= Url::getHiddenInputs($db) . "\n";
         $retval .= "<fieldset>\n";
@@ -960,7 +971,7 @@ class Routines
         $retval .= "<tr>\n";
         $retval .= "    <td>" . __('Routine name') . "</td>\n";
         $retval .= "    <td><input type='text' name='item_name' maxlength='64'\n";
-        $retval .= "               value='{$routine['item_name']}' /></td>\n";
+        $retval .= "               value='{$routine['item_name']}'></td>\n";
         $retval .= "</tr>\n";
         $retval .= "<tr>\n";
         $retval .= "    <td>" . __('Type') . "</td>\n";
@@ -972,13 +983,13 @@ class Routines
                 . "</select>\n";
         } else {
             $retval .= "<input name='item_type' type='hidden'"
-                . " value='{$routine['item_type']}' />\n"
+                . " value='{$routine['item_type']}'>\n"
                 . "<div class='font_weight_bold center half_width'>\n"
                 . $routine['item_type'] . "\n"
                 . "</div>\n"
                 . "<input type='submit' name='routine_changetype'\n"
                 . " value='" . sprintf(__('Change to %s'), $routine['item_type_toggle'])
-                . "' />\n";
+                . "'>\n";
         }
         $retval .= "    </td>\n";
         $retval .= "</tr>\n";
@@ -1012,11 +1023,11 @@ class Routines
         $retval .= "    <td>";
         $retval .= "        <input type='button'";
         $retval .= "               name='routine_addparameter'";
-        $retval .= "               value='" . __('Add parameter') . "' />";
+        $retval .= "               value='" . __('Add parameter') . "'>";
         $retval .= "        <input " . $disableRemoveParam . "";
         $retval .= "               type='submit' ";
         $retval .= "               name='routine_removeparameter'";
-        $retval .= "               value='" . __('Remove last parameter') . "' />";
+        $retval .= "               value='" . __('Remove last parameter') . "'>";
         $retval .= "    </td>";
         $retval .= "</tr>";
         // parameter handling end
@@ -1029,7 +1040,7 @@ class Routines
         $retval .= "<tr class='routine_return_row" . $isfunction_class . "'>";
         $retval .= "    <td>" . __('Return length/values') . "</td>";
         $retval .= "    <td><input type='text' name='item_returnlength'";
-        $retval .= "        value='" . $routine['item_returnlength'] . "' /></td>";
+        $retval .= "        value='" . $routine['item_returnlength'] . "'></td>";
         $retval .= "    <td class='hide no_len'>---</td>";
         $retval .= "</tr>";
         $retval .= "<tr class='routine_return_row" . $isfunction_class . "'>";
@@ -1067,7 +1078,7 @@ class Routines
         $retval .= "<tr>";
         $retval .= "    <td>" . __('Is deterministic') . "</td>";
         $retval .= "    <td><input type='checkbox' name='item_isdeterministic'"
-            . $routine['item_isdeterministic'] . " /></td>";
+            . $routine['item_isdeterministic'] . "></td>";
         $retval .= "</tr>";
         if (isset($_REQUEST['edit_item'])
             && ! empty($_REQUEST['edit_item'])
@@ -1080,7 +1091,7 @@ class Routines
                 && $GLOBALS['is_reload_priv']
             ) {
                 $retval .= "    <td><input type='checkbox' "
-                    . "name='item_adjust_privileges' value='1' checked /></td>";
+                    . "name='item_adjust_privileges' value='1' checked></td>";
             } else {
                 $retval .= "    <td><input type='checkbox' "
                     . "name='item_adjust_privileges' value='1' title='" . __(
@@ -1088,7 +1099,7 @@ class Routines
                         . "operation; Please refer to the documentation for more "
                         . "details"
                     )
-                    . "' disabled/></td>";
+                    . "' disabled></td>";
             }
             $retval .= "</tr>";
         }
@@ -1096,7 +1107,7 @@ class Routines
         $retval .= "<tr>";
         $retval .= "    <td>" . __('Definer') . "</td>";
         $retval .= "    <td><input type='text' name='item_definer'";
-        $retval .= "               value='" . $routine['item_definer'] . "' /></td>";
+        $retval .= "               value='" . $routine['item_definer'] . "'></td>";
         $retval .= "</tr>";
         $retval .= "<tr>";
         $retval .= "    <td>" . __('Security type') . "</td>";
@@ -1122,18 +1133,18 @@ class Routines
         $retval .= "<tr>";
         $retval .= "    <td>" . __('Comment') . "</td>";
         $retval .= "    <td><input type='text' name='item_comment' maxlength='64'";
-        $retval .= "    value='" . $routine['item_comment'] . "' /></td>";
+        $retval .= "    value='" . $routine['item_comment'] . "'></td>";
         $retval .= "</tr>";
         $retval .= "</table>";
         $retval .= "</fieldset>";
         if ($response->isAjax()) {
             $retval .= "<input type='hidden' name='editor_process_" . $mode . "'";
-            $retval .= "       value='true' />";
-            $retval .= "<input type='hidden' name='ajax_request' value='true' />";
+            $retval .= "       value='true'>";
+            $retval .= "<input type='hidden' name='ajax_request' value='true'>";
         } else {
             $retval .= "<fieldset class='tblFooters'>";
             $retval .= "    <input type='submit' name='editor_process_" . $mode . "'";
-            $retval .= "           value='" . __('Go') . "' />";
+            $retval .= "           value='" . __('Go') . "'>";
             $retval .= "</fieldset>";
         }
         $retval .= "</form>";
@@ -1230,7 +1241,7 @@ class Routines
                         );
                     }
                     if ($item_param_length[$i] != ''
-                        && !preg_match(
+                        && ! preg_match(
                             '@^(DATE|TINYBLOB|TINYTEXT|BLOB|TEXT|'
                             . 'MEDIUMBLOB|MEDIUMTEXT|LONGBLOB|LONGTEXT|'
                             . 'SERIAL|BOOLEAN)$@i',
@@ -1298,7 +1309,7 @@ class Routines
                 $errors[] = __('You must provide a valid return type for the routine.');
             }
             if (! empty($_POST['item_returnlength'])
-                && !preg_match(
+                && ! preg_match(
                     '@^(DATE|DATETIME|TIME|TINYBLOB|TINYTEXT|BLOB|TEXT|'
                     . 'MEDIUMBLOB|MEDIUMTEXT|LONGBLOB|LONGTEXT|SERIAL|BOOLEAN)$@i',
                     $item_returntype
@@ -1502,7 +1513,7 @@ class Routines
                         break;
                     }
 
-                    $output .= "<br/>";
+                    $output .= "<br>";
 
                     $this->dbi->freeResult($result);
                 } while ($outcome = $this->dbi->nextResult());
@@ -1513,7 +1524,7 @@ class Routines
 
                 $message = __('Your SQL query has been executed successfully.');
                 if ($routine['item_type'] == 'PROCEDURE') {
-                    $message .= '<br />';
+                    $message .= '<br>';
 
                     // TODO : message need to be modified according to the
                     // output from the routine
@@ -1543,7 +1554,7 @@ class Routines
                         __('The following query has failed: "%s"'),
                         htmlspecialchars($multiple_query)
                     )
-                    . '<br /><br />'
+                    . '<br><br>'
                     . __('MySQL said: ') . $this->dbi->getError()
                 );
             }
@@ -1588,7 +1599,7 @@ class Routines
                     echo $form;
                 }
                 exit;
-            } elseif (($response->isAjax())) {
+            } elseif ($response->isAjax()) {
                 $message  = __('Error in processing request:') . ' ';
                 $message .= sprintf(
                     $this->words->get('not_found'),
@@ -1654,9 +1665,9 @@ class Routines
         $retval .= "<form action='db_routines.php' method='post'\n";
         $retval .= "       class='rte_form ajax' onsubmit='return false'>\n";
         $retval .= "<input type='hidden' name='item_name'\n";
-        $retval .= "       value='{$routine['item_name']}' />\n";
+        $retval .= "       value='{$routine['item_name']}'>\n";
         $retval .= "<input type='hidden' name='item_type'\n";
-        $retval .= "       value='{$routine['item_type']}' />\n";
+        $retval .= "       value='{$routine['item_type']}'>\n";
         $retval .= Url::getHiddenInputs($db) . "\n";
         $retval .= "<fieldset>\n";
         if (! $response->isAjax()) {
@@ -1707,7 +1718,7 @@ class Routines
                         'Key'             => '',
                         'Field'           => '',
                         'Default'         => '',
-                        'first_timestamp' => false
+                        'first_timestamp' => false,
                     ];
                     $retval .= "<select name='funcs["
                         . $routine['item_param_name'][$i] . "]'>";
@@ -1738,8 +1749,8 @@ class Routines
                     $retval .= "<input name='params["
                         . $routine['item_param_name'][$i] . "][]' "
                         . "value='" . $value . "' type='"
-                        . $input_type . "' />"
-                        . $value . "<br />\n";
+                        . $input_type . "'>"
+                        . $value . "<br>\n";
                 }
             } elseif (in_array(
                 mb_strtolower($routine['item_param_type'][$i]),
@@ -1748,7 +1759,7 @@ class Routines
                 $retval .= "\n";
             } else {
                 $retval .= "<input class='$class' type='text' name='params["
-                    . $routine['item_param_name'][$i] . "]' />\n";
+                    . $routine['item_param_name'][$i] . "]'>\n";
             }
             $retval .= "</td>\n";
             $retval .= "</tr>\n";
@@ -1758,11 +1769,11 @@ class Routines
             $retval .= "</fieldset>\n\n";
             $retval .= "<fieldset class='tblFooters'>\n";
             $retval .= "    <input type='submit' name='execute_routine'\n";
-            $retval .= "           value='" . __('Go') . "' />\n";
+            $retval .= "           value='" . __('Go') . "'>\n";
             $retval .= "</fieldset>\n";
         } else {
-            $retval .= "<input type='hidden' name='execute_routine' value='true' />";
-            $retval .= "<input type='hidden' name='ajax_request' value='true' />";
+            $retval .= "<input type='hidden' name='execute_routine' value='true'>";
+            $retval .= "<input type='hidden' name='ajax_request' value='true'>";
         }
         $retval .= "</form>\n\n";
         $retval .= "<!-- END ROUTINE EXECUTE FORM -->\n\n";

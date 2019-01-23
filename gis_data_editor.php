@@ -14,7 +14,11 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
 
-require_once 'libraries/common.inc.php';
+if (! defined('ROOT_PATH')) {
+    define('ROOT_PATH', __DIR__ . DIRECTORY_SEPARATOR);
+}
+
+require_once ROOT_PATH . 'libraries/common.inc.php';
 
 $template = new Template();
 
@@ -35,7 +39,7 @@ $gis_types = [
     'MULTILINESTRING',
     'POLYGON',
     'MULTIPOLYGON',
-    'GEOMETRYCOLLECTION'
+    'GEOMETRYCOLLECTION',
 ];
 
 // Extract type from the initial call and make sure that it's a valid one.
@@ -52,7 +56,7 @@ if (! isset($gis_data['gis_type'])) {
             mb_strpos($_POST['value'], "(") - $start
         );
     }
-    if ((! isset($gis_data['gis_type']))
+    if (! isset($gis_data['gis_type'])
         || (! in_array($gis_data['gis_type'], $gis_types))
     ) {
         $gis_data['gis_type'] = $gis_types[0];
@@ -79,9 +83,14 @@ $result = "'" . $wkt . "'," . $srid;
 $visualizationSettings = [
     'width' => 450,
     'height' => 300,
-    'spatialColumn' => 'wkt'
+    'spatialColumn' => 'wkt',
 ];
-$data = [['wkt' => $wkt_with_zero, 'srid' => $srid]];
+$data = [
+    [
+        'wkt' => $wkt_with_zero,
+        'srid' => $srid,
+    ],
+];
 $visualization = GisVisualization::getByData($data, $visualizationSettings)
     ->toImage('svg');
 
@@ -102,7 +111,7 @@ if (isset($_POST['generate']) && $_POST['generate'] == true) {
 
 $geom_count = 1;
 if ($geom_type == 'GEOMETRYCOLLECTION') {
-    $geom_count = (isset($gis_data[$geom_type]['geom_count']))
+    $geom_count = isset($gis_data[$geom_type]['geom_count'])
         ? intval($gis_data[$geom_type]['geom_count']) : 1;
     if (isset($gis_data[$geom_type]['add_geom'])) {
         $geom_count++;

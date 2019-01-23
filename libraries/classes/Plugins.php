@@ -72,7 +72,7 @@ class Plugins
         $GLOBALS['plugin_param'] = $plugin_param;
         /* Scan for plugins */
         $plugin_list = [];
-        if (!($handle = @opendir($plugins_dir))) {
+        if (! ($handle = @opendir($plugins_dir))) {
             return $plugin_list;
         }
 
@@ -173,13 +173,13 @@ class Plugins
             return htmlspecialchars($_REQUEST[$opt]);
         }
 
-        if (!isset($GLOBALS['cfg'][$section][$opt])) {
+        if (! isset($GLOBALS['cfg'][$section][$opt])) {
             return '';
         }
 
         $matches = [];
         /* Possibly replace localised texts */
-        if (!preg_match_all(
+        if (! preg_match_all(
             '/(str[A-Z][A-Za-z0-9]*)/',
             (string) $GLOBALS['cfg'][$section][$opt],
             $matches
@@ -258,7 +258,7 @@ class Plugins
             } else {
                 $hidden .= 'false';
             }
-            $hidden .= '" />' . "\n";
+            $hidden .= '">' . "\n";
         }
         $ret .= '</select>' . "\n" . $hidden;
 
@@ -268,10 +268,10 @@ class Plugins
     /**
      * Returns single option in a list element
      *
-     * @param string                                    $section        name of config section in $GLOBALS['cfg'][$section] for plugin
-     * @param string                                    $plugin_name    unique plugin name
-     * @param array|\PhpMyAdmin\Properties\PropertyItem &$propertyGroup options property main group instance
-     * @param boolean                                   $is_subgroup    if this group is a subgroup
+     * @param string                                             $section       name of config section in $GLOBALS['cfg'][$section] for plugin
+     * @param string                                             $plugin_name   unique plugin name
+     * @param \PhpMyAdmin\Properties\Options\OptionsPropertyItem $propertyGroup options property main group instance
+     * @param boolean                                            $is_subgroup   if this group is a subgroup
      *
      * @return string  table row with option
      */
@@ -439,7 +439,7 @@ class Plugins
                         . '\').checked)) '
                         . 'return false; else return true;"';
                 }
-                $ret .= ' />';
+                $ret .= '>';
                 $ret .= '<label for="checkbox_' . $plugin_name . '_'
                 . $propertyItem->getName() . '">'
                 . self::getString($propertyItem->getText()) . '</label>';
@@ -454,7 +454,7 @@ class Plugins
                     $section,
                     $plugin_name . '_' . $propertyItem->getName()
                 )
-                    . '"' . ' /></li>';
+                    . '"' . '></li>';
                 break;
             case 'PhpMyAdmin\Properties\Options\Items\MessageOnlyPropertyItem':
                 $ret .= '<li>' . "\n";
@@ -479,7 +479,7 @@ class Plugins
                     if ($key == $default) {
                         $ret .= ' checked="checked"';
                     }
-                    $ret .= ' />' . '<label for="radio_' . $plugin_name . '_'
+                    $ret .= '>' . '<label for="radio_' . $plugin_name . '_'
                     . $pitem->getName() . '_' . $key . '">'
                     . self::getString($val) . '</label></li>';
                 }
@@ -534,7 +534,7 @@ class Plugins
                     . ($pitem->getLen() != null
                     ? ' maxlength="' . $pitem->getLen() . '"'
                     : '')
-                    . ' />';
+                    . '>';
                 break;
             case 'PhpMyAdmin\Properties\Options\Items\NumberPropertyItem':
                 $ret .= '<li>' . "\n";
@@ -550,7 +550,7 @@ class Plugins
                     . ' id="number_' . $plugin_name . '_'
                     . $propertyItem->getName() . '"'
                     . ' min="0"'
-                    . ' />';
+                    . '>';
                 break;
             default:
                 break;

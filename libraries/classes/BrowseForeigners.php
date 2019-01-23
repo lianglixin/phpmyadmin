@@ -127,7 +127,7 @@ class BrowseForeigners
 
         $output .= '<td width="20%">'
             . '<img src="' . $this->themeImage . 'spacer.png" alt=""'
-            . ' width="1" height="1" /></td>';
+            . ' width="1" height="1"></td>';
 
         $output .= $this->template->render('table/browse_foreigners/column_element', [
             'keyname' => $rightKeyname,
@@ -146,7 +146,11 @@ class BrowseForeigners
 
         $output .= '</tr>';
 
-        return [$output, $horizontal_count, $indexByDescription];
+        return [
+            $output,
+            $horizontal_count,
+            $indexByDescription,
+        ];
     }
 
     /**
@@ -182,13 +186,13 @@ class BrowseForeigners
             . '<fieldset>'
             . Url::getHiddenInputs($db, $table)
             . '<input type="hidden" name="field" value="' . htmlspecialchars($field)
-            . '" />'
+            . '">'
             . '<input type="hidden" name="fieldkey" value="'
-            . (isset($fieldkey) ? htmlspecialchars($fieldkey) : '') . '" />';
+            . (isset($fieldkey) ? htmlspecialchars($fieldkey) : '') . '">';
 
         if (isset($_POST['rownumber'])) {
             $output .= '<input type="hidden" name="rownumber" value="'
-                . htmlspecialchars((string) $_POST['rownumber']) . '" />';
+                . htmlspecialchars((string) $_POST['rownumber']) . '">';
         }
         $filter_value = (isset($_POST['foreign_filter'])
             ? htmlspecialchars($_POST['foreign_filter'])
@@ -198,9 +202,9 @@ class BrowseForeigners
             . '<input type="text" name="foreign_filter" '
             . 'id="input_foreign_filter" '
             . 'value="' . $filter_value . '" data-old="' . $filter_value . '" '
-            . '/>'
-            . '<input type="submit" name="submit_foreign_filter" value="'
-            . __('Go') . '" />'
+            . '>'
+            . '<input class="btn btn-primary" type="submit" name="submit_foreign_filter" value="'
+            . __('Go') . '">'
             . '</span>'
             . '<span class="formelement">' . $gotopage . '</span>'
             . '<span class="formelement">' . $foreignShowAll . '</span>'
@@ -209,7 +213,7 @@ class BrowseForeigners
 
         $output .= '<table width="100%" id="browse_foreign_table">';
 
-        if (!is_array($foreignData['disp_row'])) {
+        if (! is_array($foreignData['disp_row'])) {
             $output .= '</tbody>'
                 . '</table>';
 
@@ -295,7 +299,10 @@ class BrowseForeigners
                 . '...'
             );
         }
-        return [$description, $descriptionTitle];
+        return [
+            $description,
+            $descriptionTitle,
+        ];
     }
 
     /**
@@ -309,7 +316,7 @@ class BrowseForeigners
     {
         $gotopage = '';
         isset($_POST['pos']) ? $pos = $_POST['pos'] : $pos = 0;
-        if (!is_array($foreignData['disp_row'])) {
+        if (! is_array($foreignData['disp_row'])) {
             return $gotopage;
         }
 

@@ -57,7 +57,7 @@ class ServerBinlogController extends Controller
         /**
          * Does the common work
          */
-        include_once 'libraries/server_common.inc.php';
+        include_once ROOT_PATH . 'libraries/server_common.inc.php';
 
         $url_params = [];
         if (! isset($_POST['log'])
@@ -68,7 +68,7 @@ class ServerBinlogController extends Controller
             $url_params['log'] = $_POST['log'];
         }
 
-        if (!empty($_POST['dontlimitchars'])) {
+        if (! empty($_POST['dontlimitchars'])) {
             $url_params['dontlimitchars'] = 1;
         }
 
@@ -221,7 +221,7 @@ class ServerBinlogController extends Controller
         $html .= '<a href="server_binlog.php" data-post="' . Url::getCommon($this_url_params, '')
             . '" title="' . $tempTitle . '">'
             . '<img src="' . $GLOBALS['pmaThemeImage'] . 's_' . $tempImgMode
-            . 'text.png" alt="' . $tempTitle . '" /></a>';
+            . 'text.png" alt="' . $tempTitle . '"></a>';
 
         // we do not now how much rows are in the binlog
         // so we can just force 'NEXT' button
