@@ -272,7 +272,7 @@ class DatabaseInterface
         $error_message = $this->getError($link);
         if ($result == false && is_string($error_message)) {
             $dbgInfo['error']
-                = '<span style="color:red">'
+                = '<span class="color_red">'
                 . htmlspecialchars($error_message) . '</span>';
         }
         $dbgInfo['query'] = htmlspecialchars($query);
@@ -474,9 +474,9 @@ class DatabaseInterface
 
         if ($table_type) {
             if ($table_type == 'view') {
-                $sql_where_table .= " AND t.`TABLE_TYPE` != 'BASE TABLE'";
+                $sql_where_table .= " AND t.`TABLE_TYPE` NOT IN ('BASE TABLE', 'SYSTEM VERSIONED')";
             } elseif ($table_type == 'table') {
-                $sql_where_table .= " AND t.`TABLE_TYPE` = 'BASE TABLE'";
+                $sql_where_table .= " AND t.`TABLE_TYPE` IN ('BASE TABLE', 'SYSTEM VERSIONED')";
             }
         }
         return $sql_where_table;
@@ -2932,9 +2932,9 @@ class DatabaseInterface
      * @param object $result result set identifier
      * @param int    $i      field
      *
-     * @return int length of field
+     * @return int|bool length of field
      */
-    public function fieldLen($result, int $i): int
+    public function fieldLen($result, int $i)
     {
         return $this->_extension->fieldLen($result, $i);
     }

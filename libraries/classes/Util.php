@@ -2843,7 +2843,7 @@ class Util
      */
     public static function convertBitDefaultValue($bit_default_value)
     {
-        return rtrim(ltrim($bit_default_value, "b'"), "'");
+        return rtrim(ltrim(htmlspecialchars_decode($bit_default_value, ENT_QUOTES), "b'"), "'");
     }
 
     /**
@@ -4063,27 +4063,13 @@ class Util
             }
         } elseif (! $server['ssl_verify']) {
             $message = __('SSL is used with disabled verification');
-        } elseif (empty($server['ssl_ca']) && empty($server['ssl_ca'])) {
+        } elseif (empty($server['ssl_ca'])) {
             $message = __('SSL is used without certification authority');
         } else {
             $class = '';
             $message = __('SSL is used');
         }
         return '<span class="' . $class . '">' . $message . '</span> ' . self::showDocu('setup', 'ssl');
-    }
-
-
-    /**
-     * Prepare HTML code for display button.
-     *
-     * @return String
-     */
-    public static function getButton()
-    {
-        return '<p class="print_ignore">'
-            . '<input type="button" class="btn btn-secondary button" id="print" value="'
-            . __('Print') . '">'
-            . '</p>';
     }
 
     /**
@@ -4472,25 +4458,6 @@ class Util
     }
 
     /**
-     * Returns the proper class clause according to the column type
-     *
-     * @param string $type the column type
-     *
-     * @return string the HTML class clause
-     */
-    public static function getClassForType($type)
-    {
-        if ('set' == $type
-            || 'enum' == $type
-        ) {
-            $class_clause = '';
-        } else {
-            $class_clause = ' class="nowrap"';
-        }
-        return $class_clause;
-    }
-
-    /**
      * Gets the list of tables in the current db and information about these
      * tables if possible
      *
@@ -4707,9 +4674,9 @@ class Util
             if (Core::isValid($_REQUEST['tbl_type'], ['table', 'view'])) {
                 $tblGroupSql .= $whereAdded ? " AND" : " WHERE";
                 if ($_REQUEST['tbl_type'] == 'view') {
-                    $tblGroupSql .= " `Table_type` != 'BASE TABLE'";
+                    $tblGroupSql .= " `Table_type` NOT IN ('BASE TABLE', 'SYSTEM VERSIONED')";
                 } else {
-                    $tblGroupSql .= " `Table_type` = 'BASE TABLE'";
+                    $tblGroupSql .= " `Table_type` IN ('BASE TABLE', 'SYSTEM VERSIONED')";
                 }
             }
             $db_info_result = $GLOBALS['dbi']->query(

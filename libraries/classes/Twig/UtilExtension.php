@@ -60,11 +60,6 @@ class UtilExtension extends AbstractExtension
                 ['is_safe' => ['html']]
             ),
             new TwigFunction(
-                'get_class_for_type',
-                'PhpMyAdmin\Util::getClassForType',
-                ['is_safe' => ['html']]
-            ),
-            new TwigFunction(
                 'get_docu_link',
                 'PhpMyAdmin\Util::getDocuLink',
                 ['is_safe' => ['html']]
@@ -147,6 +142,11 @@ class UtilExtension extends AbstractExtension
                 ['is_safe' => ['html']]
             ),
             new TwigFunction(
+                'link_to_var_documentation',
+                'PhpMyAdmin\Util::linkToVarDocumentation',
+                ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
                 'localised_date',
                 'PhpMyAdmin\Util::localisedDate'
             ),
@@ -168,6 +168,10 @@ class UtilExtension extends AbstractExtension
                 'sortable_table_header',
                 'PhpMyAdmin\Util::sortableTableHeader',
                 ['is_safe' => ['html']]
+            ),
+            new TwigFunction(
+                'timespan_format',
+                'PhpMyAdmin\Util::timespanFormat'
             ),
         ];
     }

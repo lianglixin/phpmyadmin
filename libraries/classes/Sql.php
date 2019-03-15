@@ -198,6 +198,7 @@ class Sql
      */
     private function resultSetContainsUniqueKey($db, $table, array $fields_meta)
     {
+        $columns = $GLOBALS['dbi']->getColumns($db, $table);
         $resultSetColumnNames = [];
         foreach ($fields_meta as $oneMeta) {
             $resultSetColumnNames[] = $oneMeta->name;
@@ -208,6 +209,10 @@ class Sql
                 $numberFound = 0;
                 foreach ($indexColumns as $indexColumnName => $dummy) {
                     if (in_array($indexColumnName, $resultSetColumnNames)) {
+                        $numberFound++;
+                    } elseif (! in_array($indexColumnName, $columns)) {
+                        $numberFound++;
+                    } elseif (strpos($columns[$indexColumnName]['Extra'], 'INVISIBLE') !== false) {
                         $numberFound++;
                     }
                 }
@@ -1062,6 +1067,11 @@ class Sql
             // "Showing rows..." message
             // $_SESSION['tmpval']['max_rows'] = 'all';
             $unlim_num_rows = $num_rows;
+        } elseif ($this->isAppendLimitClause($analyzed_sql_results) && $_SESSION['tmpval']['max_rows'] > $num_rows) {
+            // When user has not defined a limit in query and total rows in
+            // result are less than max_rows to display, there is no need
+            // to count total rows for that query again
+            $unlim_num_rows = $_SESSION['tmpval']['pos'] + $num_rows;
         } elseif ($analyzed_sql_results['querytype'] == 'SELECT'
             || $analyzed_sql_results['is_subquery']
         ) {
