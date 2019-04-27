@@ -626,7 +626,9 @@ function displayPasswordGenerateButton () {
         .attr({ type: 'text', name: 'generated_pw', id: 'generated_pw' });
     pwdCell.append(pwdButton).append(pwdTextbox);
 
-    $('#tr_element_before_generate_password').parent().append(generatePwdRow);
+    if (document.getElementById('button_generate_password') === null) {
+        $('#tr_element_before_generate_password').parent().append(generatePwdRow);
+    }
 
     var generatePwdDiv = $('<div></div>').addClass('item');
     var titleLabel = $('<label></label>').attr({ for: 'button_generate_password' })
@@ -637,7 +639,9 @@ function displayPasswordGenerateButton () {
     pwdButton.clone(true).appendTo(optionsSpan);
     pwdTextbox.clone(true).appendTo(generatePwdDiv);
 
-    $('#div_element_before_generate_password').parent().append(generatePwdDiv);
+    if (document.getElementById('button_generate_password') === null) {
+        $('#div_element_before_generate_password').parent().append(generatePwdDiv);
+    }
 }
 
 /**
@@ -1187,7 +1191,8 @@ function insertQuery (queryType) {
             var href = 'db_sql_format.php';
             var params = {
                 'ajax_request': true,
-                'sql': codemirror_editor.getValue()
+                'sql': codemirror_editor.getValue(),
+                'server': PMA_commonParams.get('server')
             };
             $.ajax({
                 type: 'POST',
@@ -3246,6 +3251,7 @@ AJAX.registerOnload('functions.js', function () {
                 .find('input#text_pma_pw').focus();
             $('#fieldset_change_password_footer').hide();
             PMA_ajaxRemoveMessage($msgbox);
+            displayPasswordGenerateButton();
             $('#change_password_form').on('submit', function (e) {
                 e.preventDefault();
                 $(this)
@@ -3806,18 +3812,8 @@ function indexEditorDialog (url, title, callback_success, callback_failure) {
             }
             if (typeof data !== 'undefined' && data.success === true) {
                 PMA_ajaxShowMessage(data.message);
-                var $resultQuery = $('.result_query');
-                if ($resultQuery.length) {
-                    $resultQuery.remove();
-                }
-                if (data.sql_query) {
-                    $('<div class="result_query"></div>')
-                        .html(data.sql_query)
-                        .prependTo('#page_content');
-                    PMA_highlightSQL($('#page_content'));
-                }
+                PMA_highlightSQL($('.result_query'));
                 $('.result_query .notice').remove();
-                $resultQuery.prepend(data.message);
                 /* Reload the field form*/
                 $('#table_index').remove();
                 $('<div id=\'temp_div\'><div>')
@@ -4949,8 +4945,11 @@ AJAX.registerOnload('functions.js', function () {
     $('form input, form textarea, form select').on('keydown', function (e) {
         if ((e.ctrlKey && e.which === 13) || (e.altKey && e.which === 13)) {
             $form = $(this).closest('form');
-            if (! $form.find('input[type="submit"]') ||
-                ! $form.find('input[type="submit"]').trigger('click')
+
+            // There could be multiple submit buttons on the same form,
+            // we assume all of them behave identical and just click one.
+            if (! $form.find('input[type="submit"]:first') ||
+                ! $form.find('input[type="submit"]:first').trigger('click')
             ) {
                 $form.submit();
             }
@@ -5104,7 +5103,11 @@ function configSet (key, value, only_local) {
         success: function (data) {
             // Updating value in local storage.
             if (! data.success) {
-                PMA_ajaxShowMessage(data.message);
+                if (data.error) {
+                    PMA_ajaxShowMessage(data.error);
+                } else {
+                    PMA_ajaxShowMessage(data.message);
+                }
             }
             // Eventually, call callback.
         }

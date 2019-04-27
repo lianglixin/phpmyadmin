@@ -23,11 +23,14 @@ phpMyAdmin - ChangeLog
 - issue #14677 Security confirm() before running UPDATE statement without WHERE condition
 - issue #13023 Show errors at the bottom of the page and add copy query button for errors in processing sql queries
 - issue #14633 Use Sass instead of PHP to compile CSS
-- issue #14053 Fix missed padding on query results
 - issue #14765 Add initial support for Bootstrap 4
 - issue #14829 Change table column comment field from input to textarea
 - issue #14725 Console: ctrl+l clear line and ctrl+u clear console
 - issue #14837 Use charset 'windows-1252' when format is MS Excel
+- issue #15030 Move 'More settings' link from 'Appearance settings' to 'General settings'
+- issue #15029 Remove the redundant 'i' help/tool tip in page settings "Query History Length" area
+- issue #13424 Importing CSV now uses file name as the table name instead of 'TABLE #'
+- issue #14926 Add an Edit link for each view in tables list
 
 4.8.6 (not yet released)
 - issue #14478 phpMyAdmin no longer streams the export data
@@ -55,6 +58,50 @@ phpMyAdmin - ChangeLog
 - issue #14991 Fixed TypeError in GIS editor
 - issue        Fixed GIS data editor for multi server setup
 - issue #14312 Fixed type error in setup script when adding new server
+- issue #14053 Fix missed padding on query results
+- issue #14826 Fixed javascript error PMA_messages is not defined
+- issue        Show error message if config-set fails and not "loading..." forever
+- issue #14359 Prevent multiple error modals, and error-report request spamming from script
+- issue        Fixed error reporting javascript errors on multi server setup
+- issue        Fixed wrong property name on TableStructureController
+- issue #14811 Fix SHOW FULL TABLES FROM when a table is locked
+- issue #14916 Fix bug when creating or editing views
+- issue #14931 Fixed php error when using a query like SELECT 1 INTO @a; SELECT @a; in inline query edit
+- issue #15074 Make the server logo visible on theme "original"
+- issue #15077 Fixed incorrect page numbers
+- issue #14205 Fixed "No tables found in database" when you delete all tables from last page
+- issue #14957 Virtuality is not selected when editing generated column (added virtuality(stored) option for mariadb)
+- issue #14853 Insert page should not allow entering things into virtual columns
+- issue #15110 Fixed TypeError e.preventDefaulut is not a function
+- issue #15115 Improved label in Settings export, clarifying that it's a JSON file
+- issue #14816 Fixed [designer] Cannot read property 'style' of null
+- issue        Fixed [designer] Add new tables with database/table list modal
+- issue        Fixed query format on multi server setup
+- issue        Fixed remove partitioning on multi server setup
+- issue        Fixed normalization
+- issue        Fixed 'RESET SLAVE' button on replication slave
+- issue        Fixed sending a php error report on multi server setup
+- issue        Fixed downloading of monitor parameters for IE 11, Edge, Chrome and others
+- issue #15141 Fixed php notice Undefined index: designer_settings
+- issue #12729 Fixed sticky table header over dropdown menu
+- issue #15140 Fixed edit link does not work on failed insert
+- issue #14334 Fixed export table structure shows rows fields
+- issue #15010 Fixed empty SQL preview modal on tbl_relation
+- issue #14673 Fixed innodb & MySQL 8: DYNAMIC & COMPRESSED ROW_FORMAT missing
+- issue        Fixed empty success message when adding a new INDEX from left panel
+- issue #15150 Fixed generate password hidden on second open of change password modal
+- issue        Fixed import XML data with leading zeros
+- issue #15036 Fixed missing input fields checks for MaxSizeForInputField
+- issue #15119 Fixed uninterpreted HTML on Settings->Export page
+- issue #15159 Fixed missing query time and database in console
+- issue #13713 Fixed column comments in the floating table header
+- issue #15177 Fixed label alignment on login page
+- issue #15210 Fixed a typo in the english name of the Albanian language
+- issue        Fixed issue when resetting charset in import.php
+- issue #14460 Fixed forms where submitted multiple times on CTRL + ENTER
+- issue #15038 Fixed console height was allowing a negative values
+- issue #15219 Fixed 'No Password' option does not switch automatically to 'Use Text Field' in add user account
+- issue        Fixed importing the exported config on Server status monitor page
 
 4.8.5 (2019-01-25)
 - issue        Developer debug data was saved to the PHP error log

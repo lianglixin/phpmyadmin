@@ -56,9 +56,9 @@ if (getcwd() == dirname(__FILE__)) {
  * Minimum PHP version; can't call Core::fatalError() which uses a
  * PHP 5 function, so cannot easily localize this message.
  */
-if (version_compare(PHP_VERSION, '7.1.0', 'lt')) {
+if (version_compare(PHP_VERSION, '7.1.3', 'lt')) {
     die(
-        'PHP 7.1+ is required. <br> Currently installed version is: '
+        'PHP 7.1.3+ is required. <br> Currently installed version is: '
         . phpversion()
     );
 }
@@ -123,7 +123,9 @@ $GLOBALS['PMA_Config'] = new Config(CONFIG_FILE);
 /**
  * include session handling after the globals, to prevent overwriting
  */
-Session::setUp($GLOBALS['PMA_Config'], $GLOBALS['error_handler']);
+if (! defined('PMA_NO_SESSION')) {
+    Session::setUp($GLOBALS['PMA_Config'], $GLOBALS['error_handler']);
+}
 
 /**
  * init some variables LABEL_variables_init

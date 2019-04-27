@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Display;
 
+use PhpMyAdmin\Config\SpecialSchemaLinks;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Index;
@@ -234,9 +235,7 @@ class Results
      */
     public function __get($property)
     {
-        if (array_key_exists($property, $this->_property_array)) {
-            return $this->_property_array[$property];
-        }
+        return $this->_property_array[$property] ?? null;
     }
 
     /**
@@ -2325,23 +2324,23 @@ class Results
     /**
      * Adds the relevant classes.
      *
-     * @param string                $class                 class of table cell
-     * @param bool                  $condition_field       whether to add CSS class
-     *                                                     condition
-     * @param stdClass              $meta                  the meta-information about the
-     *                                                     field
-     * @param string                $nowrap                avoid wrapping
-     * @param bool                  $is_field_truncated    is field truncated (display ...)
-     * @param TransformationsPlugin $transformation_plugin transformation plugin.
-     *                                                     Can also be the default function:
-     *                                                     Core::mimeDefaultFunction
-     * @param string                $default_function      default transformation function
+     * @param string                       $class                 class of table cell
+     * @param bool                         $condition_field       whether to add CSS class
+     *                                                            condition
+     * @param stdClass                     $meta                  the meta-information about the
+     *                                                            field
+     * @param string                       $nowrap                avoid wrapping
+     * @param bool                         $is_field_truncated    is field truncated (display ...)
+     * @param TransformationsPlugin|string $transformation_plugin transformation plugin.
+     *                                                            Can also be the default function:
+     *                                                            Core::mimeDefaultFunction
+     * @param string                       $default_function      default transformation function
      *
      * @return string the list of classes
      *
-     * @access  private
+     * @access private
      *
-     * @see     _buildNullDisplay(), _getRowData()
+     * @see _buildNullDisplay(), _getRowData()
      */
     private function _addClass(
         $class,
@@ -2662,9 +2661,7 @@ class Results
         $mimeMap = [];
         $added = [];
 
-        for ($currentColumn = 0;
-                $currentColumn < $this->__get('fields_cnt');
-                ++$currentColumn) {
+        for ($currentColumn = 0; $currentColumn < $this->__get('fields_cnt'); ++$currentColumn) {
             $meta = $fields_meta[$currentColumn];
             $orgFullTableName = $this->__get('db') . '.' . $meta->orgtable;
 
@@ -2771,9 +2768,7 @@ class Results
         $whereClauseMap = $this->__get('whereClauseMap');
 
         $columnCount = $this->__get('fields_cnt');
-        for ($currentColumn = 0;
-                $currentColumn < $columnCount;
-                ++$currentColumn) {
+        for ($currentColumn = 0; $currentColumn < $columnCount; ++$currentColumn) {
             // assign $i with appropriate column order
             $i = $col_order ? $col_order[$currentColumn] : $currentColumn;
 
@@ -2880,12 +2875,11 @@ class Results
             }
 
             // Check for the predefined fields need to show as link in schemas
-            include_once ROOT_PATH . 'libraries/special_schema_links.inc.php';
+            $specialSchemaLinks = SpecialSchemaLinks::get();
 
-            if (isset($GLOBALS['special_schema_links'])
-                && ! empty($GLOBALS['special_schema_links'][$dbLower][$tblLower][$nameLower])
-            ) {
+            if (! empty($specialSchemaLinks[$dbLower][$tblLower][$nameLower])) {
                 $linking_url = $this->_getSpecialLinkUrl(
+                    $specialSchemaLinks,
                     $row[$i],
                     $row_info,
                     mb_strtolower($meta->orgname)
@@ -3020,17 +3014,21 @@ class Results
     /**
      * Get link for display special schema links
      *
-     * @param string $column_value column value
-     * @param array  $row_info     information about row
-     * @param string $field_name   column name
+     * @param array  $specialSchemaLinks special schema links
+     * @param string $column_value       column value
+     * @param array  $row_info           information about row
+     * @param string $field_name         column name
      *
      * @return string generated link
      */
-    private function _getSpecialLinkUrl($column_value, array $row_info, $field_name)
-    {
-
+    private function _getSpecialLinkUrl(
+        array $specialSchemaLinks,
+        $column_value,
+        array $row_info,
+        $field_name
+    ) {
         $linking_url_params = [];
-        $link_relations = $GLOBALS['special_schema_links'][mb_strtolower($this->__get('db'))][mb_strtolower($this->__get('table'))][$field_name];
+        $link_relations = $specialSchemaLinks[mb_strtolower($this->__get('db'))][mb_strtolower($this->__get('table'))][$field_name];
 
         if (! is_array($link_relations['link_param'])) {
             $linking_url_params[$link_relations['link_param']] = $column_value;

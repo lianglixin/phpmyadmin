@@ -38,8 +38,8 @@ class HeaderTest extends PmaTestCase
         $GLOBALS['pmaThemePath'] = $GLOBALS['PMA_Theme']->getPath();
         $GLOBALS['PMA_PHP_SELF'] = Core::getenv('PHP_SELF');
         $GLOBALS['server'] = 'server';
-        $GLOBALS['db'] = 'pma_test';
-        $GLOBALS['table'] = 'table1';
+        $GLOBALS['db'] = 'db';
+        $GLOBALS['table'] = '';
         $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
@@ -58,7 +58,7 @@ class HeaderTest extends PmaTestCase
         $header = new Header();
         $header->disable();
         $this->assertEquals(
-            '',
+            "\n",
             $header->getDisplay()
         );
     }
@@ -150,21 +150,5 @@ class HeaderTest extends PmaTestCase
         $header->disableWarnings();
 
         $this->assertFalse($reflection->getValue($header));
-    }
-
-    /**
-     * Tests private method _getWarnings when warnings are disabled
-     *
-     * @return void
-     * @test
-     */
-    public function testGetWarningsWithWarningsDisabled()
-    {
-        $method = new ReflectionMethod(Header::class, '_getWarnings');
-        $method->setAccessible(true);
-
-        $header = new Header();
-        $header->disableWarnings();
-        $this->assertEmpty($method->invoke($header));
     }
 }

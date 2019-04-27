@@ -91,13 +91,7 @@ class StructureController extends AbstractController
      * @param \PhpMyAdmin\DatabaseInterface $dbi                 DatabaseInterface object
      * @param string                        $db                  Database name
      * @param string                        $table               Table name
-     * @param string                        $type                Indicate the db_structure or tbl_structure
-     * @param int                           $num_tables          Number of tables
-     * @param int                           $pos                 Current position in the list
      * @param bool                          $db_is_system_schema DB is information_schema
-     * @param int                           $total_num_tables    Number of tables
-     * @param array                         $tables              Tables in the DB
-     * @param bool                          $is_show_stats       Whether stats show or not
      * @param bool                          $tbl_is_view         Table is a view
      * @param string                        $tbl_storage_engine  Table storage engine
      * @param int                           $table_info_num_rows Number of rows
@@ -109,13 +103,7 @@ class StructureController extends AbstractController
         $dbi,
         $db,
         $table,
-        $type,
-        $num_tables,
-        $pos,
         $db_is_system_schema,
-        $total_num_tables,
-        $tables,
-        $is_show_stats,
         $tbl_is_view,
         $tbl_storage_engine,
         $table_info_num_rows,
@@ -437,7 +425,7 @@ class StructureController extends AbstractController
             $data['Expression'] = '';
             if (isset($data['Extra']) && in_array($data['Extra'], $virtual)) {
                 $data['Virtuality'] = str_replace(' GENERATED', '', $data['Extra']);
-                $expressions = $this->table->getColumnGenerationExpression($column);
+                $expressions = $this->table_obj->getColumnGenerationExpression($column);
                 $data['Expression'] = $expressions[$column];
             }
 
@@ -1255,53 +1243,12 @@ class StructureController extends AbstractController
             'DistinctValues' => Util::getIcon('b_browse', __('Distinct values')),
         ];
 
-        /**
-         * Work on the table
-         */
+        $edit_view_url = '';
         if ($this->_tbl_is_view && ! $this->_db_is_system_schema) {
-            $item = $this->dbi->fetchSingleRow(
-                sprintf(
-                    "SELECT `VIEW_DEFINITION`, `CHECK_OPTION`, `DEFINER`,
-                      `SECURITY_TYPE`
-                    FROM `INFORMATION_SCHEMA`.`VIEWS`
-                    WHERE TABLE_SCHEMA='%s'
-                    AND TABLE_NAME='%s';",
-                    $this->dbi->escapeString($this->db),
-                    $this->dbi->escapeString($this->table)
-                )
-            );
-
-            $createView = $this->dbi->getTable($this->db, $this->table)
-                ->showCreate();
-            // get algorithm from $createView of the form
-            // CREATE ALGORITHM=<ALGORITHM> DE...
-            $parts = explode(" ", substr($createView, 17));
-            $item['ALGORITHM'] = $parts[0];
-
-            $view = [
-                'operation' => 'alter',
-                'definer' => $item['DEFINER'],
-                'sql_security' => $item['SECURITY_TYPE'],
-                'name' => $this->table,
-                'as' => $item['VIEW_DEFINITION'],
-                'with' => $item['CHECK_OPTION'],
-                'algorithm' => $item['ALGORITHM'],
-            ];
-
-            $edit_view_url = 'view_create.php'
-                . Url::getCommon($url_params) . '&amp;'
-                . implode(
-                    '&amp;',
-                    array_map(
-                        function ($key, $val) {
-                            return 'view[' . urlencode($key) . ']=' . urlencode(
-                                $val
-                            );
-                        },
-                        array_keys($view),
-                        $view
-                    )
-                );
+            $edit_view_url = Url::getCommon([
+                'db' => $this->db,
+                'table' => $this->table,
+            ]);
         }
 
         /**
@@ -1380,7 +1327,7 @@ class StructureController extends AbstractController
             'tbl_storage_engine' => $this->_tbl_storage_engine,
             'primary' => $primary_index,
             'columns_with_unique_index' => $columns_with_unique_index,
-            'edit_view_url' => isset($edit_view_url) ? $edit_view_url : null,
+            'edit_view_url' => $edit_view_url,
             'columns_list' => $columns_list,
             'table_stats' => isset($tablestats) ? $tablestats : null,
             'fields' => $fields,

@@ -564,8 +564,10 @@ AJAX.registerOnload('server_status_monitor.js', function () {
         $.each(runtime.charts, function (key, elem) {
             gridCopy[key] = {};
             gridCopy[key].nodes = elem.nodes;
+            gridCopy[key].series = elem.series;
             gridCopy[key].settings = elem.settings;
             gridCopy[key].title = elem.title;
+            gridCopy[key].maxYLabel = elem.maxYLabel;
         });
         var exportData = {
             monitorCharts: gridCopy,
@@ -573,9 +575,22 @@ AJAX.registerOnload('server_status_monitor.js', function () {
         };
 
         var blob = new Blob([JSON.stringify(exportData)], { type: 'application/octet-stream' });
-        var url = window.URL.createObjectURL(blob);
-        window.location.href = url;
-        window.URL.revokeObjectURL(url);
+        var url = null;
+        var fileName = 'monitor-config.json';
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(blob, fileName);
+        } else {
+            url = URL.createObjectURL(blob);
+            window.location.href = url;
+        }
+        setTimeout(function () {
+            // For some browsers it is necessary to delay revoking the ObjectURL
+            if (url !== null) {
+                window.URL.revokeObjectURL(url);
+            }
+            url = undefined;
+            blob = undefined;
+        }, 100);
     });
 
     $('a[href="#importMonitorConfig"]').on('click', function (event) {
@@ -595,7 +610,7 @@ AJAX.registerOnload('server_status_monitor.js', function () {
             };
             reader.onload = function (e) {
                 var data = e.target.result;
-
+                var json = null;
                 // Try loading config
                 try {
                     json = JSON.parse(data);
@@ -614,11 +629,12 @@ AJAX.registerOnload('server_status_monitor.js', function () {
 
                 // If json ok, try applying config
                 try {
-                    window.localStorage.monitorCharts = JSON.stringify(json.monitorCharts);
-                    window.localStorage.monitorSettings = JSON.stringify(json.monitorSettings);
+                    if (isStorageSupported('localStorage')) {
+                        window.localStorage.monitorCharts = JSON.stringify(json.monitorCharts);
+                        window.localStorage.monitorSettings = JSON.stringify(json.monitorSettings);
+                    }
                     rebuildGrid();
                 } catch (err) {
-                    console.log(err);
                     alert(PMA_messages.strFailedBuildingGrid);
                     // If an exception is thrown, load default again
                     if (isStorageSupported('localStorage')) {
@@ -1156,13 +1172,12 @@ AJAX.registerOnload('server_status_monitor.js', function () {
         var tempTooltipContentEditor = function (str, seriesIndex, pointIndex, plot) {
             var j;
             // TODO: move style to theme CSS
-            var tooltipHtml = '<div style="font-size:12px;background-color:#FFFFFF;' +
-                'opacity:0.95;filter:alpha(opacity=95);padding:5px;">';
+            var tooltipHtml = '<div id="tooltip_editor">';
             // x value i.e. time
             var timeValue = str.split(',')[0];
             var seriesValue;
             tooltipHtml += 'Time: ' + timeValue;
-            tooltipHtml += '<span style="font-weight:bold;">';
+            tooltipHtml += '<span id="tooltip_font">';
             // Add y values to the tooltip per series
             for (j in plot.series) {
                 // get y value if present
@@ -1236,7 +1251,7 @@ AJAX.registerOnload('server_status_monitor.js', function () {
             if ($('#selection_box').length) {
                 $('#selection_box').remove();
             }
-            var selectionBox = $('<div id="selection_box" style="z-index:1000;height:205px;position:absolute;background-color:#87CEEB;opacity:0.4;filter:alpha(opacity=40);pointer-events:none;">');
+            var selectionBox = $('<div id="selection_box" >');
             $(document.body).append(selectionBox);
             selectionStartX = ev.pageX;
             selectionStartY = ev.pageY;
@@ -1643,7 +1658,7 @@ AJAX.registerOnload('server_status_monitor.js', function () {
                         '    <legend>' + PMA_messages.strFiltersForLogTable + '</legend>' +
                         '    <div class="formelement">' +
                         '        <label for="filterQueryText">' + PMA_messages.strFilterByWordRegexp + '</label>' +
-                        '        <input name="filterQueryText" type="text" id="filterQueryText" style="vertical-align: baseline;">' +
+                        '        <input name="filterQueryText" type="text" id="filter_query_text">' +
                         '    </div>' +
                         ((logData.numRows > 250) ? ' <div class="formelement"><button name="startFilterQueryText" id="startFilterQueryText">' + PMA_messages.strFilter + '</button></div>' : '') +
                         '    <div class="formelement">' +

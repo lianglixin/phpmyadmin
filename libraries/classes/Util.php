@@ -1513,17 +1513,26 @@ class Util
         $formatted_size = (string) $formatted_size;
 
         if (preg_match('/^[0-9]+GB$/', $formatted_size)) {
-            $return_value = mb_substr($formatted_size, 0, -2)
-                * pow(1024, 3);
+            $return_value = (int) mb_substr(
+                $formatted_size,
+                0,
+                -2
+            ) * pow(1024, 3);
         } elseif (preg_match('/^[0-9]+MB$/', $formatted_size)) {
-            $return_value = mb_substr($formatted_size, 0, -2)
-                * pow(1024, 2);
+            $return_value = (int) mb_substr(
+                $formatted_size,
+                0,
+                -2
+            ) * pow(1024, 2);
         } elseif (preg_match('/^[0-9]+K$/', $formatted_size)) {
-            $return_value = mb_substr($formatted_size, 0, -1)
-                * pow(1024, 1);
+            $return_value = (int) mb_substr(
+                $formatted_size,
+                0,
+                -1
+            ) * pow(1024, 1);
         }
         return $return_value;
-    }// end of the 'extractValueFromFormattedSize' function
+    }
 
     /**
      * Writes localised date
@@ -1826,6 +1835,7 @@ class Util
         if (($url_length > $GLOBALS['cfg']['LinkLengthLimit'])
             || ! $in_suhosin_limits
             || strpos($url, 'sql_query=') !== false
+            || strpos($url, 'view[as]=') !== false
         ) {
             $parts = explode('?', $url, 2);
             /*
@@ -2335,6 +2345,19 @@ class Util
         return $gotopage;
     } // end function
 
+
+    /**
+     * Calculate page number through position
+     * @param int $pos       position of first item
+     * @param int $max_count number of items per page
+     * @return int $page_num
+     * @access public
+     */
+    public static function getPageFromPosition($pos, $max_count)
+    {
+        return floor($pos / $max_count) + 1;
+    }
+
     /**
      * Prepare navigation for a list
      *
@@ -2417,7 +2440,7 @@ class Util
             $list_navigator_html .= self::pageselector(
                 $name,
                 $max_count,
-                floor(($pos + 1) / $max_count) + 1,
+                self::getPageFromPosition($pos, $max_count),
                 ceil($count / $max_count)
             );
             $list_navigator_html .= '</form>';
@@ -4091,9 +4114,7 @@ class Util
         $in_string = false;
         $buffer = '';
 
-        for ($i = 0, $length = mb_strlen($values_string);
-             $i < $length;
-             $i++) {
+        for ($i = 0, $length = mb_strlen($values_string); $i < $length; $i++) {
             $curr = mb_substr($values_string, $i, 1);
             $next = ($i == mb_strlen($values_string) - 1)
                 ? ''
@@ -4681,7 +4702,7 @@ class Util
             }
             $db_info_result = $GLOBALS['dbi']->query(
                 'SHOW FULL TABLES FROM ' . self::backquote($db) . $tblGroupSql,
-                null,
+                DatabaseInterface::CONNECT_USER,
                 DatabaseInterface::QUERY_STORE
             );
             unset($tblGroupSql, $whereAdded);

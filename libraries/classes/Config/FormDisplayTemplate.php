@@ -262,7 +262,7 @@ class FormDisplayTemplate
 
         $htmlOutput = '<tr' . $trClass . '>';
         $htmlOutput .= '<th>';
-        $htmlOutput .= '<label for="' . htmlspecialchars($path) . '">' . $name
+        $htmlOutput .= '<label for="' . htmlspecialchars($path) . '">' . htmlspecialchars_decode($name)
             . '</label>';
 
         if (! empty($opts['doc'])) {
@@ -361,8 +361,6 @@ class FormDisplayTemplate
             if (isset($opts['comment_warning']) && $opts['comment_warning']) {
                 $class .= ' field-comment-warning';
             }
-            $htmlOutput .= '<span class="' . $class . '" title="'
-                . htmlspecialchars($opts['comment']) . '">i</span>';
         }
         if ($isSetupScript
             && isset($opts['userprefs_comment'])
