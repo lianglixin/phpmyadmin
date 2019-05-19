@@ -24,6 +24,8 @@ if (! defined('ROOT_PATH')) {
     define('ROOT_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 }
 
+global $db, $sql_query;
+
 include_once ROOT_PATH . 'libraries/common.inc.php';
 
 $container = Container::getDefaultContainer();
@@ -415,7 +417,7 @@ if ($save_on_server) {
                 );
                 $active_page = 'db_export.php';
                 include ROOT_PATH . 'db_export.php';
-                exit();
+                exit;
             }
         }
         list($html, $back_button, $refreshButton) = $export->getHtmlForDisplayedExportHeader(

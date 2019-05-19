@@ -2310,7 +2310,6 @@ class InsertEdit
             . ' (' . implode(', ', $query_fields) . ') VALUES ('
             . implode('), (', $value_sets) . ')'
         ];
-        unset($insert_command, $query_fields);
         return $query;
     }
 
@@ -2571,7 +2570,7 @@ class InsertEdit
      * @param array  $func_no_param           array of set of string
      * @param string $key                     an md5 of the column name
      *
-     * @return array
+     * @return string
      */
     public function getCurrentValueAsAnArrayForMultipleEdit(
         $multi_edit_funcs,
@@ -3157,9 +3156,6 @@ class InsertEdit
     ) {
         $column = $table_columns[$column_number];
         $readOnly = false;
-        if (! $this->userHasColumnPrivileges($column, $insert_mode)) {
-            $readOnly = true;
-        }
 
         if (! isset($column['processed'])) {
             $column = $this->analyzeTableColumnsArray(
@@ -3521,20 +3517,5 @@ class InsertEdit
             . '<div class="clearfloat"></div>';
 
         return $html_output;
-    }
-
-    /**
-     * Returns whether the user has necessary insert/update privileges for the column
-     *
-     * @param array $table_column array of column details
-     * @param bool  $insert_mode  whether on insert mode
-     *
-     * @return boolean whether user has necessary privileges
-     */
-    private function userHasColumnPrivileges(array $table_column, $insert_mode)
-    {
-        $privileges = $table_column['Privileges'];
-        return ($insert_mode && strstr($privileges, 'insert') !== false)
-            || (! $insert_mode && strstr($privileges, 'update') !== false);
     }
 }

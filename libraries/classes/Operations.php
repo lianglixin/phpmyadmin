@@ -931,7 +931,7 @@ class Operations
      *
      * @param Table  $pma_table          Table object
      * @param string $comment            Comment
-     * @param array  $tbl_collation      table collation
+     * @param string $tbl_collation      table collation
      * @param string $tbl_storage_engine table storage engine
      * @param string $pack_keys          pack keys
      * @param string $auto_increment     value of auto increment
@@ -1083,7 +1083,7 @@ class Operations
      *
      * @param Table  $pma_table          Table object
      * @param string $comment            Comment
-     * @param array  $tbl_collation      table collation
+     * @param string $tbl_collation      table collation
      * @param string $tbl_storage_engine table storage engine
      * @param string $pack_keys          pack keys
      * @param string $delay_key_write    delay key write
@@ -1182,7 +1182,7 @@ class Operations
         } // end if (ARIA)
 
         if (strlen($auto_increment) > 0
-            && $pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'PBXT'])
+            && $pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'PBXT', 'ROCKSDB'])
         ) {
             $html_output .= '<tr><td class="vmiddle">'
                 . '<label for="auto_increment_opt">AUTO_INCREMENT</label></td>'
@@ -1911,7 +1911,7 @@ class Operations
             $table_alters[] = 'delay_key_write = ' . $_POST['new_delay_key_write'];
         }
 
-        if ($pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'PBXT'])
+        if ($pma_table->isEngine(['MYISAM', 'ARIA', 'INNODB', 'PBXT', 'ROCKSDB'])
             && ! empty($_POST['new_auto_increment'])
             && (! isset($auto_increment)
             || $_POST['new_auto_increment'] !== $auto_increment)

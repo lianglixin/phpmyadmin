@@ -162,7 +162,11 @@ class Validator
         $newResult = [];
         foreach ($result as $k => $v) {
             $k2 = isset($keyMap[$k]) ? $keyMap[$k] : $k;
-            $newResult[$k2] = $v;
+            if (is_array($v)) {
+                $newResult[$k2] = array_map('htmlspecialchars', $v);
+            } else {
+                $newResult[$k2] = htmlspecialchars($v);
+            }
         }
         return empty($newResult) ? true : $newResult;
     }
@@ -553,7 +557,7 @@ class Validator
      * @param array  $values config values
      * @param string $regex  regular expression to match
      *
-     * @return array
+     * @return array|string
      */
     public static function validateByRegex($path, array $values, $regex)
     {

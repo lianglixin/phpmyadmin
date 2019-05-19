@@ -25,6 +25,7 @@ use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use Williamdes\MariaDBMySQLKBS\Search as KBSearch;
 use Williamdes\MariaDBMySQLKBS\KBException;
+use phpseclib\Crypt\Random;
 
 /**
  * Misc functions used all over the scripts.
@@ -119,13 +120,6 @@ class Util
     public static function getImage($image, $alternate = '', array $attributes = [])
     {
         $alternate = htmlspecialchars($alternate);
-
-        // Set $url accordingly
-        if (isset($GLOBALS['pmaThemeImage'])) {
-            $url = $GLOBALS['pmaThemeImage'] . $image;
-        } else {
-            $url = './themes/pmahomme/' . $image;
-        }
 
         if (isset($attributes['class'])) {
             $attributes['class'] = "icon ic_$image " . $attributes['class'];
@@ -2069,7 +2063,7 @@ class Util
                 ) {
                     $con_val = '= ' . $row[$i];
                 } elseif ((($meta->type == 'blob') || ($meta->type == 'string'))
-                    && stristr($field_flags, 'BINARY')
+                    && false !== stripos($field_flags, 'BINARY')
                     && ! empty($row[$i])
                 ) {
                     // hexify only if this is a true not empty BLOB or a BINARY
@@ -2921,7 +2915,7 @@ class Util
             if (false !== strpos($printtype, "binary")
                 && ! preg_match('@binary[\(]@', $printtype)
             ) {
-                $printtype = preg_replace('@binary@', '', $printtype);
+                $printtype = str_replace("binary", '', $printtype);
                 $binary = true;
             } else {
                 $binary = false;
@@ -3096,9 +3090,15 @@ class Util
     {
         // Convert to WKT format
         $hex = bin2hex($data);
-        $wktsql     = "SELECT ASTEXT(x'" . $hex . "')";
+        $spatialAsText = 'ASTEXT';
+        $spatialSrid = 'SRID';
+        if ($GLOBALS['dbi']->getVersion() >= 50600) {
+            $spatialAsText = 'ST_ASTEXT';
+            $spatialSrid = 'ST_SRID';
+        }
+        $wktsql     = "SELECT $spatialAsText(x'" . $hex . "')";
         if ($includeSRID) {
-            $wktsql .= ", SRID(x'" . $hex . "')";
+            $wktsql .= ", $spatialSrid(x'" . $hex . "')";
         }
 
         $wktresult  = $GLOBALS['dbi']->tryQuery(
@@ -3579,19 +3579,21 @@ class Util
     /**
      * Generates GIS data based on the string passed.
      *
-     * @param string $gis_string GIS string
+     * @param string $gis_string   GIS string
+     * @param int    $mysqlVersion The mysql version as int
      *
-     * @return string GIS data enclosed in 'GeomFromText' function
+     * @return string GIS data enclosed in 'ST_GeomFromText' or 'GeomFromText' function
      */
-    public static function createGISData($gis_string)
+    public static function createGISData($gis_string, $mysqlVersion)
     {
+        $geomFromText = ($mysqlVersion >= 50600) ? 'ST_GeomFromText' : 'GeomFromText';
         $gis_string = trim($gis_string);
         $geom_types = '(POINT|MULTIPOINT|LINESTRING|MULTILINESTRING|'
             . 'POLYGON|MULTIPOLYGON|GEOMETRYCOLLECTION)';
         if (preg_match("/^'" . $geom_types . "\(.*\)',[0-9]*$/i", $gis_string)) {
-            return 'GeomFromText(' . $gis_string . ')';
+            return $geomFromText . '(' . $gis_string . ')';
         } elseif (preg_match("/^" . $geom_types . "\(.*\)$/i", $gis_string)) {
-            return "GeomFromText('" . $gis_string . "')";
+            return $geomFromText . "('" . $gis_string . "')";
         }
 
         return $gis_string;
@@ -4789,9 +4791,9 @@ class Util
     public static function generateRandom($length)
     {
         $result = '';
-        if (class_exists('phpseclib\\Crypt\\Random')) {
+        if (class_exists(Random::class)) {
             $random_func = [
-                'phpseclib\\Crypt\\Random',
+                Random::class,
                 'string',
             ];
         } else {

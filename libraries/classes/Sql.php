@@ -326,12 +326,7 @@ class Sql
         $i = 1;
         $table = '';
         foreach ($profiling_results as $one_result) {
-            if (isset($profiling_stats['states'][ucwords($one_result['Status'])])) {
-                $states = $profiling_stats['states'];
-                $states[ucwords($one_result['Status'])]['total_time']
-                    += $one_result['Duration'];
-                $states[ucwords($one_result['Status'])]['calls']++;
-            } else {
+            if (! isset($profiling_stats['states'][ucwords($one_result['Status'])])) {
                 $profiling_stats['states'][ucwords($one_result['Status'])] = [
                     'total_time' => $one_result['Duration'],
                     'calls' => 1,
@@ -1504,7 +1499,7 @@ class Sql
     {
         $row = $GLOBALS['dbi']->fetchRow($result);
         $field_flags = $GLOBALS['dbi']->fieldFlags($result, 0);
-        if (stristr($field_flags, DisplayResults::BINARY_FIELD)) {
+        if (false !== stripos($field_flags, DisplayResults::BINARY_FIELD)) {
             $row[0] = bin2hex($row[0]);
         }
         $response = Response::getInstance();
@@ -1623,7 +1618,6 @@ class Sql
                 }
 
                 $GLOBALS['dbi']->freeResult($result);
-                unset($result);
             } while ($GLOBALS['dbi']->moreResults() && $GLOBALS['dbi']->nextResult());
         } else {
             $fields_meta = [];
@@ -1947,7 +1941,7 @@ class Sql
             );
             if (empty($sql_data) || ($sql_data['valid_queries'] = 1)) {
                 $response->addHTML($tableMaintenanceHtml);
-                exit();
+                exit;
             }
         }
 
@@ -2216,6 +2210,10 @@ class Sql
             isset($sql_query_for_bookmark) ? $sql_query_for_bookmark : null,
             isset($extra_data) ? $extra_data : null
         );
+
+        if ($GLOBALS['dbi']->moreResults()) {
+            $GLOBALS['dbi']->nextResult();
+        }
 
         $warning_messages = $this->operations->getWarningMessagesArray();
 

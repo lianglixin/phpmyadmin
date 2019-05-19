@@ -23,6 +23,8 @@ if (! defined('ROOT_PATH')) {
     define('ROOT_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 }
 
+global $db, $pmaThemeImage, $text_dir, $url_query;
+
 require_once ROOT_PATH . 'libraries/common.inc.php';
 
 $container = Container::getDefaultContainer();
@@ -83,6 +85,7 @@ $strPrivDescCreateTmpTable = __('Allows creating temporary tables.');
 $strPrivDescCreateUser = __('Allows creating, dropping and renaming user accounts.');
 $strPrivDescCreateView = __('Allows creating new views.');
 $strPrivDescDelete = __('Allows deleting data.');
+$strPrivDescDeleteHistoricalRows = __('Allows deleting historical rows.');
 $strPrivDescDropDb = __('Allows dropping databases and tables.');
 $strPrivDescDropTbl = __('Allows dropping tables.');
 $strPrivDescEvent = __('Allows to set up events for the event scheduler.');
@@ -358,7 +361,7 @@ if ($response->isAjax()
  * Displays the links
  */
 if (isset($_GET['viewing_mode']) && $_GET['viewing_mode'] == 'db') {
-    $GLOBALS['db'] = $_REQUEST['db'] = $_GET['checkprivsdb'];
+    $db = $_REQUEST['db'] = $_GET['checkprivsdb'];
 
     $url_query .= '&amp;goto=db_operations.php';
 

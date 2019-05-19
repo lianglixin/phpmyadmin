@@ -21,6 +21,7 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
 use PhpMyAdmin\Url;
+use PhpMyAdmin\Navigation\NavigationTree;
 
 /**
  * Displays a collapsible of database objects in the navigation frame
@@ -365,7 +366,7 @@ class NavigationTree
         }
 
         array_shift($path); // remove 'root'
-        /* @var $db NodeDatabase */
+        /** @var NodeDatabase $db */
         $db = $this->_tree->getChild($path[0]);
         $retval = $db;
 
@@ -453,7 +454,7 @@ class NavigationTree
             return $retval;
         }
 
-        /* @var $table NodeTable */
+        /** @var NodeTable $table */
         $table = $container->getChild($path[0], true);
         if ($table === false) {
             if (! $db->getPresence('tables', $path[0])) {
@@ -791,7 +792,8 @@ class NavigationTree
                 $groups[$key]->separator = $node->separator;
                 $groups[$key]->separator_depth = $node->separator_depth - 1;
                 $groups[$key]->icon = Util::getImage(
-                    'b_group'
+                    'b_group',
+                    __('Groups')
                 );
                 $groups[$key]->pos2 = $node->pos2;
                 $groups[$key]->pos3 = $node->pos3;
@@ -879,7 +881,7 @@ class NavigationTree
         $this->groupTree();
         $children = $this->_tree->children;
         usort($children, [
-            'PhpMyAdmin\\Navigation\\NavigationTree',
+            NavigationTree::class,
             'sortNode',
         ]);
         $this->_setVisibility();
@@ -921,7 +923,7 @@ class NavigationTree
             $listContent .= $this->_getPageSelector($node);
             $children = $node->children;
             usort($children, [
-                'PhpMyAdmin\\Navigation\\NavigationTree',
+                NavigationTree::class,
                 'sortNode',
             ]);
 
@@ -1200,7 +1202,7 @@ class NavigationTree
                 } else {
                     $retval .= "<a class='hover_show_full$linkClass' href='$link'";
                     $retval .= " title='$title'>";
-                    $retval .= htmlspecialchars($node->real_name);
+                    $retval .= htmlspecialchars($node->disp_name ?? $node->real_name);
                     $retval .= "</a>";
                 }
             } else {
@@ -1227,7 +1229,7 @@ class NavigationTree
             usort(
                 $children,
                 [
-                    'PhpMyAdmin\\Navigation\\NavigationTree',
+                    NavigationTree::class,
                     'sortNode',
                 ]
             );
@@ -1313,7 +1315,7 @@ class NavigationTree
 
         $children = $this->_tree->children;
         usort($children, [
-            'PhpMyAdmin\\Navigation\\NavigationTree',
+            NavigationTree::class,
             'sortNode',
         ]);
         $this->_setVisibility();

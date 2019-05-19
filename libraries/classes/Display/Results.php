@@ -27,6 +27,9 @@ use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 use \stdClass;
 use PhpMyAdmin\Plugins\TransformationsPlugin;
+use PhpMyAdmin\Plugins\Transformations\Output\Text_Plain_Json;
+use PhpMyAdmin\Plugins\Transformations\Output\Text_Octetstream_Sql;
+use PhpMyAdmin\Plugins\Transformations\Output\Text_Plain_Sql;
 
 /**
  * Handle all the functionalities related to displaying results
@@ -262,22 +265,22 @@ class Results
     {
         $json_highlighting_data = [
             'libraries/classes/Plugins/Transformations/Output/Text_Plain_Json.php',
-            'PhpMyAdmin\Plugins\Transformations\Output\Text_Plain_Json',
+            Text_Plain_Json::class,
             'Text_Plain',
         ];
         $sql_highlighting_data = [
             'libraries/classes/Plugins/Transformations/Output/Text_Plain_Sql.php',
-            'PhpMyAdmin\Plugins\Transformations\Output\Text_Plain_Sql',
+            Text_Plain_Sql::class,
             'Text_Plain',
         ];
         $blob_sql_highlighting_data = [
             'libraries/classes/Plugins/Transformations/Output/Text_Octetstream_Sql.php',
-            'PhpMyAdmin\Plugins\Transformations\Output\Text_Octetstream_Sql',
+            Text_Octetstream_Sql::class,
             'Text_Octetstream',
         ];
         $link_data = [
             'libraries/classes/Plugins/Transformations/Text_Plain_Link.php',
-            'PhpMyAdmin\Plugins\Transformations\Text_Plain_Link',
+            Text_Plain_Link::class,
             'Text_Plain',
         ];
         $this->transformation_info = [
@@ -1688,8 +1691,7 @@ class Results
                 $sort_tbl,
                 $name_to_use_in_sort,
                 $sort_direction,
-                $fields_meta,
-                $column_index
+                $fields_meta
             );
 
         if (preg_match(
@@ -1757,7 +1759,6 @@ class Results
      *                                              consideration
      * @param array    $sort_direction              sort direction
      * @param stdClass $fields_meta                 set of field properties
-     * @param integer  $column_index                The index number to current column
      *
      * @return  array   3 element array - $single_sort_order, $sort_order, $order_img
      *
@@ -1771,8 +1772,7 @@ class Results
         $sort_tbl,
         $name_to_use_in_sort,
         array $sort_direction,
-        $fields_meta,
-        $column_index
+        $fields_meta
     ) {
         $sort_order = "";
         // Check if the current column is in the order by clause
@@ -1874,8 +1874,6 @@ class Results
             }
             // Separate columns by a comma
             $sort_order .= ", ";
-
-            unset($name_to_use_in_sort);
         }
         // remove the comma from the last column name in the newly
         // constructed clause
@@ -3799,12 +3797,12 @@ class Results
         // if binary fields are protected
         // or transformation plugin is of non text type
         // such as image
-        if ((stristr($field_flags, self::BINARY_FIELD)
+        if ((false !== stripos($field_flags, self::BINARY_FIELD)
             && ($GLOBALS['cfg']['ProtectBinary'] === 'all'
             || ($GLOBALS['cfg']['ProtectBinary'] === 'noblob'
-            && ! stristr($meta->type, self::BLOB_FIELD))
+            && false === stripos($meta->type, self::BLOB_FIELD))
             || ($GLOBALS['cfg']['ProtectBinary'] === 'blob'
-            && stristr($meta->type, self::BLOB_FIELD))))
+            && false !== stripos($meta->type, self::BLOB_FIELD))))
             || $bIsText
         ) {
             $class = str_replace('grid_edit', '', $class);
@@ -3824,7 +3822,7 @@ class Results
         // (unless it's a link-type transformation or binary)
         if (! (gettype($transformation_plugin) === "object"
             && strpos($transformation_plugin->getName(), 'Link') !== false)
-            && ! stristr($field_flags, self::BINARY_FIELD)
+            && false === stripos($field_flags, self::BINARY_FIELD)
         ) {
             list(
                 $is_field_truncated,
@@ -3843,7 +3841,7 @@ class Results
             // some results of PROCEDURE ANALYSE() are reported as
             // being BINARY but they are quite readable,
             // so don't treat them as BINARY
-        } elseif (stristr($field_flags, self::BINARY_FIELD)
+        } elseif (false !== stripos($field_flags, self::BINARY_FIELD)
             && ! (isset($is_analyse) && $is_analyse)
         ) {
             // we show the BINARY or BLOB message and field's size
@@ -3874,7 +3872,7 @@ class Results
             $result = strip_tags($column);
             // disable inline grid editing
             // if binary or blob data is not shown
-            if (stristr($result, $binary_or_blob)) {
+            if (false !== stripos($result, $binary_or_blob)) {
                 $class = str_replace('grid_edit', '', $class);
             }
             $formatted = true;
@@ -4253,15 +4251,6 @@ class Results
         // initialize map
         $map = [];
 
-        $target = [];
-        if (! is_null($statement) && ! empty($statement->from)) {
-            foreach ($statement->from as $field) {
-                if (! empty($field->table)) {
-                    $target[] = $field->table;
-                }
-            }
-        }
-
         if (strlen($this->__get('table')) > 0) {
             // This method set the values for $map array
             $this->_setParamForLinkForeignKeyRelatedTables($map);
@@ -4429,7 +4418,7 @@ class Results
         // check for non printable sorted row data
         $meta = $fields_meta[$sorted_column_index];
 
-        if (stristr($meta->type, self::BLOB_FIELD)
+        if (false !== stripos($meta->type, self::BLOB_FIELD)
             || ($meta->type == self::GEOMETRY_FIELD)
         ) {
             $column_for_first_row = $this->_handleNonPrintableContents(
@@ -4458,7 +4447,7 @@ class Results
 
         // check for non printable sorted row data
         $meta = $fields_meta[$sorted_column_index];
-        if (stristr($meta->type, self::BLOB_FIELD)
+        if (false !== stripos($meta->type, self::BLOB_FIELD)
             || ($meta->type == self::GEOMETRY_FIELD)
         ) {
             $column_for_last_row = $this->_handleNonPrintableContents(
@@ -5114,7 +5103,7 @@ class Results
         if (($_SESSION['tmpval']['display_binary']
             && $meta->type === self::STRING_FIELD)
             || ($_SESSION['tmpval']['display_blob']
-            && stristr($meta->type, self::BLOB_FIELD))
+            && false !== stripos($meta->type, self::BLOB_FIELD))
         ) {
             // in this case, restart from the original $content
             if (mb_check_encoding($content, 'utf-8')

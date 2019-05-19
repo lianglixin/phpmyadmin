@@ -15,6 +15,7 @@ use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\UserPreferences;
+use PhpMyAdmin\UserPreferencesHeader;
 
 if (! defined('ROOT_PATH')) {
     define('ROOT_PATH', __DIR__ . DIRECTORY_SEPARATOR);
@@ -80,7 +81,7 @@ $header   = $response->getHeader();
 $scripts  = $header->getScripts();
 $scripts->addFile('config.js');
 
-require ROOT_PATH . 'libraries/user_preferences.inc.php';
+echo UserPreferencesHeader::getContent($template);
 
 if ($form_display->hasErrors()) {
     $formErrors = $form_display->displayErrors();
@@ -90,7 +91,9 @@ echo $template->render('preferences/forms/main', [
     'error' => $error ? $error->getDisplay() : '',
     'has_errors' => $form_display->hasErrors(),
     'errors' => $formErrors ?? null,
-    'form' => $form_display->getDisplay(true, true),
+    'form' => $form_display->getDisplay(true, true, true, 'prefs_forms.php?form=' . $form_param, [
+        'server' => $GLOBALS['server'],
+    ]),
 ]);
 
 if ($response->isAjax()) {

@@ -95,8 +95,7 @@ class Import
      */
     public function executeQuery(string $sql, string $full, array &$sql_data): void
     {
-        global $go_sql,
-            $sql_query, $my_die, $error, $reload,
+        global $sql_query, $my_die, $error, $reload,
             $result, $msg,
             $cfg, $sql_query_disabled, $db;
 
@@ -186,10 +185,8 @@ class Import
         string $full = '',
         array &$sql_data = []
     ): void {
-        global $import_run_buffer, $go_sql, $complete_query, $display_query,
-            $sql_query, $error, $reload, $result, $msg,
-            $skip_queries, $executed_queries, $max_sql_len, $read_multiply,
-            $cfg, $sql_query_disabled, $db, $run_query;
+        global $import_run_buffer, $go_sql, $complete_query, $display_query, $sql_query, $msg,
+            $skip_queries, $executed_queries, $max_sql_len, $read_multiply, $sql_query_disabled, $run_query;
         $read_multiply = 1;
         if (! isset($import_run_buffer)) {
             // Do we have something to push into buffer?
@@ -367,7 +364,7 @@ class Import
      */
     public function getNextChunk(int $size = 32768)
     {
-        global $compression, $import_handle, $charset_conversion, $charset_of_file,
+        global $import_handle, $charset_conversion, $charset_of_file,
             $read_multiply;
 
         // Add some progression while reading large amount of data
@@ -1063,7 +1060,7 @@ class Import
 
             /* TODO: Do more checking here to make sure they really are matched */
             if (count($tables) != count($analyses)) {
-                exit();
+                exit;
             }
 
             /* Create SQL code to create the tables */
@@ -1332,8 +1329,6 @@ class Import
 
         global $import_notice;
         $import_notice = $message;
-
-        unset($tables);
     }
 
 

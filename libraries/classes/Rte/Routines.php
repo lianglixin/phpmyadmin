@@ -642,7 +642,7 @@ class Routines
      * @param string $type Type of routine (ROUTINE|PROCEDURE)
      * @param bool   $all  Whether to return all data or just the info about parameters.
      *
-     * @return array    Data necessary to create the routine editor.
+     * @return array|bool    Data necessary to create the routine editor.
      */
     public function getDataFromName($name, $type, $all = true)
     {
@@ -1696,8 +1696,8 @@ class Routines
             $retval .= "<td>{$routine['item_param_type'][$i]}</td>\n";
             if ($cfg['ShowFunctionFields']) {
                 $retval .= "<td>\n";
-                if (stristr($routine['item_param_type'][$i], 'enum')
-                    || stristr($routine['item_param_type'][$i], 'set')
+                if (false !== stripos($routine['item_param_type'][$i], 'enum')
+                    || false !== stripos($routine['item_param_type'][$i], 'set')
                     || in_array(
                         mb_strtolower($routine['item_param_type'][$i]),
                         $no_support_types

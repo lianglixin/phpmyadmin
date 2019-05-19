@@ -20,9 +20,8 @@ if (! defined('ROOT_PATH')) {
     define('ROOT_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 }
 
-/**
- * Get some core libraries
- */
+global $cfg, $db, $table;
+
 require_once ROOT_PATH . 'libraries/common.inc.php';
 
 $container = Container::getDefaultContainer();
@@ -83,6 +82,15 @@ $action = 'tbl_create.php';
  * The form used to define the structure of the table has been submitted
  */
 if (isset($_POST['do_save_data'])) {
+    // lower_case_table_names=1 `DB` becomes `db`
+    if ($dbi->getLowerCaseNames() === '1') {
+        $db = mb_strtolower(
+            $db
+        );
+        $table = mb_strtolower(
+            $table
+        );
+    }
     $sql_query = $createAddField->getTableCreationQuery($db, $table);
 
     // If there is a request for SQL previewing.

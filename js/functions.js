@@ -577,7 +577,9 @@ function PMA_current_version (data) {
         }
         /* Remove extra whitespace */
         var version_info = $('#li_pma_version').contents().get(2);
-        version_info.textContent = $.trim(version_info.textContent);
+        if (typeof version_info !== 'undefined') {
+            version_info.textContent = $.trim(version_info.textContent);
+        }
         var $liPmaVersion = $('#li_pma_version');
         $liPmaVersion.find('span.latest').remove();
         $liPmaVersion.append($(version_information_message));
@@ -2419,6 +2421,58 @@ function PMA_previewSQL ($form) {
         },
         error: function () {
             PMA_ajaxShowMessage(PMA_messages.strErrorProcessingRequest);
+        }
+    });
+}
+
+/**
+ * Callback called when submit/"OK" is clicked on sql preview/confirm modal
+ *
+ * @callback onSubmitCallback
+ * @param {string} url The url
+ */
+
+/**
+ *
+ * @param {string}           sql_data  Sql query to preview
+ * @param {string}           url       Url to be sent to callback
+ * @param {onSubmitCallback} callback  On submit callback function
+ *
+ * @return void
+ */
+function PMA_confirmPreviewSQL (sql_data, url, callback) {
+    var $dialog_content = $('<div class="preview_sql"><code class="sql"><pre>'
+        + sql_data
+        + '</pre></code></div>'
+    );
+    var button_options = [
+        {
+            text: PMA_messages.strOK,
+            class: 'submitOK',
+            click: function () {
+                callback(url);
+            }
+        },
+        {
+            text: PMA_messages.strCancel,
+            class: 'submitCancel',
+            click: function () {
+                $(this).dialog('close');
+            }
+        }
+    ];
+    var $response_dialog = $dialog_content.dialog({
+        minWidth: 550,
+        maxHeight: 400,
+        modal: true,
+        buttons: button_options,
+        title: PMA_messages.strPreviewSQL,
+        close: function () {
+            $(this).remove();
+        },
+        open: function () {
+            // Pretty SQL printing.
+            PMA_highlightSQL($(this));
         }
     });
 }
@@ -4757,7 +4811,7 @@ $(document).on('change', 'input.sub_checkall_box', function () {
  *   id filter-rows-count
  */
 $(document).on('keyup', '#filterText', function () {
-    var filterInput = $(this).val().toUpperCase();
+    var filterInput = $(this).val().toUpperCase().replace(/ /g, '_');
     var count = 0;
     $('[data-filter-row]').each(function () {
         var $row = $(this);

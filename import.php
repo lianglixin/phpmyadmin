@@ -31,6 +31,8 @@ if (isset($_POST['format']) && $_POST['format'] == 'ldi') {
     define('PMA_ENABLE_LDI', 1);
 }
 
+global $db, $pmaThemeImage, $table;
+
 require_once ROOT_PATH . 'libraries/common.inc.php';
 
 $container = Container::getDefaultContainer();
@@ -776,7 +778,7 @@ if ($go_sql) {
 
     $response->addJSON('ajax_reload', $ajax_reload);
     $response->addHTML($html_output);
-    exit();
+    exit;
 } elseif ($result) {
     // Save a Bookmark with more than one queries (if Bookmark label given).
     if (! empty($_POST['bkm_label']) && ! empty($import_text)) {
