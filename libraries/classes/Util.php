@@ -1792,7 +1792,7 @@ class Util
             $tmp = $tag_params;
             $tag_params = [];
             if (! empty($tmp)) {
-                $tag_params['onclick'] = 'return confirmLink(this, \''
+                $tag_params['onclick'] = 'return Functions.confirmLink(this, \''
                     . Sanitize::escapeJsString($tmp) . '\')';
             }
             unset($tmp);
@@ -4476,7 +4476,7 @@ class Util
     {
         $serverType = self::getServerType();
         $serverVersion = $GLOBALS['dbi']->getVersion();
-        return $serverType == 'MySQL' && $serverVersion >= 50705
+        return in_array($serverType, ['MySQL', 'Percona Server']) && $serverVersion >= 50705
              || ($serverType == 'MariaDB' && $serverVersion >= 50200);
     }
 

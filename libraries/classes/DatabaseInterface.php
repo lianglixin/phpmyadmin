@@ -631,9 +631,7 @@ class DatabaseInterface
                         function ($a, $b) {
                             $aLength = $a['Data_length'] + $a['Index_length'];
                             $bLength = $b['Data_length'] + $b['Index_length'];
-                            return $aLength == $bLength
-                                ? 0
-                                : $aLength < $bLength ? -1 : 1;
+                            return $aLength <=> $bLength;
                         }
                     );
 
@@ -3138,9 +3136,9 @@ class DatabaseInterface
     /**
      * Load correct database driver
      *
-     * @return void
+     * @return DatabaseInterface
      */
-    public static function load(): void
+    public static function load(): DatabaseInterface
     {
         global $dbi;
 
@@ -3170,5 +3168,7 @@ class DatabaseInterface
         $container = Container::getDefaultContainer();
         $container->set(DatabaseInterface::class, $dbi);
         $container->alias('dbi', DatabaseInterface::class);
+
+        return $dbi;
     }
 }

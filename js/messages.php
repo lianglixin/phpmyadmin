@@ -762,9 +762,9 @@ $js_messages['strStrong'] = __('Strong');
 $js_messages['strU2FTimeout'] = __('Timed out waiting for security key activation.');
 $js_messages['strU2FError'] = __('Failed security key activation (%s).');
 
-echo "var PMA_messages = new Array();\n";
+echo "var Messages = [];\n";
 foreach ($js_messages as $name => $js_message) {
-    Sanitize::printJsValue("PMA_messages['" . $name . "']", $js_message);
+    Sanitize::printJsValue("Messages." . $name . "", $js_message);
 }
 
 /* Calendar */
@@ -774,7 +774,7 @@ echo "var themeCalendarImage = '" , $GLOBALS['pmaThemeImage']
 /* Image path */
 echo "var pmaThemeImage = '" , $GLOBALS['pmaThemeImage'] , "';\n";
 
-echo "var mysql_doc_template = '" , PhpMyAdmin\Util::getMySQLDocuURL('%s')
+echo "var mysqlDocTemplate = '" , PhpMyAdmin\Util::getMySQLDocuURL('%s')
     , "';\n";
 
 //Max input vars allowed by PHP.

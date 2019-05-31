@@ -38,29 +38,29 @@ AJAX.registerOnload('server_variables.js', function () {
 
         var $mySaveLink = $saveLink.clone().css('display', 'inline-block');
         var $myCancelLink = $cancelLink.clone().css('display', 'inline-block');
-        var $msgbox = PMA_ajaxShowMessage();
+        var $msgbox = Functions.ajaxShowMessage();
         var $myEditLink = $cell.find('a.editLink');
         $cell.addClass('edit'); // variable is being edited
         $myEditLink.remove(); // remove edit link
 
         $mySaveLink.on('click', function () {
-            var $msgbox = PMA_ajaxShowMessage(PMA_messages.strProcessingRequest);
+            var $msgbox = Functions.ajaxShowMessage(Messages.strProcessingRequest);
             $.post($(this).attr('href'), {
-                ajax_request: true,
-                type: 'setval',
-                varName: varName,
-                varValue: $valueCell.find('input').val()
+                'ajax_request': true,
+                'type': 'setval',
+                'varName': varName,
+                'varValue': $valueCell.find('input').val()
             }, function (data) {
                 if (data.success) {
                     $valueCell
                         .html(data.variable)
                         .data('content', data.variable);
-                    PMA_ajaxRemoveMessage($msgbox);
+                    Functions.ajaxRemoveMessage($msgbox);
                 } else {
                     if (data.error === '') {
-                        PMA_ajaxShowMessage(PMA_messages.strRequestFailed, false);
+                        Functions.ajaxShowMessage(Messages.strRequestFailed, false);
                     } else {
-                        PMA_ajaxShowMessage(data.error, false);
+                        Functions.ajaxShowMessage(data.error, false);
                     }
                     $valueCell.html($valueCell.data('content'));
                 }
@@ -76,9 +76,9 @@ AJAX.registerOnload('server_variables.js', function () {
         });
 
         $.get($mySaveLink.attr('href'), {
-            ajax_request: true,
-            type: 'getval',
-            varName: varName
+            'ajax_request': true,
+            'type': 'getval',
+            'varName': varName
         }, function (data) {
             if (typeof data !== 'undefined' && data.success === true) {
                 var $links = $('<div></div>')
@@ -108,10 +108,10 @@ AJAX.registerOnload('server_variables.js', function () {
                             $myCancelLink.trigger('click');
                         }
                     });
-                PMA_ajaxRemoveMessage($msgbox);
+                Functions.ajaxRemoveMessage($msgbox);
             } else {
                 $cell.removeClass('edit').html($myEditLink);
-                PMA_ajaxShowMessage(data.error);
+                Functions.ajaxShowMessage(data.error);
             }
         });
     }
