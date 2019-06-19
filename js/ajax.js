@@ -1,4 +1,9 @@
 /* vim: set expandtab sw=4 ts=4 sts=4: */
+
+/* global isStorageSupported */ // js/config.js
+/* global ErrorReport */ // js/error_report.js
+/* global MicroHistory */ // js/microhistory.js
+
 /**
  * This object handles ajax requests for pages. It also
  * handles the reloading of the main menu and scripts.
@@ -71,6 +76,7 @@ var AJAX = {
         var eventName = 'onload_' + AJAX.hash(file);
         $(document).on(eventName, func);
         if (this.debug) {
+            // eslint-disable-next-line no-console
             console.log(
                 // no need to translate
                 'Registered event ' + eventName + ' for file ' + file
@@ -92,6 +98,7 @@ var AJAX = {
         var eventName = 'teardown_' + AJAX.hash(file);
         $(document).on(eventName, func);
         if (this.debug) {
+            // eslint-disable-next-line no-console
             console.log(
                 // no need to translate
                 'Registered event ' + eventName + ' for file ' + file
@@ -111,6 +118,7 @@ var AJAX = {
         var eventName = 'onload_' + AJAX.hash(file);
         $(document).trigger(eventName);
         if (this.debug) {
+            // eslint-disable-next-line no-console
             console.log(
                 // no need to translate
                 'Fired event ' + eventName + ' for file ' + file
@@ -129,6 +137,7 @@ var AJAX = {
         var eventName = 'teardown_' + AJAX.hash(file);
         $(document).triggerHandler(eventName);
         if (this.debug) {
+            // eslint-disable-next-line no-console
             console.log(
                 // no need to translate
                 'Fired event ' + eventName + ' for file ' + file
@@ -305,6 +314,7 @@ var AJAX = {
         }
 
         if (AJAX.debug) {
+            // eslint-disable-next-line no-console
             console.log('Loading: ' + url); // no need to translate
         }
 
@@ -616,7 +626,7 @@ var AJAX = {
         } else {
             Functions.ajaxShowMessage(data.error, false);
             Functions.ajaxRemoveMessage(AJAX.$msgbox);
-            $ajaxError = $('<div></div>');
+            var $ajaxError = $('<div></div>');
             $ajaxError.attr({ 'id': 'ajaxError' });
             $('#page_content').append($ajaxError);
             $ajaxError.html(data.error);
@@ -738,7 +748,7 @@ var AJAX = {
             /* We need to wait for last signal (with null) or last script load */
             AJAX.active = (this.scriptsToBeLoaded.length > 0) || ! this.scriptsCompleted;
             /* Run callback on last script */
-            if (! AJAX.active && $.isFunction(callback)) {
+            if (! AJAX.active && typeof callback === 'function') {
                 callback();
             }
         },
@@ -846,7 +856,7 @@ AJAX.registerOnload('functions.js', function () {
      * Note: reset does not bubble in all browser so attach to
      * form directly.
      */
-    $('form.lock-page').on('reset', function (event) {
+    $('form.lock-page').on('reset', function () {
         AJAX.resetLock();
     });
 });
@@ -926,8 +936,9 @@ $(document).on('submit', 'form', AJAX.requestHandler);
  * Gracefully handle fatal server errors
  * (e.g: 500 - Internal server error)
  */
-$(document).ajaxError(function (event, request, settings) {
+$(document).ajaxError(function (event, request) {
     if (AJAX.debug) {
+        // eslint-disable-next-line no-console
         console.log('AJAX error: status=' + request.status + ', text=' + request.statusText);
     }
     // Don't handle aborted requests

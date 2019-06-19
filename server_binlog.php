@@ -8,7 +8,6 @@
 declare(strict_types=1);
 
 use PhpMyAdmin\Controllers\Server\BinlogController;
-use PhpMyAdmin\Di\Container;
 use PhpMyAdmin\Response;
 
 if (! defined('ROOT_PATH')) {
@@ -17,15 +16,11 @@ if (! defined('ROOT_PATH')) {
 
 require_once ROOT_PATH . 'libraries/common.inc.php';
 
-$container = Container::getDefaultContainer();
-$container->set('PhpMyAdmin\Response', Response::getInstance());
-$container->alias('response', 'PhpMyAdmin\Response');
-
 /** @var BinlogController $controller */
 $controller = $containerBuilder->get(BinlogController::class);
 
 /** @var Response $response */
-$response = $container->get('response');
+$response = $containerBuilder->get(Response::class);
 
 $response->addHTML($controller->indexAction([
     'log' => $_POST['log'] ?? null,

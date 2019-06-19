@@ -3,13 +3,22 @@
  * Initialises the data required to run Designer, then fires it up.
  */
 
+/* global DesignerOfflineDB */ // js/designer/database.js
+/* global DesignerHistory */ // js/designer/history.js
+/* global DesignerMove */ // js/designer/move.js
+/* global DesignerPage */ // js/designer/page.js
+/* global designerConfig */ // templates/database/designer/main.twig
+
+/* eslint-disable no-unused-vars */
 var jTabs;
 var hTabs;
 var contr;
 var displayField;
 var server;
-var db;
 var selectedPage;
+/* eslint-enable no-unused-vars */
+
+var db;
 var designerTablesEnabled;
 
 AJAX.registerTeardown('designer/init.js', function () {

@@ -6,6 +6,9 @@
  * @requires    jQuery
  */
 
+// eslint-disable-next-line no-unused-vars
+/* global centralColumnList:writable */ // js/functions.js
+
 /**
  * AJAX scripts for normalization.php
  *
@@ -90,7 +93,7 @@ function goTo2NFStep1 () {
             $('#mainContent #extra').html(data.extra);
             $('#mainContent #newCols').html('');
             if (data.subText !== '') {
-                var doneButton = $('<input>')
+                $('<input>')
                     .attr({ type: 'submit', value: Messages.strDone, })
                     .on('click', function () {
                         processDependencies(data.primary_key);
@@ -122,6 +125,7 @@ function goToFinish1NF () {
     $('.tblFooters').html('');
 }
 
+// eslint-disable-next-line no-unused-vars
 function goToStep4 () {
     $.post(
         'normalization.php',
@@ -209,7 +213,7 @@ function goTo2NFFinish (pd) {
     for (var dependson in pd) {
         tables[dependson] = $('#extra input[name="' + dependson + '"]').val();
     }
-    datastring = {
+    var datastring = {
         'ajax_request': true,
         'db': CommonParams.get('db'),
         'table': CommonParams.get('table'),
@@ -256,7 +260,7 @@ function goTo3NFFinish (newTables) {
             }
         }
     }
-    datastring = {
+    var datastring = {
         'ajax_request': true,
         'db': CommonParams.get('db'),
         'server': CommonParams.get('server'),
@@ -306,7 +310,7 @@ function goTo2NFStep2 (pd, primaryKey) {
         extra += '</div>';
     } else {
         extra += '</div>';
-        datastring = {
+        var datastring = {
             'ajax_request': true,
             'db': CommonParams.get('db'),
             'table': CommonParams.get('table'),
@@ -343,7 +347,7 @@ function goTo3NFStep2 (pd, tablesTds) {
     var pdFound = false;
     for (var table in tablesTds) {
         for (var i in tablesTds[table]) {
-            dependson = tablesTds[table][i];
+            var dependson = tablesTds[table][i];
             if (dependson !== '' && dependson !== table) {
                 pdFound = true;
                 extra += '<p class="displayblock desc">' + Functions.escapeHtml(dependson) + ' -> ' + Functions.escapeHtml(pd[dependson].toString()) + '</p>';
@@ -355,7 +359,7 @@ function goTo3NFStep2 (pd, tablesTds) {
         extra += '</div>';
     } else {
         extra += '</div>';
-        datastring = {
+        var datastring = {
             'ajax_request': true,
             'db': CommonParams.get('db'),
             'tables': JSON.stringify(tablesTds),
@@ -448,7 +452,7 @@ function moveRepeatingGroup (repeatingCols) {
         $('input[name=repeatGroupColumn]').focus();
         return false;
     }
-    datastring = {
+    var datastring = {
         'ajax_request': true,
         'db': CommonParams.get('db'),
         'table': CommonParams.get('table'),
@@ -525,7 +529,7 @@ AJAX.registerOnload('normalization.js', function () {
                         .attr({ type: 'submit', id: 'saveSplit', value: Messages.strSave })
                         .appendTo('.tblFooters');
 
-                    var cancelSplitButton = $('<input>')
+                    $('<input>')
                         .attr({ type: 'submit', id: 'cancelSplit', value: Messages.strCancel })
                         .on('click', function () {
                             $('#newCols').html('');
@@ -544,7 +548,7 @@ AJAX.registerOnload('normalization.js', function () {
             return false;
         }
         var argsep = CommonParams.get('arg_separator');
-        datastring = $('#newCols :input').serialize();
+        var datastring = $('#newCols :input').serialize();
         datastring += argsep + 'ajax_request=1' + argsep + 'do_save_data=1' + argsep + 'field_where=last';
         $.post('tbl_addfield.php', datastring, function (data) {
             if (data.success) {

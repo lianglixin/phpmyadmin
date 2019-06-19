@@ -8,8 +8,6 @@
 declare(strict_types=1);
 
 use PhpMyAdmin\Controllers\Table\GisVisualizationController;
-use PhpMyAdmin\Di\Container;
-use PhpMyAdmin\Response;
 use PhpMyAdmin\Util;
 use Symfony\Component\DependencyInjection\Definition;
 
@@ -19,14 +17,8 @@ if (! defined('ROOT_PATH')) {
 
 require_once ROOT_PATH . 'libraries/common.inc.php';
 
-$container = Container::getDefaultContainer();
-$container->set('PhpMyAdmin\Response', Response::getInstance());
-$container->alias('response', 'PhpMyAdmin\Response');
-
 /* Define dependencies for the concerned controller */
 $dependency_definitions = [
-    'db' => $container->get('db'),
-    'table' => $container->get('table'),
     'sql_query' => &$GLOBALS['sql_query'],
     'url_params' => &$GLOBALS['url_params'],
     'goto' => Util::getScriptNameForOption(

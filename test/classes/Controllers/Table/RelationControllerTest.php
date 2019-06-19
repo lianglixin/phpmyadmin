@@ -9,10 +9,11 @@ declare(strict_types=1);
 namespace PhpMyAdmin\Tests\Controllers\Table;
 
 use PhpMyAdmin\Controllers\Table\RelationController;
-use PhpMyAdmin\Di\Container;
+use PhpMyAdmin\Relation;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
+use stdClass;
 
 /**
  * Tests for PhpMyAdmin\Controllers\Table\RelationController
@@ -24,6 +25,11 @@ class RelationControllerTest extends PmaTestCase
      * @var \PhpMyAdmin\Tests\Stubs\Response
      */
     private $_response;
+
+    /**
+     * @var Template
+     */
+    private $template;
 
     /**
      * Configures environment
@@ -42,7 +48,7 @@ class RelationControllerTest extends PmaTestCase
         $_POST['foreignDb'] = 'db';
         $_POST['foreignTable'] = 'table';
 
-        $GLOBALS['dblist'] = new \stdClass();
+        $GLOBALS['dblist'] = new stdClass();
         $GLOBALS['dblist']->databases = new class
         {
             /**
@@ -80,14 +86,8 @@ class RelationControllerTest extends PmaTestCase
 
         $GLOBALS['dbi'] = $dbi;
 
-        $container = Container::getDefaultContainer();
-        $container->set('db', 'db');
-        $container->set('table', 'table');
-        $container->set('template', new Template());
-        $container->set('dbi', $GLOBALS['dbi']);
         $this->_response = new ResponseStub();
-        $container->set('PhpMyAdmin\Response', $this->_response);
-        $container->alias('response', 'PhpMyAdmin\Response');
+        $this->template = new Template();
     }
 
     /**
@@ -118,13 +118,20 @@ class RelationControllerTest extends PmaTestCase
         $GLOBALS['dbi']->expects($this->any())->method('getTable')
             ->will($this->returnValue($tableMock));
 
-        $container = Container::getDefaultContainer();
-        $container->set('dbi', $GLOBALS['dbi']);
-        $container->factory(RelationController::class);
-        /**
-         * @var RelationController $ctrl
-         */
-        $ctrl = $container->get(RelationController::class);
+        $ctrl = new RelationController(
+            $this->_response,
+            $GLOBALS['dbi'],
+            $this->template,
+            $GLOBALS['db'],
+            $GLOBALS['table'],
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            new Relation($GLOBALS['dbi'], $this->template)
+        );
 
         $ctrl->getDropdownValueForTableAction();
         $json = $this->_response->getJSONResult();
@@ -146,7 +153,7 @@ class RelationControllerTest extends PmaTestCase
     public function testGetDropdownValueForTableActionNotView()
     {
         $indexedColumns = [
-            'primaryTableCol'
+            'primaryTableCol',
         ];
         $tableMock = $this->getMockBuilder('PhpMyAdmin\Table')
             ->disableOriginalConstructor()
@@ -160,10 +167,20 @@ class RelationControllerTest extends PmaTestCase
         $GLOBALS['dbi']->expects($this->any())->method('getTable')
             ->will($this->returnValue($tableMock));
 
-        $container = Container::getDefaultContainer();
-        $container->set('dbi', $GLOBALS['dbi']);
-        $container->factory(RelationController::class);
-        $ctrl = $container->get(RelationController::class);
+        $ctrl = new RelationController(
+            $this->_response,
+            $GLOBALS['dbi'],
+            $this->template,
+            $GLOBALS['db'],
+            $GLOBALS['table'],
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            new Relation($GLOBALS['dbi'], $this->template)
+        );
 
         $ctrl->getDropdownValueForTableAction();
         $json = $this->_response->getJSONResult();
@@ -193,7 +210,7 @@ class RelationControllerTest extends PmaTestCase
                             $count++;
                             return [
                                 'Engine' => 'InnoDB',
-                                'Name' => 'table'
+                                'Name' => 'table',
                             ];
                         }
                         return null;
@@ -201,12 +218,19 @@ class RelationControllerTest extends PmaTestCase
                 )
             );
 
-        $container = Container::getDefaultContainer();
-        $container->set('dbi', $GLOBALS['dbi']);
-        $container->factory(RelationController::class);
-        $ctrl = $container->get(
-            RelationController::class,
-            ['tbl_storage_engine' => 'INNODB']
+        $ctrl = new RelationController(
+            $this->_response,
+            $GLOBALS['dbi'],
+            $this->template,
+            $GLOBALS['db'],
+            $GLOBALS['table'],
+            null,
+            null,
+            'INNODB',
+            null,
+            null,
+            null,
+            new Relation($GLOBALS['dbi'], $this->template)
         );
 
         $_POST['foreign'] = 'true';
@@ -243,12 +267,19 @@ class RelationControllerTest extends PmaTestCase
                 )
             );
 
-        $container = Container::getDefaultContainer();
-        $container->set('dbi', $GLOBALS['dbi']);
-        $container->factory(RelationController::class);
-        $ctrl = $container->get(
-            RelationController::class,
-            ['tbl_storage_engine' => 'INNODB']
+        $ctrl = new RelationController(
+            $this->_response,
+            $GLOBALS['dbi'],
+            $this->template,
+            $GLOBALS['db'],
+            $GLOBALS['table'],
+            null,
+            null,
+            'INNODB',
+            null,
+            null,
+            null,
+            new Relation($GLOBALS['dbi'], $this->template)
         );
 
         $_POST['foreign'] = 'false';

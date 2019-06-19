@@ -40,7 +40,7 @@ class GisVisualizationController extends AbstractController
     protected $visualizationSettings;
 
     /**
-     * @var \PhpMyAdmin\Gis\GisVisualization
+     * @var GisVisualization
      */
     protected $visualization;
 
@@ -174,7 +174,7 @@ class GisVisualizationController extends AbstractController
             [
                 'vendor/openlayers/OpenLayers.js',
                 'vendor/jquery/jquery.svg.js',
-                'tbl_gis_visualization.js',
+                'table/gis_visualization.js',
             ]
         );
 
@@ -206,7 +206,7 @@ class GisVisualizationController extends AbstractController
                 [
                     'saveToFile' => true,
                     'session_max_rows' => $rows,
-                    'pos' => $pos
+                    'pos' => $pos,
                 ]
             )
         );

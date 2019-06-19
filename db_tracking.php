@@ -28,9 +28,10 @@ $response = Response::getInstance();
 $header   = $response->getHeader();
 $scripts  = $header->getScripts();
 $scripts->addFile('vendor/jquery/jquery.tablesorter.js');
-$scripts->addFile('db_tracking.js');
+$scripts->addFile('database/tracking.js');
 
-$tracking = new Tracking();
+/** @var Tracking $tracking */
+$tracking = $containerBuilder->get('tracking');
 
 /**
  * If we are not in an Ajax request, then do the common work and show the links etc.
@@ -53,7 +54,7 @@ list(
     $tooltip_truename,
     $tooltip_aliasname,
     $pos
-) = Util::getDbInfo($db, is_null($sub_part) ? '' : $sub_part);
+) = Util::getDbInfo($db, $sub_part === null ? '' : $sub_part);
 
 if (isset($_POST['delete_tracking']) && isset($_POST['table'])) {
     Tracker::deleteTracking($db, $_POST['table']);

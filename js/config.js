@@ -3,6 +3,9 @@
  * Functions used in configuration forms and on user preferences pages
  */
 
+var configInlineParams;
+var configScriptLoaded;
+
 /**
  * checks whether browser supports web storage
  *
@@ -168,6 +171,7 @@ function getFieldValue (field, fieldType) {
 /**
  * Returns values for all fields in fieldsets
  */
+// eslint-disable-next-line no-unused-vars
 function getAllValues () {
     var $elements = $('fieldset input, fieldset select, fieldset textarea');
     var values = {};
@@ -224,6 +228,7 @@ function checkFieldDefault (field, type) {
  * Returns element's id prefix
  * @param {Element} element
  */
+// eslint-disable-next-line no-unused-vars
 function getIdPrefix (element) {
     return $(element).attr('id').replace(/[^-]+$/, '');
 }
@@ -267,10 +272,8 @@ var validators = {
     },
     /**
      * Validates port number
-     *
-     * @param {boolean} isKeyUp
      */
-    validatePortNumber: function (isKeyUp) {
+    validatePortNumber: function () {
         if (this.value === '') {
             return true;
         }
@@ -321,6 +324,7 @@ var validators = {
  * @param {boolean} onKeyUp  whether fire on key up
  * @param {Array}   params   validation function parameters
  */
+// eslint-disable-next-line no-unused-vars
 function registerFieldValidator (id, type, onKeyUp, params) {
     if (typeof validators[type] === 'undefined') {
         return;
@@ -800,7 +804,7 @@ AJAX.registerOnload('config.js', function () {
  * @param {Element} form
  */
 function savePrefsToLocalStorage (form) {
-    $form = $(form);
+    var $form = $(form);
     var submit = $form.find('input[type=submit]');
     submit.prop('disabled', true);
     $.ajax({

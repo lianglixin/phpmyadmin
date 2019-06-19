@@ -97,6 +97,7 @@ class SearchController extends AbstractController
      * @param string            $table      Table name
      * @param string            $searchType Search type
      * @param string            $url_query  URL query
+     * @param Relation          $relation   Relation instance
      */
     public function __construct(
         $response,
@@ -105,7 +106,8 @@ class SearchController extends AbstractController
         $db,
         $table,
         $searchType,
-        $url_query
+        $url_query,
+        Relation $relation
     ) {
         parent::__construct($response, $dbi, $template, $db, $table);
 
@@ -117,7 +119,7 @@ class SearchController extends AbstractController
         $this->_columnCollations = [];
         $this->_geomColumnFlag = false;
         $this->_foreigners = [];
-        $this->relation = new Relation($dbi);
+        $this->relation = $relation;
         // Loads table's information
         $this->_loadTableInfo();
         $this->_connectionCharSet = $this->dbi->fetchValue(
@@ -200,7 +202,7 @@ class SearchController extends AbstractController
                 $this->response
                 ->getHeader()
                 ->getScripts()
-                ->addFile('tbl_find_replace.js');
+                ->addFile('table/find_replace.js');
 
                 if (isset($_POST['replace'])) {
                     $this->replaceAction();
@@ -217,8 +219,8 @@ class SearchController extends AbstractController
                     [
                         'makegrid.js',
                         'sql.js',
-                        'tbl_select.js',
-                        'tbl_change.js',
+                        'table/select.js',
+                        'table/change.js',
                         'vendor/jquery/jquery.uitablefilter.js',
                         'gis_data_editor.js',
                     ]
@@ -255,8 +257,8 @@ class SearchController extends AbstractController
                         'vendor/jqplot/plugins/jqplot.dateAxisRenderer.js',
                         'vendor/jqplot/plugins/jqplot.highlighter.js',
                         'vendor/jqplot/plugins/jqplot.cursor.js',
-                        'tbl_zoom_plot_jqplot.js',
-                        'tbl_change.js',
+                        'table/zoom_plot_jqplot.js',
+                        'table/change.js',
                     ]
                 );
 
@@ -364,7 +366,7 @@ class SearchController extends AbstractController
                     $row[$_POST['criteriaColumnNames'][0]],
                 $_POST['criteriaColumnNames'][1] =>
                     $row[$_POST['criteriaColumnNames'][1]],
-                'where_clause' => $uniqueCondition[0]
+                'where_clause' => $uniqueCondition[0],
             ];
             $tmpData[$dataLabel] = $dataLabel ? $row[$dataLabel] : '';
             $data[] = $tmpData;
@@ -972,7 +974,7 @@ class SearchController extends AbstractController
             'type' => $type,
             'collation' => $collation,
             'func' => $func,
-            'value' => $value
+            'value' => $value,
         ];
     }
 

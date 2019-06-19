@@ -15,6 +15,8 @@ use PhpMyAdmin\Tracker;
 use PhpMyAdmin\Util;
 use PHPUnit\Framework\Assert;
 use ReflectionClass;
+use ReflectionMethod;
+use ReflectionProperty;
 
 /**
  * Tests for PhpMyAdmin\Tracker
@@ -45,7 +47,7 @@ class TrackerTest extends PmaTestCase
         $_SESSION['relation'][$GLOBALS['server']] = [
             'PMA_VERSION' => PMA_VERSION,
             'db' => 'pmadb',
-            'tracking' => 'tracking'
+            'tracking' => 'tracking',
         ];
 
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
@@ -64,7 +66,7 @@ class TrackerTest extends PmaTestCase
      */
     public function testEnabled()
     {
-        $reflection = new \ReflectionProperty(Tracker::class, 'enabled');
+        $reflection = new ReflectionProperty(Tracker::class, 'enabled');
         $reflection->setAccessible(true);
 
         Tracker::enable();
@@ -81,7 +83,7 @@ class TrackerTest extends PmaTestCase
      */
     public function testIsActive()
     {
-        $attr = new \ReflectionProperty('PhpMyAdmin\Tracker', 'enabled');
+        $attr = new ReflectionProperty('PhpMyAdmin\Tracker', 'enabled');
         $attr->setAccessible(true);
         $attr->setValue(false);
 
@@ -104,7 +106,7 @@ class TrackerTest extends PmaTestCase
             'PMA_VERSION' => PMA_VERSION,
             'trackingwork' => true,
             'db' => 'pmadb',
-            'tracking' => 'tracking'
+            'tracking' => 'tracking',
         ];
 
         $this->assertTrue(
@@ -166,7 +168,7 @@ class TrackerTest extends PmaTestCase
      */
     public function testIsTracked()
     {
-        $attr = new \ReflectionProperty('PhpMyAdmin\Tracker', 'enabled');
+        $attr = new ReflectionProperty('PhpMyAdmin\Tracker', 'enabled');
         $attr->setAccessible(true);
         $attr->setValue(false);
 
@@ -237,12 +239,12 @@ class TrackerTest extends PmaTestCase
             [
                 'Field' => 'field1',
                 'Type' => 'int(11)',
-                'Key' => 'PRI'
+                'Key' => 'PRI',
             ],
             [
                 'Field' => 'field2',
                 'Type' => 'text',
-                'Key' => ''
+                'Key' => '',
             ],
         ];
         $dbi->expects($this->once())->method('getColumns')
@@ -253,7 +255,7 @@ class TrackerTest extends PmaTestCase
             [
                 'Table' => 'pma_tbl',
                 'Field' => 'field1',
-                'Key' => 'PRIMARY'
+                'Key' => 'PRIMARY',
             ],
         ];
         $dbi->expects($this->once())->method('getTableIndexes')
@@ -449,7 +451,7 @@ class TrackerTest extends PmaTestCase
         $result = null;
 
         if ($type == null) {
-            $method = new \ReflectionMethod('PhpMyAdmin\Tracker', '_changeTracking');
+            $method = new ReflectionMethod('PhpMyAdmin\Tracker', '_changeTracking');
             $method->setAccessible(true);
             $result = $method->invoke(
                 null,
@@ -652,7 +654,7 @@ class TrackerTest extends PmaTestCase
                 "# log 20-03-2013 23:39:58 user2\n",
                 "data_sql" => "# log ",
                 "schema_snapshot" => "dataschema",
-                "tracking" => "SELECT, DELETE"
+                "tracking" => "SELECT, DELETE",
             ],
         ];
 
@@ -674,7 +676,7 @@ class TrackerTest extends PmaTestCase
                 ],
                 'dmlog' => [],
                 "schema_snapshot" => "dataschema",
-                "tracking" => "SELECT, DELETE"
+                "tracking" => "SELECT, DELETE",
             ],
         ];
 
@@ -684,7 +686,7 @@ class TrackerTest extends PmaTestCase
             "data_sql" => "# log 20-03-2013 23:33:58 user3\n" .
             "# log 20-03-2013 23:39:58 user4\n",
             "schema_snapshot" => "dataschema",
-            "tracking" => "SELECT, DELETE"
+            "tracking" => "SELECT, DELETE",
         ];
 
         $data[1] = [
@@ -715,7 +717,7 @@ class TrackerTest extends PmaTestCase
                 ],
             ],
             "schema_snapshot" => "dataschema",
-            "tracking" => "SELECT, DELETE"
+            "tracking" => "SELECT, DELETE",
         ];
         return [
             [

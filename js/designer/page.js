@@ -1,3 +1,9 @@
+/* global DesignerOfflineDB */ // js/designer/database.js
+// eslint-disable-next-line no-unused-vars
+/* global db, selectedPage:writable */ // js/designer/init.js
+/* global DesignerMove */ // js/designer/move.js
+/* global DesignerObjects */ // js/designer/objects.js
+
 var DesignerPage = {};
 
 DesignerPage.showTablesInLandingPage = function (db) {

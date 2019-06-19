@@ -8,7 +8,7 @@
  */
 declare(strict_types=1);
 
-use PhpMyAdmin\Di\Container;
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Partition;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
@@ -37,7 +37,8 @@ Util::checkParameters(
 
 global $db, $table;
 
-$relation = new Relation($GLOBALS['dbi']);
+/** @var Relation $relation */
+$relation = $containerBuilder->get('relation');
 $transformations = new Transformations();
 $template = new Template();
 
@@ -105,8 +106,8 @@ $comments_map = $relation->getComments($db, $table);
 
 $move_columns = [];
 if (isset($fields_meta)) {
-    /** @var PhpMyAdmin\DatabaseInterface $dbi */
-    $dbi = Container::getDefaultContainer()->get('dbi');
+    /** @var DatabaseInterface $dbi */
+    $dbi = $containerBuilder->get('dbi');
     $move_columns = $dbi->getTable($db, $table)->getColumnsMeta();
 }
 
@@ -227,7 +228,7 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
                     'index' => 'MUL',
                     'unique' => 'UNI',
                     'fulltext' => 'FULLTEXT',
-                    'spatial' => 'SPATIAL'
+                    'spatial' => 'SPATIAL',
                 ],
                 $parts[0],
                 ''
@@ -295,7 +296,7 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
         }
         switch ($columnMeta['Default']) {
             case null:
-                if (is_null($columnMeta['Default'])) { // null
+                if ($columnMeta['Default'] === null) {
                     if ($columnMeta['Null'] == 'YES') {
                         $columnMeta['DefaultType'] = 'NULL';
                         $columnMeta['DefaultValue'] = '';
@@ -473,7 +474,7 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
         'move_columns' => $move_columns,
         'cfg_relation' => $cfgRelation,
         'available_mime' => $available_mime,
-        'mime_map' => isset($mime_map) ? $mime_map : []
+        'mime_map' => isset($mime_map) ? $mime_map : [],
     ];
 } // end for
 

@@ -9,11 +9,10 @@ declare(strict_types=1);
 
 use PhpMyAdmin\CheckUserPrivileges;
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Di\Container;
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Message;
-use PhpMyAdmin\Partition;
 use PhpMyAdmin\Operations;
+use PhpMyAdmin\Partition;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Table;
@@ -23,20 +22,24 @@ if (! defined('ROOT_PATH')) {
     define('ROOT_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 }
 
-global $db, $table, $url_query;
+global $url_query;
 
 require_once ROOT_PATH . 'libraries/common.inc.php';
 
-$container = Container::getDefaultContainer();
-$container->set(Response::class, Response::getInstance());
-
 /** @var Response $response */
-$response = $container->get(Response::class);
+$response = $containerBuilder->get(Response::class);
 
 /** @var DatabaseInterface $dbi */
-$dbi = $container->get(DatabaseInterface::class);
+$dbi = $containerBuilder->get(DatabaseInterface::class);
 
-$checkUserPrivileges = new CheckUserPrivileges($dbi);
+/** @var string $db */
+$db = $containerBuilder->getParameter('db');
+
+/** @var string $table */
+$table = $containerBuilder->getParameter('table');
+
+/** @var CheckUserPrivileges $checkUserPrivileges */
+$checkUserPrivileges = $containerBuilder->get('check_user_privileges');
 $checkUserPrivileges->getPrivileges();
 
 // lower_case_table_names=1 `DB` becomes `db`
@@ -50,7 +53,7 @@ $pma_table = new Table($table, $db);
 
 $header = $response->getHeader();
 $scripts = $header->getScripts();
-$scripts->addFile('tbl_operations.js');
+$scripts->addFile('table/operations.js');
 
 /**
  * Runs common work
@@ -62,10 +65,12 @@ $url_params['goto'] = $url_params['back'] = 'tbl_operations.php';
 /**
  * Gets relation settings
  */
-$relation = new Relation($dbi);
-$operations = new Operations($dbi, $relation);
-
+/** @var Relation $relation */
+$relation = $containerBuilder->get('relation');
 $cfgRelation = $relation->getRelationsParam();
+
+/** @var Operations $operations */
+$operations = $containerBuilder->get('operations');
 
 // reselect current db (needed in some cases probably due to
 // the calling of PhpMyAdmin\Relation)
@@ -479,7 +484,7 @@ if (! (isset($db_is_system_schema) && $db_is_system_schema)) {
 if (Partition::havePartitioning()) {
     $partition_names = Partition::getPartitionNames($db, $table);
     // show the Partition maintenance section only if we detect a partition
-    if (! is_null($partition_names[0])) {
+    if ($partition_names[0] !== null) {
         $response->addHTML(
             $operations->getHtmlForPartitionMaintenance($partition_names, $url_params)
         );

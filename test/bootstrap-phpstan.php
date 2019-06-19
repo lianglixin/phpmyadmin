@@ -38,4 +38,4 @@ $GLOBALS['PMA_Config']->enableBc();// Defines constants, phpstan:level=1
 
 Loader::loadFunctions();
 
-DatabaseInterface::load();
+$GLOBALS['dbi'] = DatabaseInterface::load();

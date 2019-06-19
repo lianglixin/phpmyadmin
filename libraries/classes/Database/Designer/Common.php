@@ -28,19 +28,20 @@ class Common
     private $relation;
 
     /**
-     * @var \PhpMyAdmin\DatabaseInterface
+     * @var DatabaseInterface
      */
     private $dbi;
 
     /**
      * Common constructor.
      *
-     * @param DatabaseInterface $dbi DatabaseInterface object
+     * @param DatabaseInterface $dbi      DatabaseInterface object
+     * @param Relation          $relation Relation instance
      */
-    public function __construct(DatabaseInterface $dbi)
+    public function __construct(DatabaseInterface $dbi, Relation $relation)
     {
         $this->dbi = $dbi;
-        $this->relation = new Relation($this->dbi);
+        $this->relation = $relation;
     }
 
     /**
