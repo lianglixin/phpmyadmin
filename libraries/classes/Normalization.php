@@ -9,6 +9,9 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
+use PhpMyAdmin\Charsets\Charset;
+use PhpMyAdmin\Charsets\Collation;
+
 /**
  * Set of functions used for normalization
  *
@@ -157,6 +160,26 @@ class Normalization
             ];
         }
 
+        $charsets = Charsets::getCharsets($this->dbi, $GLOBALS['cfg']['Server']['DisableIS']);
+        $collations = Charsets::getCollations($this->dbi, $GLOBALS['cfg']['Server']['DisableIS']);
+        $charsetsList = [];
+        /** @var Charset $charset */
+        foreach ($charsets as $charset) {
+            $collationsList = [];
+            /** @var Collation $collation */
+            foreach ($collations[$charset->getName()] as $collation) {
+                $collationsList[] = [
+                    'name' => $collation->getName(),
+                    'description' => $collation->getDescription(),
+                ];
+            }
+            $charsetsList[] = [
+                'name' => $charset->getName(),
+                'description' => $charset->getDescription(),
+                'collations' => $collationsList,
+            ];
+        }
+
         return $this->template->render('columns_definitions/table_fields_definitions', [
             'is_backup' => true,
             'fields_meta' => null,
@@ -171,8 +194,7 @@ class Normalization
             'attribute_types' => $this->dbi->types->getAttributes(),
             'privs_available' => $GLOBALS['col_priv'] && $GLOBALS['is_reload_priv'],
             'max_length' => $this->dbi->getVersion() >= 50503 ? 1024 : 255,
-            'dbi' => $this->dbi,
-            'disable_is' => $GLOBALS['cfg']['Server']['DisableIS'],
+            'charsets' => $charsetsList,
         ]);
     }
 
@@ -509,7 +531,7 @@ class Normalization
             __('The second step of normalization is complete for table \'%1$s\'.'),
             htmlspecialchars($table)
         ) . '</h3>';
-        if (count((array) $partialDependencies) == 1) {
+        if (count((array) $partialDependencies) === 1) {
             return [
                 'legendText' => __('End of step'),
                 'headText' => $headText,
@@ -582,7 +604,7 @@ class Normalization
         $i = 1;
         $newTables = [];
         foreach ($tables as $table => $arrDependson) {
-            if (count(array_unique($arrDependson)) == 1) {
+            if (count(array_unique($arrDependson)) === 1) {
                 continue;
             }
             $primary = Index::getPrimary($table, $db);
@@ -648,7 +670,7 @@ class Normalization
         $headText = '<h3>' .
             __('The third step of normalization is complete.')
             . '</h3>';
-        if (count((array) $newTables) == 0) {
+        if (count((array) $newTables) === 0) {
             return [
                 'legendText' => __('End of step'),
                 'headText' => $headText,

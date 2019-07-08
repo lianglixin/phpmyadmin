@@ -315,7 +315,7 @@ class InsertEdit
      *
      * @param string $which function|type
      *
-     * @return string an HTML snippet
+     * @return string|null an HTML snippet
      */
     private function showTypeOrFunctionLabel($which)
     {
@@ -599,13 +599,13 @@ class InsertEdit
      * @param array $foreigners  keys into foreign fields
      * @param array $foreignData data about the foreign keys
      *
-     * @return integer
+     * @return string
      */
     private function getNullifyCodeForNullColumn(
         array $column,
         array $foreigners,
         array $foreignData
-    ) {
+    ): string {
         $foreigner = $this->relation->searchColumnInForeigners($foreigners, $column['Field']);
         if (mb_strstr($column['True_Type'], 'enum')) {
             if (mb_strlen((string) $column['Type']) > 20) {
@@ -1674,7 +1674,7 @@ class InsertEdit
                 $readOnly
             );
 
-            if (preg_match('/(VIRTUAL|PERSISTENT|GENERATED)/', $column['Extra'])) {
+            if (preg_match('/(VIRTUAL|PERSISTENT|GENERATED)/', $column['Extra']) && $column['Extra'] !== 'DEFAULT_GENERATED') {
                 $html_output .= '<input type="hidden" name="virtual'
                     . $column_name_appendix . '" value="1">';
             }

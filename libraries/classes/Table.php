@@ -316,7 +316,7 @@ class Table
         // we have to get the table's details
         if ($this->_dbi->getCachedTableContent([$db, $table]) == null
             || $force_read
-            || count($this->_dbi->getCachedTableContent([$db, $table])) == 1
+            || count($this->_dbi->getCachedTableContent([$db, $table])) === 1
         ) {
             $this->_dbi->getTablesFull($db, $table);
         }
@@ -1798,7 +1798,10 @@ class Table
                     $value = Util::backquote($value);
                 }
 
-                if (strpos($column['Extra'], 'GENERATED') === false && strpos($column['Extra'], 'VIRTUAL') === false) {
+                if ((
+                    strpos($column['Extra'], 'GENERATED') === false
+                    && strpos($column['Extra'], 'VIRTUAL') === false
+                    ) || $column['Extra'] === 'DEFAULT_GENERATED') {
                     $ret[] = $value;
                 }
             }

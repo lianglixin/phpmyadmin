@@ -775,13 +775,13 @@ class ExportSql extends ExportPlugin
             // so that a utility like the mysql client can interpret
             // the file correctly
             if (isset($GLOBALS['charset'])
-                && isset(Charsets::$mysql_charset_map[$GLOBALS['charset']])
+                && isset(Charsets::$mysqlCharsetMap[$GLOBALS['charset']])
             ) {
                 // we got a charset from the export dialog
-                $set_names = Charsets::$mysql_charset_map[$GLOBALS['charset']];
+                $set_names = Charsets::$mysqlCharsetMap[$GLOBALS['charset']];
             } else {
                 // by default we use the connection charset
-                $set_names = Charsets::$mysql_charset_map['utf-8'];
+                $set_names = Charsets::$mysqlCharsetMap['utf-8'];
             }
             if ($set_names == 'utf8' && $GLOBALS['dbi']->getVersion() > 50503) {
                 $set_names = 'utf8mb4';
@@ -1560,7 +1560,7 @@ class ExportSql extends ExportPlugin
                 );
 
                 // exclude definition of current user
-                if ($GLOBALS['sql_view_current_user']) {
+                if (isset($GLOBALS['sql_view_current_user'])) {
                     $create_query = preg_replace(
                         '/(^|\s)DEFINER=([\S]+)/',
                         '',
@@ -1569,7 +1569,7 @@ class ExportSql extends ExportPlugin
                 }
 
                 // whether to replace existing view or not
-                if ($GLOBALS['sql_or_replace_view']) {
+                if (isset($GLOBALS['sql_or_replace_view'])) {
                     $create_query = preg_replace(
                         '/^CREATE/',
                         'CREATE OR REPLACE',

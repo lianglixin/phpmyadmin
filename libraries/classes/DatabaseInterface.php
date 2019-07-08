@@ -11,7 +11,6 @@ namespace PhpMyAdmin;
 
 use mysqli_result;
 use PhpMyAdmin\Database\DatabaseList;
-use PhpMyAdmin\Dbi\DbiDummy;
 use PhpMyAdmin\Dbi\DbiExtension;
 use PhpMyAdmin\Dbi\DbiMysqli;
 use PhpMyAdmin\SqlParser\Context;
@@ -1058,11 +1057,11 @@ class DatabaseInterface
     /**
      * usort comparison callback
      *
-     * @param string $a first argument to sort
-     * @param string $b second argument to sort
+     * @param array $a first argument to sort
+     * @param array $b second argument to sort
      *
-     * @return integer  a value representing whether $a should be before $b in the
-     *                   sorted array or not
+     * @return int  a value representing whether $a should be before $b in the
+     *              sorted array or not
      *
      * @access  private
      */
@@ -1331,7 +1330,7 @@ class DatabaseInterface
     ): array {
         $sql = $this->getColumnsSql($database, $table, $column, $full);
         $fields = $this->fetchResult($sql, 'Field', null, $link);
-        if (! is_array($fields) || count($fields) == 0) {
+        if (! is_array($fields) || count($fields) === 0) {
             return [];
         }
         // Check if column is a part of multiple-column index and set its 'Key'.
@@ -1379,7 +1378,7 @@ class DatabaseInterface
         // We only need the 'Field' column which contains the table's column names
         $fields = array_keys($this->fetchResult($sql, 'Field', null, $link));
 
-        if (! is_array($fields) || count($fields) == 0) {
+        if (! is_array($fields) || count($fields) === 0) {
             return null;
         }
         return $fields;
@@ -2260,7 +2259,7 @@ class DatabaseInterface
             $error .= $separator . __('The server is not responding.');
         } elseif ($error_number == 1698) {
             $error .= ' - ' . $error_message;
-            $error .= $separator . '<a href="logout.php' . Url::getCommon() . '">';
+            $error .= $separator . '<a href="logout.php' . Url::getCommon() . '" class="disableAjax">';
             $error .= __('Logout and try as another user.') . '</a>';
         } elseif ($error_number == 1005) {
             if (strpos($error_message, 'errno: 13') !== false) {
@@ -2418,7 +2417,7 @@ class DatabaseInterface
      */
     public function getCurrentUserAndHost(): array
     {
-        if (count($this->_current_user) == 0) {
+        if (count($this->_current_user) === 0) {
             $user = $this->getCurrentUser();
             $this->_current_user = explode("@", $user);
         }
@@ -3136,35 +3135,34 @@ class DatabaseInterface
     /**
      * Load correct database driver
      *
-     * @return DatabaseInterface
+     * @param DbiExtension|null $extension Force the use of an alternative extension
+     *
+     * @return self
      */
-    public static function load(): DatabaseInterface
+    public static function load(?DbiExtension $extension = null): self
     {
         global $dbi;
 
-        if (defined('TESTSUITE')) {
-            /**
-             * For testsuite we use dummy driver which can fake some queries.
-             */
-            $extension = new DbiDummy();
-        } else {
-            if (! self::checkDbExtension('mysqli')) {
-                $docurl = Util::getDocuLink('faq', 'faqmysql');
-                $doclink = sprintf(
-                    __('See %sour documentation%s for more information.'),
-                    '[a@' . $docurl . '@documentation]',
-                    '[/a]'
-                );
-                Core::warnMissingExtension(
-                    'mysqli',
-                    true,
-                    $doclink
-                );
-            }
-            $extension = new DbiMysqli();
+        if ($extension !== null) {
+            $dbi = new self($extension);
+            return $dbi;
         }
-        $dbi = new DatabaseInterface($extension);
 
+        if (! self::checkDbExtension('mysqli')) {
+            $docUrl = Util::getDocuLink('faq', 'faqmysql');
+            $docLink = sprintf(
+                __('See %sour documentation%s for more information.'),
+                '[a@' . $docUrl . '@documentation]',
+                '[/a]'
+            );
+            Core::warnMissingExtension(
+                'mysqli',
+                true,
+                $docLink
+            );
+        }
+
+        $dbi = new self(new DbiMysqli());
         return $dbi;
     }
 }

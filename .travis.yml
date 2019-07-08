@@ -48,7 +48,7 @@ cache:
 jobs:
   allow_failures:
     - php: nightly
-    - os: windows
+    - os: osx
     - name: "PHP 7.1 with dbase extension"
     - name: "PHP 7.4"
 
@@ -107,7 +107,8 @@ jobs:
       node_js: 10
       before_install:
         - brew link --force gettext
-        - sed -i -e 's/^memory_limit = .*/memory_limit = -1/' /usr/local/etc/php/7.2/php.ini
+        - echo "memory_limit=-1" > /usr/local/etc/php/7.3/conf.d/50-travis.ini
+        - echo "pcre.jit=0" >> /usr/local/etc/php/7.3/conf.d/50-travis.ini
         - mysql.server start
       addons:
         homebrew:
@@ -115,13 +116,16 @@ jobs:
             - php
             - composer
             - mariadb
+          update: true
 
     - stage: "PHP Unit tests"
       name: "Windows"
       os: windows
       language: node_js
       node_js: 10
-      env: CI_MODE=test
+      env:
+        - CI_MODE=test
+        - YARN_GPG=no
       before_install:
         - choco install php composer mariadb
         - export PATH=/c/tools/php73:/c/ProgramData/ComposerSetup/bin:/c/"Program Files"/"MariaDB 10.3"/bin:$PATH

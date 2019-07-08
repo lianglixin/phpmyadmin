@@ -14,6 +14,7 @@ use mysqli;
 use mysqli_result;
 use PhpMyAdmin\DatabaseInterface;
 use stdClass;
+use function mysqli_init;
 
 /**
  * Interface to the MySQL Improved extension (MySQLi)
@@ -59,7 +60,7 @@ class DbiMysqli implements DbiExtension
                 : $server['host'];
         }
 
-        $mysqli = \mysqli_init();
+        $mysqli = mysqli_init();
 
         $client_flags = 0;
 
@@ -541,7 +542,7 @@ class DbiMysqli implements DbiExtension
      * @param mysqli_result $result result set identifier
      * @param int           $i      field
      *
-     * @return string field flags
+     * @return string|false field flags
      */
     public function fieldFlags($result, $i)
     {
