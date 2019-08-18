@@ -282,9 +282,7 @@ abstract class AuthenticationPlugin
 
         // Check IP-based Allow/Deny rules as soon as possible to reject the
         // user based on mod_access in Apache
-        if (isset($cfg['Server']['AllowDeny'])
-            && isset($cfg['Server']['AllowDeny']['order'])
-        ) {
+        if (isset($cfg['Server']['AllowDeny']['order'])) {
             $allowDeny_forbidden         = false; // default
             if ($cfg['Server']['AllowDeny']['order'] == 'allow,deny') {
                 $allowDeny_forbidden     = true;
@@ -357,7 +355,7 @@ abstract class AuthenticationPlugin
         )->display();
         echo $this->template->render('login/twofactor', [
             'form' => $twofactor->render(),
-            'show_submit' => $twofactor->showSubmit,
+            'show_submit' => $twofactor->showSubmit(),
         ]);
         echo $this->template->render('login/footer');
         echo Config::renderFooter();

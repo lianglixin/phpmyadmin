@@ -418,8 +418,6 @@ class Results
      * @param boolean  $is_browse_dist whether browsing distinct values
      *
      * @return void
-     *
-     * @see     sql.php
      */
     public function setProperties(
         $unlim_num_rows,
@@ -1079,6 +1077,9 @@ class Results
         $number_of_columns = $this->__get('fields_cnt');
 
         for ($j = 0; $j < $number_of_columns; $j++) {
+            // PHP 7.4 fix for accessing array offset on bool
+            $col_visib_current = is_array($col_visib) ? $col_visib[$j] : null;
+
             // assign $i with the appropriate column order
             $i = $col_order ? $col_order[$j] : $j;
 
@@ -1106,7 +1107,7 @@ class Results
                         $comments,
                         $sort_direction,
                         $col_visib,
-                        $col_visib[$j]
+                        $col_visib_current
                     );
 
                 $html .= $sorted_header_html;
@@ -1121,7 +1122,7 @@ class Results
                 $html
                     .= $this->_getDraggableClassForNonSortableColumns(
                         $col_visib,
-                        $col_visib[$j],
+                        $col_visib_current,
                         $condition_field,
                         $fields_meta[$i],
                         $comments
@@ -1607,7 +1608,7 @@ class Results
 
         $tmp_image = '<img class="fulltext" src="' . $tmp_image_file . '" alt="'
                      . $tmp_txt . '" title="' . $tmp_txt . '">';
-        $tmp_url = 'sql.php' . Url::getCommon($url_params_full_text);
+        $tmp_url = Url::getFromRoute('/sql', $url_params_full_text);
 
         return Util::linkOrButton($tmp_url, $tmp_image);
     }
@@ -1725,8 +1726,8 @@ class Results
             'session_max_rows'   => $session_max_rows,
             'is_browse_distinct' => $this->__get('is_browse_distinct'),
         ];
-        $single_order_url  = 'sql.php' . Url::getCommon($_single_url_params);
-        $multi_order_url = 'sql.php' . Url::getCommon($_multi_url_params);
+        $single_order_url = Url::getFromRoute('/sql', $_single_url_params);
+        $multi_order_url = Url::getFromRoute('/sql', $_multi_url_params);
 
         // Displays the sorting URL
         // enable sort order swapping for image
@@ -2629,9 +2630,9 @@ class Results
                         $del_url,
                         $displayParts,
                         $row_no,
-                        $where_clause,
-                        $where_clause_html,
-                        $condition_array,
+                        $where_clause ?? '',
+                        $where_clause_html ?? '',
+                        $condition_array ?? [],
                         $edit_url,
                         $copy_url,
                         $edit_anchor_class,
@@ -2943,7 +2944,7 @@ class Results
 
                 $display_params['data'][$row_no][$i]
                     = $this->_getDataCellForNumericColumns(
-                        (string) $row[$i],
+                        null === $row[$i] ? null : (string) $row[$i],
                         $class,
                         $condition_field,
                         $meta,
@@ -3235,18 +3236,18 @@ class Results
             'where_clause'     => $where_clause,
             'clause_is_unique' => $clause_is_unique,
             'sql_query'        => $url_sql_query,
-            'goto'             => 'sql.php',
+            'goto'             => Url::getFromRoute('/sql'),
         ];
 
-        $edit_url = 'tbl_change.php'
-            . Url::getCommon(
-                $_url_params + ['default_action' => 'update']
-            );
+        $edit_url = Url::getFromRoute(
+            '/table/change',
+            $_url_params + ['default_action' => 'update']
+        );
 
-        $copy_url = 'tbl_change.php'
-            . Url::getCommon(
-                $_url_params + ['default_action' => 'insert']
-            );
+        $copy_url = Url::getFromRoute(
+            '/table/change',
+            $_url_params + ['default_action' => 'insert']
+        );
 
         $edit_str = $this->_getActionLinkContent(
             'b_edit',
@@ -3304,10 +3305,10 @@ class Results
                 'table'     => $this->__get('table'),
                 'sql_query' => $url_sql_query,
                 'message_to_show' => __('The row has been deleted.'),
-                'goto'      => empty($goto) ? 'tbl_sql.php' : $goto,
+                'goto'      => empty($goto) ? Url::getFromRoute('/table/sql') : $goto,
             ];
 
-            $lnk_goto = 'sql.php' . Url::getCommonRaw($_url_params);
+            $lnk_goto = Url::getFromRoute('/sql', $_url_params);
 
             $del_query = 'DELETE FROM '
                 . Util::backquote($this->__get('table'))
@@ -3321,7 +3322,7 @@ class Results
                 'message_to_show' => __('The row has been deleted.'),
                 'goto'      => $lnk_goto,
             ];
-            $del_url  = 'sql.php' . Url::getCommon($_url_params);
+            $del_url  = Url::getFromRoute('/sql', $_url_params);
 
             $js_conf  = 'DELETE FROM ' . Sanitize::jsFormat($this->__get('table'))
                 . ' WHERE ' . Sanitize::jsFormat($where_clause, false)
@@ -3336,7 +3337,7 @@ class Results
                 'goto'      => 'index.php',
             ];
 
-            $lnk_goto = 'sql.php' . Url::getCommonRaw($_url_params);
+            $lnk_goto = Url::getFromRoute('/sql', $_url_params);
 
             $kill = $GLOBALS['dbi']->getKillQuery($row[0]);
 
@@ -3346,8 +3347,8 @@ class Results
                 'goto'      => $lnk_goto,
             ];
 
-            $del_url  = 'sql.php' . Url::getCommon($_url_params);
-            $js_conf  = $kill;
+            $del_url = Url::getFromRoute('/sql', $_url_params);
+            $js_conf = $kill;
             $del_str = Util::getIcon(
                 'b_drop',
                 __('Kill')
@@ -3937,8 +3938,6 @@ class Results
      * @return void
      *
      * @access  public
-     *
-     * @see     sql.php file
      */
     public function setConfigParamsForDisplayTable()
     {
@@ -4097,8 +4096,6 @@ class Results
      * @return  string   Generated HTML content for resulted table
      *
      * @access  public
-     *
-     * @see     sql.php file
      */
     public function getTable(
         &$dt_result,
@@ -4153,6 +4150,8 @@ class Results
         )  = $this->_setDisplayPartsAndTotal($displayParts);
 
         // 1.2 Defines offsets for the next and previous pages
+        $pos_next = null;
+        $pos_prev = null;
         if ($displayParts['nav_bar'] == '1') {
             list($pos_next, $pos_prev) = $this->_getOffsets();
         } // end if
@@ -4941,7 +4940,7 @@ class Results
              * for example with a query like
              * SELECT bike_code FROM (SELECT bike_code FROM bikes) tmp
              * As a workaround we set in the table parameter the name of the
-             * first table of this database, so that tbl_export.php and
+             * first table of this database, so that /table/export and
              * the script it calls do not fail
              */
             if (empty($_url_params['table']) && ! empty($_url_params['db'])) {
@@ -4953,7 +4952,7 @@ class Results
             }
 
             $results_operations_html .= Util::linkOrButton(
-                'tbl_export.php' . Url::getCommon($_url_params),
+                Url::getFromRoute('/table/export', $_url_params),
                 Util::getIcon(
                     'b_tblexport',
                     __('Export'),
@@ -4964,7 +4963,7 @@ class Results
 
             // prepare chart
             $results_operations_html .= Util::linkOrButton(
-                'tbl_chart.php' . Url::getCommon($_url_params),
+                Url::getFromRoute('/table/chart', $_url_params),
                 Util::getIcon(
                     'b_chart',
                     __('Display chart'),
@@ -4986,8 +4985,7 @@ class Results
             if ($geometry_found) {
                 $results_operations_html
                     .= Util::linkOrButton(
-                        'tbl_gis_visualization.php'
-                        . Url::getCommon($_url_params),
+                        Url::getFromRoute('/table/gis_visualization', $_url_params),
                         Util::getIcon(
                             'b_globe',
                             __('Visualize GIS data'),
@@ -5130,8 +5128,8 @@ class Results
         if (count($url_params) > 0
             && (! empty($tmpdb) && ! empty($meta->orgtable))
         ) {
-            $result = '<a href="tbl_get_field.php'
-                . Url::getCommon($url_params)
+            $result = '<a href="'
+                . Url::getFromRoute('/table/get_field', $url_params)
                 . '" class="disableAjax">'
                 . $result . '</a>';
         }
@@ -5336,7 +5334,7 @@ class Results
                     $tag_params['class'] = 'ajax';
                 }
                 $result .= Util::linkOrButton(
-                    'sql.php' . Url::getCommon($_url_params),
+                    Url::getFromRoute('/sql', $_url_params),
                     $message,
                     $tag_params
                 );

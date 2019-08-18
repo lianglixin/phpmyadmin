@@ -10,20 +10,12 @@ declare(strict_types=1);
 namespace PhpMyAdmin;
 
 use Closure;
-use PhpMyAdmin\Core;
-use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\FileListing;
-use PhpMyAdmin\Message;
 use PhpMyAdmin\Plugins\ImportPlugin;
-use PhpMyAdmin\Response;
-use PhpMyAdmin\Sanitize;
 use PhpMyAdmin\SqlParser\Context;
 use PhpMyAdmin\SqlParser\Lexer;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Token;
 use PhpMyAdmin\SqlParser\Utils\Error as ParserError;
-use PhpMyAdmin\Template;
-use PhpMyAdmin\Url;
 use phpseclib\Crypt\Random;
 use stdClass;
 use Williamdes\MariaDBMySQLKBS\KBException;
@@ -460,7 +452,7 @@ class Util
          * provide consistent URL for testsuite
          */
         if (! defined('TESTSUITE') && @file_exists(ROOT_PATH . 'doc/html/index.html')) {
-            return ROOT_PATH . 'doc/html/' . $url;
+            return 'doc/html/' . $url;
         }
 
         return Core::linkURL('https://docs.phpmyadmin.net/en/latest/' . $url);
@@ -632,15 +624,12 @@ class Util
                 if (strlen($table) > 0) {
                     $_url_params['db'] = $db;
                     $_url_params['table'] = $table;
-                    $doedit_goto = '<a href="tbl_sql.php'
-                        . Url::getCommon($_url_params) . '">';
+                    $doedit_goto = '<a href="' . Url::getFromRoute('/table/sql', $_url_params) . '">';
                 } elseif (strlen($db) > 0) {
                     $_url_params['db'] = $db;
-                    $doedit_goto = '<a href="db_sql.php'
-                        . Url::getCommon($_url_params) . '">';
+                    $doedit_goto = '<a href="' . Url::getFromRoute('/database/sql', $_url_params) . '">';
                 } else {
-                    $doedit_goto = '<a href="server_sql.php'
-                        . Url::getCommon($_url_params) . '">';
+                    $doedit_goto = '<a href="' . Url::getFromRoute('/server/sql', $_url_params) . '">';
                 }
 
                 $error_msg .= $doedit_goto
@@ -1076,12 +1065,12 @@ class Util
                 $url_params['db'] = $GLOBALS['db'];
                 if (strlen($GLOBALS['table']) > 0) {
                     $url_params['table'] = $GLOBALS['table'];
-                    $edit_link = 'tbl_sql.php';
+                    $edit_link = Url::getFromRoute('/table/sql');
                 } else {
-                    $edit_link = 'db_sql.php';
+                    $edit_link = Url::getFromRoute('/database/sql');
                 }
             } else {
-                $edit_link = 'server_sql.php';
+                $edit_link = Url::getFromRoute('/server/sql');
             }
 
             // Want to have the query explained
@@ -1186,7 +1175,7 @@ class Util
             $retval .= '</div>';
 
             $retval .= '<div class="tools print_ignore">';
-            $retval .= '<form action="sql.php" method="post">';
+            $retval .= '<form action="' . Url::getFromRoute('/sql') . '" method="post">';
             $retval .= Url::getHiddenInputs($GLOBALS['db'], $GLOBALS['table']);
             $retval .= '<input type="hidden" name="sql_query" value="'
                 . htmlspecialchars($sql_query) . '">';
@@ -1674,7 +1663,11 @@ class Util
             if (! empty($tab['args']) && is_array($tab['args'])) {
                 $url_params = array_merge($url_params, $tab['args']);
             }
-            $tab['link'] = htmlentities($tab['link']) . Url::getCommon($url_params);
+            if (strpos($tab['link'], '?') === false) {
+                $tab['link'] = htmlentities($tab['link']) . Url::getCommon($url_params);
+            } else {
+                $tab['link'] = htmlentities($tab['link']) . Url::getCommon($url_params, '&');
+            }
         }
 
         if (! empty($tab['fragment'])) {
@@ -2517,12 +2510,14 @@ class Util
             $database = self::unescapeMysqlWildcards($database);
         }
 
+        $scriptName = self::getScriptNameForOption(
+            $GLOBALS['cfg']['DefaultTabDatabase'],
+            'database'
+        );
         return '<a href="'
-            . self::getScriptNameForOption(
-                $GLOBALS['cfg']['DefaultTabDatabase'],
-                'database'
-            )
-            . Url::getCommon(['db' => $database]) . '" title="'
+            . $scriptName
+            . Url::getCommon(['db' => $database], strpos($scriptName, '?') === false ? '?' : '&')
+            . '" title="'
             . htmlspecialchars(
                 sprintf(
                     __('Jump to database “%s”.'),
@@ -3143,7 +3138,7 @@ class Util
      *                       $cfg['NavigationTreeDefaultTabTable2'],
      *                       $cfg['DefaultTabTable'] or $cfg['DefaultTabDatabase']
      *
-     * @return string Title for the $cfg value
+     * @return string|bool Title for the $cfg value
      */
     public static function getTitleForTarget($target)
     {
@@ -3154,22 +3149,8 @@ class Util
             'insert' => __('Insert'),
             'browse' => __('Browse'),
             'operations' => __('Operations'),
-
-            // For backward compatiblity
-
-            // Values for $cfg['DefaultTabTable']
-            'tbl_structure.php' =>  __('Structure'),
-            'tbl_sql.php' => __('SQL'),
-            'tbl_select.php' => __('Search'),
-            'tbl_change.php' => __('Insert'),
-            'sql.php' => __('Browse'),
-            // Values for $cfg['DefaultTabDatabase']
-            'db_structure.php' => __('Structure'),
-            'db_sql.php' => __('SQL'),
-            'db_search.php' => __('Search'),
-            'db_operations.php' => __('Operations'),
         ];
-        return isset($mapping[$target]) ? $mapping[$target] : false;
+        return $mapping[$target] ?? false;
     }
 
     /**
@@ -3191,27 +3172,27 @@ class Util
             // Values for $cfg['DefaultTabServer']
             switch ($target) {
                 case 'welcome':
-                    return 'index.php';
+                    return Url::getFromRoute('/');
                 case 'databases':
-                    return 'server_databases.php';
+                    return Url::getFromRoute('/server/databases');
                 case 'status':
-                    return 'server_status.php';
+                    return Url::getFromRoute('/server/status');
                 case 'variables':
-                    return 'server_variables.php';
+                    return Url::getFromRoute('/server/variables');
                 case 'privileges':
-                    return 'server_privileges.php';
+                    return Url::getFromRoute('/server/privileges');
             }
         } elseif ($location == 'database') {
             // Values for $cfg['DefaultTabDatabase']
             switch ($target) {
                 case 'structure':
-                    return 'db_structure.php';
+                    return Url::getFromRoute('/database/structure');
                 case 'sql':
-                    return 'db_sql.php';
+                    return Url::getFromRoute('/database/sql');
                 case 'search':
-                    return 'db_search.php';
+                    return Url::getFromRoute('/database/search');
                 case 'operations':
-                    return 'db_operations.php';
+                    return Url::getFromRoute('/database/operations');
             }
         } elseif ($location == 'table') {
             // Values for $cfg['DefaultTabTable'],
@@ -3219,15 +3200,15 @@ class Util
             // $cfg['NavigationTreeDefaultTabTable2']
             switch ($target) {
                 case 'structure':
-                    return 'tbl_structure.php';
+                    return Url::getFromRoute('/table/structure');
                 case 'sql':
-                    return 'tbl_sql.php';
+                    return Url::getFromRoute('/table/sql');
                 case 'search':
-                    return 'tbl_select.php';
+                    return Url::getFromRoute('/table/search');
                 case 'insert':
-                    return 'tbl_change.php';
+                    return Url::getFromRoute('/table/change');
                 case 'browse':
-                    return 'sql.php';
+                    return Url::getFromRoute('/sql');
             }
         }
 
@@ -3300,7 +3281,7 @@ class Util
                 $escape_method = $escape[0];
             }
             foreach ($replace as $key => $val) {
-                if (is_array($escape)) {
+                if (isset($escape_class, $escape_method)) {
                     $replace[$key] = $escape_class->$escape_method($val);
                 } else {
                     $replace[$key] = ($escape == 'backquote')
@@ -3403,8 +3384,7 @@ class Util
         $matcher = '@\.(' . $extensions . ')(\.('
             . $fileListing->supportedDecompressions() . '))?$@';
 
-        $active = (isset($GLOBALS['timeout_passed']) && $GLOBALS['timeout_passed']
-            && isset($GLOBALS['local_import_file']))
+        $active = (isset($GLOBALS['timeout_passed'], $GLOBALS['local_import_file']) && $GLOBALS['timeout_passed'])
             ? $GLOBALS['local_import_file']
             : '';
 
@@ -3545,7 +3525,7 @@ class Util
 
     /**
      * Returns a list of datatypes that are not (yet) handled by PMA.
-     * Used by: tbl_change.php and libraries/db_routines.inc.php
+     * Used by: /table/change and libraries/db_routines.inc.php
      *
      * @return array   list of datatypes
      */
@@ -3652,7 +3632,7 @@ class Util
             'type' => 'int',
         ];
 
-        $geom_type = trim(mb_strtolower((string) $geom_type));
+        $geom_type = mb_strtolower(trim((string) $geom_type));
         if ($display && $geom_type != 'geometry' && $geom_type != 'multipoint') {
             $funcs[] = ['display' => '--------'];
         }
@@ -4956,7 +4936,7 @@ class Util
             $urlParams['tbl_group'] = $_REQUEST['tbl_group'];
         }
 
-        $url = 'db_structure.php' . Url::getCommon($urlParams);
+        $url = Url::getFromRoute('/database/structure', $urlParams);
 
         return self::linkOrButton($url, $title . $orderImg, $orderLinkParams);
     }

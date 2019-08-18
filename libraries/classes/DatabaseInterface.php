@@ -181,12 +181,12 @@ class DatabaseInterface
     /**
      * Set an item in table cache using dot notation.
      *
-     * @param array $contentPath Array with the target path
-     * @param mixed $value       Target value
+     * @param array|null $contentPath Array with the target path
+     * @param mixed      $value       Target value
      *
      * @return void
      */
-    public function cacheTableContent(array $contentPath, $value): void
+    public function cacheTableContent(?array $contentPath, $value): void
     {
         $loc = &$this->_table_cache;
 
@@ -309,6 +309,7 @@ class DatabaseInterface
             return false;
         }
 
+        $time = 0;
         if ($debug) {
             $time = microtime(true);
         }
@@ -562,12 +563,8 @@ class DatabaseInterface
         if (true === $limit_count) {
             $limit_count = $GLOBALS['cfg']['MaxTableList'];
         }
-        // prepare and check parameters
-        if (! is_array($database)) {
-            $databases = [$database];
-        } else {
-            $databases = $database;
-        }
+
+        $databases = [$database];
 
         $tables = [];
 
@@ -816,10 +813,6 @@ class DatabaseInterface
         // cache table data
         // so Table does not require to issue SHOW TABLE STATUS again
         $this->_cacheTableData($tables, $table);
-
-        if (is_array($database)) {
-            return $tables;
-        }
 
         if (isset($tables[$database])) {
             return $tables[$database];
@@ -1073,8 +1066,7 @@ class DatabaseInterface
             $sorter = 'strcasecmp';
         }
         /* No sorting when key is not present */
-        if (! isset($a[$GLOBALS['callback_sort_by']])
-            || ! isset($b[$GLOBALS['callback_sort_by']])
+        if (! isset($a[$GLOBALS['callback_sort_by']], $b[$GLOBALS['callback_sort_by']])
         ) {
             return 0;
         }
@@ -2269,18 +2261,18 @@ class DatabaseInterface
                         'Please check privileges of directory containing database.'
                     );
             } else {
-                /* InnoDB constraints, see
+                /**
+                 * InnoDB constraints, see
                  * https://dev.mysql.com/doc/refman/5.0/en/
-                 *  innodb-foreign-key-constraints.html
+                 * innodb-foreign-key-constraints.html
                  */
                 $error .= ' - ' . $error_message .
-                    ' (<a href="server_engines.php' .
-                    Url::getCommon(
-                        [
-                            'engine' => 'InnoDB',
-                            'page' => 'Status',
-                        ]
-                    ) . '">' . __('Details…') . '</a>)';
+                    ' (<a href="' .
+                    Url::getFromRoute('/server/engines', [
+                        'engine' => 'InnoDB',
+                        'page' => 'Status',
+                    ]) .
+                    '">' . __('Details…') . '</a>)';
             }
         } else {
             $error .= ' - ' . $error_message;
@@ -2314,7 +2306,7 @@ class DatabaseInterface
      */
     public function isSuperuser(): bool
     {
-        return self::isUserType('super');
+        return $this->isUserType('super');
     }
 
     /**

@@ -294,16 +294,16 @@ class InsertEdit
                 break;
         }
 
-        $params['goto'] = 'sql.php';
+        $params['goto'] = Url::getFromRoute('/sql');
         $this_url_params = array_merge($url_params, $params);
 
         if (! $is_show) {
-            return ' : <a href="tbl_change.php" data-post="'
+            return ' : <a href="' . Url::getFromRoute('/table/change') . '" data-post="'
                 . Url::getCommon($this_url_params, '') . '">'
                 . $this->showTypeOrFunctionLabel($which)
                 . '</a>';
         }
-        return '<th><a href="tbl_change.php" data-post="'
+        return '<th><a href="' . Url::getFromRoute('/table/change') . '" data-post="'
             . Url::getCommon($this_url_params, '')
             . '" title="' . __('Hide') . '">'
             . $this->showTypeOrFunctionLabel($which)
@@ -883,7 +883,9 @@ class InsertEdit
             . 'id="field_' . $idindex . '_3" '
             . 'value="' . htmlspecialchars($data) . '">';
 
-        $html_output .= '<a class="ajax browse_foreign" href="browse_foreigners.php" data-post="'
+        $html_output .= '<a class="ajax browse_foreign" href="'
+            . Url::getFromRoute('/browse_foreigners')
+            . '" data-post="'
             . Url::getCommon(
                 [
                     'db' => $db,
@@ -2189,7 +2191,7 @@ class InsertEdit
             $scripts->addFile('vendor/jquery/additional-methods.js');
             $scripts->addFile('table/change.js');
             if (! defined('TESTSUITE')) {
-                include ROOT_PATH . 'tbl_change.php';
+                include ROOT_PATH . 'libraries/entry_points/table/change.php';
                 exit;
             }
         }
@@ -2249,7 +2251,7 @@ class InsertEdit
         if (isset($_POST['after_insert'])
             && in_array($_POST['after_insert'], $valid_options)
         ) {
-            $goto_include = 'tbl_change.php';
+            $goto_include = 'libraries/entry_points/table/change.php';
         } elseif (! empty($GLOBALS['goto'])) {
             if (! preg_match('@^[a-z_]+\.php$@', $GLOBALS['goto'])) {
                 // this should NOT happen
@@ -2258,15 +2260,15 @@ class InsertEdit
             } else {
                 $goto_include = $GLOBALS['goto'];
             }
-            if ($GLOBALS['goto'] == 'db_sql.php' && strlen($GLOBALS['table']) > 0) {
+            if ($GLOBALS['goto'] == 'libraries/entry_points/database/sql.php' && strlen($GLOBALS['table']) > 0) {
                 $GLOBALS['table'] = '';
             }
         }
         if (! $goto_include) {
             if (strlen($GLOBALS['table']) === 0) {
-                $goto_include = 'db_sql.php';
+                $goto_include = 'libraries/entry_points/database/sql.php';
             } else {
-                $goto_include = 'tbl_sql.php';
+                $goto_include = 'libraries/entry_points/table/sql.php';
             }
         }
         return $goto_include;
@@ -2285,7 +2287,7 @@ class InsertEdit
             return $_POST['err_url'];
         }
 
-        return 'tbl_change.php' . Url::getCommon($url_params);
+        return Url::getFromRoute('/table/change', $url_params);
     }
 
     /**
@@ -2484,8 +2486,7 @@ class InsertEdit
                 . ' WHERE ' . Util::backquote($foreigner['foreign_field'])
                 . $where_comparison,
         ];
-        $output = '<a href="sql.php'
-            . Url::getCommon($_url_params) . '"' . $title . '>';
+        $output = '<a href="' . Url::getFromRoute('/sql', $_url_params) . '"' . $title . '>';
 
         if ('D' == $_SESSION['tmpval']['relational_display']) {
             // user chose "relational display field" in the
@@ -2761,9 +2762,7 @@ class InsertEdit
             if ($type != 'protected' && $type != 'set' && strlen($current_value) === 0) {
                 // best way to avoid problems in strict mode
                 // (works also in non-strict mode)
-                if (isset($multi_edit_auto_increment)
-                    && isset($multi_edit_auto_increment[$key])
-                ) {
+                if (isset($multi_edit_auto_increment, $multi_edit_auto_increment[$key])) {
                     $current_value = 'NULL';
                 } else {
                     $current_value = "''";
@@ -2987,6 +2986,7 @@ class InsertEdit
      */
     public function getUrlParameters($db, $table)
     {
+        global $goto;
         /**
          * @todo check if we could replace by "db_|tbl_" - please clarify!?
          */
@@ -2995,7 +2995,7 @@ class InsertEdit
             'sql_query' => $_POST['sql_query'],
         ];
 
-        if (0 === strpos($GLOBALS['goto'], "tbl_")) {
+        if (0 === strpos($goto, 'tbl_') || 0 === strpos($goto, 'index.php?route=/table')) {
             $url_params['table'] = $table;
         }
 
@@ -3080,7 +3080,7 @@ class InsertEdit
         if ($has_blob_field && $is_upload) {
             $html_output .= 'disableAjax';
         }
-        $html_output .= '" method="post" action="tbl_replace.php" name="insertForm" ';
+        $html_output .= '" method="post" action="' . Url::getFromRoute('/table/replace') . '" name="insertForm" ';
         if ($is_upload) {
             $html_output .= ' enctype="multipart/form-data"';
         }

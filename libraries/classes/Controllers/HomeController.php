@@ -107,7 +107,7 @@ class HomeController extends AbstractController
                         'id' => 'li_change_password',
                         'class' => 'no_bullets',
                         'url' => [
-                            'href' => 'user_password.php' . Url::getCommon(),
+                            'href' => Url::getFromRoute('/user_password'),
                             'target' => null,
                             'id' => 'change_password_anchor',
                             'class' => 'ajax',
@@ -402,9 +402,10 @@ class HomeController extends AbstractController
         /**
          * Warning if using the default MySQL controluser account
          */
-        if ($server != 0
-            && isset($cfg['Server']['controluser']) && $cfg['Server']['controluser'] == 'pma'
-            && isset($cfg['Server']['controlpass']) && $cfg['Server']['controlpass'] == 'pmapass'
+        if (isset($cfg['Server']['controluser'], $cfg['Server']['controlpass'])
+            && $server != 0
+            && $cfg['Server']['controluser'] == 'pma'
+            && $cfg['Server']['controlpass'] == 'pmapass'
         ) {
             trigger_error(
                 __(

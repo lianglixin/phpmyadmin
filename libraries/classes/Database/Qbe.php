@@ -585,8 +585,7 @@ class Qbe
             }
             // If they have chosen all fields using the * selector,
             // then sorting is not available, Fix for Bug #570698
-            if (isset($_POST['criteriaSort'][$colInd])
-                && isset($_POST['criteriaColumn'][$colInd])
+            if (isset($_POST['criteriaSort'][$colInd], $_POST['criteriaColumn'][$colInd])
                 && mb_substr($_POST['criteriaColumn'][$colInd], -2) == '.*'
             ) {
                 $_POST['criteriaSort'][$colInd] = '';
@@ -1123,11 +1122,10 @@ class Qbe
         $where_clause = '';
         $criteria_cnt = 0;
         for ($column_index = 0; $column_index < $this->_criteria_column_count; $column_index++) {
-            if (! empty($this->_formColumns[$column_index])
+            if (isset($last_where, $this->_formAndOrCols)
+                && ! empty($this->_formColumns[$column_index])
                 && ! empty($this->_formCriterions[$column_index])
                 && $column_index
-                && isset($last_where)
-                && isset($this->_formAndOrCols)
             ) {
                 $where_clause .= ' '
                     . mb_strtoupper($this->_formAndOrCols[$last_where])
@@ -1765,7 +1763,7 @@ class Qbe
      */
     public function getSelectionForm()
     {
-        $html_output = '<form action="db_qbe.php" method="post" id="formQBE" '
+        $html_output = '<form action="' . Url::getFromRoute('/database/qbe') . '" method="post" id="formQBE" '
             . 'class="lock-page">';
         $html_output .= '<div class="width100">';
         $html_output .= '<fieldset>';
@@ -1800,7 +1798,7 @@ class Qbe
         // get tables select list
         $html_output .= $this->_getTablesList();
         $html_output .= '</form>';
-        $html_output .= '<form action="db_qbe.php" method="post" class="lock-page">';
+        $html_output .= '<form action="' . Url::getFromRoute('/database/qbe') . '" method="post" class="lock-page">';
         $html_output .= Url::getHiddenInputs(['db' => $this->_db]);
         // get SQL query
         $html_output .= '<div class="floatleft desktop50">';

@@ -609,11 +609,11 @@ class Relation
             $cfgRelation['relwork']     = true;
         }
 
-        if (isset($cfgRelation['relation']) && isset($cfgRelation['table_info'])) {
+        if (isset($cfgRelation['relation'], $cfgRelation['table_info'])) {
             $cfgRelation['displaywork'] = true;
         }
 
-        if (isset($cfgRelation['table_coords']) && isset($cfgRelation['pdf_pages'])) {
+        if (isset($cfgRelation['table_coords'], $cfgRelation['pdf_pages'])) {
             $cfgRelation['pdfwork']     = true;
         }
 
@@ -652,7 +652,7 @@ class Relation
             $cfgRelation['bookmarkwork']     = true;
         }
 
-        if (isset($cfgRelation['users']) && isset($cfgRelation['usergroups'])) {
+        if (isset($cfgRelation['users'], $cfgRelation['usergroups'])) {
             $cfgRelation['menuswork']        = true;
         }
 
@@ -1536,7 +1536,7 @@ class Relation
             }
         } while (false);
 
-        if ($get_total) {
+        if ($get_total && isset($foreign_db, $foreign_table)) {
             $the_total = $this->dbi->getTable($foreign_db, $foreign_table)
                 ->countRecords(true);
         }
@@ -2105,10 +2105,14 @@ class Relation
     {
         $retval = '';
 
-        $url_query = Url::getCommon(['db' => $GLOBALS['db']], '');
+        $params = [
+            'db' => $GLOBALS['db'],
+            'goto' => Url::getFromRoute('/database/operations'),
+        ];
+
         if ($allTables) {
             if ($createDb) {
-                $url_query .= '&amp;goto=db_operations.php&amp;create_pmadb=1';
+                $params['create_pmadb'] = 1;
                 $message = Message::notice(
                     __(
                         '%sCreate%s a database named \'phpmyadmin\' and setup '
@@ -2116,7 +2120,7 @@ class Relation
                     )
                 );
             } else {
-                $url_query .= '&amp;goto=db_operations.php&amp;fixall_pmadb=1';
+                $params['fixall_pmadb'] = 1;
                 $message = Message::notice(
                     __(
                         '%sCreate%s the phpMyAdmin configuration storage in the '
@@ -2125,12 +2129,14 @@ class Relation
                 );
             }
         } else {
-            $url_query .= '&amp;goto=db_operations.php&amp;fix_pmadb=1';
+            $params['fix_pmadb'] = 1;
             $message = Message::notice(
                 __('%sCreate%s missing phpMyAdmin configuration storage tables.')
             );
         }
-        $message->addParamHtml('<a href="./chk_rel.php" data-post="' . $url_query . '">');
+        $message->addParamHtml(
+            '<a href="./chk_rel.php" data-post="' . Url::getCommon($params, '') . '">'
+        );
         $message->addParamHtml('</a>');
 
         $retval .= $message->getDisplay();

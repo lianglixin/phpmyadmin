@@ -227,6 +227,9 @@ class File
      */
     public function isUploaded(): bool
     {
+        if (null === $this->getName()) {
+            return false;
+        }
         return is_uploaded_file($this->getName());
     }
 
@@ -280,7 +283,7 @@ class File
         ) {
             return false;
         }
-        $file = File::fetchUploadedFromTblChangeRequestMultiple(
+        $file = $this->fetchUploadedFromTblChangeRequestMultiple(
             $_FILES['fields_upload'],
             $rownumber,
             $key

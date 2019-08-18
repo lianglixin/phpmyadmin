@@ -629,9 +629,7 @@ Functions.displayGitRevision = function () {
 };
 
 /**
- * for PhpMyAdmin\Display\ChangePassword
- *     libraries/user_password.php
- *
+ * for PhpMyAdmin\Display\ChangePassword and /user_password
  */
 Functions.displayPasswordGenerateButton = function () {
     var generatePwdRow = $('<tr></tr>').addClass('vmiddle');
@@ -1208,7 +1206,6 @@ Functions.insertQuery = function (queryType) {
             $('#querymessage').html(Messages.strFormatting +
                 '&nbsp;<img class="ajaxIcon" src="' +
                 pmaThemeImage + 'ajax_clock_small.gif" alt="">');
-            var href = 'db_sql_format.php';
             var params = {
                 'ajax_request': true,
                 'sql': codeMirrorEditor.getValue(),
@@ -1216,7 +1213,7 @@ Functions.insertQuery = function (queryType) {
             };
             $.ajax({
                 type: 'POST',
-                url: href,
+                url: 'index.php?route=/database/sql/format',
                 data: params,
                 success: function (data) {
                     if (data.success) {
@@ -1733,7 +1730,7 @@ Functions.loadForeignKeyCheckbox = function () {
         'server': CommonParams.get('server'),
         'get_default_fk_check_value': true
     };
-    $.get('sql.php', params, function (data) {
+    $.get('index.php?route=/sql', params, function (data) {
         var html = '<input type="hidden" name="fk_checks" value="0">' +
             '<input type="checkbox" name="fk_checks" id="fk_checks"' +
             (data.default_fk_check_value ? ' checked="checked"' : '') + '>' +
@@ -1886,7 +1883,6 @@ Functions.codeMirrorAutoCompleteOnInputRead = function (instance) {
 
             sqlAutoCompleteInProgress = true;
 
-            var href = 'db_sql_autocomplete.php';
             var params = {
                 'ajax_request': true,
                 'server': CommonParams.get('server'),
@@ -1905,7 +1901,7 @@ Functions.codeMirrorAutoCompleteOnInputRead = function (instance) {
 
             $.ajax({
                 type: 'POST',
-                url: href,
+                url: 'index.php?route=/database/sql/autocomplete',
                 data: params,
                 success: function (data) {
                     if (data.success) {
@@ -2408,8 +2404,8 @@ Functions.checkReservedWordColumns = function ($form) {
     var isConfirmed = true;
     $.ajax({
         type: 'POST',
-        url: 'tbl_structure.php',
-        data: $form.serialize() + CommonParams.get('arg_separator') + 'reserved_word_check=1',
+        url: 'index.php',
+        data: $form.serialize() + CommonParams.get('arg_separator') + 'reserved_word_check=1' + CommonParams.get('arg_separator') + 'route=/table/structure',
         success: function (data) {
             if (typeof data.success !== 'undefined' && data.success === true) {
                 isConfirmed = confirm(data.message);
@@ -2844,8 +2840,8 @@ AJAX.registerTeardown('functions.js', function () {
 });
 
 /**
- * jQuery coding for 'Create Table'.  Used on db_operations.php,
- * db_structure.php and db_tracking.php (i.e., wherever
+ * jQuery coding for 'Create Table'. Used on /database/operations,
+ * /database/structure and /database/tracking (i.e., wherever
  * PhpMyAdmin\Display\CreateTable is used)
  *
  * Attach Ajax Event handlers for Create Table
@@ -2939,9 +2935,9 @@ AJAX.registerOnload('functions.js', function () {
                         if (! (history && history.pushState)) {
                             params12 += MicroHistory.menus.getRequestParam();
                         }
-                        var tableStructureUrl = 'tbl_structure.php?server=' + data.params.server +
+                        var tableStructureUrl = 'index.php?route=/table/structure' + argsep + 'server=' + data.params.server +
                             argsep + 'db=' + data.params.db + argsep + 'token=' + data.params.token +
-                            argsep + 'goto=db_structure.php' + argsep + 'table=' + data.params.table + '';
+                            argsep + 'goto=' + encodeURIComponent('index.php?route=/database/structure') + argsep + 'table=' + data.params.table + '';
                         $.get(tableStructureUrl, params12, AJAX.responseHandler);
                     } else {
                         Functions.ajaxShowMessage(
@@ -3525,7 +3521,7 @@ AJAX.registerOnload('functions.js', function () {
     });
 
     $(document).on('click', 'a.central_columns_dialog', function () {
-        var href = 'db_central_columns.php';
+        var href = 'index.php?route=/database/central_columns';
         var db = CommonParams.get('db');
         var table = CommonParams.get('table');
         var maxRows = $(this).data('maxrows');
@@ -3825,7 +3821,7 @@ Functions.indexEditorDialog = function (url, title, callbackSuccess, callbackFai
         $(this).dialog('close');
     };
     var $msgbox = Functions.ajaxShowMessage();
-    $.post('tbl_indexes.php', url, function (data) {
+    $.post('index.php?route=/table/indexes', url, function (data) {
         if (typeof data !== 'undefined' && data.success === false) {
             // in the case of an error, show the error message returned.
             Functions.ajaxShowMessage(data.error, false);
@@ -4932,7 +4928,7 @@ AJAX.registerOnload('functions.js', function () {
     /*
      * Display warning regarding SSL when sha256_password
      * method is selected
-     * Used in user_password.php (Change Password link on index.php)
+     * Used in /user_password (Change Password link on index.php)
      */
     $(document).on('change', 'select#select_authentication_plugin_cp', function () {
         if (this.value === 'sha256_password') {
@@ -5049,7 +5045,7 @@ Functions.configSet = function (key, value) {
     var serialized = JSON.stringify(value);
     localStorage.setItem(key, serialized);
     $.ajax({
-        url: 'ajax.php',
+        url: 'index.php?route=/ajax',
         type: 'POST',
         dataType: 'json',
         data: {
@@ -5099,7 +5095,7 @@ Functions.configGet = function (key, cached) {
         // processing cannot continue until that value is found.
         // Another solution is to provide a callback as a parameter.
         async: false,
-        url: 'ajax.php',
+        url: 'index.php?route=/ajax',
         type: 'POST',
         dataType: 'json',
         data: {

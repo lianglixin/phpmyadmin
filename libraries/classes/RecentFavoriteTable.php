@@ -188,12 +188,10 @@ class RecentFavoriteTable
             if ($this->_tableType == 'recent') {
                 foreach ($this->_tables as $table) {
                     $html .= '<li class="warp_link">';
-                    $recent_params = [
-                        'db'    => $table['db'],
+                    $recent_url = Url::getFromRoute('/table/recent_favorite', [
+                        'db' => $table['db'],
                         'table' => $table['table'],
-                    ];
-                    $recent_url = 'tbl_recent_favorite.php'
-                        . Url::getCommon($recent_params);
+                    ]);
                     $html .= '<a href="' . $recent_url . '">`'
                           . htmlspecialchars($table['db']) . '`.`'
                           . htmlspecialchars($table['table']) . '`</a>';
@@ -204,14 +202,12 @@ class RecentFavoriteTable
                     $html .= '<li class="warp_link">';
 
                     $html .= '<a class="ajax favorite_table_anchor" ';
-                    $fav_params = [
-                        'db'              => $table['db'],
-                        'ajax_request'    => true,
-                        'favorite_table'  => $table['table'],
+                    $fav_rm_url = Url::getFromRoute('/database/structure', [
+                        'db' => $table['db'],
+                        'ajax_request' => true,
+                        'favorite_table' => $table['table'],
                         'remove_favorite' => true,
-                    ];
-                    $fav_rm_url = 'db_structure.php'
-                        . Url::getCommon($fav_params);
+                    ]);
                     $html .= 'href="' . $fav_rm_url
                         . '" title="' . __("Remove from Favorites")
                         . '" data-favtargetn="'
@@ -220,12 +216,10 @@ class RecentFavoriteTable
                         . Util::getIcon('b_favorite')
                         . '</a>';
 
-                    $fav_params = [
-                        'db'    => $table['db'],
+                    $table_url = Url::getFromRoute('/table/recent_favorite', [
+                        'db' => $table['db'],
                         'table' => $table['table'],
-                    ];
-                    $table_url = 'tbl_recent_favorite.php'
-                        . Url::getCommon($fav_params);
+                    ]);
                     $html .= '<a href="' . $table_url . '">`'
                         . htmlspecialchars($table['db']) . '`.`'
                         . htmlspecialchars($table['table']) . '`</a>';
@@ -353,12 +347,11 @@ class RecentFavoriteTable
         $cfgRelation = $this->relation->getRelationsParam();
         // Not to show this once list is synchronized.
         if ($cfgRelation['favoritework'] && ! isset($_SESSION['tmpval']['favorites_synced'][$server_id])) {
-            $params  = [
+            $url = Url::getFromRoute('/database/structure', [
                 'ajax_request' => true,
                 'favorite_table' => true,
                 'sync_favorite_tables' => true,
-            ];
-            $url     = 'db_structure.php' . Url::getCommon($params);
+            ]);
             $retval  = '<a class="hide" id="sync_favorite_tables"';
             $retval .= ' href="' . $url . '"></a>';
         }

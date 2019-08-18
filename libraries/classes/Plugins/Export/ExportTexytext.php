@@ -323,7 +323,7 @@ class ExportTexytext extends ExportPlugin
      * @param bool   $do_comments   whether to include the pmadb-style column
      *                              comments as comments in the structure;
      *                              this is deprecated but the parameter is
-     *                              left here because export.php calls
+     *                              left here because /export calls
      *                              $this->exportStructure() also for other
      *                              export types which use this parameter
      * @param bool   $do_mime       whether to include mime comments
@@ -392,7 +392,7 @@ class ExportTexytext extends ExportPlugin
             $comments = $this->relation->getComments($db, $table);
         }
         if ($do_mime && $cfgRelation['mimework']) {
-            $text_output .= '|' . htmlspecialchars('MIME');
+            $text_output .= '|' . __('Media type');
             $mime_map = $this->transformations->getMime($db, $table, true);
         }
         $text_output .= "\n|------\n";
@@ -489,7 +489,7 @@ class ExportTexytext extends ExportPlugin
      * @param bool   $do_comments whether to include the pmadb-style column
      *                            comments as comments in the structure;
      *                            this is deprecated but the parameter is
-     *                            left here because export.php calls
+     *                            left here because /export calls
      *                            $this->exportStructure() also for other
      *                            export types which use this parameter
      * @param bool   $do_mime     whether to include mime comments

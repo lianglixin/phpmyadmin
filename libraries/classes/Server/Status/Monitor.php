@@ -3,8 +3,6 @@
 /**
  * functions for displaying server status sub item: monitor
  *
- * @usedby  server_status_monitor.php
- *
  * @package PhpMyAdmin
  */
 declare(strict_types=1);
@@ -464,7 +462,7 @@ class Monitor
      */
     public function getJsonForLoggingVars(?string $name, ?string $value): array
     {
-        if (isset($name) && isset($value)) {
+        if (isset($name, $value)) {
             $escapedValue = $this->dbi->escapeString($value);
             if (! is_numeric($escapedValue)) {
                 $escapedValue = "'" . $escapedValue . "'";

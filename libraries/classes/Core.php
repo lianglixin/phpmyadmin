@@ -26,55 +26,16 @@ class Core
      * @static array $goto_whitelist
      */
     public static $goto_whitelist = [
-        'db_datadict.php',
-        'db_sql.php',
-        'db_events.php',
-        'db_export.php',
         'db_importdocsql.php',
-        'db_multi_table_query.php',
-        'db_qbe.php',
-        'db_structure.php',
         'db_import.php',
-        'db_operations.php',
-        'db_search.php',
-        'db_routines.php',
-        'export.php',
         'import.php',
         'index.php',
         'pdf_pages.php',
         'pdf_schema.php',
-        'server_binlog.php',
-        'server_collations.php',
-        'server_databases.php',
-        'server_engines.php',
-        'server_export.php',
         'server_import.php',
-        'server_privileges.php',
-        'server_sql.php',
-        'server_status.php',
-        'server_status_advisor.php',
-        'server_status_monitor.php',
-        'server_status_queries.php',
-        'server_status_variables.php',
-        'server_variables.php',
-        'sql.php',
-        'tbl_addfield.php',
-        'tbl_change.php',
-        'tbl_create.php',
         'tbl_import.php',
-        'tbl_indexes.php',
-        'tbl_sql.php',
-        'tbl_export.php',
-        'tbl_operations.php',
-        'tbl_structure.php',
-        'tbl_relation.php',
-        'tbl_replace.php',
-        'tbl_row_action.php',
-        'tbl_select.php',
-        'tbl_zoom_select.php',
         'transformation_overview.php',
         'transformation_wrapper.php',
-        'user_password.php',
     ];
 
     /**
@@ -277,7 +238,9 @@ class Core
          * Avoid using Response class as config does not have to be loaded yet
          * (this can happen on early fatal error)
          */
-        if (isset($GLOBALS['dbi']) && $GLOBALS['dbi'] !== null && isset($GLOBALS['PMA_Config']) && $GLOBALS['PMA_Config']->get('is_setup') === false && Response::getInstance()->isAjax()) {
+        if (isset($GLOBALS['dbi'], $GLOBALS['PMA_Config']) && $GLOBALS['dbi'] !== null
+            && $GLOBALS['PMA_Config']->get('is_setup') === false
+            && Response::getInstance()->isAjax()) {
             $response = Response::getInstance();
             $response->setRequestStatus(false);
             $response->addJSON('message', Message::error($error_message));

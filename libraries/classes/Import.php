@@ -9,18 +9,12 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Encoding;
-use PhpMyAdmin\Message;
-use PhpMyAdmin\Response;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Statements\DeleteStatement;
 use PhpMyAdmin\SqlParser\Statements\InsertStatement;
 use PhpMyAdmin\SqlParser\Statements\ReplaceStatement;
 use PhpMyAdmin\SqlParser\Statements\UpdateStatement;
 use PhpMyAdmin\SqlParser\Utils\Query;
-use PhpMyAdmin\Table;
-use PhpMyAdmin\Url;
-use PhpMyAdmin\Util;
 
 /**
  * Library that provides common import functions that are used by import plugins
@@ -275,7 +269,7 @@ class Import
                 $sql_query .= $import_run_buffer['full'];
             }
         }
-        // check length of query unless we decided to pass it to sql.php
+        // check length of query unless we decided to pass it to /sql
         // (if $run_query is false, we are just displaying so show
         // the complete query in the textarea)
         if (! $go_sql && $run_query && ! empty($sql_query)) {
@@ -593,7 +587,7 @@ class Import
      * Obtains the size of the given cell
      *
      * @param string|int $last_cumulative_size Last cumulative column size
-     * @param int        $last_cumulative_type Last cumulative column type
+     * @param int|null   $last_cumulative_type Last cumulative column type
      *                                         (NONE or VARCHAR or DECIMAL or INT or BIGINT)
      * @param int        $curr_type            Type of the current cell
      *                                         (NONE or VARCHAR or DECIMAL or INT or BIGINT)
@@ -606,7 +600,7 @@ class Import
      */
     public function detectSize(
         $last_cumulative_size,
-        int $last_cumulative_type,
+        ?int $last_cumulative_type,
         int $curr_type,
         string $cell
     ) {
@@ -1235,8 +1229,8 @@ class Import
         }
 
         $params = ['db' => $db_name];
-        $db_url = 'db_structure.php' . Url::getCommon($params);
-        $db_ops_url = 'db_operations.php' . Url::getCommon($params);
+        $db_url = Url::getFromRoute('/database/structure', $params);
+        $db_ops_url = Url::getFromRoute('/database/operations', $params);
 
         $message = '<br><br>';
         $message .= '<strong>' . __(
@@ -1275,9 +1269,9 @@ class Import
                 'db' => $db_name,
                 'table' => (string) $table[self::TBL_NAME],
             ];
-            $tbl_url = 'sql.php' . Url::getCommon($params);
-            $tbl_struct_url = 'tbl_structure.php' . Url::getCommon($params);
-            $tbl_ops_url = 'tbl_operations.php' . Url::getCommon($params);
+            $tbl_url = Url::getFromRoute('/sql', $params);
+            $tbl_struct_url = Url::getFromRoute('/table/structure', $params);
+            $tbl_ops_url = Url::getFromRoute('/table/operations', $params);
 
             unset($params);
 
@@ -1455,7 +1449,7 @@ class Import
             'db'        => $GLOBALS['db'],
             'sql_query' => $matched_row_query,
         ];
-        $matched_rows_url  = 'sql.php' . Url::getCommon($_url_params);
+        $matched_rows_url  = Url::getFromRoute('/sql', $_url_params);
 
         return [
             'sql_query' => Util::formatSql($analyzed_sql_results['query']),

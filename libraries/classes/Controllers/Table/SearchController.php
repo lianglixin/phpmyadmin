@@ -14,6 +14,7 @@ use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Sql;
 use PhpMyAdmin\Template;
+use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 
 /**
@@ -516,7 +517,10 @@ class SearchController extends AbstractController
     public function displaySelectionFormAction($dataLabel = null)
     {
         global $goto;
-        $this->url_query .= '&amp;goto=tbl_select.php&amp;back=tbl_select.php';
+        $this->url_query .= Url::getCommon([
+            'back' => Url::getFromRoute('/table/search'),
+            'goto' => Url::getFromRoute('/table/search'),
+        ], '&');
         if (! isset($goto)) {
             $goto = Util::getScriptNameForOption(
                 $GLOBALS['cfg']['DefaultTabTable'],
@@ -853,19 +857,22 @@ class SearchController extends AbstractController
         $subtabs = [];
         $subtabs['search']['icon'] = 'b_search';
         $subtabs['search']['text'] = __('Table search');
-        $subtabs['search']['link'] = 'tbl_select.php';
+        $subtabs['search']['link'] = Url::getFromRoute('/table/search');
         $subtabs['search']['id'] = 'tbl_search_id';
         $subtabs['search']['args']['pos'] = 0;
+        $subtabs['search']['active'] = isset($_REQUEST['route']) && $_REQUEST['route'] === '/table/search';
 
         $subtabs['zoom']['icon'] = 'b_select';
-        $subtabs['zoom']['link'] = 'tbl_zoom_select.php';
+        $subtabs['zoom']['link'] = Url::getFromRoute('/table/zoom_select');
         $subtabs['zoom']['text'] = __('Zoom search');
         $subtabs['zoom']['id'] = 'zoom_search_id';
+        $subtabs['zoom']['active'] = isset($_REQUEST['route']) && $_REQUEST['route'] === '/table/zoom_select';
 
         $subtabs['replace']['icon'] = 'b_find_replace';
-        $subtabs['replace']['link'] = 'tbl_find_replace.php';
+        $subtabs['replace']['link'] = Url::getFromRoute('/table/find_replace');
         $subtabs['replace']['text'] = __('Find and replace');
         $subtabs['replace']['id'] = 'find_replace_id';
+        $subtabs['replace']['active'] = isset($_REQUEST['route']) && $_REQUEST['route'] === '/table/find_replace';
 
         return $subtabs;
     }

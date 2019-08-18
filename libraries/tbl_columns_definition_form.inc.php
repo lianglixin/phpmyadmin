@@ -2,7 +2,7 @@
 /* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Display form for changing/adding table fields/columns.
- * Included by tbl_addfield.php and tbl_create.php
+ * Included by /table/addfield and /table/create
  *
  * @package PhpMyAdmin
  */
@@ -19,6 +19,7 @@ use PhpMyAdmin\Table;
 use PhpMyAdmin\TablePartitionDefinition;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Transformations;
+use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 
 if (! defined('PHPMYADMIN')) {
@@ -38,7 +39,7 @@ Util::checkParameters(
     ]
 );
 
-global $db, $table;
+global $containerBuilder, $db, $table;
 
 /** @var Relation $relation */
 $relation = $containerBuilder->get('relation');
@@ -68,10 +69,10 @@ $form_params = [
     'db' => $db,
 ];
 
-if ($action == 'tbl_create.php') {
+if ($action == Url::getFromRoute('/table/create')) {
     $form_params['reload'] = 1;
 } else {
-    if ($action == 'tbl_addfield.php') {
+    if ($action == Url::getFromRoute('/table/addfield')) {
         $form_params = array_merge(
             $form_params,
             [
@@ -101,7 +102,7 @@ if (isset($selected) && is_array($selected)) {
     }
 }
 
-$is_backup = ($action != 'tbl_create.php' && $action != 'tbl_addfield.php');
+$is_backup = ($action != Url::getFromRoute('/table/create') && $action != Url::getFromRoute('/table/addfield'));
 
 $cfgRelation = $relation->getRelationsParam();
 
@@ -343,10 +344,7 @@ for ($columnNumber = 0; $columnNumber < $num_fields; $columnNumber++) {
 
     // Variable tell if current column is bound in a foreign key constraint or not.
     // MySQL version from 5.6.6 allow renaming columns with foreign keys
-    if (isset($columnMeta['Field'])
-        && isset($form_params['table'])
-        && $GLOBALS['dbi']->getVersion() < 50606
-    ) {
+    if (isset($columnMeta['Field'], $form_params['table']) && $GLOBALS['dbi']->getVersion() < 50606) {
         $columnMeta['column_status'] = $relation->checkChildForeignReferences(
             $form_params['db'],
             $form_params['table'],

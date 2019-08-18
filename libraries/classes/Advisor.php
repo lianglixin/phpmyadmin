@@ -424,7 +424,7 @@ class Advisor
                 $rule['issue'] = $this->translate($rule['issue']);
 
                 // Replaces {server_variable} with 'server_variable'
-                // linking to server_variables.php
+                // linking to /server/variables
                 $rule['recommendation'] = preg_replace_callback(
                     '/\{([a-z_0-9]+)\}/Ui',
                     [
@@ -470,7 +470,7 @@ class Advisor
      */
     private function replaceVariable(array $matches): string
     {
-        return '<a href="server_variables.php' . Url::getCommon(['filter' => $matches[1]])
+        return '<a href="' . Url::getFromRoute('/server/variables', ['filter' => $matches[1]])
                 . '">' . htmlspecialchars($matches[1]) . '</a>';
     }
 
@@ -631,10 +631,10 @@ class Advisor
             $num *= 60;
             $per = __('per minute');
         } elseif ($num * 60 * 60 >= 1) { // per hour
-            $num = $num * 60 * 60;
+            $num *= 60 * 60;
             $per = __('per hour');
         } else {
-            $num = $num * 60 * 60 * 24;
+            $num *= 24 * 60 * 60;
             $per = __('per day');
         }
 

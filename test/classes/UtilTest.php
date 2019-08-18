@@ -1273,7 +1273,7 @@ class UtilTest extends PmaTestCase
                 $GLOBALS['cfg']['DefaultTabDatabase'],
                 'database'
             )
-            . '?db=' . $database
+            . '&amp;db=' . $database
             . '&amp;server=99&amp;lang=en" '
             . 'title="Jump to database “'
             . htmlspecialchars($database) . '”.">'
@@ -1299,7 +1299,7 @@ class UtilTest extends PmaTestCase
                 $GLOBALS['cfg']['DefaultTabDatabase'],
                 'database'
             )
-            . '?db=' . $database
+            . '&amp;db=' . $database
             . '&amp;server=99&amp;lang=en" title="Jump to database “'
             . htmlspecialchars($database) . '”.">'
             . htmlspecialchars($database) . '</a>',
@@ -1325,7 +1325,7 @@ class UtilTest extends PmaTestCase
                 $GLOBALS['cfg']['DefaultTabDatabase'],
                 'database'
             )
-            . '?db='
+            . '&amp;db='
             . htmlspecialchars(urlencode($database))
             . '&amp;server=99&amp;lang=en" title="Jump to database “'
             . htmlspecialchars($database) . '”.">'
@@ -2000,39 +2000,27 @@ class UtilTest extends PmaTestCase
     {
         return [
             [
-                'tbl_structure.php',
+                'structure',
                 __('Structure'),
             ],
             [
-                'tbl_sql.php',
+                'sql',
                 __('SQL'),
             ],
             [
-                'tbl_select.php',
+                'search',
                 __('Search'),
             ],
             [
-                'tbl_change.php',
+                'insert',
                 __('Insert'),
             ],
             [
-                'sql.php',
+                'browse',
                 __('Browse'),
             ],
             [
-                'db_structure.php',
-                __('Structure'),
-            ],
-            [
-                'db_sql.php',
-                __('SQL'),
-            ],
-            [
-                'db_search.php',
-                __('Search'),
-            ],
-            [
-                'db_operations.php',
+                'operations',
                 __('Operations'),
             ],
         ];

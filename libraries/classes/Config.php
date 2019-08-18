@@ -113,7 +113,7 @@ class Config
      */
     public function checkSystem(): void
     {
-        $this->set('PMA_VERSION', '5.0.0-dev');
+        $this->set('PMA_VERSION', '5.1.0-dev');
         /* Major version */
         $this->set(
             'PMA_MAJOR_VERSION',
@@ -439,7 +439,7 @@ class Config
         }
 
         if ($common_dir_contents = @file_get_contents($git_folder . '/commondir')) {
-            $git_folder = $git_folder . DIRECTORY_SEPARATOR . trim($common_dir_contents);
+            $git_folder .= DIRECTORY_SEPARATOR . trim($common_dir_contents);
         }
 
         $branch = false;
@@ -447,7 +447,7 @@ class Config
         if (false !== strpos($ref_head, '/')) {
             // remove ref: prefix
             $ref_head = substr(trim($ref_head), 5);
-            if (substr($ref_head, 0, 11) === 'refs/heads/') {
+            if (0 === strpos($ref_head, 'refs/heads/')) {
                 $branch = substr($ref_head, 11);
             } else {
                 $branch = basename($ref_head);
@@ -740,7 +740,7 @@ class Config
                 }
             } while ($dataline != '');
             $message = trim(implode(' ', $commit));
-        } elseif (isset($commit_json) && isset($commit_json->author) && isset($commit_json->committer) && isset($commit_json->message)) {
+        } elseif (isset($commit_json, $commit_json->author, $commit_json->committer, $commit_json->message)) {
             $author = [
                 'name' => $commit_json->author->name,
                 'email' => $commit_json->author->email,
@@ -868,36 +868,6 @@ class Config
         );
 
         $cfg = array_intersect_key($cfg, array_flip($matched_keys));
-
-        /**
-         * Backward compatibility code
-         */
-        if (! empty($cfg['DefaultTabTable'])) {
-            $cfg['DefaultTabTable'] = str_replace(
-                [
-                    'tbl_properties.php',
-                    '_properties',
-                ],
-                [
-                    'tbl_sql.php',
-                    '',
-                ],
-                $cfg['DefaultTabTable']
-            );
-        }
-        if (! empty($cfg['DefaultTabDatabase'])) {
-            $cfg['DefaultTabDatabase'] = str_replace(
-                [
-                    'db_details.php',
-                    '_details',
-                ],
-                [
-                    'db_sql.php',
-                    '',
-                ],
-                $cfg['DefaultTabDatabase']
-            );
-        }
 
         $this->settings = array_replace_recursive($this->settings, $cfg);
 
@@ -1083,7 +1053,7 @@ class Config
      */
     public function getUserValue(string $cookie_name, $cfg_value)
     {
-        $cookie_exists = isset($_COOKIE) && ! empty($_COOKIE[$cookie_name]);
+        $cookie_exists = ! empty($_COOKIE[$cookie_name]);
         $prefs_type = $this->get('user_preferences');
         if ($prefs_type == 'db') {
             // permanent user preferences value exists, remove cookie
@@ -1337,7 +1307,7 @@ class Config
             $is_https = true;
         } elseif (strtolower(Core::getenv('HTTPS')) == 'on') {
             $is_https = true;
-        } elseif (substr(strtolower(Core::getenv('REQUEST_URI')), 0, 6) == 'https:') {
+        } elseif (strtolower(substr(Core::getenv('REQUEST_URI'), 0, 6)) == 'https:') {
             $is_https = true;
         } elseif (strtolower(Core::getenv('HTTP_HTTPS_FROM_LB')) == 'on') {
             // A10 Networks load balancer

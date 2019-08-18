@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Navigation\Nodes;
 
+use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 
 /**
@@ -51,23 +52,25 @@ class NodeTable extends NodeDatabaseChild
             $GLOBALS['cfg']['DefaultTabTable'],
             'table'
         );
+        $firstIconLink = Util::getScriptNameForOption(
+            $GLOBALS['cfg']['NavigationTreeDefaultTabTable'],
+            'table'
+        );
+        $secondIconLink = Util::getScriptNameForOption(
+            $GLOBALS['cfg']['NavigationTreeDefaultTabTable2'],
+            'table'
+        );
         $this->links = [
-            'text'  => $scriptName
-                . '?server=' . $GLOBALS['server']
+            'text'  => $scriptName . (strpos($scriptName, '?') === false ? '?' : '&')
+                . 'server=' . $GLOBALS['server']
                 . '&amp;db=%2$s&amp;table=%1$s'
                 . '&amp;pos=0',
             'icon'  => [
-                Util::getScriptNameForOption(
-                    $GLOBALS['cfg']['NavigationTreeDefaultTabTable'],
-                    'table'
-                )
-                . '?server=' . $GLOBALS['server']
+                $firstIconLink . (strpos($firstIconLink, '?') === false ? '?' : '&')
+                . 'server=' . $GLOBALS['server']
                 . '&amp;db=%2$s&amp;table=%1$s',
-                Util::getScriptNameForOption(
-                    $GLOBALS['cfg']['NavigationTreeDefaultTabTable2'],
-                    'table'
-                )
-                . '?server=' . $GLOBALS['server']
+                $secondIconLink . (strpos($secondIconLink, '?') === false ? '?' : '&')
+                . 'server=' . $GLOBALS['server']
                 . '&amp;db=%2$s&amp;table=%1$s',
             ],
             'title' => $this->title,
@@ -290,19 +293,19 @@ class NodeTable extends NodeDatabaseChild
         }
 
         switch ($page) {
-            case 'tbl_structure.php':
+            case Url::getFromRoute('/table/structure'):
                 $this->icon[] = Util::getImage('b_props', __('Structure'));
                 break;
-            case 'tbl_select.php':
+            case Url::getFromRoute('/table/search'):
                 $this->icon[] = Util::getImage('b_search', __('Search'));
                 break;
-            case 'tbl_change.php':
+            case Url::getFromRoute('/table/change'):
                 $this->icon[] = Util::getImage('b_insrow', __('Insert'));
                 break;
-            case 'tbl_sql.php':
+            case Url::getFromRoute('/table/sql'):
                 $this->icon[] = Util::getImage('b_sql', __('SQL'));
                 break;
-            case 'sql.php':
+            case Url::getFromRoute('/sql'):
                 $this->icon[] = Util::getImage('b_browse', __('Browse'));
                 break;
         }

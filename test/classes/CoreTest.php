@@ -23,22 +23,12 @@ use stdClass;
 class CoreTest extends PmaTestCase
 {
     protected $goto_whitelist = [
-        'db_datadict.php',
-        'db_sql.php',
-        'db_export.php',
-        'db_search.php',
-        'export.php',
         'import.php',
         'index.php',
         'pdf_pages.php',
         'pdf_schema.php',
-        'server_binlog.php',
-        'server_variables.php',
-        'sql.php',
-        'tbl_select.php',
         'transformation_overview.php',
         'transformation_wrapper.php',
-        'user_password.php',
     ];
 
     /**
@@ -339,30 +329,6 @@ class CoreTest extends PmaTestCase
                 [],
                 true,
                 false,
-            ],
-            [
-                'export.php',
-                [],
-                false,
-                true,
-            ],
-            [
-                'export.php',
-                [],
-                true,
-                true,
-            ],
-            [
-                'export.php',
-                $this->goto_whitelist,
-                false,
-                true,
-            ],
-            [
-                'export.php',
-                $this->goto_whitelist,
-                true,
-                true,
             ],
             [
                 'shell.php',
@@ -994,7 +960,7 @@ class CoreTest extends PmaTestCase
      */
     public function testNotSetArray()
     {
-        /** @var $array undefined array */
+        $array = [];
         $this->assertFalse(Core::isValid($array['x']));
     }
 

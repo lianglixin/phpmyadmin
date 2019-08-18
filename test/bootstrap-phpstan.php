@@ -19,6 +19,7 @@ if (! defined('ROOT_PATH')) {
 define('PHPMYADMIN', true);
 define('TESTSUITE', true);
 
+include_once ROOT_PATH . 'examples/signon-script.php';
 require_once ROOT_PATH . 'libraries/config.default.php';
 require_once ROOT_PATH . 'libraries/vendor_config.php';
 require_once AUTOLOAD_FILE;
@@ -40,3 +41,6 @@ $GLOBALS['PMA_Config']->enableBc();// Defines constants, phpstan:level=1
 Loader::loadFunctions();
 
 $GLOBALS['dbi'] = DatabaseInterface::load(new DbiDummy());
+
+// for PhpMyAdmin\Plugins\Import\ImportLdi
+$GLOBALS['plugin_param'] = 'table';
