@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Tests for Charset Conversions
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -11,25 +8,26 @@ namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Encoding;
 use PHPUnit\Framework\TestCase;
+use const PHP_INT_SIZE;
+use function fclose;
+use function file_get_contents;
+use function fopen;
+use function function_exists;
+use function fwrite;
+use function mb_convert_encoding;
+use function mb_convert_kana;
+use function unlink;
 
 /**
  * Tests for Charset Conversions
- *
- * @package PhpMyAdmin-test
  */
 class EncodingTest extends TestCase
 {
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         Encoding::initEngine();
     }
 
-    /**
-     * @return void
-     */
     protected function tearDown(): void
     {
         Encoding::initEngine();
@@ -39,8 +37,8 @@ class EncodingTest extends TestCase
      * Test for Encoding::convertString
      *
      * @return void
-     * @test
      *
+     * @test
      * @group medium
      */
     public function testNoConversion()
@@ -85,7 +83,13 @@ class EncodingTest extends TestCase
     }
 
     /**
+     * This group is used on debian packaging to exclude the test
+     *
+     * @see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=854821#27
+     *
      * @return void
+     *
+     * @group extension-iconv
      */
     public function testIconv()
     {
@@ -93,16 +97,31 @@ class EncodingTest extends TestCase
             $this->markTestSkipped('iconv extension missing');
         }
 
-        $GLOBALS['cfg']['IconvExtraParams'] = '//TRANSLIT';
-        Encoding::setEngine(Encoding::ENGINE_ICONV);
-        $this->assertEquals(
-            "This is the Euro symbol 'EUR'.",
-            Encoding::convertString(
-                'UTF-8',
-                'ISO-8859-1',
-                "This is the Euro symbol '€'."
-            )
-        );
+        if (PHP_INT_SIZE === 8) {
+            $GLOBALS['cfg']['IconvExtraParams'] = '//TRANSLIT';
+            Encoding::setEngine(Encoding::ENGINE_ICONV);
+            $this->assertEquals(
+                "This is the Euro symbol 'EUR'.",
+                Encoding::convertString(
+                    'UTF-8',
+                    'ISO-8859-1',
+                    "This is the Euro symbol '€'."
+                )
+            );
+        } elseif (PHP_INT_SIZE === 4) {
+            // NOTE: this does not work on 32bit systems and requires "//IGNORE"
+            // NOTE: or it will throw "iconv(): Detected an illegal character in input string"
+            $GLOBALS['cfg']['IconvExtraParams'] = '//TRANSLIT//IGNORE';
+            Encoding::setEngine(Encoding::ENGINE_ICONV);
+            $this->assertEquals(
+                "This is the Euro symbol ''.",
+                Encoding::convertString(
+                    'UTF-8',
+                    'ISO-8859-1',
+                    "This is the Euro symbol '€'."
+                )
+            );
+        }
     }
 
     /**
@@ -125,6 +144,7 @@ class EncodingTest extends TestCase
      * Test for kanjiChangeOrder
      *
      * @return void
+     *
      * @test
      */
     public function testChangeOrder()
@@ -140,6 +160,7 @@ class EncodingTest extends TestCase
      * Test for Encoding::kanjiStrConv
      *
      * @return void
+     *
      * @test
      */
     public function testKanjiStrConv()
@@ -167,16 +188,16 @@ class EncodingTest extends TestCase
         );
     }
 
-
     /**
      * Test for Encoding::kanjiFileConv
      *
      * @return void
+     *
      * @test
      */
     public function testFileConv()
     {
-        $file_str = "教育漢字常用漢字";
+        $file_str = '教育漢字常用漢字';
         $filename = 'test.kanji';
         $file = fopen($filename, 'w');
         fwrite($file, $file_str);
@@ -193,11 +214,11 @@ class EncodingTest extends TestCase
         unlink($result);
     }
 
-
     /**
      * Test for Encoding::kanjiEncodingForm
      *
      * @return void
+     *
      * @test
      */
     public function testEncodingForm()

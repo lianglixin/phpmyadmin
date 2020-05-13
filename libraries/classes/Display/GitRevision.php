@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Displays git revision
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -14,31 +11,26 @@ use PhpMyAdmin\Core;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Util;
+use function htmlspecialchars;
+use function sprintf;
+use function strtotime;
+use function substr;
 
 /**
  * PhpMyAdmin\Display\GitRevision class
- *
- * @package PhpMyAdmin
  */
 class GitRevision
 {
-    /**
-     * @var Response
-     */
+    /** @var Response */
     private $response;
 
-    /**
-     * @var Config
-     */
+    /** @var Config */
     private $config;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     private $template;
 
     /**
-     * GitRevision constructor.
      * @param Response $response Response instance
      * @param Config   $config   Config instance
      * @param Template $template Template instance
@@ -62,6 +54,7 @@ class GitRevision
 
         if (! $this->config->get('PMA_VERSION_GIT')) {
             $this->response->setRequestStatus(false);
+
             return '';
         }
 
@@ -73,27 +66,32 @@ class GitRevision
         );
         $commitHash = '<strong title="'
             . htmlspecialchars($this->config->get('PMA_VERSION_GIT_MESSAGE'))
-            . '">' . $commitHash . '</strong>';
+            . '">' . htmlspecialchars($commitHash) . '</strong>';
         if ($this->config->get('PMA_VERSION_GIT_ISREMOTECOMMIT')) {
             $commitHash = '<a href="'
                 . Core::linkURL(
                     'https://github.com/phpmyadmin/phpmyadmin/commit/'
-                    . $this->config->get('PMA_VERSION_GIT_COMMITHASH')
+                    . htmlspecialchars($this->config->get('PMA_VERSION_GIT_COMMITHASH'))
                 )
                 . '" rel="noopener noreferrer" target="_blank">' . $commitHash . '</a>';
         }
 
         $branch = $this->config->get('PMA_VERSION_GIT_BRANCH');
-        if ($this->config->get('PMA_VERSION_GIT_ISREMOTEBRANCH')) {
+        $isRemoteBranch = $this->config->get('PMA_VERSION_GIT_ISREMOTEBRANCH');
+        if ($isRemoteBranch) {
             $branch = '<a href="'
                 . Core::linkURL(
                     'https://github.com/phpmyadmin/phpmyadmin/tree/'
                     . $this->config->get('PMA_VERSION_GIT_BRANCH')
                 )
-                . '" rel="noopener noreferrer" target="_blank">' . $branch . '</a>';
+                . '" rel="noopener noreferrer" target="_blank">' . htmlspecialchars($branch) . '</a>';
         }
         if ($branch !== false) {
-            $branch = sprintf(__('%1$s from %2$s branch'), $commitHash, $branch);
+            $branch = sprintf(
+                __('%1$s from %2$s branch'),
+                $commitHash,
+                $isRemoteBranch ? $branch : htmlspecialchars($branch)
+            );
         } else {
             $branch = $commitHash . ' (' . __('no branch') . ')';
         }
@@ -126,7 +124,7 @@ class GitRevision
         return $this->template->render('list/item', [
             'content' => $name,
             'id' => 'li_pma_version_git',
-            'class' => null,
+            'class' => 'list-group-item',
             'url' => [
                 'href' => null,
                 'target' => null,

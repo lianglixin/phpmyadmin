@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Holds BinlogControllerTest
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -12,23 +9,19 @@ namespace PhpMyAdmin\Tests\Controllers\Server;
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Controllers\Server\BinlogController;
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
+use PhpMyAdmin\Tests\Stubs\Response;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for BinlogController class
- *
- * @package PhpMyAdmin-test
  */
 class BinlogControllerTest extends TestCase
 {
     /**
      * Prepares environment for the test.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -48,9 +41,6 @@ class BinlogControllerTest extends TestCase
         Util::cacheSet('profiling_supported', true);
     }
 
-    /**
-     * @return void
-     */
     public function testIndex(): void
     {
         $binaryLogs = [
@@ -104,16 +94,18 @@ class BinlogControllerTest extends TestCase
         $dbi->expects($this->at(4))->method('fetchAssoc')
             ->will($this->returnValue(false));
 
+        $response = new Response();
+
         $controller = new BinlogController(
-            Response::getInstance(),
+            $response,
             $dbi,
             new Template()
         );
-        $actual = $controller->indexAction([
-            'log' => 'index1',
-            'pos' => '3',
-            'is_full_query' => null,
-        ]);
+
+        $_POST['log'] = 'index1';
+        $_POST['pos'] = '3';
+        $controller->index();
+        $actual = $response->getHTMLResult();
 
         $this->assertStringContainsString(
             'Select binary log to view',

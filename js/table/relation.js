@@ -1,4 +1,3 @@
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * for table relation
  */
@@ -73,10 +72,12 @@ TableRelation.getDropdownValues = function ($dropdown) {
     }
     var $msgbox = Functions.ajaxShowMessage();
     var $form = $dropdown.parents('form');
+    var $db = $form.find('input[name="db"]').val();
+    var $table = $form.find('input[name="table"]').val();
     var argsep = CommonParams.get('arg_separator');
     var params = 'getDropdownValues=true' + argsep + 'ajax_request=true' +
-        argsep + 'db=' + $form.find('input[name="db"]').val() +
-        argsep + 'table=' + $form.find('input[name="table"]').val() +
+        argsep + 'db=' + encodeURIComponent($db) +
+        argsep + 'table=' + encodeURIComponent($table) +
         argsep + 'foreign=' + (foreign !== '') +
         argsep + 'foreignDb=' + encodeURIComponent(foreignDb) +
         (foreignTable !== null ?
@@ -163,7 +164,7 @@ AJAX.registerOnload('table/relation.js', function () {
 
         // Add foreign field.
         var $sourceElem = $('select[name^="destination_foreign_column[' +
-            $(this).attr('data-index') + ']"]:last').parent();
+            $(this).attr('data-index') + ']"]').last().parent();
         $sourceElem
             .clone(true, true)
             .insertAfter($sourceElem)
@@ -189,11 +190,15 @@ AJAX.registerOnload('table/relation.js', function () {
         $newRow.find('a.add_foreign_key_field').attr('data-index', newIndex);
 
         // Update form parameter names.
-        $newRow.find('select[name^="foreign_key_fields_name"]:not(:first), ' +
-            'select[name^="destination_foreign_column"]:not(:first)'
-        ).each(function () {
-            $(this).parent().remove();
-        });
+        $newRow.find('select[name^="foreign_key_fields_name"]')
+            .not($newRow.find('select[name^="foreign_key_fields_name"]').first())
+            .find('select[name^="destination_foreign_column"]')
+            .not($newRow.find('select[name^="foreign_key_fields_name"]')
+                .not($newRow.find('select[name^="foreign_key_fields_name"]').first())
+                .find('select[name^="destination_foreign_column"]').first()
+            ).each(function () {
+                $(this).parent().remove();
+            });
         $newRow.find('input, select').each(function () {
             $(this).attr('name',
                 $(this).attr('name').replace(/\d/, newIndex)

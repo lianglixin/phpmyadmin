@@ -1,11 +1,8 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * TableStructureController_Test class
  *
  * this class is for testing StructureController class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -14,36 +11,28 @@ namespace PhpMyAdmin\Tests\Controllers\Table;
 use PhpMyAdmin\Controllers\Table\StructureController;
 use PhpMyAdmin\CreateAddField;
 use PhpMyAdmin\Relation;
+use PhpMyAdmin\RelationCleanup;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PhpMyAdmin\Transformations;
 use ReflectionClass;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * TableStructureController_Test class
  *
  * this class is for testing StructureController class
- *
- * @package PhpMyAdmin-test
  */
 class StructureControllerTest extends PmaTestCase
 {
-    /**
-     * @var \PhpMyAdmin\Tests\Stubs\Response
-     */
+    /** @var ResponseStub */
     private $_response;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     private $template;
 
     /**
      * Prepares environment for the test.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -76,6 +65,7 @@ class StructureControllerTest extends PmaTestCase
      * Case one: there are no primary key in the table
      *
      * @return void
+     *
      * @test
      */
     public function testGetKeyForTablePrimaryOne()
@@ -87,21 +77,17 @@ class StructureControllerTest extends PmaTestCase
         $method = $class->getMethod('getKeyForTablePrimary');
         $method->setAccessible(true);
 
+        $relation = new Relation($GLOBALS['dbi'], $this->template);
         $ctrl = new StructureController(
             $this->_response,
             $GLOBALS['dbi'],
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            new Relation($GLOBALS['dbi'], $this->template),
+            $relation,
             new Transformations(),
-            new CreateAddField($GLOBALS['dbi'])
+            new CreateAddField($GLOBALS['dbi']),
+            new RelationCleanup($GLOBALS['dbi'], $relation)
         );
 
         // No primary key in db.table2
@@ -117,6 +103,7 @@ class StructureControllerTest extends PmaTestCase
      * Case two: there are a primary key in the table
      *
      * @return void
+     *
      * @test
      */
     public function testGetKeyForTablePrimaryTwo()
@@ -141,25 +128,21 @@ class StructureControllerTest extends PmaTestCase
                 )
             );
 
-        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Table\StructureController');
+        $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('getKeyForTablePrimary');
         $method->setAccessible(true);
 
+        $relation = new Relation($GLOBALS['dbi'], $this->template);
         $ctrl = new StructureController(
             $this->_response,
             $GLOBALS['dbi'],
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            new Relation($GLOBALS['dbi'], $this->template),
+            $relation,
             new Transformations(),
-            new CreateAddField($GLOBALS['dbi'])
+            new CreateAddField($GLOBALS['dbi']),
+            new RelationCleanup($GLOBALS['dbi'], $relation)
         );
 
         // With db.table, it has a primary key `column`
@@ -173,29 +156,26 @@ class StructureControllerTest extends PmaTestCase
      * Tests for adjustColumnPrivileges()
      *
      * @return void
+     *
      * @test
      */
     public function testAdjustColumnPrivileges()
     {
-        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Table\StructureController');
+        $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('adjustColumnPrivileges');
         $method->setAccessible(true);
 
+        $relation = new Relation($GLOBALS['dbi'], $this->template);
         $ctrl = new StructureController(
             $this->_response,
             $GLOBALS['dbi'],
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            new Relation($GLOBALS['dbi'], $this->template),
+            $relation,
             new Transformations(),
-            new CreateAddField($GLOBALS['dbi'])
+            new CreateAddField($GLOBALS['dbi']),
+            new RelationCleanup($GLOBALS['dbi'], $relation)
         );
 
         $this->assertEquals(
@@ -208,29 +188,26 @@ class StructureControllerTest extends PmaTestCase
      * Tests for getMultipleFieldCommandType()
      *
      * @return void
+     *
      * @test
      */
     public function testGetMultipleFieldCommandType()
     {
-        $class = new ReflectionClass('\PhpMyAdmin\Controllers\Table\StructureController');
+        $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('getMultipleFieldCommandType');
         $method->setAccessible(true);
 
+        $relation = new Relation($GLOBALS['dbi'], $this->template);
         $ctrl = new StructureController(
             $this->_response,
             $GLOBALS['dbi'],
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            new Relation($GLOBALS['dbi'], $this->template),
+            $relation,
             new Transformations(),
-            new CreateAddField($GLOBALS['dbi'])
+            new CreateAddField($GLOBALS['dbi']),
+            new RelationCleanup($GLOBALS['dbi'], $relation)
         );
 
         $this->assertEquals(
@@ -273,6 +250,7 @@ class StructureControllerTest extends PmaTestCase
      * Test for getDataForSubmitMult()
      *
      * @return void
+     *
      * @test
      */
     public function testPMAGetDataForSubmitMult()
@@ -284,36 +262,31 @@ class StructureControllerTest extends PmaTestCase
             ->method('query')
             ->will($this->returnValue(true));
 
-        $class = new ReflectionClass('PhpMyAdmin\Controllers\Table\StructureController');
+        $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('getDataForSubmitMult');
         $method->setAccessible(true);
 
+        $relation = new Relation($GLOBALS['dbi'], $this->template);
         $ctrl = new StructureController(
             $this->_response,
             $GLOBALS['dbi'],
             $this->template,
             $GLOBALS['db'],
             $GLOBALS['table'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            new Relation($GLOBALS['dbi'], $this->template),
+            $relation,
             new Transformations(),
-            new CreateAddField($GLOBALS['dbi'])
+            new CreateAddField($GLOBALS['dbi']),
+            new RelationCleanup($GLOBALS['dbi'], $relation)
         );
 
-        $submit_mult = "index";
-        $db = "PMA_db";
-        $table = "PMA_table";
+        $submit_mult = 'index';
+        $db = 'PMA_db';
+        $table = 'PMA_table';
         $selected = [
-            "table1",
-            "table2",
+            'table1',
+            'table2',
         ];
         $action = 'db_delete_row';
-        $containerBuilder = new ContainerBuilder();
 
         list($what, $query_type, $is_unset_submit_mult, $mult_btn, $centralColsError)
             = $method->invokeArgs(
@@ -322,7 +295,6 @@ class StructureControllerTest extends PmaTestCase
                     $submit_mult,
                     $selected,
                     $action,
-                    $containerBuilder,
                 ]
             );
 
@@ -356,7 +328,7 @@ class StructureControllerTest extends PmaTestCase
             $centralColsError
         );
 
-        $submit_mult = "unique";
+        $submit_mult = 'unique';
 
         list($what, $query_type, $is_unset_submit_mult, $mult_btn, $centralColsError)
             = $method->invokeArgs(
@@ -365,7 +337,6 @@ class StructureControllerTest extends PmaTestCase
                     $submit_mult,
                     $selected,
                     $action,
-                    $containerBuilder,
                 ]
             );
 

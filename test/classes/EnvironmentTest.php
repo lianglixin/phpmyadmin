@@ -1,22 +1,21 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for environment like OS, PHP, modules, ...
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
-use Exception;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Throwable;
+use const PHP_VERSION;
+use function constant;
+use function preg_match;
+use function version_compare;
 
 /**
  * Environment tests
- *
- * @package PhpMyAdmin-test
  */
 class EnvironmentTest extends TestCase
 {
@@ -42,29 +41,29 @@ class EnvironmentTest extends TestCase
     {
         try {
             $pdo = new PDO(
-                "mysql:host=" . $GLOBALS['TESTSUITE_SERVER'] . ";port=" . $GLOBALS['TESTSUITE_PORT'],
+                'mysql:host=' . $GLOBALS['TESTSUITE_SERVER'] . ';port=' . $GLOBALS['TESTSUITE_PORT'],
                 $GLOBALS['TESTSUITE_USER'],
                 $GLOBALS['TESTSUITE_PASSWORD']
             );
             $this->assertNull(
                 $pdo->errorCode(),
-                "Error when trying to connect to database"
+                'Error when trying to connect to database'
             );
 
-            $pdo->exec("SHOW DATABASES;");
+            $pdo->exec('SHOW DATABASES;');
             $this->assertEquals(
                 0,
                 $pdo->errorCode(),
                 'Error trying to show tables for database'
             );
-        } catch (Exception $e) {
-            $this->markTestSkipped("Error: " . $e->getMessage());
+        } catch (Throwable $e) {
+            $this->markTestSkipped('Error: ' . $e->getMessage());
         }
 
         // Check id MySQL server is 5 version
         preg_match(
-            "/^(\d+)?\.(\d+)?\.(\*|\d+)/",
-            $pdo->getAttribute(constant("PDO::ATTR_SERVER_VERSION")),
+            '/^(\d+)?\.(\d+)?\.(\*|\d+)/',
+            $pdo->getAttribute(constant('PDO::ATTR_SERVER_VERSION')),
             $version_parts
         );
         $this->assertEquals(5, $version_parts[1]);

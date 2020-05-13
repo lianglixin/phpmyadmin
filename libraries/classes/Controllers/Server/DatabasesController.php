@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Holds the PhpMyAdmin\Controllers\Server\DatabasesController
- *
- * @package PhpMyAdmin\Controllers
  */
 declare(strict_types=1);
 
@@ -12,63 +9,99 @@ namespace PhpMyAdmin\Controllers\Server;
 use PhpMyAdmin\Charsets;
 use PhpMyAdmin\Charsets\Charset;
 use PhpMyAdmin\Charsets\Collation;
+use PhpMyAdmin\CheckUserPrivileges;
+use PhpMyAdmin\Common;
 use PhpMyAdmin\Controllers\AbstractController;
 use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Message;
+use PhpMyAdmin\RelationCleanup;
+use PhpMyAdmin\ReplicationInfo;
+use PhpMyAdmin\Response;
+use PhpMyAdmin\Template;
+use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function array_key_exists;
+use function array_keys;
+use function array_search;
+use function count;
+use function explode;
+use function in_array;
+use function mb_strlen;
+use function mb_strtolower;
+use function strlen;
+use function strpos;
 
 /**
  * Handles viewing and creating and deleting databases
- *
- * @package PhpMyAdmin\Controllers
  */
 class DatabasesController extends AbstractController
 {
-    /**
-     * @var array array of database details
-     */
+    /** @var array array of database details */
     private $databases = [];
 
-    /**
-     * @var int number of databases
-     */
+    /** @var int number of databases */
     private $databaseCount = 0;
 
-    /**
-     * @var string sort by column
-     */
+    /** @var string sort by column */
     private $sortBy;
 
-    /**
-     * @var string sort order of databases
-     */
+    /** @var string sort order of databases */
     private $sortOrder;
 
-    /**
-     * @var boolean whether to show database statistics
-     */
+    /** @var bool whether to show database statistics */
     private $hasStatistics;
 
-    /**
-     * @var int position in list navigation
-     */
+    /** @var int position in list navigation */
     private $position;
 
+    /** @var Transformations */
+    private $transformations;
+
+    /** @var RelationCleanup */
+    private $relationCleanup;
+
     /**
-     * Index action
-     *
-     * @param array $params Request parameters
-     *
-     * @return string HTML
+     * @param Response          $response        Response object
+     * @param DatabaseInterface $dbi             DatabaseInterface object
+     * @param Template          $template        Template that should be used (if provided, default one otherwise)
+     * @param Transformations   $transformations Transformations instance.
+     * @param RelationCleanup   $relationCleanup RelationCleanup instance.
      */
-    public function indexAction(array $params): string
+    public function __construct(
+        $response,
+        $dbi,
+        Template $template,
+        Transformations $transformations,
+        RelationCleanup $relationCleanup
+    ) {
+        parent::__construct($response, $dbi, $template);
+        $this->transformations = $transformations;
+        $this->relationCleanup = $relationCleanup;
+
+        $checkUserPrivileges = new CheckUserPrivileges($dbi);
+        $checkUserPrivileges->getPrivileges();
+    }
+
+    public function index(): void
     {
         global $cfg, $server, $dblist, $is_create_db_priv;
         global $replication_info, $db_to_create, $pmaThemeImage, $text_dir;
 
-        include_once ROOT_PATH . 'libraries/replication.inc.php';
-        include_once ROOT_PATH . 'libraries/server_common.inc.php';
+        $params = [
+            'statistics' => $_REQUEST['statistics'] ?? null,
+            'pos' => $_REQUEST['pos'] ?? null,
+            'sort_by' => $_REQUEST['sort_by'] ?? null,
+            'sort_order' => $_REQUEST['sort_order'] ?? null,
+        ];
+
+        $header = $this->response->getHeader();
+        $scripts = $header->getScripts();
+        $scripts->addFile('server/databases.js');
+
+        Common::server();
+        ReplicationInfo::load();
 
         $this->setSortDetails($params['sort_by'], $params['sort_order']);
         $this->hasStatistics = ! empty($params['statistics']);
@@ -125,7 +158,7 @@ class DatabasesController extends AbstractController
 
         $headerStatistics = $this->getStatisticsColumns();
 
-        return $this->template->render('server/databases/index', [
+        $this->render('server/databases/index', [
             'is_create_database_shown' => $cfg['ShowCreateDb'],
             'has_create_database_privileges' => $is_create_db_priv,
             'has_statistics' => $this->hasStatistics,
@@ -146,16 +179,20 @@ class DatabasesController extends AbstractController
         ]);
     }
 
-    /**
-     * Handles creating a new database
-     *
-     * @param array $params Request parameters
-     *
-     * @return array JSON
-     */
-    public function createDatabaseAction(array $params): array
+    public function create(): void
     {
         global $cfg, $db;
+
+        $params = [
+            'new_db' => $_POST['new_db'] ?? null,
+            'db_collation' => $_POST['db_collation'] ?? null,
+        ];
+
+        if (! isset($params['new_db']) || mb_strlen($params['new_db']) === 0 || ! $this->response->isAjax()) {
+            $this->response->addJSON(['message' => Message::error()]);
+
+            return;
+        }
 
         // lower_case_table_names=1 `DB` becomes `db`
         if ($this->dbi->getLowerCaseNames() === '1') {
@@ -169,7 +206,7 @@ class DatabasesController extends AbstractController
          */
         $sqlQuery = 'CREATE DATABASE ' . Util::backquote($params['new_db']);
         if (! empty($params['db_collation'])) {
-            list($databaseCharset) = explode('_', $params['db_collation']);
+            [$databaseCharset] = explode('_', $params['db_collation']);
             $charsets = Charsets::getCharsets(
                 $this->dbi,
                 $cfg['Server']['DisableIS']
@@ -210,7 +247,7 @@ class DatabasesController extends AbstractController
 
             $json = [
                 'message' => $message,
-                'sql_query' => Util::getMessage(null, $sqlQuery, 'success'),
+                'sql_query' => Generator::getMessage('', $sqlQuery, 'success'),
                 'url_query' => $scriptName . Url::getCommon(
                     ['db' => $params['new_db']],
                     strpos($scriptName, '?') === false ? '?' : '&'
@@ -218,43 +255,73 @@ class DatabasesController extends AbstractController
             ];
         }
 
-        return $json;
+        $this->response->addJSON($json);
     }
 
     /**
      * Handles dropping multiple databases
-     *
-     * @param array $params Request parameters
-     *
-     * @return array JSON
      */
-    public function dropDatabasesAction(array $params): array
+    public function destroy(): void
     {
-        global $submit_mult, $mult_btn, $selected, $err_url;
+        global $selected, $err_url, $cfg, $dblist, $reload;
+
+        $params = [
+            'drop_selected_dbs' => $_POST['drop_selected_dbs'] ?? null,
+            'selected_dbs' => $_POST['selected_dbs'] ?? null,
+        ];
+
+        if (! isset($params['drop_selected_dbs'])
+            || ! $this->response->isAjax()
+            || (! $this->dbi->isSuperuser() && ! $cfg['AllowUserDropDatabase'])
+        ) {
+            $message = Message::error();
+            $json = ['message' => $message];
+            $this->response->setRequestStatus($message->isSuccess());
+            $this->response->addJSON($json);
+
+            return;
+        }
 
         if (! isset($params['selected_dbs'])) {
             $message = Message::error(__('No databases selected.'));
-        } else {
-            // for mult_submits.inc.php
-            $action = Url::getFromRoute('/server/databases');
-            $err_url = $action;
+            $json = ['message' => $message];
+            $this->response->setRequestStatus($message->isSuccess());
+            $this->response->addJSON($json);
 
-            $submit_mult = 'drop_db';
-            $mult_btn = __('Yes');
+            return;
+        }
 
-            include ROOT_PATH . 'libraries/mult_submits.inc.php';
+        $err_url = Url::getFromRoute('/server/databases');
+        $selected = $_POST['selected_dbs'];
+        $rebuildDatabaseList = false;
+        $sqlQuery = '';
+        $result = null;
+        $numberOfDatabases = count($selected);
 
-            if (empty($message)) { // no error message
-                $numberOfDatabases = count($selected);
-                $message = Message::success(
-                    _ngettext(
-                        '%1$d database has been dropped successfully.',
-                        '%1$d databases have been dropped successfully.',
-                        $numberOfDatabases
-                    )
-                );
-                $message->addParam($numberOfDatabases);
-            }
+        for ($i = 0; $i < $numberOfDatabases; $i++) {
+            $this->relationCleanup->database($selected[$i]);
+            $aQuery = 'DROP DATABASE ' . Util::backquote($selected[$i]);
+            $reload = true;
+            $rebuildDatabaseList = true;
+
+            $sqlQuery .= $aQuery . ';' . "\n";
+            $result = $this->dbi->query($aQuery);
+            $this->transformations->clear($selected[$i]);
+        }
+
+        if ($rebuildDatabaseList) {
+            $dblist->databases->build();
+        }
+
+        if (empty($message)) { // no error message
+            $message = Message::success(
+                _ngettext(
+                    '%1$d database has been dropped successfully.',
+                    '%1$d databases have been dropped successfully.',
+                    $numberOfDatabases
+                )
+            );
+            $message->addParam($numberOfDatabases);
         }
 
         $json = [];
@@ -263,7 +330,7 @@ class DatabasesController extends AbstractController
             $this->response->setRequestStatus($message->isSuccess());
         }
 
-        return $json;
+        $this->response->addJSON($json);
     }
 
     /**
@@ -271,8 +338,6 @@ class DatabasesController extends AbstractController
      *
      * @param string|null $sortBy    sort by
      * @param string|null $sortOrder sort order
-     *
-     * @return void
      */
     private function setSortDetails(?string $sortBy, ?string $sortOrder): void
     {
@@ -328,14 +393,14 @@ class DatabasesController extends AbstractController
             foreach ($replicationTypes as $type) {
                 if ($replication_info[$type]['status']) {
                     $key = array_search(
-                        $database["SCHEMA_NAME"],
+                        $database['SCHEMA_NAME'],
                         $replication_info[$type]['Ignore_DB']
                     );
                     if (strlen((string) $key) > 0) {
                         $replication[$type]['is_replicated'] = false;
                     } else {
                         $key = array_search(
-                            $database["SCHEMA_NAME"],
+                            $database['SCHEMA_NAME'],
                             $replication_info[$type]['Do_DB']
                         );
 
@@ -371,6 +436,7 @@ class DatabasesController extends AbstractController
                     $database['SCHEMA_NAME'],
                     true
                 ),
+                'is_pmadb' => $database['SCHEMA_NAME'] === ($cfg['Server']['pmadb'] ?? ''),
                 'url' => $url,
             ];
             $collation = Charsets::findCollationByName(

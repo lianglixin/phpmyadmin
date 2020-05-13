@@ -1,14 +1,12 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Generic plugin interface.
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
+use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\Properties\Options\Groups\OptionsPropertySubgroup;
 use PhpMyAdmin\Properties\Options\Items\BoolPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\DocPropertyItem;
@@ -22,12 +20,30 @@ use PhpMyAdmin\Properties\Options\OptionsPropertyItem;
 use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 use PhpMyAdmin\Properties\Plugins\PluginPropertyItem;
 use PhpMyAdmin\Properties\Plugins\SchemaPluginProperties;
-use PhpMyAdmin\Util;
+use function array_pop;
+use function class_exists;
+use function count;
+use function explode;
+use function get_class;
+use function htmlspecialchars;
+use function is_file;
+use function mb_strlen;
+use function mb_strpos;
+use function mb_strtolower;
+use function mb_strtoupper;
+use function mb_substr;
+use function method_exists;
+use function opendir;
+use function preg_match;
+use function preg_match_all;
+use function readdir;
+use function str_replace;
+use function strcasecmp;
+use function strcmp;
+use function usort;
 
 /**
  * PhpMyAdmin\Plugins class
- *
- * @package PhpMyAdmin
  */
 class Plugins
 {
@@ -53,13 +69,13 @@ class Plugins
             . mb_strtolower(mb_substr($plugin_type, 1))
             . mb_strtoupper($plugin_format[0])
             . mb_strtolower(mb_substr($plugin_format, 1));
-        $file = $class_name . ".php";
+        $file = $class_name . '.php';
         if (is_file($plugins_dir . $file)) {
             //include_once $plugins_dir . $file;
             $fqnClass = 'PhpMyAdmin\\' . str_replace('/', '\\', mb_substr($plugins_dir, 18)) . $class_name;
             // check if class exists, could be caused by skip_import
             if (class_exists($fqnClass)) {
-                return new $fqnClass;
+                return new $fqnClass();
             }
         }
 
@@ -107,20 +123,28 @@ class Plugins
                 include_once $plugins_dir . $file;
                 if (! $GLOBALS['skip_import']) {
                     $class_name = $prefix_class_name . $matches[1];
-                    $plugin = new $class_name;
-                    if (null !== $plugin->getProperties()) {
+                    $plugin = new $class_name();
+                    if ($plugin->getProperties() !== null) {
                         $plugin_list[] = $plugin;
                     }
                 }
             }
         }
 
-        usort($plugin_list, function ($cmp_name_1, $cmp_name_2) {
-            return strcasecmp(
-                $cmp_name_1->getProperties()->getText(),
-                $cmp_name_2->getProperties()->getText()
-            );
-        });
+        usort(
+            $plugin_list,
+            /**
+             * @param mixed $cmp_name_1
+             * @param mixed $cmp_name_2
+             */
+            function ($cmp_name_1, $cmp_name_2) {
+                return strcasecmp(
+                    $cmp_name_1->getProperties()->getText(),
+                    $cmp_name_2->getProperties()->getText()
+                );
+            }
+        );
+
         return $plugin_list;
     }
 
@@ -133,7 +157,7 @@ class Plugins
      */
     public static function getString($name)
     {
-        return isset($GLOBALS[$name]) ? $GLOBALS[$name] : $name;
+        return $GLOBALS[$name] ?? $name;
     }
 
     /**
@@ -156,6 +180,7 @@ class Plugins
         ) {
             return ' checked="checked"';
         }
+
         return '';
     }
 
@@ -199,6 +224,7 @@ class Plugins
                 $val = str_replace($match, $GLOBALS[$match], $val);
             }
         }
+
         return htmlspecialchars($val);
     }
 
@@ -277,7 +303,7 @@ class Plugins
      * @param string              $section       name of config section in $GLOBALS['cfg'][$section] for plugin
      * @param string              $plugin_name   unique plugin name
      * @param OptionsPropertyItem $propertyGroup options property main group instance
-     * @param boolean             $is_subgroup   if this group is a subgroup
+     * @param bool                $is_subgroup   if this group is a subgroup
      *
      * @return string  table row with option
      */
@@ -292,7 +318,7 @@ class Plugins
         $properties = null;
         if (! $is_subgroup) {
             // for subgroup headers
-            if (mb_strpos(get_class($propertyGroup), "PropertyItem")) {
+            if (mb_strpos(get_class($propertyGroup), 'PropertyItem')) {
                 $properties = [$propertyGroup];
             } else {
                 // for main groups
@@ -323,7 +349,7 @@ class Plugins
             foreach ($properties as $propertyItem) {
                 $property_class = get_class($propertyItem);
                 // if the property is a subgroup, we deal with it recursively
-                if (mb_strpos($property_class, "Subgroup")) {
+                if (mb_strpos($property_class, 'Subgroup')) {
                     // for subgroups
                     // each subgroup can have a header, which may also be a form element
                     /** @var OptionsPropertyItem $subgroup_header */
@@ -371,11 +397,11 @@ class Plugins
             }
         }
 
-        if (method_exists($propertyGroup, "getDoc")) {
+        if (method_exists($propertyGroup, 'getDoc')) {
             $doc = $propertyGroup->getDoc();
             if ($doc != null) {
                 if (count($doc) === 3) {
-                    $ret .= Util::showMySQLDocu(
+                    $ret .= MySQLDocumentation::show(
                         $doc[1],
                         false,
                         null,
@@ -383,9 +409,9 @@ class Plugins
                         $doc[2]
                     );
                 } elseif (count($doc) === 1) {
-                    $ret .= Util::showDocu('faq', $doc[0]);
+                    $ret .= MySQLDocumentation::showDocumentation('faq', $doc[0]);
                 } else {
-                    $ret .= Util::showMySQLDocu(
+                    $ret .= MySQLDocumentation::show(
                         $doc[1]
                     );
                 }
@@ -403,6 +429,7 @@ class Plugins
             }
         }
         $ret .= "\n";
+
         return $ret;
     }
 
@@ -562,6 +589,7 @@ class Plugins
             default:
                 break;
         }
+
         return $ret;
     }
 
@@ -625,6 +653,7 @@ class Plugins
             }
             $ret .= '</div>';
         }
+
         return $ret;
     }
 }

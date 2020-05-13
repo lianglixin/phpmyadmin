@@ -8,7 +8,7 @@
 </div>
 
 {% if variables is not empty %}
-  <a href="{{ url('/server/variables') }}" class="ajax saveLink hide">
+  <a href="#" class="ajax saveLink hide">
     {{ get_icon('b_save', 'Save'|trans) }}
   </a>
   <a href="#" class="cancelLink hide">
@@ -25,7 +25,7 @@
 
   <div class="responsivetable row">
     <div class="col-12">
-      <table id="serverVariables" class="width100 data filteredData noclick">
+      <table id="serverVariables" class="w-100 data filteredData noclick">
         <thead>
           <tr class="var-header var-row">
             <td class="var-action">{% trans 'Action' %}</td>

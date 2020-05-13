@@ -1,4 +1,4 @@
-    <form method="get" action="index.php" class="disableAjax">
+    <form method="get" action="{{ url('/') }}" class="disableAjax">
     {{ get_hidden_inputs(_form_params) }}
 
     {% if use_fieldset %}
@@ -10,7 +10,7 @@
         </bdo>
     {% endif %}
 
-    <select name="lang" class="autosubmit form-control" lang="en" dir="ltr" id="sel-lang">
+    <select name="lang" class="autosubmit" lang="en" dir="ltr" id="sel-lang">
 
     {% for language in available_languages %}
         {# Is current one active ? #}

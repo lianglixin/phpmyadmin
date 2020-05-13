@@ -1,38 +1,57 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Set of functions used with the relation and PDF feature
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
+use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Statements\CreateStatement;
 use PhpMyAdmin\SqlParser\Utils\Table as TableUtils;
+use function array_reverse;
+use function array_search;
+use function array_shift;
+use function asort;
+use function bin2hex;
+use function count;
+use function defined;
+use function explode;
+use function file_get_contents;
+use function htmlspecialchars;
+use function implode;
+use function in_array;
+use function is_array;
+use function is_string;
+use function ksort;
+use function mb_check_encoding;
+use function mb_strlen;
+use function mb_strtolower;
+use function mb_strtoupper;
+use function mb_substr;
+use function natcasesort;
+use function preg_match;
+use function sprintf;
+use function str_replace;
+use function strlen;
+use function strpos;
+use function trim;
+use function uksort;
+use function usort;
 
 /**
  * Set of functions used with the relation and PDF feature
- *
- * @package PhpMyAdmin
  */
 class Relation
 {
-    /**
-     * @var DatabaseInterface
-     */
+    /** @var DatabaseInterface */
     public $dbi;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     public $template;
 
     /**
-     * Relation constructor.
-     *
      * @param DatabaseInterface|null $dbi      Database interface
      * @param Template|null          $template Template instance
      */
@@ -45,14 +64,13 @@ class Relation
     /**
      * Executes a query as controluser if possible, otherwise as normal user
      *
-     * @param string  $sql        the query to execute
-     * @param boolean $show_error whether to display SQL error messages or not
-     * @param int     $options    query options
+     * @param string $sql        the query to execute
+     * @param bool   $show_error whether to display SQL error messages or not
+     * @param int    $options    query options
      *
-     * @return resource|boolean the result set, or false if no result set
+     * @return resource|bool the result set, or false if no result set
      *
-     * @access  public
-     *
+     * @access public
      */
     public function queryAsControlUser($sql, $show_error = true, $options = 0)
     {
@@ -88,9 +106,9 @@ class Relation
     /**
      * Returns current relation parameters
      *
-     * @return array
+     * @return string[]
      */
-    public function getRelationsParam()
+    public function getRelationsParam(): array
     {
         if (empty($_SESSION['relation'][$GLOBALS['server']])
             || empty($_SESSION['relation'][$GLOBALS['server']]['PMA_VERSION'])
@@ -132,7 +150,7 @@ class Relation
         if (strlen((string) $cfgRelation['db']) == 0) {
             $retval .= __('Configuration of pmadb…') . ' '
                  . $messages['error']
-                 . Util::showDocu('setup', 'linked-tables')
+                 . MySQLDocumentation::showDocumentation('setup', 'linked-tables')
                  . '<br>' . "\n"
                  . __('General relation features')
                  . ' <font color="green">' . __('Disabled')
@@ -225,7 +243,7 @@ class Relation
                     'Please see the documentation on how to'
                     . ' update your column_info table.'
                 );
-                $retval .= Util::showDocu(
+                $retval .= MySQLDocumentation::showDocumentation(
                     'config',
                     'cfg_Servers_column_info'
                 );
@@ -393,14 +411,14 @@ class Relation
                         . '<code>%screate_tables.sql</code>.'
                     ),
                     htmlspecialchars(SQL_DIR)
-                ) . ' ' . Util::showDocu('setup', 'linked-tables');
+                ) . ' ' . MySQLDocumentation::showDocumentation('setup', 'linked-tables');
                 $items[] = __('Create a pma user and give access to these tables.') . ' '
-                    . Util::showDocu('config', 'cfg_Servers_controluser');
+                    . MySQLDocumentation::showDocumentation('config', 'cfg_Servers_controluser');
                 $items[] = __(
                     'Enable advanced features in configuration file '
                     . '(<code>config.inc.php</code>), for example by '
                     . 'starting from <code>config.sample.inc.php</code>.'
-                ) . ' ' . Util::showDocu('setup', 'quick-install');
+                ) . ' ' . MySQLDocumentation::showDocumentation('setup', 'quick-install');
                 $items[] = __(
                     'Re-login to phpMyAdmin to load the updated configuration file.'
                 );
@@ -415,10 +433,10 @@ class Relation
     /**
      * prints out one diagnostic message for a feature
      *
-     * @param string  $feature_name       feature name in a message string
-     * @param string  $relation_parameter the $GLOBALS['cfgRelation'] parameter to check
-     * @param array   $messages           utility messages
-     * @param boolean $skip_line          whether to skip a line after the message
+     * @param string $feature_name       feature name in a message string
+     * @param string $relation_parameter the $GLOBALS['cfgRelation'] parameter to check
+     * @param array  $messages           utility messages
+     * @param bool   $skip_line          whether to skip a line after the message
      *
      * @return string
      */
@@ -440,16 +458,17 @@ class Relation
         if ($skip_line) {
             $retval .= '<tr><td>&nbsp;</td></tr>';
         }
+
         return $retval;
     }
 
     /**
      * prints out one diagnostic message for a configuration parameter
      *
-     * @param string  $parameter            config parameter name to display
-     * @param boolean $relationParameterSet whether this parameter is set
-     * @param array   $messages             utility messages
-     * @param string  $docAnchor            anchor in documentation
+     * @param string $parameter            config parameter name to display
+     * @param bool   $relationParameterSet whether this parameter is set
+     * @param array  $messages             utility messages
+     * @param string $docAnchor            anchor in documentation
      *
      * @return string
      */
@@ -467,10 +486,11 @@ class Relation
         } else {
             $retval .= sprintf(
                 $messages['error'],
-                Util::getDocuLink('config', 'cfg_Servers_' . $docAnchor)
+                MySQLDocumentation::getDocumentationLink('config', 'cfg_Servers_' . $docAnchor)
             );
         }
         $retval .= '</td></tr>' . "\n";
+
         return $retval;
     }
 
@@ -479,10 +499,11 @@ class Relation
      * just a copy of the functions used for relations ;-)
      * but added some stuff to check what will work
      *
-     * @access  protected
-     * @return array    the relation parameters for the current user
+     * @return string[]    the relation parameters for the current user
+     *
+     * @access protected
      */
-    public function checkRelationsParam()
+    public function checkRelationsParam(): array
     {
         $cfgRelation                   = [];
         $cfgRelation['PMA_VERSION']    = PMA_VERSION;
@@ -535,6 +556,7 @@ class Relation
             // we return the array with the falses in it,
             // to avoid some 'Uninitialized string offset' errors later
             $GLOBALS['cfg']['Server']['pmadb'] = false;
+
             return $cfgRelation;
         }
 
@@ -606,74 +628,112 @@ class Relation
         $this->dbi->freeResult($tab_rs);
 
         if (isset($cfgRelation['relation'])) {
-            $cfgRelation['relwork']     = true;
+            if ($this->canAccessStorageTable($cfgRelation['relation'])) {
+                $cfgRelation['relwork']     = true;
+            }
         }
 
         if (isset($cfgRelation['relation'], $cfgRelation['table_info'])) {
-            $cfgRelation['displaywork'] = true;
+            if ($this->canAccessStorageTable($cfgRelation['table_info'])) {
+                $cfgRelation['displaywork'] = true;
+            }
         }
 
         if (isset($cfgRelation['table_coords'], $cfgRelation['pdf_pages'])) {
-            $cfgRelation['pdfwork']     = true;
+            if ($this->canAccessStorageTable($cfgRelation['table_coords'])) {
+                if ($this->canAccessStorageTable($cfgRelation['pdf_pages'])) {
+                    $cfgRelation['pdfwork']     = true;
+                }
+            }
         }
 
         if (isset($cfgRelation['column_info'])) {
-            $cfgRelation['commwork']    = true;
-            // phpMyAdmin 4.3+
-            // Check for input transformations upgrade.
-            $cfgRelation['mimework'] = $this->tryUpgradeTransformations();
+            if ($this->canAccessStorageTable($cfgRelation['column_info'])) {
+                $cfgRelation['commwork']    = true;
+                // phpMyAdmin 4.3+
+                // Check for input transformations upgrade.
+                $cfgRelation['mimework'] = $this->tryUpgradeTransformations();
+            }
         }
 
         if (isset($cfgRelation['history'])) {
-            $cfgRelation['historywork']     = true;
+            if ($this->canAccessStorageTable($cfgRelation['history'])) {
+                $cfgRelation['historywork']     = true;
+            }
         }
 
         if (isset($cfgRelation['recent'])) {
-            $cfgRelation['recentwork']      = true;
+            if ($this->canAccessStorageTable($cfgRelation['recent'])) {
+                $cfgRelation['recentwork']      = true;
+            }
         }
 
         if (isset($cfgRelation['favorite'])) {
-            $cfgRelation['favoritework']    = true;
+            if ($this->canAccessStorageTable($cfgRelation['favorite'])) {
+                $cfgRelation['favoritework']    = true;
+            }
         }
 
         if (isset($cfgRelation['table_uiprefs'])) {
-            $cfgRelation['uiprefswork']     = true;
+            if ($this->canAccessStorageTable($cfgRelation['table_uiprefs'])) {
+                $cfgRelation['uiprefswork']     = true;
+            }
         }
 
         if (isset($cfgRelation['tracking'])) {
-            $cfgRelation['trackingwork']     = true;
+            if ($this->canAccessStorageTable($cfgRelation['tracking'])) {
+                $cfgRelation['trackingwork']     = true;
+            }
         }
 
         if (isset($cfgRelation['userconfig'])) {
-            $cfgRelation['userconfigwork']   = true;
+            if ($this->canAccessStorageTable($cfgRelation['userconfig'])) {
+                $cfgRelation['userconfigwork']   = true;
+            }
         }
 
         if (isset($cfgRelation['bookmark'])) {
-            $cfgRelation['bookmarkwork']     = true;
+            if ($this->canAccessStorageTable($cfgRelation['bookmark'])) {
+                $cfgRelation['bookmarkwork']     = true;
+            }
         }
 
         if (isset($cfgRelation['users'], $cfgRelation['usergroups'])) {
-            $cfgRelation['menuswork']        = true;
+            if ($this->canAccessStorageTable($cfgRelation['users'])) {
+                if ($this->canAccessStorageTable($cfgRelation['usergroups'])) {
+                    $cfgRelation['menuswork']        = true;
+                }
+            }
         }
 
         if (isset($cfgRelation['navigationhiding'])) {
-            $cfgRelation['navwork']          = true;
+            if ($this->canAccessStorageTable($cfgRelation['navigationhiding'])) {
+                $cfgRelation['navwork']          = true;
+            }
         }
 
         if (isset($cfgRelation['savedsearches'])) {
-            $cfgRelation['savedsearcheswork']      = true;
+            if ($this->canAccessStorageTable($cfgRelation['savedsearches'])) {
+                $cfgRelation['savedsearcheswork']      = true;
+            }
         }
 
         if (isset($cfgRelation['central_columns'])) {
-            $cfgRelation['centralcolumnswork']      = true;
+            if ($this->canAccessStorageTable($cfgRelation['central_columns'])) {
+                $cfgRelation['centralcolumnswork']      = true;
+            }
         }
 
         if (isset($cfgRelation['designer_settings'])) {
-            $cfgRelation['designersettingswork']    = true;
+            if ($this->canAccessStorageTable($cfgRelation['designer_settings'])) {
+                $cfgRelation['designersettingswork']    = true;
+            }
         }
 
         if (isset($cfgRelation['export_templates'])) {
-            $cfgRelation['exporttemplateswork']      = true;
+            if ($this->canAccessStorageTable($cfgRelation['export_templates'])) {
+                $cfgRelation['exporttemplateswork']      = true;
+            }
         }
 
         $allWorks = true;
@@ -709,20 +769,38 @@ class Relation
     }
 
     /**
+     * Check if the table is accessible
+     *
+     * @param string $tableDbName The table or table.db
+     *
+     * @return bool The table is accessible
+     */
+    public function canAccessStorageTable(string $tableDbName): bool
+    {
+        $result = $this->queryAsControlUser(
+            'SELECT NULL FROM ' . $tableDbName . ' LIMIT 0',
+            false,
+            DatabaseInterface::QUERY_STORE
+        );
+
+        return $result !== false;
+    }
+
+    /**
      * Check whether column_info table input transformation
      * upgrade is required and try to upgrade silently
      *
      * @return bool false if upgrade failed
      *
-     * @access  public
+     * @access public
      */
     public function tryUpgradeTransformations()
     {
         // From 4.3, new input oriented transformation feature was introduced.
         // Check whether column_info table has input transformation columns
         $new_cols = [
-            "input_transformation",
-            "input_transformation_options",
+            'input_transformation',
+            'input_transformation_options',
         ];
         $query = 'SHOW COLUMNS FROM '
             . Util::backquote($GLOBALS['cfg']['Server']['pmadb'])
@@ -742,6 +820,7 @@ class Relation
             // no need to upgrade
             if ($rows === 2) {
                 return true;
+
                 // try silent upgrade without disturbing the user
             }
 
@@ -770,9 +849,11 @@ class Relation
                 );
             } while ($hasResult);
             $error = $this->dbi->getError(DatabaseInterface::CONNECT_CONTROL);
+
             // return true if no error exists otherwise false
             return empty($error);
         }
+
         // some failure, either in upgrading or something else
         // make some noise, time to wake up user.
         return false;
@@ -789,7 +870,7 @@ class Relation
      *
      * @return array    db,table,column
      *
-     * @access  public
+     * @access public
      */
     public function getForeigners($db, $table, $column = '', $source = 'both')
     {
@@ -870,7 +951,7 @@ class Relation
      *
      * @return string|false field name or false
      *
-     * @access  public
+     * @access public
      */
     public function getDisplayField($db, $table)
     {
@@ -921,6 +1002,7 @@ class Relation
                 }
             }
         }
+
         return false;
     }
 
@@ -932,7 +1014,7 @@ class Relation
      *
      * @return array    [column_name] = comment
      *
-     * @access  public
+     * @access public
      */
     public function getComments($db, $table = '')
     {
@@ -962,7 +1044,7 @@ class Relation
      *
      * @return string   comment
      *
-     * @access  public
+     * @access public
      */
     public function getDbComment($db)
     {
@@ -971,17 +1053,17 @@ class Relation
 
         if ($cfgRelation['commwork']) {
             // pmadb internal db comment
-            $com_qry = "
+            $com_qry = '
                 SELECT `comment`
-                FROM " . Util::backquote($cfgRelation['db'])
-                    . "." . Util::backquote($cfgRelation['column_info'])
+                FROM ' . Util::backquote($cfgRelation['db'])
+                    . '.' . Util::backquote($cfgRelation['column_info'])
                     . "
                 WHERE db_name     = '" . $this->dbi->escapeString($db) . "'
                     AND table_name  = ''
                     AND column_name = '(db_comment)'";
             $com_rs = $this->queryAsControlUser(
                 $com_qry,
-                true,
+                false,
                 DatabaseInterface::QUERY_STORE
             );
 
@@ -998,9 +1080,9 @@ class Relation
     /**
      * Gets the comment for a db
      *
-     * @access  public
-     *
      * @return array comments
+     *
+     * @access public
      */
     public function getDbComments()
     {
@@ -1009,15 +1091,15 @@ class Relation
 
         if ($cfgRelation['commwork']) {
             // pmadb internal db comment
-            $com_qry = "
+            $com_qry = '
                 SELECT `db_name`, `comment`
-                FROM " . Util::backquote($cfgRelation['db'])
-                    . "." . Util::backquote($cfgRelation['column_info'])
+                FROM ' . Util::backquote($cfgRelation['db'])
+                    . '.' . Util::backquote($cfgRelation['column_info'])
                     . "
                 WHERE `column_name` = '(db_comment)'";
             $com_rs = $this->queryAsControlUser(
                 $com_qry,
-                true,
+                false,
                 DatabaseInterface::QUERY_STORE
             );
 
@@ -1038,9 +1120,9 @@ class Relation
      * @param string $db      the name of the db
      * @param string $comment the value of the column
      *
-     * @return boolean  true, if comment-query was made.
+     * @return bool true, if comment-query was made.
      *
-     * @access  public
+     * @access public
      */
     public function setDbComment($db, $comment = '')
     {
@@ -1085,7 +1167,7 @@ class Relation
      *
      * @return void
      *
-     * @access  public
+     * @access public
      */
     public function setHistory($db, $table, $username, $sqlquery)
     {
@@ -1145,7 +1227,7 @@ class Relation
      *
      * @return array|bool list of history items
      *
-     * @access  public
+     * @access public
      */
     public function getHistory($username)
     {
@@ -1163,6 +1245,7 @@ class Relation
             if (isset($_SESSION['sql_history'])) {
                 return array_reverse($_SESSION['sql_history']);
             }
+
             return false;
         }
 
@@ -1194,7 +1277,7 @@ class Relation
      *
      * @return void
      *
-     * @access  public
+     * @access public
      */
     public function purgeHistory($username)
     {
@@ -1241,7 +1324,7 @@ class Relation
      *
      * @return array   the <option value=""><option>s
      *
-     * @access  protected
+     * @access protected
      */
     public function buildForeignDropdown(array $foreign, $data, $mode)
     {
@@ -1279,7 +1362,7 @@ class Relation
                 $key = htmlspecialchars($key);
             } else {
                 $key = '0x' . bin2hex($key);
-                if (false !== strpos($data, "0x")) {
+                if (strpos($data, '0x') !== false) {
                     $selected = ($key == trim($data));
                 } else {
                     $selected = ($key == '0x' . $data);
@@ -1300,7 +1383,7 @@ class Relation
                         mb_substr(
                             $value,
                             0,
-                            $GLOBALS['cfg']['LimitChars']
+                            (int) $GLOBALS['cfg']['LimitChars']
                         ) . '...'
                     );
                 }
@@ -1343,7 +1426,7 @@ class Relation
      *
      * @return string   the <option value=""><option>s
      *
-     * @access  public
+     * @access public
      */
     public function foreignDropdown(
         array $disp_row,
@@ -1352,7 +1435,7 @@ class Relation
         $data,
         $max = null
     ) {
-        if (null === $max) {
+        if ($max === null) {
             $max = $GLOBALS['cfg']['ForeignKeyMaxLimit'];
         }
 
@@ -1420,18 +1503,18 @@ class Relation
     /**
      * Gets foreign keys in preparation for a drop-down selector
      *
-     * @param array|boolean $foreigners     array of the foreign keys
-     * @param string        $field          the foreign field name
-     * @param bool          $override_total whether to override the total
-     * @param string        $foreign_filter a possible filter
-     * @param string        $foreign_limit  a possible LIMIT clause
-     * @param bool          $get_total      optional, whether to get total num of rows
-     *                                      in $foreignData['the_total;]
-     *                                      (has an effect of performance)
+     * @param array|bool $foreigners     array of the foreign keys
+     * @param string     $field          the foreign field name
+     * @param bool       $override_total whether to override the total
+     * @param string     $foreign_filter a possible filter
+     * @param string     $foreign_limit  a possible LIMIT clause
+     * @param bool       $get_total      optional, whether to get total num of rows
+     *                                   in $foreignData['the_total;]
+     *                                   (has an effect of performance)
      *
      * @return array    data about the foreign keys
      *
-     * @access  public
+     * @access public
      */
     public function getForeignData(
         $foreigners,
@@ -1543,12 +1626,12 @@ class Relation
 
         $foreignData = [];
         $foreignData['foreign_link'] = $foreign_link;
-        $foreignData['the_total'] = isset($the_total) ? $the_total : null;
+        $foreignData['the_total'] = $the_total ?? null;
         $foreignData['foreign_display'] = (
-            isset($foreign_display) ? $foreign_display : null
+            $foreign_display ?? null
         );
-        $foreignData['disp_row'] = isset($disp_row) ? $disp_row : null;
-        $foreignData['foreign_field'] = isset($foreign_field) ? $foreign_field : null;
+        $foreignData['disp_row'] = $disp_row ?? null;
+        $foreignData['foreign_field'] = $foreign_field ?? null;
 
         return $foreignData;
     }
@@ -1616,7 +1699,6 @@ class Relation
         }
     }
 
-
     /**
      * Performs SQL query used for renaming table.
      *
@@ -1654,7 +1736,6 @@ class Relation
             . '\'';
         $this->queryAsControlUser($query);
     }
-
 
     /**
      * Rename a table in relation tables
@@ -1735,8 +1816,8 @@ class Relation
             } else {
                 // if the table is moved out of the database we can no loger keep the
                 // record for table coordinate
-                $remove_query = "DELETE FROM "
-                    . Util::backquote($GLOBALS['cfgRelation']['db']) . "."
+                $remove_query = 'DELETE FROM '
+                    . Util::backquote($GLOBALS['cfgRelation']['db']) . '.'
                     . Util::backquote($GLOBALS['cfgRelation']['table_coords'])
                     . " WHERE db_name  = '" . $this->dbi->escapeString($source_db) . "'"
                     . " AND table_name = '" . $this->dbi->escapeString($source_table)
@@ -1770,8 +1851,8 @@ class Relation
             );
 
             // update data for hidden table
-            $query = "UPDATE "
-                . Util::backquote($GLOBALS['cfgRelation']['db']) . "."
+            $query = 'UPDATE '
+                . Util::backquote($GLOBALS['cfgRelation']['db']) . '.'
                 . Util::backquote(
                     $GLOBALS['cfgRelation']['navigationhiding']
                 )
@@ -1828,9 +1909,9 @@ class Relation
     {
         $child_references = [];
         if (! $GLOBALS['cfg']['Server']['DisableIS']) {
-            $rel_query = "SELECT `column_name`, `table_name`,"
-                . " `table_schema`, `referenced_column_name`"
-                . " FROM `information_schema`.`key_column_usage`"
+            $rel_query = 'SELECT `column_name`, `table_name`,'
+                . ' `table_schema`, `referenced_column_name`'
+                . ' FROM `information_schema`.`key_column_usage`'
                 . " WHERE `referenced_table_name` = '"
                 . $this->dbi->escapeString($table) . "'"
                 . " AND `referenced_table_schema` = '"
@@ -1848,6 +1929,7 @@ class Relation
                 ]
             );
         }
+
         return $child_references;
     }
 
@@ -1938,17 +2020,11 @@ class Relation
             if ($column_index !== false) {
                 $foreigner['foreign_field']
                     = $one_key['ref_index_list'][$column_index];
-                $foreigner['foreign_db'] = isset($one_key['ref_db_name'])
-                    ? $one_key['ref_db_name']
-                    : $GLOBALS['db'];
+                $foreigner['foreign_db'] = $one_key['ref_db_name'] ?? $GLOBALS['db'];
                 $foreigner['foreign_table'] = $one_key['ref_table_name'];
                 $foreigner['constraint'] = $one_key['constraint'];
-                $foreigner['on_update'] = isset($one_key['on_update'])
-                    ? $one_key['on_update']
-                    : 'RESTRICT';
-                $foreigner['on_delete'] = isset($one_key['on_delete'])
-                    ? $one_key['on_delete']
-                    : 'RESTRICT';
+                $foreigner['on_update'] = $one_key['on_update'] ?? 'RESTRICT';
+                $foreigner['on_delete'] = $one_key['on_delete'] ?? 'RESTRICT';
 
                 return $foreigner;
             }
@@ -1992,7 +2068,7 @@ class Relation
      */
     public function createPmaDatabase()
     {
-        $this->dbi->tryQuery("CREATE DATABASE IF NOT EXISTS `phpmyadmin`");
+        $this->dbi->tryQuery('CREATE DATABASE IF NOT EXISTS `phpmyadmin`');
         if ($error = $this->dbi->getError()) {
             if ($GLOBALS['errno'] == 1044) {
                 $GLOBALS['message'] =    __(
@@ -2003,16 +2079,18 @@ class Relation
             } else {
                 $GLOBALS['message'] = $error;
             }
+
             return false;
         }
+
         return true;
     }
 
     /**
      * Creates PMA tables in the given db, updates if already exists.
      *
-     * @param string  $db     database
-     * @param boolean $create whether to create tables if they don't exist.
+     * @param string $db     database
+     * @param bool   $create whether to create tables if they don't exist.
      *
      * @return void
      */
@@ -2054,6 +2132,7 @@ class Relation
                     $this->dbi->tryQuery($createQueries[$table]);
                     if ($error = $this->dbi->getError()) {
                         $GLOBALS['message'] = $error;
+
                         return;
                     }
                     $foundOne = true;
@@ -2096,8 +2175,8 @@ class Relation
     /**
      * Get Html for PMA tables fixing anchor.
      *
-     * @param boolean $allTables whether to create all tables
-     * @param boolean $createDb  whether to create the pmadb also
+     * @param bool $allTables whether to create all tables
+     * @param bool $createDb  whether to create the pmadb also
      *
      * @return string Html
      */
@@ -2135,7 +2214,7 @@ class Relation
             );
         }
         $message->addParamHtml(
-            '<a href="./chk_rel.php" data-post="' . Url::getCommon($params, '') . '">'
+            '<a href="' . Url::getFromRoute('/check-relations') . '" data-post="' . Url::getCommon($params, '') . '">'
         );
         $message->addParamHtml('</a>');
 
@@ -2147,9 +2226,9 @@ class Relation
     /**
      * Gets the relations info and status, depending on the condition
      *
-     * @param boolean $condition whether to look for foreigners or not
-     * @param string  $db        database name
-     * @param string  $table     table name
+     * @param bool   $condition whether to look for foreigners or not
+     * @param string $db        database name
+     * @param string $table     table name
      *
      * @return array ($res_rel, $have_rel)
      */
@@ -2169,6 +2248,7 @@ class Relation
             $have_rel = false;
             $res_rel = [];
         } // end if
+
         return [
             $res_rel,
             $have_rel,
@@ -2178,7 +2258,7 @@ class Relation
     /**
      * Verifies if all the pmadb tables are defined
      *
-     * @return boolean
+     * @return bool
      */
     public function arePmadbTablesDefined()
     {
@@ -2227,6 +2307,7 @@ class Relation
         if ($GLOBALS['cfg']['NaturalOrder']) {
             usort($tables, 'strnatcasecmp');
         }
+
         return $tables;
     }
 }

@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Functions for displaying user preferences pages
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -11,12 +8,21 @@ namespace PhpMyAdmin;
 
 use PhpMyAdmin\Charsets\Charset;
 use PhpMyAdmin\Charsets\Collation;
-use PhpMyAdmin\Message;
+use PhpMyAdmin\Html\Generator;
+use function array_unique;
+use function ceil;
+use function count;
+use function explode;
+use function htmlspecialchars;
+use function implode;
+use function in_array;
+use function is_bool;
+use function mb_strtoupper;
+use function sprintf;
+use function trim;
 
 /**
  * PhpMyAdmin\CentralColumns class
- *
- * @package PhpMyAdmin
  */
 class CentralColumns
 {
@@ -51,23 +57,17 @@ class CentralColumns
     /**
      * Disable use of INFORMATION_SCHEMA
      *
-     * @var boolean
+     * @var bool
      */
     private $disableIs;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     public $template;
 
     /**
-     * Constructor
-     *
      * @param DatabaseInterface $dbi DatabaseInterface instance
      */
     public function __construct(DatabaseInterface $dbi)
@@ -87,13 +87,14 @@ class CentralColumns
      * Defines the central_columns parameters for the current user
      *
      * @return array|bool the central_columns parameters for the current user
+     *
      * @access public
      */
     public function getParams()
     {
         static $cfgCentralColumns = null;
 
-        if (null !== $cfgCentralColumns) {
+        if ($cfgCentralColumns !== null) {
             return $cfgCentralColumns;
         }
 
@@ -148,6 +149,7 @@ class CentralColumns
             DatabaseInterface::CONNECT_CONTROL
         );
         $this->handleColumnExtra($has_list);
+
         return $has_list;
     }
 
@@ -186,10 +188,10 @@ class CentralColumns
     /**
      * return the existing columns in central list among the given list of columns
      *
-     * @param string  $db        the selected database
-     * @param string  $cols      comma separated list of given columns
-     * @param boolean $allFields set if need all the fields of existing columns,
-     *                           otherwise only column_name is returned
+     * @param string $db        the selected database
+     * @param string $cols      comma separated list of given columns
+     * @param bool   $allFields set if need all the fields of existing columns,
+     *                          otherwise only column_name is returned
      *
      * @return array list of columns in central columns among given set of columns
      */
@@ -233,8 +235,6 @@ class CentralColumns
     /**
      * return error message to be displayed if central columns
      * configuration storage is not completely configured
-     *
-     * @return Message
      */
     private function configErrorMessage(): Message
     {
@@ -264,9 +264,9 @@ class CentralColumns
         string $db,
         string $central_list_table
     ): string {
-        $type = "";
+        $type = '';
         $length = 0;
-        $attribute = "";
+        $attribute = '';
         if (isset($def['Type'])) {
             $extracted_columnspec = Util::extractColumnSpec($def['Type']);
             $attribute = trim($extracted_columnspec['attribute']);
@@ -276,10 +276,11 @@ class CentralColumns
         if (isset($def['Attribute'])) {
             $attribute = $def['Attribute'];
         }
-        $collation = isset($def['Collation']) ? $def['Collation'] : "";
-        $isNull = $def['Null'] == "NO" ? '0' : '1';
-        $extra = isset($def['Extra']) ? $def['Extra'] : "";
-        $default = isset($def['Default']) ? $def['Default'] : "";
+        $collation = $def['Collation'] ?? '';
+        $isNull = $def['Null'] == 'NO' ? '0' : '1';
+        $extra = $def['Extra'] ?? '';
+        $default = $def['Default'] ?? '';
+
         return 'INSERT INTO '
             . Util::backquote($central_list_table) . ' '
             . 'VALUES ( \'' . $this->dbi->escapeString($db) . '\' ,'
@@ -319,7 +320,7 @@ class CentralColumns
         $central_list_table = $cfgCentralColumns['table'];
         $this->dbi->selectDb($db);
         $existingCols = [];
-        $cols = "";
+        $cols = '';
         $insQuery = [];
         $fields = [];
         $message = true;
@@ -381,7 +382,7 @@ class CentralColumns
             }
         }
         if (! empty($existingCols)) {
-            $existingCols = implode(",", array_unique($existingCols));
+            $existingCols = implode(',', array_unique($existingCols));
             $message = Message::notice(
                 sprintf(
                     __(
@@ -392,8 +393,8 @@ class CentralColumns
             );
             $message->addMessage(
                 Message::notice(
-                    "Please remove them first "
-                    . "from central list if you want to update above columns"
+                    'Please remove them first '
+                    . 'from central list if you want to update above columns'
                 )
             );
         }
@@ -411,6 +412,7 @@ class CentralColumns
                 }
             }
         }
+
         return $message;
     }
 
@@ -475,7 +477,7 @@ class CentralColumns
             }
         }
         if (! empty($colNotExist)) {
-            $colNotExist = implode(",", array_unique($colNotExist));
+            $colNotExist = implode(',', array_unique($colNotExist));
             $message = Message::notice(
                 sprintf(
                     __(
@@ -500,6 +502,7 @@ class CentralColumns
                 )
             );
         }
+
         return $message;
     }
 
@@ -559,7 +562,7 @@ class CentralColumns
                     $query .= ',';
                 }
             }
-            $query = trim($query, " ,") . ";";
+            $query = trim($query, ' ,') . ';';
             if (! $this->dbi->tryQuery($query)) {
                 if ($message === true) {
                     $message = Message::error(
@@ -573,6 +576,7 @@ class CentralColumns
                 }
             }
         }
+
         return $message;
     }
 
@@ -580,10 +584,10 @@ class CentralColumns
      * return the columns present in central list of columns for a given
      * table of a given database
      *
-     * @param string  $db        given database
-     * @param string  $table     given table
-     * @param boolean $allFields set if need all the fields of existing columns,
-     *                           otherwise only column_name is returned
+     * @param string $db        given database
+     * @param string $table     given table
+     * @param bool   $allFields set if need all the fields of existing columns,
+     *                          otherwise only column_name is returned
      *
      * @return array columns present in central list from given table of given db.
      */
@@ -648,7 +652,7 @@ class CentralColumns
         }
         $centralTable = $cfgCentralColumns['table'];
         $this->dbi->selectDb($cfgCentralColumns['db'], DatabaseInterface::CONNECT_CONTROL);
-        if ($orig_col_name == "") {
+        if ($orig_col_name == '') {
             $def = [];
             $def['Type'] = $col_type;
             if ($col_length) {
@@ -679,6 +683,7 @@ class CentralColumns
                 $this->dbi->getError(DatabaseInterface::CONNECT_CONTROL)
             );
         }
+
         return true;
     }
 
@@ -686,6 +691,7 @@ class CentralColumns
      * Update Multiple column in central columns list if a change is requested
      *
      * @param array $params Request parameters
+     *
      * @return true|Message
      */
     public function updateMultipleColumn(array $params)
@@ -720,6 +726,7 @@ class CentralColumns
                 return $message;
             }
         }
+
         return true;
     }
 
@@ -868,6 +875,7 @@ class CentralColumns
             ])
             . '</td>';
         $tableHtml .= '</tr>';
+
         return $tableHtml;
     }
 
@@ -917,6 +925,7 @@ class CentralColumns
             DatabaseInterface::CONNECT_CONTROL
         );
         $this->handleColumnExtra($columns_list);
+
         return $columns_list;
     }
 
@@ -925,8 +934,6 @@ class CentralColumns
      *
      * @param string $pmaThemeImage pma theme image url
      * @param string $text_dir      url for text directory
-     *
-     * @return string
      */
     public function getTableFooter(string $pmaThemeImage, string $text_dir): string
     {
@@ -935,20 +942,21 @@ class CentralColumns
             'text_dir' => $text_dir,
             'form_name' => 'tableslistcontainer',
         ]);
-        $html_output .= Util::getButtonOrImage(
+        $html_output .= Generator::getButtonOrImage(
             'edit_central_columns',
             'mult_submit change_central_columns',
             __('Edit'),
             'b_edit',
             'edit central columns'
         );
-        $html_output .= Util::getButtonOrImage(
+        $html_output .= Generator::getButtonOrImage(
             'delete_central_columns',
             'mult_submit',
             __('Delete'),
             'b_drop',
             'remove_from_central_columns'
         );
+
         return $html_output;
     }
 
@@ -971,8 +979,6 @@ class CentralColumns
      * This method separates them.
      *
      * @param array $columns_list columns list
-     *
-     * @return void
      */
     private function handleColumnExtra(array &$columns_list): void
     {
@@ -1040,6 +1046,7 @@ class CentralColumns
         $html .= '</table>';
         $html .= $this->getEditTableFooter();
         $html .= '</form>';
+
         return $html;
     }
 
@@ -1098,7 +1105,7 @@ class CentralColumns
             $db,
             $selected_tbl
         );
-        $selectColHtml = "";
+        $selectColHtml = '';
         foreach ($columns as $column) {
             if (! in_array($column, $existing_cols)) {
                 $selectColHtml .= '<option value="' . htmlspecialchars($column) . '">'
@@ -1106,6 +1113,7 @@ class CentralColumns
                     . '</option>';
             }
         }
+
         return $selectColHtml;
     }
 
@@ -1187,20 +1195,20 @@ class CentralColumns
         }
 
         return $this->template->render('database/central_columns/main', [
-            "db" => $db,
-            "total_rows" => $total_rows,
-            "max_rows" => $max_rows,
-            "pos" => $pos,
-            "char_editing" => $this->charEditing,
-            "attribute_types" => $attribute_types,
-            "tn_nbTotalPage" => $tn_nbTotalPage,
-            "tn_page_selector" => $tn_page_selector,
-            "tables" => $tables,
-            "rows_list" => $rows_list,
-            "rows_meta" => $rows_meta,
-            "types_upper" => $types_upper,
-            "pmaThemeImage" => $pmaThemeImage,
-            "text_dir" => $text_dir,
+            'db' => $db,
+            'total_rows' => $total_rows,
+            'max_rows' => $max_rows,
+            'pos' => $pos,
+            'char_editing' => $this->charEditing,
+            'attribute_types' => $attribute_types,
+            'tn_nbTotalPage' => $tn_nbTotalPage,
+            'tn_page_selector' => $tn_page_selector,
+            'tables' => $tables,
+            'rows_list' => $rows_list,
+            'rows_meta' => $rows_meta,
+            'types_upper' => $types_upper,
+            'pmaThemeImage' => $pmaThemeImage,
+            'text_dir' => $text_dir,
             'charsets' => $charsetsList,
         ]);
     }

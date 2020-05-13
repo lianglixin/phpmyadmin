@@ -1,34 +1,35 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Functions for the replication GUI
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
+use function htmlspecialchars;
+use function in_array;
+use function is_array;
+use function mb_strrpos;
+use function mb_strtolower;
+use function mb_substr;
+use function sprintf;
+use function str_replace;
+use function strlen;
+use function strtok;
+use function time;
+
 /**
  * Functions for the replication GUI
- *
- * @package PhpMyAdmin
  */
 class ReplicationGui
 {
-    /**
-     * @var Replication
-     */
+    /** @var Replication */
     private $replication;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     private $template;
 
     /**
-     * ReplicationGui constructor.
-     *
      * @param Replication $replication Replication instance
      * @param Template    $template    Template instance
      */
@@ -57,6 +58,7 @@ class ReplicationGui
                 $_SESSION['replication']['sr_action_status'] = 'unknown';
             }
         }
+
         return $html;
     }
 
@@ -235,10 +237,10 @@ class ReplicationGui
     /**
      * This function returns html code for table with replication status.
      *
-     * @param string  $type     either master or slave
-     * @param boolean $isHidden if true, then default style is set to hidden,
-     *                          default value false
-     * @param boolean $hasTitle if true, then title is displayed, default true
+     * @param string $type     either master or slave
+     * @param bool   $isHidden if true, then default style is set to hidden,
+     *                         default value false
+     * @param bool   $hasTitle if true, then title is displayed, default true
      *
      * @return string HTML code
      */
@@ -265,18 +267,20 @@ class ReplicationGui
 
         $variables = [];
         foreach ($replicationVariables as $variable) {
+            $serverReplicationVariable = is_array($serverReplication) && isset($serverReplication[0]) ? $serverReplication[0][$variable] : '';
+
             $variables[$variable] = [
                 'name' => $variable,
                 'status' => '',
-                'value' => $serverReplication[0][$variable],
+                'value' => $serverReplicationVariable,
             ];
 
             if (isset($variablesAlerts[$variable])
-                && $variablesAlerts[$variable] === $serverReplication[0][$variable]
+                && $variablesAlerts[$variable] === $serverReplicationVariable
             ) {
                 $variables[$variable]['status'] = 'attention';
             } elseif (isset($variablesOks[$variable])
-                && $variablesOks[$variable] === $serverReplication[0][$variable]
+                && $variablesOks[$variable] === $serverReplicationVariable
             ) {
                 $variables[$variable]['status'] = 'allfine';
             }
@@ -293,7 +297,7 @@ class ReplicationGui
                 $variables[$variable]['value'] = str_replace(
                     ',',
                     ', ',
-                    $serverReplication[0][$variable]
+                    $serverReplicationVariable
                 );
             }
         }
@@ -320,17 +324,18 @@ class ReplicationGui
             if ($val['Field'] == 'User') {
                 strtok($val['Type'], '()');
                 $v = strtok('()');
-                if (is_int($v)) {
-                    $username_length = $v;
+                if (Util::isInteger($v)) {
+                    $username_length = (int) $v;
                 }
             } elseif ($val['Field'] == 'Host') {
                 strtok($val['Type'], '()');
                 $v = strtok('()');
-                if (is_int($v)) {
-                    $hostname_length = $v;
+                if (Util::isInteger($v)) {
+                    $hostname_length = (int) $v;
                 }
             }
         }
+
         return [
             $username_length,
             $hostname_length,
@@ -469,7 +474,7 @@ class ReplicationGui
     /**
      * handle control requests for Slave Change Master
      *
-     * @return boolean
+     * @return bool
      */
     public function handleRequestForSlaveChangeMaster()
     {
@@ -543,7 +548,7 @@ class ReplicationGui
     /**
      * handle control requests for Slave Server Control
      *
-     * @return boolean
+     * @return bool
      */
     public function handleRequestForSlaveServerControl()
     {
@@ -551,9 +556,9 @@ class ReplicationGui
             $_POST['sr_slave_control_parm'] = null;
         }
         if ($_POST['sr_slave_action'] == 'reset') {
-            $qStop = $this->replication->slaveControl("STOP");
-            $qReset = $GLOBALS['dbi']->tryQuery("RESET SLAVE;");
-            $qStart = $this->replication->slaveControl("START");
+            $qStop = $this->replication->slaveControl('STOP', null, DatabaseInterface::CONNECT_USER);
+            $qReset = $GLOBALS['dbi']->tryQuery('RESET SLAVE;');
+            $qStart = $this->replication->slaveControl('START', null, DatabaseInterface::CONNECT_USER);
 
             $result = ($qStop !== false && $qStop !== -1 &&
                 $qReset !== false && $qReset !== -1 &&
@@ -561,7 +566,8 @@ class ReplicationGui
         } else {
             $qControl = $this->replication->slaveControl(
                 $_POST['sr_slave_action'],
-                $_POST['sr_slave_control_parm']
+                $_POST['sr_slave_control_parm'],
+                DatabaseInterface::CONNECT_USER
             );
 
             $result = ($qControl !== false && $qControl !== -1);
@@ -573,7 +579,7 @@ class ReplicationGui
     /**
      * handle control requests for Slave Skip Error
      *
-     * @return boolean
+     * @return bool
      */
     public function handleRequestForSlaveSkipError()
     {
@@ -582,11 +588,11 @@ class ReplicationGui
             $count = $_POST['sr_skip_errors_count'] * 1;
         }
 
-        $qStop = $this->replication->slaveControl("STOP");
+        $qStop = $this->replication->slaveControl('STOP', null, DatabaseInterface::CONNECT_USER);
         $qSkip = $GLOBALS['dbi']->tryQuery(
-            "SET GLOBAL SQL_SLAVE_SKIP_COUNTER = " . $count . ";"
+            'SET GLOBAL SQL_SLAVE_SKIP_COUNTER = ' . $count . ';'
         );
-        $qStart = $this->replication->slaveControl("START");
+        $qStart = $this->replication->slaveControl('START', null, DatabaseInterface::CONNECT_USER);
 
         $result = ($qStop !== false && $qStop !== -1 &&
             $qSkip !== false && $qSkip !== -1 &&

@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Database\Designer\Common
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -15,20 +13,14 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for PhpMyAdmin\Database\Designer\Common
- *
- * @package PhpMyAdmin-test
  */
 class CommonTest extends TestCase
 {
-    /**
-     * @var Common
-     */
+    /** @var Common */
     private $designerCommon;
 
     /**
      * Setup for test cases
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -66,6 +58,7 @@ class CommonTest extends TestCase
             ->with(
                 "
             SELECT CONCAT_WS('.', `db_name`, `table_name`) AS `name`,
+                `db_name` as `dbName`, `table_name` as `tableName`,
                 `x` AS `X`,
                 `y` AS `Y`,
                 1 AS `V`,
@@ -103,8 +96,8 @@ class CommonTest extends TestCase
         $dbi->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT `page_descr` FROM `pmadb`.`pdf_pages`"
-                . " WHERE `page_nr` = " . $pg,
+                'SELECT `page_descr` FROM `pmadb`.`pdf_pages`'
+                . ' WHERE `page_nr` = ' . $pg,
                 null,
                 null,
                 DatabaseInterface::CONNECT_CONTROL,
@@ -167,7 +160,7 @@ class CommonTest extends TestCase
         $dbi->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT `page_nr` FROM `pmadb`.`pdf_pages`"
+                'SELECT `page_nr` FROM `pmadb`.`pdf_pages`'
                 . " WHERE `db_name` = '" . $db . "'"
                 . " AND `page_descr` = '" . $db . "'",
                 null,
@@ -202,7 +195,7 @@ class CommonTest extends TestCase
         $dbi->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT `page_nr` FROM `pmadb`.`pdf_pages`"
+                'SELECT `page_nr` FROM `pmadb`.`pdf_pages`'
                 . " WHERE `db_name` = '" . $db . "'"
                 . " AND `page_descr` = '" . $db . "'",
                 null,
@@ -238,7 +231,7 @@ class CommonTest extends TestCase
         $dbi->expects($this->once())
             ->method('fetchResult')
             ->with(
-                "SELECT `page_nr` FROM `pmadb`.`pdf_pages`"
+                'SELECT `page_nr` FROM `pmadb`.`pdf_pages`'
                 . " WHERE `db_name` = '" . $db . "'"
                 . " AND `page_descr` = '" . $db . "'",
                 null,

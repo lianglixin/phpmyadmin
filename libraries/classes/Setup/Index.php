@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Various checks and message functions used on index page.
- *
- * @package PhpMyAdmin-Setup
  */
 declare(strict_types=1);
 
@@ -11,13 +8,15 @@ namespace PhpMyAdmin\Setup;
 
 use PhpMyAdmin\Sanitize;
 use PhpMyAdmin\VersionInformation;
+use function htmlspecialchars;
+use function is_array;
+use function sprintf;
+use function uniqid;
 
 /**
  * PhpMyAdmin\Setup\Index class
  *
  * Various checks and message functions used on index page.
- *
- * @package PhpMyAdmin-Setup
  */
 class Index
 {
@@ -104,6 +103,7 @@ class Index
                 ];
             }
         }
+
         return $return;
     }
 
@@ -132,6 +132,7 @@ class Index
                     . 'Maybe you\'re offline or the upgrade server does not respond.'
                 )
             );
+
             return;
         }
 
@@ -152,6 +153,7 @@ class Index
                 __('Version check'),
                 __('Got invalid version string from server')
             );
+
             return;
         }
 
@@ -165,6 +167,7 @@ class Index
                 __('Version check'),
                 __('Unparsable version string')
             );
+
             return;
         }
 

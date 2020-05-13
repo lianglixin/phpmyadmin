@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Second authentication factor handling
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -16,19 +13,16 @@ use PragmaRX\Google2FA\Exceptions\IncompatibleWithGoogleAuthenticatorException;
 use PragmaRX\Google2FA\Exceptions\InvalidCharactersException;
 use PragmaRX\Google2FA\Exceptions\SecretKeyTooShortException;
 use PragmaRX\Google2FAQRCode\Google2FA;
+use function extension_loaded;
 
 /**
  * HOTP and TOTP based two-factor authentication
  *
  * Also known as Google, Authy, or OTP
- *
- * @package PhpMyAdmin
  */
 class Application extends TwoFactorPlugin
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public static $id = 'application';
 
     protected $_google2fa;
@@ -52,9 +46,6 @@ class Application extends TwoFactorPlugin
         }
     }
 
-    /**
-     * @return Google2FA
-     */
     public function getGoogle2fa(): Google2FA
     {
         return $this->_google2fa;
@@ -63,7 +54,8 @@ class Application extends TwoFactorPlugin
     /**
      * Checks authentication, returns true on success
      *
-     * @return boolean
+     * @return bool
+     *
      * @throws IncompatibleWithGoogleAuthenticatorException
      * @throws InvalidCharactersException
      * @throws SecretKeyTooShortException
@@ -75,6 +67,7 @@ class Application extends TwoFactorPlugin
             return false;
         }
         $this->_provided = true;
+
         return $this->_google2fa->verifyKey(
             $this->_twofactor->config['settings']['secret'],
             $_POST['2fa_code']
@@ -104,6 +97,7 @@ class Application extends TwoFactorPlugin
             $this->_twofactor->user,
             $secret
         );
+
         return $this->template->render('login/twofactor/application_configure', [
             'image' => $inlineUrl,
             'secret' => $secret,
@@ -114,7 +108,8 @@ class Application extends TwoFactorPlugin
     /**
      * Performs backend configuration
      *
-     * @return boolean
+     * @return bool
+     *
      * @throws IncompatibleWithGoogleAuthenticatorException
      * @throws InvalidCharactersException
      * @throws SecretKeyTooShortException
@@ -130,6 +125,7 @@ class Application extends TwoFactorPlugin
         if ($result) {
             unset($_SESSION['2fa_application_key']);
         }
+
         return $result;
     }
 

@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for displaying results
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -18,17 +16,15 @@ use PhpMyAdmin\Tests\PmaTestCase;
 use PhpMyAdmin\Transformations;
 use ReflectionClass;
 use stdClass;
+use function count;
+use function hex2bin;
 
 /**
  * Test cases for displaying results.
- *
- * @package PhpMyAdmin-test
  */
 class ResultsTest extends PmaTestCase
 {
-    /**
-     * @access protected
-     */
+    /** @access protected */
     protected $object;
 
     /**
@@ -36,7 +32,6 @@ class ResultsTest extends PmaTestCase
      * This method is called before a test is executed.
      *
      * @access protected
-     * @return void
      */
     protected function setUp(): void
     {
@@ -49,6 +44,7 @@ class ResultsTest extends PmaTestCase
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['text_dir'] = 'ltr';
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
+        $_SESSION[' HMAC_secret '] = 'test';
 
         $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
             ->disableOriginalConstructor()
@@ -65,7 +61,6 @@ class ResultsTest extends PmaTestCase
      * This method is called after a test is executed.
      *
      * @access protected
-     * @return void
      */
     protected function tearDown(): void
     {
@@ -85,6 +80,7 @@ class ResultsTest extends PmaTestCase
         $class = new ReflectionClass(DisplayResults::class);
         $method = $class->getMethod($name);
         $method->setAccessible(true);
+
         return $method->invokeArgs($this->object, $params);
     }
 
@@ -112,10 +108,10 @@ class ResultsTest extends PmaTestCase
     /**
      * Test for navigation buttons
      *
-     * @param string  $caption        iconic caption for button
-     * @param string  $title          text for button
-     * @param integer $pos            position for next query
-     * @param string  $html_sql_query query ready for display
+     * @param string $caption        iconic caption for button
+     * @param string $title          text for button
+     * @param int    $pos            position for next query
+     * @param string $html_sql_query query ready for display
      *
      * @return void
      *
@@ -340,683 +336,6 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Data provider for testGetCheckboxForMultiRowSubmissions
-     *
-     * @return array parameters and output
-     */
-    public function dataProviderForGetCheckboxForMultiRowSubmissions()
-    {
-        return [
-            [
-                'index.php?route=/sql&amp;db=data&amp;table=new&amp;sql_query=DELETE+FROM+%60data%60'
-                . '.%60new%60+WHERE+%60new%60.%60id%60+%3D+1&amp;message_to_show='
-                . 'The+row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql%26db%3Ddata%26table%3D'
-                . 'new%26sql_query%3DSELECT%2B%252A%2BFROM%2B%2560new%2560%26message'
-                . '_to_show%3DThe%2Brow%2Bhas%2Bbeen%2Bdeleted%26goto%3Dindex.php%253Froute%253D%252Ftable%252Fstructure',
-                [
-                    'edit_lnk' => 'ur',
-                    'del_lnk' => 'dr',
-                    'sort_lnk' => '0',
-                    'nav_bar' => '1',
-                    'bkm_form' => '1',
-                    'text_btn' => '1',
-                    'pview_lnk' => '1',
-                ],
-                0,
-                '%60new%60.%60id%60+%3D+1',
-                ['`new`.`id`' => '= 1'],
-                '[%_PMA_CHECKBOX_DIR_%]',
-                'klass',
-                '<td class="klass" class="center print_ignore"><input type'
-                . '="checkbox" id="id_rows_to_delete0[%_PMA_CHECKBOX_DIR_%]" name='
-                . '"rows_to_delete[0]" class="multi_checkbox checkall" value="%60'
-                . 'new%60.%60id%60+%3D+1"><input type="hidden" class="condition_'
-                . 'array" value="{&quot;`new`.`id`&quot;:&quot;= 1&quot;}">    '
-                . '</td>',
-            ],
-        ];
-    }
-
-    /**
-     * Test for _getCheckboxForMultiRowSubmissions
-     *
-     * @param string $del_url           delete url
-     * @param array  $displayParts      array with explicit indexes for all
-     *                                  the display elements
-     * @param string $row_no            the row number
-     * @param string $where_clause_html url encoded where clause
-     * @param array  $condition_array   array of conditions in the where clause
-     * @param string $id_suffix         suffix for the id
-     * @param string $class             css classes for the td element
-     * @param string $output            output of _getCheckboxForMultiRowSubmissions
-     *
-     * @return void
-     *
-     * @dataProvider dataProviderForGetCheckboxForMultiRowSubmissions
-     */
-    public function testGetCheckboxForMultiRowSubmissions(
-        $del_url,
-        $displayParts,
-        $row_no,
-        $where_clause_html,
-        $condition_array,
-        $id_suffix,
-        $class,
-        $output
-    ) {
-        $this->assertEquals(
-            $output,
-            $this->_callPrivateFunction(
-                '_getCheckboxForMultiRowSubmissions',
-                [
-                    $del_url,
-                    $displayParts,
-                    $row_no,
-                    $where_clause_html,
-                    $condition_array,
-                    $id_suffix,
-                    $class,
-                ]
-            )
-        );
-    }
-
-    /**
-     * Data provider for testGetEditLink
-     *
-     * @return array parameters and output
-     */
-    public function dataProviderForGetEditLink()
-    {
-        return [
-            [
-                'index.php?route=/table/change&db=Data&amp;table=customer&amp;where_clause=%60'
-                . 'customer%60.%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query='
-                . 'SELECT+%2A+FROM+%60customer%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_'
-                . 'action=update',
-                'klass edit_row_anchor',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Edit" alt='
-                . '"Edit" class="icon ic_b_edit"> Edit</span>',
-                '`customer`.`id` = 1',
-                '%60customer%60.%60id%60+%3D+1',
-                '<td class="klass edit_row_anchor center print_ignore">'
-                . '<span class="nowrap">'
-                . '<a href="index.php" data-post="route=/table/change&db=Data&amp;table=customer&amp;where_'
-                . 'clause=%60customer%60.%60id%60+%3D+1&amp;clause_is_unique=1&amp;'
-                . 'sql_query=SELECT+%2A+FROM+%60customer%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;'
-                . 'default_action=update"'
-                . '><span class="nowrap"><img src="themes/dot.gif" title="Edit" '
-                . 'alt="Edit" class="icon ic_b_edit"> Edit</span></a>'
-                . '<input type="hidden" class="where_clause" value ="%60customer'
-                . '%60.%60id%60+%3D+1"></span></td>',
-            ],
-        ];
-    }
-
-    /**
-     * Test for _getEditLink
-     *
-     * @param string $edit_url          edit url
-     * @param string $class             css classes for td element
-     * @param string $edit_str          text for the edit link
-     * @param string $where_clause      where clause
-     * @param string $where_clause_html url encoded where clause
-     * @param string $output            output of _getEditLink
-     *
-     * @return void
-     *
-     * @dataProvider dataProviderForGetEditLink
-     */
-    public function testGetEditLink(
-        $edit_url,
-        $class,
-        $edit_str,
-        $where_clause,
-        $where_clause_html,
-        $output
-    ) {
-        $GLOBALS['cfg']['ActionLinksMode'] = 'both';
-        $GLOBALS['cfg']['LinkLengthLimit'] = 1000;
-
-        $this->assertEquals(
-            $output,
-            $this->_callPrivateFunction(
-                '_getEditLink',
-                [
-                    $edit_url,
-                    $class,
-                    $edit_str,
-                    $where_clause,
-                    $where_clause_html,
-                ]
-            )
-        );
-    }
-
-    /**
-     * Data provider for testGetCopyLink
-     *
-     * @return array parameters and output
-     */
-    public function dataProviderForGetCopyLink()
-    {
-        return [
-            [
-                'index.php?route=/table/change&db=Data&amp;table=customer&amp;where_clause=%60cust'
-                . 'omer%60.%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query='
-                . 'SELECT+%2A+FROM+%60customer%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_'
-                . 'action=insert',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Copy" alt'
-                . '="Copy" class="icon ic_b_insrow"> Copy</span>',
-                '`customer`.`id` = 1',
-                '%60customer%60.%60id%60+%3D+1',
-                'klass',
-                '<td class="klass center print_ignore"><span class='
-                . '"nowrap">'
-                . '<a href="index.php" data-post="route=/table/change&db=Data&amp;table=customer&amp;where_'
-                . 'clause=%60customer%60.%60id%60+%3D+1&amp;clause_is_unique=1&amp;'
-                . 'sql_query=SELECT+%2A+FROM+%60customer%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;'
-                . 'default_action=insert"'
-                . '><span class="nowrap"><img src="themes/dot.gif" title="Copy" '
-                . 'alt="Copy" class="icon ic_b_insrow"> Copy</span></a>'
-                . '<input type="hidden" class="where_clause" value="%60customer%60'
-                . '.%60id%60+%3D+1"></span></td>',
-            ],
-        ];
-    }
-
-    /**
-     * Test for _getCopyLink
-     *
-     * @param string $copy_url          copy url
-     * @param string $copy_str          text for the copy link
-     * @param string $where_clause      where clause
-     * @param string $where_clause_html url encoded where clause
-     * @param string $class             css classes for the td element
-     * @param string $output            output of _getCopyLink
-     *
-     * @return void
-     *
-     * @dataProvider dataProviderForGetCopyLink
-     */
-    public function testGetCopyLink(
-        $copy_url,
-        $copy_str,
-        $where_clause,
-        $where_clause_html,
-        $class,
-        $output
-    ) {
-        $GLOBALS['cfg']['ActionLinksMode'] = 'both';
-        $GLOBALS['cfg']['LinkLengthLimit'] = 1000;
-
-        $this->assertEquals(
-            $output,
-            $this->_callPrivateFunction(
-                '_getCopyLink',
-                [
-                    $copy_url,
-                    $copy_str,
-                    $where_clause,
-                    $where_clause_html,
-                    $class,
-                ]
-            )
-        );
-    }
-
-    /**
-     * Data provider for testGetDeleteLink
-     *
-     * @return array parameters and output
-     */
-    public function dataProviderForGetDeleteLink()
-    {
-        return [
-            [
-                'index.php?route=/sql&amp;db=Data&amp;table=customer&amp;sql_query=DELETE+FROM+%60'
-                . 'Data%60.%60customer%60+WHERE+%60customer%60.%60id%60+%3D+1&amp;'
-                . 'message_to_show=The+row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql%26db'
-                . '%3DData%26table%3Dcustomer%26sql_query%3DSELECT%2B%252A%2BFROM'
-                . '%2B%2560customer%2560%26message_to_show%3DThe%2Brow%2Bhas%2Bbeen'
-                . '%2Bdeleted%26goto%3Dindex.php%253Froute%253D%252Ftable%252Fstructure',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Delete" '
-                . 'alt="Delete" class="icon ic_b_drop"> Delete</span>',
-                'DELETE FROM `Data`.`customer` WHERE `customer`.`id` = 1',
-                'klass',
-                '<td class="klass center print_ignore">'
-                . '<a href="index.php" data-post="route=/sql&amp;db=Data&amp;table=customer&amp;sql_query=DELETE'
-                . '+FROM+%60Data%60.%60customer%60+WHERE+%60customer%60.%60id%60+%3D'
-                . '+1&amp;message_to_show=The+row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql'
-                . '%26db%3DData%26table%3Dcustomer%26sql_query%3DSELECT%2B%252A%2B'
-                . 'FROM%2B%2560customer%2560%26message_to_show%3DThe%2Brow%2Bhas%2B'
-                . 'been%2Bdeleted%26goto%3Dindex.php%253Froute%253D%252Ftable%252Fstructure" '
-                . 'class="delete_row requireConfirm"><span class="nowrap"><img src="themes/dot.'
-                . 'gif" title="Delete" alt="Delete" class="icon ic_b_drop"> '
-                . 'Delete</span></a>'
-                . '<div class="hide">DELETE FROM `Data`.`customer` WHERE '
-                . '`customer`.`id` = 1</div></td>',
-            ],
-        ];
-    }
-
-    /**
-     * Test for _getDeleteLink
-     *
-     * @param string $del_url delete url
-     * @param string $del_str text for the delete link
-     * @param string $js_conf text for the JS confirmation
-     * @param string $class   css classes for the td element
-     * @param string $output  output of _getDeleteLink
-     *
-     * @return void
-     *
-     * @dataProvider dataProviderForGetDeleteLink
-     */
-    public function testGetDeleteLink(
-        $del_url,
-        $del_str,
-        $js_conf,
-        $class,
-        $output
-    ) {
-        $GLOBALS['cfg']['ActionLinksMode'] = 'both';
-        $GLOBALS['cfg']['LinkLengthLimit'] = 1000;
-
-        $this->assertEquals(
-            $output,
-            $this->_callPrivateFunction(
-                '_getDeleteLink',
-                [
-                    $del_url,
-                    $del_str,
-                    $js_conf,
-                    $class,
-                ]
-            )
-        );
-    }
-
-    /**
-     * Data provider for testGetCheckboxAndLinks
-     *
-     * @return array parameters and output
-     */
-    public function dataProviderForGetCheckboxAndLinks()
-    {
-        return [
-            [
-                DisplayResults::POSITION_LEFT,
-                'index.php?route=/sql&amp;db=data&amp;table=new&amp;sql_query=DELETE+FROM+%60data'
-                . '%60.%60new%60+WHERE+%60new%60.%60id%60+%3D+1&amp;message_to_show='
-                . 'The+row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql%26db%3Ddata%26table%3D'
-                . 'new%26sql_query%3DSELECT%2B%252A%2BFROM%2B%2560new%2560%26'
-                . 'message_to_show%3DThe%2Brow%2Bhas%2Bbeen%2Bdeleted%26goto%3D'
-                . 'index.php%253Froute%253D%252Ftable%252Fstructure',
-                [
-                    'edit_lnk' => 'ur',
-                    'del_lnk' => 'dr',
-                    'sort_lnk' => '0',
-                    'nav_bar' => '1',
-                    'bkm_form' => '1',
-                    'text_btn' => '1',
-                    'pview_lnk' => '1',
-                ],
-                0,
-                '`new`.`id` = 1',
-                '%60new%60.%60id%60+%3D+1',
-                [
-                    '`new`.`id`' => '= 1',
-                ],
-                'index.php?route=/table/change&db=data&amp;table=new&amp;where_clause=%60new%60.'
-                . '%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query=SELECT+%2A+'
-                . 'FROM+%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action=update',
-                'index.php?route=/table/change&db=data&amp;table=new&amp;where_clause=%60new%60.'
-                . '%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query=SELECT+%2A+'
-                . 'FROM+%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action=insert',
-                'edit_row_anchor',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Edit" '
-                . 'alt="Edit" class="icon ic_b_edit"> Edit</span>',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Copy" '
-                . 'alt="Copy" class="icon ic_b_insrow"> Copy</span>',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Delete" '
-                . 'alt="Delete" class="icon ic_b_drop"> Delete</span>',
-                'DELETE FROM `data`.`new` WHERE `new`.`id` = 1',
-                '<td  class="center print_ignore"><input type="checkbox" id="id_rows_to_delete0_'
-                . 'left" name="rows_to_delete[0]" class="multi_checkbox checkall" '
-                . 'value="%60new%60.%60id%60+%3D+1"><input type="hidden" class='
-                . '"condition_array" value="{&quot;`new`.`id`&quot;:&quot;= 1&quot;'
-                . '}">    </td><td class="edit_row_anchor center print_ignore"><span class='
-                . '"nowrap">'
-                . '<a href="index.php" data-post="route=/table/change&db=data&amp;table=new&amp;where_'
-                . 'clause=%60new%60.%60id%60+%3D+1&amp;clause_is_unique=1&amp;'
-                . 'sql_query=SELECT+%2A+FROM+%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default'
-                . '_action=update">'
-                . '<span class="nowrap"><img src="themes/dot.gif" title="Edit" '
-                . 'alt="Edit" class="icon ic_b_edit"> Edit</span></a>'
-                . '<input type="hidden" class="where_clause" value ="%60new%60.%60'
-                . 'id%60+%3D+1"></span></td><td class="center print_ignore"><span class'
-                . '="nowrap">'
-                . '<a href="index.php" data-post="route=/table/change&db=data&amp;table=new&amp;where_clause'
-                . '=%60new%60.%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query='
-                . 'SELECT+%2A+FROM+%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action='
-                . 'insert"><span class'
-                . '="nowrap"><img src="themes/dot.gif" title="Copy" alt="Copy" '
-                . 'class="icon ic_b_insrow"> Copy</span></a>'
-                . '<input type="hidden" class="where_clause" value="%60new%60.%60id'
-                . '%60+%3D+1"></span></td><td class="center print_ignore">'
-                . '<a href="index.php" data-post="route=/sql&amp;db=data&amp;table=new&amp;sql_query=DELETE+'
-                . 'FROM+%60data%60.%60new%60+WHERE+%60new%60.%60id%60+%3D+1&amp;'
-                . 'message_to_show=The+row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql%26'
-                . 'db%3Ddata%26table%3Dnew%26sql_query%3DSELECT%2B%252A%2BFROM%2B'
-                . '%2560new%2560%26message_to_show%3DThe%2Brow%2Bhas%2Bbeen%2B'
-                . 'deleted%26goto%3Dindex.php%253Froute%253D%252Ftable%252Fstructure" '
-                . 'class="delete_row requireConfirm"><span class="nowrap"><img src="themes/dot.'
-                . 'gif" title="Delete" alt="Delete" class="icon ic_b_drop"> '
-                . 'Delete</span></a>'
-                . '<div class="hide">DELETE FROM `data`.`new` WHERE `new`.`id` = 1'
-                . '</div></td>',
-            ],
-            [
-                DisplayResults::POSITION_RIGHT,
-                'index.php?route=/sql&amp;db=data&amp;table=new&amp;sql_query=DELETE+FROM+%60data%60'
-                . '.%60new%60+WHERE+%60new%60.%60id%60+%3D+1&amp;message_to_show='
-                . 'The+row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql%26db%3Ddata%26table%3D'
-                . 'new%26sql_query%3DSELECT%2B%252A%2BFROM%2B%2560new%2560%26message'
-                . '_to_show%3DThe%2Brow%2Bhas%2Bbeen%2Bdeleted%26goto%3D'
-                . 'index.php%253Froute%253D%252Ftable%252Fstructure',
-                [
-                    'edit_lnk' => 'ur',
-                    'del_lnk' => 'dr',
-                    'sort_lnk' => '0',
-                    'nav_bar' => '1',
-                    'bkm_form' => '1',
-                    'text_btn' => '1',
-                    'pview_lnk' => '1',
-                ],
-                0,
-                '`new`.`id` = 1',
-                '%60new%60.%60id%60+%3D+1',
-                [
-                    '`new`.`id`' => '= 1',
-                ],
-                'index.php?route=/table/change&amp;db=data&amp;table=new&amp;where_clause=%60new%60.'
-                . '%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query=SELECT+%2A+'
-                . 'FROM+%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action=update',
-                'index.php?route=/table/change&amp;db=data&amp;table=new&amp;where_clause=%60new%60.'
-                . '%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query=SELECT+%2A+'
-                . 'FROM+%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action=insert',
-                'edit_row_anchor',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Edit" '
-                . 'alt="Edit" class="icon ic_b_edit"> Edit</span>',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Copy" '
-                . 'alt="Copy" class="icon ic_b_insrow"> Copy</span>',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Delete" '
-                . 'alt="Delete" class="icon ic_b_drop"> Delete</span>',
-                'DELETE FROM `data`.`new` WHERE `new`.`id` = 1',
-                '<td class="center print_ignore">'
-                . '<a href="index.php" data-post="route=/sql&amp;db=data&amp;table=new&amp;sql_query=DELETE+'
-                . 'FROM+%60data%60.%60new%60+WHERE+%60new%60.%60id%60+%3D+1&amp;'
-                . 'message_to_show=The+row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql%26db'
-                . '%3Ddata%26table%3Dnew%26sql_query%3DSELECT%2B%252A%2BFROM%2B%25'
-                . '60new%2560%26message_to_show%3DThe%2Brow%2Bhas%2Bbeen%2Bdeleted'
-                . '%26goto%3Dindex.php%253Froute%253D%252Ftable%252Fstructure" class="delete'
-                . '_row requireConfirm"><span class="nowrap"><img src="themes/dot.gif" title='
-                . '"Delete" alt="Delete" class="icon ic_b_drop"> Delete</span></a>'
-                . '<div class="hide">DELETE FROM `data`.`new` WHERE `new`.'
-                . '`id` = 1</div></td><td class="center print_ignore"><span class="nowrap">'
-                . '<a href="index.php" data-post="route=/table/change&amp;db=data&amp;table=new&amp;where_'
-                . 'clause=%60new%60.%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_'
-                . 'query=SELECT+%2A+FROM+%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_'
-                . 'action=insert"><span '
-                . 'class="nowrap"><img src="themes/dot.gif" title="Copy" alt="Copy" '
-                . 'class="icon ic_b_insrow"> Copy</span></a>'
-                . '<input type="hidden" class="where_clause" value="%60new%60.%60id'
-                . '%60+%3D+1"></span></td><td class="edit_row_anchor center print_ignore">'
-                . '<span class="nowrap">'
-                . '<a href="index.php" data-post="route=/table/change&amp;db=data&amp;table=new&amp;where_clause'
-                . '=%60new%60.%60id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query='
-                . 'SELECT+%2A+FROM+%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action='
-                . 'update"><span class='
-                . '"nowrap"><img src="themes/dot.gif" title="Edit" alt="Edit" class'
-                . '="icon ic_b_edit"> Edit</span></a>'
-                . '<input type="hidden" class="where_clause" value ="%60new%60.%60'
-                . 'id%60+%3D+1"></span></td><td  class="center print_ignore"><input type='
-                . '"checkbox" id="id_rows_to_delete0_right" name="rows_to_delete'
-                . '[0]" class="multi_checkbox checkall" value="%60new%60.%60id%60'
-                . '+%3D+1"><input type="hidden" class="condition_array" value="'
-                . '{&quot;`new`.`id`&quot;:&quot;= 1&quot;}">    </td>',
-            ],
-            [
-                DisplayResults::POSITION_NONE,
-                'index.php?route=/sql&amp;db=data&amp;table=new&amp;sql_query=DELETE+FROM+%60data%60.'
-                . '%60new%60+WHERE+%60new%60.%60id%60+%3D+1&amp;message_to_show=The+'
-                . 'row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql%26db%3Ddata%26table%3Dnew'
-                . '%26sql_query%3DSELECT%2B%252A%2BFROM%2B%2560new%2560%26message_'
-                . 'to_show%3DThe%2Brow%2Bhas%2Bbeen%2Bdeleted%26goto%3Dindex.php%253Froute%253D%252Ftable%252Fstructure',
-                [
-                    'edit_lnk' => 'ur',
-                    'del_lnk' => 'dr',
-                    'sort_lnk' => '0',
-                    'nav_bar' => '1',
-                    'bkm_form' => '1',
-                    'text_btn' => '1',
-                    'pview_lnk' => '1',
-                ],
-                0,
-                '`new`.`id` = 1',
-                '%60new%60.%60id%60+%3D+1',
-                [
-                    '`new`.`id`' => '= 1',
-                ],
-                'index.php?route=/table/change&db=data&amp;table=new&amp;where_clause=%60new%60.%60'
-                . 'id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query=SELECT+%2A+FROM+'
-                . '%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action=update',
-                'index.php?route=/table/change&db=data&amp;table=new&amp;where_clause=%60new%60.%60'
-                . 'id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query=SELECT+%2A+FROM+'
-                . '%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action=insert',
-                'edit_row_anchor',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Edit" '
-                . 'alt="Edit" class="icon ic_b_edit"> Edit</span>',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Copy" '
-                . 'alt="Copy" class="icon ic_b_insrow"> Copy</span>',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Delete" '
-                . 'alt="Delete" class="icon ic_b_drop"> Delete</span>',
-                'DELETE FROM `data`.`new` WHERE `new`.`id` = 1',
-                '<td  class="center print_ignore"><input type="checkbox" id="id_rows_to_'
-                . 'delete0_left" name="rows_to_delete[0]" class="multi_checkbox '
-                . 'checkall" value="%60new%60.%60id%60+%3D+1"><input type='
-                . '"hidden" class="condition_array" value="{&quot;`new`.`id`&quot;:'
-                . '&quot;= 1&quot;}">    </td>',
-            ],
-        ];
-    }
-
-    /**
-     * Test for _getCheckboxAndLinks
-     *
-     * @param string $position          the position of the checkbox and links
-     * @param string $del_url           delete url
-     * @param array  $displayParts      array with explicit indexes for all the
-     *                                  display elements
-     * @param string $row_no            row number
-     * @param string $where_clause      where clause
-     * @param string $where_clause_html url encoded where clause
-     * @param array  $condition_array   array of conditions in the where clause
-     * @param string $edit_url          edit url
-     * @param string $copy_url          copy url
-     * @param string $class             css classes for the td elements
-     * @param string $edit_str          text for the edit link
-     * @param string $copy_str          text for the copy link
-     * @param string $del_str           text for the delete link
-     * @param string $js_conf           text for the JS confirmation
-     * @param string $output            output of _getCheckboxAndLinks
-     *
-     * @return void
-     *
-     * @dataProvider dataProviderForGetCheckboxAndLinks
-     */
-    public function testGetCheckboxAndLinks(
-        $position,
-        $del_url,
-        $displayParts,
-        $row_no,
-        $where_clause,
-        $where_clause_html,
-        $condition_array,
-        $edit_url,
-        $copy_url,
-        $class,
-        $edit_str,
-        $copy_str,
-        $del_str,
-        $js_conf,
-        $output
-    ) {
-        $this->assertEquals(
-            $output,
-            $this->_callPrivateFunction(
-                '_getCheckboxAndLinks',
-                [
-                    $position,
-                    $del_url,
-                    $displayParts,
-                    $row_no,
-                    $where_clause,
-                    $where_clause_html,
-                    $condition_array,
-                    $edit_url,
-                    $copy_url,
-                    $class,
-                    $edit_str,
-                    $copy_str,
-                    $del_str,
-                    $js_conf,
-                ]
-            )
-        );
-    }
-
-    /**
-     * Data provider for testGetPlacedLinks
-     *
-     * @return array parameters and output
-     */
-    public function dataProviderForGetPlacedLinks()
-    {
-        return [
-            [
-                DisplayResults::POSITION_NONE,
-                'index.php?route=/sql&amp;db=data&amp;table=new&amp;sql_query=DELETE+FROM+%60data%60.'
-                . '%60new%60+WHERE+%60new%60.%60id%60+%3D+1&amp;message_to_show=The+'
-                . 'row+has+been+deleted&amp;goto=index.php%3Froute%3D%2Fsql%26db%3Ddata%26table%3Dnew'
-                . '%26sql_query%3DSELECT%2B%252A%2BFROM%2B%2560new%2560%26message_'
-                . 'to_show%3DThe%2Brow%2Bhas%2Bbeen%2Bdeleted%26goto%3Dtbl_structure'
-                . '.php',
-                [
-                    'edit_lnk' => 'ur',
-                    'del_lnk' => 'dr',
-                    'sort_lnk' => '0',
-                    'nav_bar' => '1',
-                    'bkm_form' => '1',
-                    'text_btn' => '1',
-                    'pview_lnk' => '1',
-                ],
-                0,
-                '`new`.`id` = 1',
-                '%60new%60.%60id%60+%3D+1',
-                [
-                    '`new`.`id`' => '= 1',
-                ],
-                'index.php?route=/table/change&db=data&amp;table=new&amp;where_clause=%60new%60.%60'
-                . 'id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query=SELECT+%2A+FROM+'
-                . '%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action=update',
-                '/index.php?route=/table/change&db=data&amp;table=new&amp;where_clause=%60new%60.%60'
-                . 'id%60+%3D+1&amp;clause_is_unique=1&amp;sql_query=SELECT+%2A+FROM+'
-                . '%60new%60&amp;goto=index.php%3Froute%3D%2Fsql&amp;default_action=insert',
-                'edit_row_anchor',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Edit" '
-                . 'alt="Edit" class="icon ic_b_edit"> Edit</span>',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Copy" '
-                . 'alt="Copy" class="icon ic_b_insrow"> Copy</span>',
-                '<span class="nowrap"><img src="themes/dot.gif" title="Delete" '
-                . 'alt="Delete" class="icon ic_b_drop"> Delete</span>',
-                null,
-                '<td  class="center print_ignore"><input type="checkbox" id="id_rows_to_'
-                . 'delete0_left" name="rows_to_delete[0]" class="multi_checkbox '
-                . 'checkall" value="%60new%60.%60id%60+%3D+1"><input type='
-                . '"hidden" class="condition_array" value="{&quot;`new`.`id`&quot;:'
-                . '&quot;= 1&quot;}">    </td>',
-            ],
-        ];
-    }
-
-    /**
-     * Test for _getPlacedLinks
-     *
-     * @param string  $dir               the direction of links should place
-     * @param string  $del_url           the url for delete row
-     * @param array   $displayParts      which elements to display
-     * @param integer $row_no            the index of current row
-     * @param string  $where_clause      the where clause of the sql
-     * @param string  $where_clause_html the html encoded where clause
-     * @param array   $condition_array   array of keys (primary, unique, condition)
-     * @param string  $edit_url          the url for edit row
-     * @param string  $copy_url          the url for copy row
-     * @param string  $edit_anchor_class the class for html element for edit
-     * @param string  $edit_str          the label for edit row
-     * @param string  $copy_str          the label for copy row
-     * @param string  $del_str           the label for delete row
-     * @param string  $js_conf           text for the JS confirmation
-     * @param string  $output            output of _getPlacedLinks
-     *
-     * @return void
-     *
-     * @dataProvider dataProviderForGetPlacedLinks
-     */
-    public function testGetPlacedLinks(
-        $dir,
-        $del_url,
-        $displayParts,
-        $row_no,
-        $where_clause,
-        $where_clause_html,
-        $condition_array,
-        $edit_url,
-        $copy_url,
-        $edit_anchor_class,
-        $edit_str,
-        $copy_str,
-        $del_str,
-        $js_conf,
-        $output
-    ) {
-        $this->assertEquals(
-            $output,
-            $this->_callPrivateFunction(
-                '_getPlacedLinks',
-                [
-                    $dir,
-                    $del_url,
-                    $displayParts,
-                    $row_no,
-                    $where_clause,
-                    $where_clause_html,
-                    $condition_array,
-                    $edit_url,
-                    $copy_url,
-                    $edit_anchor_class,
-                    $edit_str,
-                    $copy_str,
-                    $del_str,
-                    $js_conf,
-                ]
-            )
-        );
-    }
-
-
-    /**
      * Data provider for testGetSpecialLinkUrl
      *
      * @return array parameters and output
@@ -1066,16 +385,15 @@ class ResultsTest extends PmaTestCase
         ];
     }
 
-
     /**
      * Test _getSpecialLinkUrl
      *
-     * @param string  $db           the database name
-     * @param string  $table        the table name
-     * @param string  $column_value column value
-     * @param array   $row_info     information about row
-     * @param string  $field_name   column name
-     * @param boolean $output       output of _getSpecialLinkUrl
+     * @param string $db           the database name
+     * @param string $table        the table name
+     * @param string $column_value column value
+     * @param array  $row_info     information about row
+     * @param string $field_name   column name
+     * @param bool   $output       output of _getSpecialLinkUrl
      *
      * @return void
      *
@@ -1149,7 +467,6 @@ class ResultsTest extends PmaTestCase
         );
     }
 
-
     /**
      * Data provider for testGetRowInfoForSpecialLinks
      *
@@ -1197,15 +514,14 @@ class ResultsTest extends PmaTestCase
         ];
     }
 
-
     /**
      * Test _getRowInfoForSpecialLinks
      *
-     * @param array   $fields_meta  meta information about fields
-     * @param integer $fields_count number of fields
-     * @param array   $row          current row data
-     * @param array   $col_order    the column order
-     * @param boolean $output       output of _getRowInfoForSpecialLinks
+     * @param array $fields_meta  meta information about fields
+     * @param int   $fields_count number of fields
+     * @param array $row          current row data
+     * @param array $col_order    the column order
+     * @param bool  $output       output of _getRowInfoForSpecialLinks
      *
      * @return void
      *
@@ -1243,6 +559,7 @@ class ResultsTest extends PmaTestCase
         $parser = new Parser(
             'SELECT * FROM db_name WHERE `db_name`.`tbl`.id > 0 AND `id` < 10'
         );
+
         return [
             [
                 ['statement' => $parser->statements[0]],
@@ -1255,14 +572,11 @@ class ResultsTest extends PmaTestCase
         ];
     }
 
-
     /**
      * Test _setHighlightedColumnGlobalField
      *
      * @param array $analyzed_sql the analyzed query
      * @param array $output       setting value of _setHighlightedColumnGlobalField
-     *
-     * @return void
      *
      * @dataProvider dataProviderForTestSetHighlightedColumnGlobalField
      */
@@ -1278,7 +592,6 @@ class ResultsTest extends PmaTestCase
             $this->object->__get('highlight_columns')
         );
     }
-
 
     /**
      * Data provider for testGetPartialText
@@ -1331,16 +644,13 @@ class ResultsTest extends PmaTestCase
         ];
     }
 
-
     /**
      * Test _getPartialText
      *
-     * @param string  $pftext     Partial or Full text
-     * @param integer $limitChars Partial or Full text
-     * @param string  $str        the string to be tested
-     * @param boolean $output     return value of _getPartialText
-     *
-     * @return void
+     * @param string $pftext     Partial or Full text
+     * @param int    $limitChars Partial or Full text
+     * @param string $str        the string to be tested
+     * @param bool   $output     return value of _getPartialText
      *
      * @dataProvider dataProviderForTestGetPartialText
      */
@@ -1357,7 +667,6 @@ class ResultsTest extends PmaTestCase
         );
     }
 
-
     /**
      * Data provider for testHandleNonPrintableContents
      *
@@ -1372,6 +681,7 @@ class ResultsTest extends PmaTestCase
         $url_params = [
             'db' => 'foo',
             'table' => 'bar',
+            'where_clause' => 'where_clause',
         ];
 
         return [
@@ -1392,9 +702,7 @@ class ResultsTest extends PmaTestCase
                 $meta,
                 $url_params,
                 null,
-                '<a href="index.php?route=/table/get_field&amp;db=foo&amp;table=bar&amp;server=0'
-                . '&amp;lang=en'
-                . '" class="disableAjax">1001</a>',
+                'class="disableAjax">1001</a>',
             ],
             [
                 true,
@@ -1413,9 +721,7 @@ class ResultsTest extends PmaTestCase
                 $meta,
                 $url_params,
                 null,
-                '<a href="index.php?route=/table/get_field&amp;db=foo&amp;table=bar&amp;server=0'
-                . '&amp;lang=en'
-                . '" class="disableAjax">0x123456</a>',
+                'class="disableAjax">0x123456</a>',
             ],
             [
                 true,
@@ -1434,9 +740,7 @@ class ResultsTest extends PmaTestCase
                 $meta,
                 $url_params,
                 null,
-                '<a href="index.php?route=/table/get_field&amp;db=foo&amp;table=bar&amp;server=0'
-                . '&amp;lang=en'
-                . '" class="disableAjax">[BLOB - 4 B]</a>',
+                'class="disableAjax">[BLOB - 4 B]</a>',
             ],
             [
                 false,
@@ -1473,24 +777,23 @@ class ResultsTest extends PmaTestCase
         ];
     }
 
-
     /**
      * Test _handleNonPrintableContents
      *
-     * @param boolean $display_binary        show binary contents?
-     * @param boolean $display_blob          show blob contents?
-     * @param string  $category              BLOB|BINARY|GEOMETRY
-     * @param string  $content               the binary content
-     * @param string  $transformation_plugin transformation plugin.
-     *                                       Can also be the default function:
-     *                                       PhpMyAdmin\Core::mimeDefaultFunction
-     * @param array   $transform_options     transformation parameters
-     * @param string  $default_function      default transformation function
-     * @param object  $meta                  the meta-information about the field
-     * @param array   $url_params            parameters that should go to the
-     *                                       download link
-     * @param boolean $is_truncated          the result is truncated or not
-     * @param string  $output                the output of this function
+     * @param bool   $display_binary        show binary contents?
+     * @param bool   $display_blob          show blob contents?
+     * @param string $category              BLOB|BINARY|GEOMETRY
+     * @param string $content               the binary content
+     * @param string $transformation_plugin transformation plugin.
+     *                                      Can also be the default function:
+     *                                      PhpMyAdmin\Core::mimeDefaultFunction
+     * @param array  $transform_options     transformation parameters
+     * @param string $default_function      default transformation function
+     * @param object $meta                  the meta-information about the field
+     * @param array  $url_params            parameters that should go to the
+     *                                      download link
+     * @param bool   $is_truncated          the result is truncated or not
+     * @param string $output                the output of this function
      *
      * @return void
      *
@@ -1512,7 +815,7 @@ class ResultsTest extends PmaTestCase
         $_SESSION['tmpval']['display_binary'] = $display_binary;
         $_SESSION['tmpval']['display_blob'] = $display_blob;
         $GLOBALS['cfg']['LimitChars'] = 50;
-        $this->assertEquals(
+        $this->assertStringContainsString(
             $output,
             $this->_callPrivateFunction(
                 '_handleNonPrintableContents',
@@ -1529,7 +832,6 @@ class ResultsTest extends PmaTestCase
             )
         );
     }
-
 
     /**
      * Data provider for testGetDataCellForNonNumericColumns
@@ -1560,6 +862,7 @@ class ResultsTest extends PmaTestCase
         $url_params = [
             'db' => 'foo',
             'table' => 'tbl',
+            'where_clause' => 'where_clause',
         ];
 
         return [
@@ -1584,11 +887,7 @@ class ResultsTest extends PmaTestCase
                 [],
                 0,
                 'binary',
-                '<td class="left   hex">' . "\n"
-                . '    <a href="index.php?route=/table/get_field&amp;'
-                . 'db=foo&amp;table=tbl&amp;server=0&amp;lang=en'
-                . '" '
-                . 'class="disableAjax">[BLOB - 4 B]</a>' . "\n"
+                'class="disableAjax">[BLOB - 4 B]</a>' . "\n"
                 . '</td>' . "\n",
             ],
             [
@@ -1666,27 +965,26 @@ class ResultsTest extends PmaTestCase
         ];
     }
 
-
     /**
      * Test _getDataCellForNonNumericColumns
      *
-     * @param boolean $protectBinary         all|blob|noblob|no
-     * @param string  $column                the relevant column in data row
-     * @param string  $class                 the html class for column
-     * @param object  $meta                  the meta-information about the field
-     * @param array   $map                   the list of relations
-     * @param array   $_url_params           the parameters for generate url
-     * @param boolean $condition_field       the column should highlighted
-     *                                       or not
-     * @param string  $transformation_plugin the name of transformation function
-     * @param string  $default_function      the default transformation function
-     * @param array   $transform_options     the transformation parameters
-     * @param boolean $is_field_truncated    is data truncated due to LimitChars
-     * @param array   $analyzed_sql_results  the analyzed query
-     * @param integer $dt_result             the link id associated to the query
-     *                                       which results have to be displayed
-     * @param integer $col_index             the column index
-     * @param string  $output                the output of this function
+     * @param bool   $protectBinary         all|blob|noblob|no
+     * @param string $column                the relevant column in data row
+     * @param string $class                 the html class for column
+     * @param object $meta                  the meta-information about the field
+     * @param array  $map                   the list of relations
+     * @param array  $_url_params           the parameters for generate url
+     * @param bool   $condition_field       the column should highlighted
+     *                                      or not
+     * @param string $transformation_plugin the name of transformation function
+     * @param string $default_function      the default transformation function
+     * @param array  $transform_options     the transformation parameters
+     * @param bool   $is_field_truncated    is data truncated due to LimitChars
+     * @param array  $analyzed_sql_results  the analyzed query
+     * @param int    $dt_result             the link id associated to the query
+     *                                      which results have to be displayed
+     * @param int    $col_index             the column index
+     * @param string $output                the output of this function
      *
      * @return void
      *
@@ -1714,7 +1012,7 @@ class ResultsTest extends PmaTestCase
         $_SESSION['tmpval']['relational_display'] = false;
         $GLOBALS['cfg']['LimitChars'] = 50;
         $GLOBALS['cfg']['ProtectBinary'] = $protectBinary;
-        $this->assertEquals(
+        $this->assertStringContainsString(
             $output,
             $this->_callPrivateFunction(
                 '_getDataCellForNonNumericColumns',

@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for Footer class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -11,26 +9,18 @@ namespace PhpMyAdmin\Tests;
 use PhpMyAdmin\Config;
 use PhpMyAdmin\ErrorHandler;
 use PhpMyAdmin\Footer;
-use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 use ReflectionClass;
+use function json_encode;
 
 /**
  * Tests for Footer class
- *
- * @package PhpMyAdmin-test
  */
 class FooterTest extends PmaTestCase
 {
-
-    /**
-     * @var array store private attributes of PhpMyAdmin\Footer
-     */
+    /** @var array store private attributes of PhpMyAdmin\Footer */
     public $privates = [];
 
-    /**
-     * @access protected
-     */
+    /** @access protected */
     protected $object;
 
     /**
@@ -38,7 +28,6 @@ class FooterTest extends PmaTestCase
      * This method is called before a test is executed.
      *
      * @access protected
-     * @return void
      */
     protected function setUp(): void
     {
@@ -66,7 +55,6 @@ class FooterTest extends PmaTestCase
      * This method is called after a test is executed.
      *
      * @access protected
-     * @return void
      */
     protected function tearDown(): void
     {
@@ -86,6 +74,7 @@ class FooterTest extends PmaTestCase
         $class = new ReflectionClass(Footer::class);
         $method = $class->getMethod($name);
         $method->setAccessible(true);
+
         return $method->invokeArgs($this->object, $params);
     }
 
@@ -150,16 +139,14 @@ class FooterTest extends PmaTestCase
      */
     public function testGetSelfLink()
     {
-
         $GLOBALS['cfg']['TabsMode'] = 'text';
         $GLOBALS['cfg']['ServerDefault'] = 1;
         $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = 'table';
-        $_REQUEST['target'] = 'target';
 
         $this->assertEquals(
             '<div id="selflink" class="print_ignore"><a href="index.php?db=db&amp;'
-            . 'table=table&amp;server=1&amp;target=target&amp;lang=en'
+            . 'table=table&amp;server=1&amp;lang=en'
             . '" title="Open new phpMyAdmin window" '
             . 'target="_blank" rel="noopener noreferrer">Open new phpMyAdmin window</a></div>',
             $this->_callPrivateFunction(
@@ -178,7 +165,6 @@ class FooterTest extends PmaTestCase
      */
     public function testGetSelfLinkWithImage()
     {
-
         $GLOBALS['cfg']['TabsMode'] = 'icons';
         $GLOBALS['cfg']['ServerDefault'] = 1;
 
@@ -204,8 +190,7 @@ class FooterTest extends PmaTestCase
      */
     public function testGetSelfLinkWithRoute()
     {
-        $_GET['route'] = '/test';
-
+        $GLOBALS['route'] = '/test';
         $GLOBALS['cfg']['TabsMode'] = 'text';
         $GLOBALS['cfg']['ServerDefault'] = 1;
 
@@ -271,6 +256,7 @@ class FooterTest extends PmaTestCase
      * Test for displaying footer
      *
      * @return void
+     *
      * @group medium
      */
     public function testDisplay()

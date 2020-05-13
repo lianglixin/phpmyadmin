@@ -161,7 +161,7 @@ AJAX.registerOnload('table/operations.js', function () {
             } else if (typeof data !== 'undefined' && data.success === true) {
                 $tempDiv = $('<div id=\'temp_div\'></div>');
                 $tempDiv.html(data.message);
-                var $success = $tempDiv.find('.result_query .success');
+                var $success = $tempDiv.find('.result_query .alert-success');
                 Functions.ajaxShowMessage($success);
                 $('<div class=\'sqlqueryresults ajax\'></div>').prependTo('#page_content');
                 $('.sqlqueryresults').html(data.message);
@@ -201,11 +201,11 @@ AJAX.registerOnload('table/operations.js', function () {
             $.post($form.attr('action'), submitData, AJAX.responseHandler);
         }
 
-        if ($('#partition_operation_DROP').is(':checked')) {
+        if ($('#partitionOperationRadioDrop').is(':checked')) {
             $form.confirm(Messages.strDropPartitionWarning, $form.attr('action'), function () {
                 submitPartitionMaintenance();
             });
-        } else if ($('#partition_operation_TRUNCATE').is(':checked')) {
+        } else if ($('#partitionOperationRadioTruncate').is(':checked')) {
             $form.confirm(Messages.strTruncatePartitionWarning, $form.attr('action'), function () {
                 submitPartitionMaintenance();
             });

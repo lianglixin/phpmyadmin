@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for bookmark.lib.php
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -14,8 +11,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * tests for bookmark.lib.php
- *
- * @package PhpMyAdmin-test
  */
 class FilesTest extends TestCase
 {
@@ -24,8 +19,6 @@ class FilesTest extends TestCase
      *
      * @param string $name     Filename to test
      * @param string $expected Expected output
-     *
-     * @return void
      *
      * @dataProvider listScripts
      */
@@ -38,6 +31,7 @@ class FilesTest extends TestCase
             'GridEditing' => 'click',
             'OBGzip' => false,
             'ServerDefault' => 1,
+            'FirstDayOfCalendar' => 0,
         ];
         $GLOBALS['cfg'] = $cfg;
         /** @var OutputBuffering $buffer */
@@ -56,10 +50,6 @@ class FilesTest extends TestCase
     public function listScripts()
     {
         return [
-            [
-                'js/whitelist.php',
-                'var GotoWhitelist',
-            ],
             [
                 'js/messages.php',
                 'var Messages = [];',

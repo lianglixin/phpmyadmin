@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for Advisor class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -11,22 +8,16 @@ namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Advisor;
 use PhpMyAdmin\Config;
-use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 /**
  * Tests behaviour of PMA_Advisor class
- *
- * @package PhpMyAdmin-test
  */
 class AdvisorTest extends PmaTestCase
 {
     /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -39,8 +30,6 @@ class AdvisorTest extends PmaTestCase
      *
      * @param string $text     Text to escape
      * @param string $expected Expected output
-     *
-     * @return void
      *
      * @dataProvider escapeStrings
      */
@@ -84,7 +73,7 @@ class AdvisorTest extends PmaTestCase
     public function testParse()
     {
         $advisor = new Advisor($GLOBALS['dbi'], new ExpressionLanguage());
-        $parseResult = $advisor->parseRulesFile();
+        $parseResult = $advisor->parseRulesFile(Advisor::GENERIC_RULES_FILE);
         $this->assertEquals($parseResult['errors'], []);
     }
 
@@ -93,8 +82,6 @@ class AdvisorTest extends PmaTestCase
      *
      * @param float  $time     time
      * @param string $expected expected result
-     *
-     * @return void
      *
      * @dataProvider advisorTimes
      */
@@ -112,23 +99,23 @@ class AdvisorTest extends PmaTestCase
         return [
             [
                 10,
-                "10 per second",
+                '10 per second',
             ],
             [
                 0.02,
-                "1.2 per minute",
+                '1.2 per minute',
             ],
             [
                 0.003,
-                "10.8 per hour",
+                '10.8 per hour',
             ],
             [
                 0.00003,
-                "2.59 per day",
+                '2.59 per day',
             ],
             [
                 0.0000000003,
-                "<0.01 per day",
+                '<0.01 per day',
             ],
         ];
     }
@@ -141,10 +128,10 @@ class AdvisorTest extends PmaTestCase
     public function testAdvisorTimespanFormat()
     {
         $result = Advisor::timespanFormat(1200);
-        $this->assertEquals("0 days, 0 hours, 20 minutes and 0 seconds", $result);
+        $this->assertEquals('0 days, 0 hours, 20 minutes and 0 seconds', $result);
 
         $result = Advisor::timespanFormat(100);
-        $this->assertEquals("0 days, 0 hours, 1 minutes and 40 seconds", $result);
+        $this->assertEquals('0 days, 0 hours, 1 minutes and 40 seconds', $result);
     }
 
     /**
@@ -154,15 +141,13 @@ class AdvisorTest extends PmaTestCase
      * @param array  $expected Expected rendered rule in fired/errors list
      * @param string $error    Expected error string (null if none error expected)
      *
-     * @return void
-     *
      * @depends testParse
      * @dataProvider rulesProvider
      */
     public function testAddRule($rule, $expected, $error): void
     {
         $advisor = new Advisor($GLOBALS['dbi'], new ExpressionLanguage());
-        $parseResult = $advisor->parseRulesFile();
+        $parseResult = $advisor->parseRulesFile(Advisor::GENERIC_RULES_FILE);
         $this->assertEquals($parseResult['errors'], []);
         $advisor->setVariable('value', 0);
         $advisor->addRule('fired', $rule);

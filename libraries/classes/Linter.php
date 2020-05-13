@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Analyzes a query and gives user feedback.
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -13,11 +10,14 @@ use PhpMyAdmin\SqlParser\Lexer;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\UtfString;
 use PhpMyAdmin\SqlParser\Utils\Error as ParserError;
+use function defined;
+use function htmlspecialchars;
+use function mb_strlen;
+use function sprintf;
+use function strlen;
 
 /**
  * The linter itself.
- *
- * @package PhpMyAdmin
  */
 class Linter
 {
@@ -52,7 +52,7 @@ class Linter
         // first byte of the third character. The fourth and the last one
         // (which is actually a new line) aren't going to be processed at
         // all.
-        $len = ($str instanceof UtfString) ?
+        $len = $str instanceof UtfString ?
             $str->length() : strlen($str);
 
         $lines = [0];
@@ -61,6 +61,7 @@ class Linter
                 $lines[] = $i + 1;
             }
         }
+
         return $lines;
     }
 
@@ -81,6 +82,7 @@ class Linter
             }
             $line = $lineNo;
         }
+
         return [
             $line,
             $pos - $lines[$line],

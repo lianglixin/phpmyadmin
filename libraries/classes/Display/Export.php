@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * functions for displaying server, database and table export
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -12,6 +9,7 @@ namespace PhpMyAdmin\Display;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Encoding;
+use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Plugins;
 use PhpMyAdmin\Plugins\ExportPlugin;
@@ -25,27 +23,24 @@ use Throwable;
 use Twig_Error_Loader;
 use Twig_Error_Runtime;
 use Twig_Error_Syntax;
+use function explode;
+use function function_exists;
+use function in_array;
+use function mb_strpos;
+use function strlen;
+use function urldecode;
 
 /**
  * PhpMyAdmin\Display\Export class
- *
- * @package PhpMyAdmin
  */
 class Export
 {
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     public $template;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         $this->relation = new Relation($GLOBALS['dbi']);
@@ -57,7 +52,7 @@ class Export
      *
      * @param string $str option name
      *
-     * @return boolean
+     * @return bool
      */
     private function checkboxCheck($str)
     {
@@ -78,7 +73,7 @@ class Export
         // (from clicking Back button on /export page)
         if (isset($_POST['db_select'])) {
             $_POST['db_select'] = urldecode($_POST['db_select']);
-            $_POST['db_select'] = explode(",", $_POST['db_select']);
+            $_POST['db_select'] = explode(',', $_POST['db_select']);
         }
 
         $databases = [];
@@ -150,7 +145,7 @@ class Export
             'export_method' => $cfg['Export']['method'],
             'single_table' => $singleTable,
             'sql_query' => $sqlQuery,
-            'template_id' => isset($_POST['template_id']) ? $_POST['template_id'] : '',
+            'template_id' => $_POST['template_id'] ?? '',
         ]);
     }
 
@@ -166,13 +161,13 @@ class Export
         // Get the relation settings
         $cfgRelation = $this->relation->getRelationsParam();
 
-        $query = "SELECT `id`, `template_name` FROM "
+        $query = 'SELECT `id`, `template_name` FROM '
            . Util::backquote($cfgRelation['db']) . '.'
            . Util::backquote($cfgRelation['export_templates'])
-           . " WHERE `username` = "
+           . ' WHERE `username` = '
            . "'" . $GLOBALS['dbi']->escapeString($GLOBALS['cfg']['Server']['user'])
             . "' AND `export_type` = '" . $GLOBALS['dbi']->escapeString($exportType) . "'"
-           . " ORDER BY `template_name`;";
+           . ' ORDER BY `template_name`;';
 
         $result = $this->relation->queryAsControlUser($query);
 
@@ -237,6 +232,7 @@ class Export
     private function getHtmlForOptionsFormatDropdown($exportList)
     {
         $dropdown = Plugins::getChoice('Export', 'what', $exportList, 'format');
+
         return $this->template->render('display/export/format_dropdown', [
             'dropdown' => $dropdown,
         ]);
@@ -276,9 +272,9 @@ class Export
         $numberOfRows = $tableObject->countRecords();
 
         return $this->template->render('display/export/options_rows', [
-            'allrows' => isset($_POST['allrows']) ? $_POST['allrows'] : null,
-            'limit_to' => isset($_POST['limit_to']) ? $_POST['limit_to'] : null,
-            'limit_from' => isset($_POST['limit_from']) ? $_POST['limit_from'] : null,
+            'allrows' => $_POST['allrows'] ?? null,
+            'limit_to' => $_POST['limit_to'] ?? null,
+            'limit_from' => $_POST['limit_from'] ?? null,
             'unlim_num_rows' => $unlimNumRows,
             'number_of_rows' => $numberOfRows,
         ]);
@@ -330,7 +326,6 @@ class Export
         ]);
     }
 
-
     /**
      * Prints Html For Export Options
      *
@@ -363,7 +358,7 @@ class Export
         );
         $msg->addParamHtml('</a>');
         $msg->addParam($trans);
-        $docUrl = Util::getDocuLink('faq', 'faq6-27');
+        $docUrl = MySQLDocumentation::getDocumentationLink('faq', 'faq6-27');
         $msg->addParamHtml(
             '<a href="' . $docUrl . '" target="documentation">'
         );
@@ -519,7 +514,7 @@ class Export
             'is_checked_asfile' => $isCheckedAsfile,
             'repopulate' => isset($_POST['repopulate']),
             'lock_tables' => isset($_POST['lock_tables']),
-            'save_dir' => isset($cfg['SaveDir']) ? $cfg['SaveDir'] : null,
+            'save_dir' => $cfg['SaveDir'] ?? null,
             'is_encoding_supported' => Encoding::isSupported(),
             'options_output_save_dir' => $optionsOutputSaveDir,
             'options_output_format' => $optionsOutputFormat,
@@ -558,7 +553,7 @@ class Export
         $html .= $this->getHtmlForOptionsSelection($exportType, $multiValues);
 
         $tableObject = new Table($table, $db);
-        if (strlen($table) > 0 && empty($numTables) && ! $tableObject->isMerge()) {
+        if (strlen($table) > 0 && empty($numTables) && ! $tableObject->isMerge() && $exportType !== 'raw') {
             $html .= $this->getHtmlForOptionsRows($db, $table, $unlimNumRows);
         }
 
@@ -569,6 +564,7 @@ class Export
         $html .= $this->getHtmlForAliasModalDialog();
         $html .= $this->getHtmlForOptionsOutput($exportType);
         $html .= $this->getHtmlForOptionsFormat($exportList);
+
         return $html;
     }
 
@@ -576,6 +572,7 @@ class Export
      * Generate Html For currently defined aliases
      *
      * @return string
+     *
      * @throws Throwable
      * @throws Twig_Error_Loader
      * @throws Twig_Error_Runtime
@@ -650,6 +647,7 @@ class Export
         $html .= $this->template->render('export/alias_add');
 
         $html .= '</div>';
+
         return $html;
     }
 
@@ -689,7 +687,7 @@ class Export
         /* Scan for plugins */
         /** @var ExportPlugin[] $exportList */
         $exportList = Plugins::getPlugins(
-            "export",
+            'export',
             'libraries/classes/Plugins/Export/',
             [
                 'export_type' => $exportType,
@@ -721,8 +719,7 @@ class Export
             . '" name="dump" class="disableAjax">';
 
         //output Hidden Inputs
-        $singleTableStr = isset($GLOBALS['single_table']) ? $GLOBALS['single_table']
-            : '';
+        $singleTableStr = $GLOBALS['single_table'] ?? '';
         $html .= $this->getHtmlForHiddenInputs(
             $exportType,
             $db,
@@ -743,6 +740,7 @@ class Export
         );
 
         $html .= '</form>';
+
         return $html;
     }
 
@@ -767,10 +765,10 @@ class Export
 
         switch ($_POST['templateAction']) {
             case 'create':
-                $query = "INSERT INTO " . $templateTable . "("
-                . " `username`, `export_type`,"
-                . " `template_name`, `template_data`"
-                . ") VALUES ("
+                $query = 'INSERT INTO ' . $templateTable . '('
+                . ' `username`, `export_type`,'
+                . ' `template_name`, `template_data`'
+                . ') VALUES ('
                 . "'" . $user . "', "
                 . "'" . $GLOBALS['dbi']->escapeString($_POST['exportType'])
                 . "', '" . $GLOBALS['dbi']->escapeString($_POST['templateName'])
@@ -778,17 +776,17 @@ class Export
                 . "');";
                 break;
             case 'load':
-                $query = "SELECT `template_data` FROM " . $templateTable
-                 . " WHERE `id` = " . $id . " AND `username` = '" . $user . "'";
+                $query = 'SELECT `template_data` FROM ' . $templateTable
+                 . ' WHERE `id` = ' . $id . " AND `username` = '" . $user . "'";
                 break;
             case 'update':
-                $query = "UPDATE " . $templateTable . " SET `template_data` = "
+                $query = 'UPDATE ' . $templateTable . ' SET `template_data` = '
                   . "'" . $GLOBALS['dbi']->escapeString($_POST['templateData']) . "'"
-                  . " WHERE `id` = " . $id . " AND `username` = '" . $user . "'";
+                  . ' WHERE `id` = ' . $id . " AND `username` = '" . $user . "'";
                 break;
             case 'delete':
-                $query = "DELETE FROM " . $templateTable
-                   . " WHERE `id` = " . $id . " AND `username` = '" . $user . "'";
+                $query = 'DELETE FROM ' . $templateTable
+                   . ' WHERE `id` = ' . $id . " AND `username` = '" . $user . "'";
                 break;
             default:
                 $query = '';
@@ -806,12 +804,12 @@ class Export
         }
 
         $response->setRequestStatus(true);
-        if ('create' == $_POST['templateAction']) {
+        if ($_POST['templateAction'] == 'create') {
             $response->addJSON(
                 'data',
                 $this->getOptionsForTemplates($_POST['exportType'])
             );
-        } elseif ('load' == $_POST['templateAction']) {
+        } elseif ($_POST['templateAction'] == 'load') {
             $data = null;
             while ($row = $GLOBALS['dbi']->fetchAssoc(
                 $result,

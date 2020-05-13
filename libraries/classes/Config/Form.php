@@ -1,62 +1,78 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Form handling code.
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Config;
 
-use PhpMyAdmin\Config\ConfigFile;
+use const E_USER_ERROR;
+use function array_combine;
+use function array_shift;
+use function array_walk;
+use function count;
+use function gettype;
+use function is_array;
+use function is_bool;
+use function is_int;
+use function is_string;
+use function ltrim;
+use function mb_strpos;
+use function mb_strrpos;
+use function mb_substr;
+use function str_replace;
+use function trigger_error;
 
 /**
  * Base class for forms, loads default configuration options, checks allowed
  * values etc.
- *
- * @package PhpMyAdmin
  */
 class Form
 {
     /**
      * Form name
+     *
      * @var string
      */
     public $name;
 
     /**
      * Arbitrary index, doesn't affect class' behavior
+     *
      * @var int
      */
     public $index;
 
     /**
      * Form fields (paths), filled by {@link readFormPaths()}, indexed by field name
+     *
      * @var array
      */
     public $fields;
 
     /**
      * Stores default values for some fields (eg. pmadb tables)
+     *
      * @var array
      */
     public $default;
 
     /**
      * Caches field types, indexed by field names
+     *
      * @var array
      */
     private $_fieldsTypes;
 
     /**
      * ConfigFile instance
+     *
      * @var ConfigFile
      */
     private $_configFile;
 
     /**
-     * Constructor, reads default config values
+     * Reads default config values
      *
      * @param string     $formName Form name
      * @param array      $form     Form data
@@ -90,9 +106,8 @@ class Form
             ),
             '/'
         );
-        return isset($this->_fieldsTypes[$key])
-            ? $this->_fieldsTypes[$key]
-            : null;
+
+        return $this->_fieldsTypes[$key] ?? null;
     }
 
     /**
@@ -106,17 +121,20 @@ class Form
     {
         $value = $this->_configFile->getDbEntry($optionPath);
         if ($value === null) {
-            trigger_error("$optionPath - select options not defined", E_USER_ERROR);
+            trigger_error($optionPath . ' - select options not defined', E_USER_ERROR);
+
             return [];
         }
         if (! is_array($value)) {
-            trigger_error("$optionPath - not a static value list", E_USER_ERROR);
+            trigger_error($optionPath . ' - not a static value list', E_USER_ERROR);
+
             return [];
         }
         // convert array('#', 'a', 'b') to array('a', 'b')
         if (isset($value[0]) && $value[0] === '#') {
             // remove first element ('#')
             array_shift($value);
+
             // $value has keys and value names, return it
             return $value;
         }
@@ -156,6 +174,7 @@ class Form
         if (is_array($value)) {
             $prefix .= $key . '/';
             array_walk($value, [$this, '_readFormPathsCallback'], $prefix);
+
             return;
         }
 
@@ -221,6 +240,28 @@ class Form
     }
 
     /**
+     * Remove slashes from group names
+     *
+     * @see issue #15836
+     *
+     * @param array $form The form data
+     *
+     * @return array
+     */
+    protected function cleanGroupPaths(array $form): array
+    {
+        foreach ($form as &$name) {
+            if (is_string($name)) {
+                if (mb_strpos($name, ':group:') === 0) {
+                    $name = str_replace('/', '-', $name);
+                }
+            }
+        }
+
+        return $form;
+    }
+
+    /**
      * Reads form settings and prepares class to work with given subset of
      * config file
      *
@@ -232,6 +273,7 @@ class Form
     public function loadForm($formName, array $form)
     {
         $this->name = $formName;
+        $form = $this->cleanGroupPaths($form);
         $this->readFormPaths($form);
         $this->readTypes();
     }

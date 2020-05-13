@@ -1,21 +1,31 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Recent and Favorite table list handling
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
+
+use PhpMyAdmin\Html\Generator;
+use const SORT_REGULAR;
+use function array_key_exists;
+use function array_merge;
+use function array_pop;
+use function array_unique;
+use function array_unshift;
+use function count;
+use function htmlspecialchars;
+use function json_decode;
+use function json_encode;
+use function max;
+use function md5;
+use function ucfirst;
 
 /**
  * Handles the recently used and favorite tables.
  *
  * @TODO Change the release version in table pma_recent
  * (#recent in documentation)
- *
- * @package PhpMyAdmin
  */
 class RecentFavoriteTable
 {
@@ -43,9 +53,7 @@ class RecentFavoriteTable
      */
     private static $_instances = [];
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
     /**
@@ -81,6 +89,7 @@ class RecentFavoriteTable
         if (! array_key_exists($type, self::$_instances)) {
             self::$_instances[$type] = new RecentFavoriteTable($type);
         }
+
         return self::$_instances[$type];
     }
 
@@ -103,7 +112,7 @@ class RecentFavoriteTable
     {
         // Read from phpMyAdmin database, if recent tables is not in session
         $sql_query
-            = " SELECT `tables` FROM " . $this->_getPmaTable() .
+            = ' SELECT `tables` FROM ' . $this->_getPmaTable() .
             " WHERE `username` = '" . $GLOBALS['dbi']->escapeString($GLOBALS['cfg']['Server']['user']) . "'";
 
         $return = [];
@@ -114,6 +123,7 @@ class RecentFavoriteTable
                 $return = json_decode($row[0], true);
             }
         }
+
         return $return;
     }
 
@@ -126,7 +136,7 @@ class RecentFavoriteTable
     {
         $username = $GLOBALS['cfg']['Server']['user'];
         $sql_query
-            = " REPLACE INTO " . $this->_getPmaTable() . " (`username`, `tables`)" .
+            = ' REPLACE INTO ' . $this->_getPmaTable() . ' (`username`, `tables`)' .
                 " VALUES ('" . $GLOBALS['dbi']->escapeString($username) . "', '"
                 . $GLOBALS['dbi']->escapeString(
                     json_encode($this->_tables)
@@ -152,8 +162,10 @@ class RecentFavoriteTable
                 ),
                 '<br><br>'
             );
+
             return $message;
         }
+
         return true;
     }
 
@@ -161,7 +173,7 @@ class RecentFavoriteTable
      * Trim recent.favorite table according to the
      * NumRecentTables/NumFavoriteTables configuration.
      *
-     * @return boolean True if trimming occurred
+     * @return bool True if trimming occurred
      */
     public function trim()
     {
@@ -173,6 +185,7 @@ class RecentFavoriteTable
         while (count($this->_tables) > $max) {
             array_pop($this->_tables);
         }
+
         return $trimming_occurred;
     }
 
@@ -188,7 +201,7 @@ class RecentFavoriteTable
             if ($this->_tableType == 'recent') {
                 foreach ($this->_tables as $table) {
                     $html .= '<li class="warp_link">';
-                    $recent_url = Url::getFromRoute('/table/recent_favorite', [
+                    $recent_url = Url::getFromRoute('/table/recent-favorite', [
                         'db' => $table['db'],
                         'table' => $table['table'],
                     ]);
@@ -202,21 +215,21 @@ class RecentFavoriteTable
                     $html .= '<li class="warp_link">';
 
                     $html .= '<a class="ajax favorite_table_anchor" ';
-                    $fav_rm_url = Url::getFromRoute('/database/structure', [
+                    $fav_rm_url = Url::getFromRoute('/database/structure/favorite-table', [
                         'db' => $table['db'],
                         'ajax_request' => true,
                         'favorite_table' => $table['table'],
                         'remove_favorite' => true,
                     ]);
                     $html .= 'href="' . $fav_rm_url
-                        . '" title="' . __("Remove from Favorites")
+                        . '" title="' . __('Remove from Favorites')
                         . '" data-favtargetn="'
-                        . md5($table['db'] . "." . $table['table'])
+                        . md5($table['db'] . '.' . $table['table'])
                         . '" >'
-                        . Util::getIcon('b_favorite')
+                        . Generator::getIcon('b_favorite')
                         . '</a>';
 
-                    $table_url = Url::getFromRoute('/table/recent_favorite', [
+                    $table_url = Url::getFromRoute('/table/recent-favorite', [
                         'db' => $table['db'],
                         'table' => $table['table'],
                     ]);
@@ -233,6 +246,7 @@ class RecentFavoriteTable
                     : __('There are no favorite tables.'))
                   . '</li>';
         }
+
         return $html;
     }
 
@@ -255,6 +269,7 @@ class RecentFavoriteTable
         }
         $html .= $this->getHtmlList();
         $html .= '</ul></div>';
+
         return $html;
     }
 
@@ -286,6 +301,7 @@ class RecentFavoriteTable
                 return $this->saveToDb();
             }
         }
+
         return true;
     }
 
@@ -295,8 +311,8 @@ class RecentFavoriteTable
      * @param string $db    database
      * @param string $table table
      *
-     * @return boolean|Message True if invalid and removed, False if not invalid,
-     *                            Message if error while removing
+     * @return bool|Message True if invalid and removed, False if not invalid,
+     * Message if error while removing
      */
     public function removeIfInvalid($db, $table)
     {
@@ -308,6 +324,7 @@ class RecentFavoriteTable
                 }
             }
         }
+
         return false;
     }
 
@@ -329,6 +346,7 @@ class RecentFavoriteTable
         if ($this->_getPmaTable()) {
             return $this->saveToDb();
         }
+
         return true;
     }
 
@@ -347,7 +365,7 @@ class RecentFavoriteTable
         $cfgRelation = $this->relation->getRelationsParam();
         // Not to show this once list is synchronized.
         if ($cfgRelation['favoritework'] && ! isset($_SESSION['tmpval']['favorites_synced'][$server_id])) {
-            $url = Url::getFromRoute('/database/structure', [
+            $url = Url::getFromRoute('/database/structure/favorite-table', [
                 'ajax_request' => true,
                 'favorite_table' => true,
                 'sync_favorite_tables' => true,
@@ -355,6 +373,7 @@ class RecentFavoriteTable
             $retval  = '<a class="hide" id="sync_favorite_tables"';
             $retval .= ' href="' . $url . '"></a>';
         }
+
         return $retval;
     }
 
@@ -365,13 +384,13 @@ class RecentFavoriteTable
      */
     public static function getHtmlUpdateRecentTables()
     {
-        $params  = [
+        $retval = '<a class="hide" id="update_recent_tables" href="';
+        $retval .= Url::getFromRoute('/recent-table', [
             'ajax_request' => true,
             'recent_table' => true,
-        ];
-        $url     = 'index.php' . Url::getCommon($params);
-        $retval  = '<a class="hide" id="update_recent_tables"';
-        $retval .= ' href="' . $url . '"></a>';
+        ]);
+        $retval .= '"></a>';
+
         return $retval;
     }
 
@@ -383,12 +402,17 @@ class RecentFavoriteTable
     private function _getPmaTable(): ?string
     {
         $cfgRelation = $this->relation->getRelationsParam();
+        if (! $cfgRelation['recentwork']) {
+            return null;
+        }
+
         if (! empty($cfgRelation['db'])
             && ! empty($cfgRelation[$this->_tableType])
         ) {
-            return Util::backquote($cfgRelation['db']) . "."
+            return Util::backquote($cfgRelation['db']) . '.'
                 . Util::backquote($cfgRelation[$this->_tableType]);
         }
+
         return null;
     }
 }

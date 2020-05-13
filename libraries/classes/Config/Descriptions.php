@@ -1,21 +1,19 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Verbose descriptions for settings.
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Config;
 
 use PhpMyAdmin\Sanitize;
+use function htmlspecialchars;
+use function sprintf;
+use function str_replace;
 
 /**
  * Base class for forms, loads default configuration options, checks allowed
  * values etc.
- *
- * @package PhpMyAdmin
  */
 class Descriptions
 {
@@ -283,6 +281,7 @@ class Descriptions
             'ForeignKeyMaxLimit_name' => __('Foreign key limit'),
             'DefaultForeignKeyChecks_desc' => __('Default value for foreign key checks checkbox for some queries.'),
             'DefaultForeignKeyChecks_name' => __('Foreign key checks'),
+            'FirstDayOfCalendar_name' => __('First day of calendar'),
             'Form_Browse_name' => __('Browse mode'),
             'Form_Browse_desc' => __('Customize browse mode.'),
             'Form_CodeGen_name' => 'CodeGen',
@@ -489,8 +488,8 @@ class Descriptions
             'NavigationLogoLink_desc' => __('URL where logo in the navigation panel will point to.'),
             'NavigationLogoLink_name' => __('Logo link URL'),
             'NavigationLogoLinkWindow_desc' => __(
-                'Open the linked page in the main window ([kbd]main[/kbd]) or in a new one '
-                . '([kbd]new[/kbd]).'
+                'Open the linked page in the main window ([code]main[/code]) or in a new one '
+                . '([code]new[/code]).'
             ),
             'NavigationLogoLinkWindow_name' => __('Logo link target'),
             'NavigationDisplayServers_desc' => __('Display server choice at the top of the navigation panel.'),
@@ -899,6 +898,8 @@ class Descriptions
             'CaptchaLoginPublicKey_name' => __('Public key for reCaptcha'),
             'CaptchaLoginPrivateKey_desc' => __('Enter your private key for your domain reCaptcha service.'),
             'CaptchaLoginPrivateKey_name' => __('Private key for reCaptcha'),
+            'CaptchaSiteVerifyURL_desc' => __('Enter your siteverify URL for your reCaptcha service.'),
+            'CaptchaSiteVerifyURL_name' => __('URL for reCaptcha siteverify'),
 
             'SendErrorReports_desc' => __('Choose the default action when sending error reports.'),
             'SendErrorReports_name' => __('Send error reports'),

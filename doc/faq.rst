@@ -63,7 +63,7 @@ Please use instead the cookie authentication mode.
 
 This seems to be a PWS bug. Filippo Simoncini found a workaround (at
 this time there is no better fix): remove or comment the ``DOCTYPE``
-declarations (2 lines) from the scripts :file:`libraries/Header.class.php`
+declarations (2 lines) from the scripts :file:`libraries/classes/Header.php`
 and :file:`index.php`.
 
 .. _faq1_7:
@@ -212,7 +212,7 @@ your server - as mentioned in :ref:`faq1_17`. This problem is
 generally caused by using MySQL version 4.1 or newer. MySQL changed
 the authentication hash and your PHP is trying to use the old method.
 The proper solution is to use the `mysqli extension
-<https://secure.php.net/mysqli>`_ with the proper client library to match
+<https://www.php.net/mysqli>`_ with the proper client library to match
 your MySQL installation. More
 information (and several workarounds) are located in the `MySQL
 Documentation <https://dev.mysql.com/doc/refman/5.7/en/common-errors.html>`_.
@@ -355,7 +355,7 @@ PHP scripts. Of course you have to restart Apache.
 
 This is a permission problem. Right-click on the phpmyadmin folder and
 choose properties. Under the tab Security, click on "Add" and select
-the user "IUSR\_machine" from the list. Now set his permissions and it
+the user "IUSR\_machine" from the list. Now set their permissions and it
 should work.
 
 .. _faq1_27:
@@ -493,6 +493,11 @@ forget to change directory name inside of it):
 
 .. seealso:: :ref:`faq4_8`
 
+.. versionchanged:: 5.1.0
+
+    Support for using the ``target`` parameter was removed in phpMyAdmin 5.1.0.
+    Use the ``route`` parameter instead.
+
 .. _faq1_35:
 
 1.35 Can I use HTTP authentication with Apache CGI?
@@ -520,8 +525,8 @@ error log file might give a clue.
 -----------------------------------------------------------------------------------------------------------
 
 If your cluster consist of different architectures, PHP code used for
-encryption/decryption won't work correct. This is caused by use of
-pack/unpack functions in code. Only solution is to use mcrypt
+encryption/decryption won't work correctly. This is caused by use of
+pack/unpack functions in code. Only solution is to use openssl
 extension which works fine in this case.
 
 .. _faq1_38:
@@ -692,6 +697,30 @@ A list of files and corresponding functionality which degrade gracefully when re
 * :file:`./sql/` (SQL scripts to configure advanced functionality)
 * :file:`./js/vendor/openlayers/` (GIS visualization)
 
+.. _faq1_45:
+
+1.45 I get an error message about unknown authentication method caching_sha2_password when trying to log in
+-----------------------------------------------------------------------------------------------------------
+
+When logging in using MySQL version 8 or newer, you may encounter an error message like this:
+
+    mysqli_real_connect(): The server requested authentication method unknown to the client [caching_sha2_password]
+
+    mysqli_real_connect(): (HY000/2054): The server requested authentication method unknown to the client
+
+This error is because of a version compatibility problem between PHP and MySQL. The MySQL project introduced a new authentication
+method (our tests show this began with version 8.0.11) however PHP did not include the ability to use that authentication method.
+PHP reports that this was fixed in PHP version 7.4.
+
+Users experiencing this are encouraged to upgrade their PHP installation, however a workaround exists. Your MySQL user account
+can be set to use the older authentication with a command such as
+
+.. code-block:: mysql
+
+  ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'PASSWORD';
+
+.. seealso:: <https://github.com/phpmyadmin/phpmyadmin/issues/14220>, <https://stackoverflow.com/questions/49948350/phpmyadmin-on-mysql-8-0>, <https://bugs.php.net/bug.php?id=76243>
+
 .. _faqconfig:
 
 Configuration
@@ -829,7 +858,7 @@ Here are a few points to check:
 ---------------------------------
 
 To be able to see a progress bar during your uploads, your server must
-have the `APC <https://secure.php.net/manual/en/book.apc.php>`_ extension, the
+have the `APC <https://www.php.net/manual/en/book.apc.php>`_ extension, the
 `uploadprogress <https://pecl.php.net/package/uploadprogress>`_ one, or
 you must be running PHP 5.4.0 or higher. Moreover, the JSON extension
 has to be enabled in your PHP.
@@ -1058,7 +1087,7 @@ is no way for PHP to set the charset before authenticating.
 .. seealso::
 
     `phpMyAdmin issue 12232 <https://github.com/phpmyadmin/phpmyadmin/issues/12232>`_,
-    `MySQL documentation note <https://secure.php.net/manual/en/mysqli.real-connect.php#refsect1-mysqli.real-connect-notes>`_
+    `MySQL documentation note <https://www.php.net/manual/en/mysqli.real-connect.php#refsect1-mysqli.real-connect-notes>`_
 
 .. _faqmultiuser:
 
@@ -1128,7 +1157,7 @@ Starting with 2.2.5, in the user management page, you can enter a
 wildcard database name for a user (for example "joe%"), and put the
 privileges you want. For example, adding ``SELECT, INSERT, UPDATE,
 DELETE, CREATE, DROP, INDEX, ALTER`` would let a user create/manage
-his/her database(s).
+their database(s).
 
 .. _faq4_6:
 
@@ -1689,7 +1718,7 @@ user-input situation. Instead you have to initialize mimetypes using
 functions or empty mimetype definitions.
 
 Plus, you have a whole overview of available mimetypes. Who knows all those
-mimetypes by heart so he/she can enter it at will?
+mimetypes by heart so they can enter it at will?
 
 .. _faqbookmark:
 
@@ -1796,7 +1825,7 @@ in Browse mode or on the Structure page.
 -----------------------------------
 
 In all places where phpMyAdmin accepts format strings, you can use
-``@VARIABLE@`` expansion and `strftime <https://secure.php.net/strftime>`_
+``@VARIABLE@`` expansion and `strftime <https://www.php.net/strftime>`_
 format strings. The expanded variables depend on a context (for
 example, if you haven't chosen a table, you can not get the table
 name), but the following variables can be used:
@@ -2211,7 +2240,7 @@ authentication to the Apache environment and it can be used in Apache
 logs. Currently there are two variables available:
 
 ``userID``
-    User name of currently active user (he does not have to be logged in).
+    User name of currently active user (they do not have to be logged in).
 ``userStatus``
     Status of currently active user, one of ``ok`` (user is logged in),
     ``mysql-denied`` (MySQL denied user login), ``allow-denied`` (user denied

@@ -1,33 +1,26 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for Advisor class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\LanguageManager;
-use PhpMyAdmin\Tests\PmaTestCase;
+use function count;
+use function is_readable;
+use function strtolower;
 
 /**
  * Tests behaviour of PMA_Advisor class
- *
- * @package PhpMyAdmin-test
  */
 class LanguageTest extends PmaTestCase
 {
-    /**
-     * @var LanguageManager
-     */
+    /** @var LanguageManager */
     private $manager;
 
     /**
      * Setup for Language tests.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -38,9 +31,6 @@ class LanguageTest extends PmaTestCase
         $this->manager = new LanguageManager();
     }
 
-    /**
-     * @return void
-     */
     protected function tearDown(): void
     {
         // Ensure we have English locale after tests
@@ -113,6 +103,7 @@ class LanguageTest extends PmaTestCase
      */
     public function testMySQLLocale()
     {
+        $GLOBALS['PMA_Config']->set('FilterLanguages', '');
         $czech = $this->manager->getLanguage('cs');
         $this->assertNotFalse($czech);
         $this->assertEquals('cs_CZ', $czech->getMySQLLocale());
@@ -140,6 +131,7 @@ class LanguageTest extends PmaTestCase
      */
     public function testGet()
     {
+        $GLOBALS['PMA_Config']->set('FilterLanguages', '');
         $lang = $this->manager->getLanguage('cs');
         $this->assertNotEquals(false, $lang);
         $this->assertEquals('Czech', $lang->getEnglishName());
@@ -160,13 +152,13 @@ class LanguageTest extends PmaTestCase
      * @param string $default Value for default language
      * @param string $expect  Expected language name
      *
-     * @return void
-     *
      * @dataProvider selectDataProvider
      */
     public function testSelect($lang, $post, $get, $cookie, $accept, $agent, $default, $expect): void
     {
+        $GLOBALS['PMA_Config']->set('FilterLanguages', '');
         $GLOBALS['PMA_Config']->set('Lang', $lang);
+        $GLOBALS['PMA_Config']->set('is_https', false);
         $_POST['lang'] = $post;
         $_GET['lang'] = $get;
         $_COOKIE['pma_lang'] = $cookie;
@@ -293,13 +285,12 @@ class LanguageTest extends PmaTestCase
      *
      * @param string $locale locale name
      *
-     * @return void
-     *
      * @group large
      * @dataProvider listLocales
      */
     public function testGettext($locale): void
     {
+        $GLOBALS['PMA_Config']->set('FilterLanguages', '');
         /* We should be able to set the language */
         $this->manager->getLanguage($locale)->activate();
 
@@ -324,6 +315,7 @@ class LanguageTest extends PmaTestCase
         foreach (LanguageManager::getInstance()->availableLanguages() as $language) {
             $ret[] = [$language->getCode()];
         }
+
         return $ret;
     }
 }

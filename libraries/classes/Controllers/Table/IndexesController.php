@@ -1,77 +1,53 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
-/**
- * Holds the PhpMyAdmin\Controllers\Table\IndexesController
- *
- * @package PhpMyAdmin\Controllers
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
 
-use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Common;
+use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
-use PhpMyAdmin\Template;
-use PhpMyAdmin\Util;
+use function count;
+use function is_array;
+use function json_decode;
 
 /**
- * Class IndexesController
- *
- * @package PhpMyAdmin\Controllers
+ * Displays index edit/creation form and handles it.
  */
 class IndexesController extends AbstractController
 {
-    /**
-     * @var Index
-     */
-    protected $index;
-
-    /**
-     * Constructor
-     *
-     * @param Response          $response Response object
-     * @param DatabaseInterface $dbi      DatabaseInterface object
-     * @param Template          $template Template object
-     * @param string            $db       Database name
-     * @param string            $table    Table name
-     * @param Index             $index    Index object
-     */
-    public function __construct(
-        $response,
-        $dbi,
-        Template $template,
-        $db,
-        $table,
-        $index
-    ) {
-        parent::__construct($response, $dbi, $template, $db, $table);
-
-        $this->index = $index;
-    }
-
-    /**
-     * Index
-     *
-     * @return void
-     */
-    public function indexAction()
+    public function index(): void
     {
-        if (isset($_POST['do_save_data'])) {
-            $this->doSaveDataAction();
-            return;
-        } // end builds the new index
+        if (! isset($_POST['create_edit_table'])) {
+            Common::table();
+        }
+        if (isset($_POST['index'])) {
+            if (is_array($_POST['index'])) {
+                // coming already from form
+                $index = new Index($_POST['index']);
+            } else {
+                $index = $this->dbi->getTable($this->db, $this->table)->getIndex($_POST['index']);
+            }
+        } else {
+            $index = new Index();
+        }
 
-        $this->displayFormAction();
+        if (isset($_POST['do_save_data'])) {
+            $this->doSaveData($index);
+
+            return;
+        }
+
+        $this->displayForm($index);
     }
 
     /**
      * Display the form to edit/create an index
      *
-     * @return void
+     * @param Index $index An Index instance.
      */
-    public function displayFormAction()
+    public function displayForm(Index $index): void
     {
         $this->dbi->selectDb($GLOBALS['db']);
         $add_fields = 0;
@@ -79,7 +55,7 @@ class IndexesController extends AbstractController
             // coming already from form
             if (isset($_POST['index']['columns']['names'])) {
                 $add_fields = count($_POST['index']['columns']['names'])
-                    - $this->index->getColumnCount();
+                    - $index->getColumnCount();
             }
             if (isset($_POST['add_fields'])) {
                 $add_fields += $_POST['added_fields'];
@@ -95,7 +71,7 @@ class IndexesController extends AbstractController
                 'Non_unique' => $_POST['index']['Index_choice'] == 'UNIQUE'
                     ? '0' : '1',
             ];
-            $this->index->set($index_params);
+            $index->set($index_params);
             $add_fields = count($fields);
         } else {
             $fields = $this->dbi->getTable($this->db, $this->table)
@@ -117,16 +93,14 @@ class IndexesController extends AbstractController
 
         $this->response->getHeader()->getScripts()->addFile('indexes.js');
 
-        $this->response->addHTML(
-            $this->template->render('table/index_form', [
-                'fields' => $fields,
-                'index' => $this->index,
-                'form_params' => $form_params,
-                'add_fields' => $add_fields,
-                'create_edit_table' => isset($_POST['create_edit_table']),
-                'default_sliders_state' => $GLOBALS['cfg']['InitialSlidersState'],
-            ])
-        );
+        $this->render('table/index_form', [
+            'fields' => $fields,
+            'index' => $index,
+            'form_params' => $form_params,
+            'add_fields' => $add_fields,
+            'create_edit_table' => isset($_POST['create_edit_table']),
+            'default_sliders_state' => $GLOBALS['cfg']['InitialSlidersState'],
+        ]);
     }
 
     /**
@@ -134,14 +108,16 @@ class IndexesController extends AbstractController
      * run the query to build the new index
      * and moves back to /table/sql
      *
-     * @return void
+     * @param Index $index An Index instance.
      */
-    public function doSaveDataAction()
+    public function doSaveData(Index $index): void
     {
+        global $containerBuilder;
+
         $error = false;
 
         $sql_query = $this->dbi->getTable($this->db, $this->table)
-            ->getSqlQueryForIndexCreateOrEdit($this->index, $error);
+            ->getSqlQueryForIndexCreateOrEdit($index, $error);
 
         // If there is a request for SQL previewing.
         if (isset($_POST['preview_sql'])) {
@@ -159,17 +135,27 @@ class IndexesController extends AbstractController
                 $message->addParam($this->table);
                 $this->response->addJSON(
                     'message',
-                    Util::getMessage($message, $sql_query, 'success')
+                    Generator::getMessage($message, $sql_query, 'success')
                 );
+
+                $indexes = Index::getFromTable($this->table, $this->db);
+                $indexesDuplicates = Index::findDuplicates($this->table, $this->db);
+
                 $this->response->addJSON(
                     'index_table',
-                    Index::getHtmlForIndexes(
-                        $this->table,
-                        $this->db
-                    )
+                    $this->template->render('indexes', [
+                        'url_params' => [
+                            'db' => $this->db,
+                            'table' => $this->table,
+                        ],
+                        'indexes' => $indexes,
+                        'indexes_duplicates' => $indexesDuplicates,
+                    ])
                 );
             } else {
-                include ROOT_PATH . 'libraries/entry_points/table/structure.php';
+                /** @var StructureController $controller */
+                $controller = $containerBuilder->get(StructureController::class);
+                $controller->index();
             }
         } else {
             $this->response->setRequestStatus(false);

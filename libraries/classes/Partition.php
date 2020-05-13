@@ -1,30 +1,21 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Library for extracting information about the partitions
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\SubPartition;
+use function array_values;
 
 /**
  * base Partition Class
- *
- * @package PhpMyAdmin
  */
 class Partition extends SubPartition
 {
-    /**
-     * @var string partition description
-     */
+    /** @var string partition description */
     protected $description;
-    /**
-     * @var SubPartition[] sub partitions
-     */
+    /** @var SubPartition[] sub partitions */
     protected $subPartitions = [];
 
     /**
@@ -72,7 +63,7 @@ class Partition extends SubPartition
     /**
      * Whether there are sub partitions
      *
-     * @return boolean
+     * @return bool
      */
     public function hasSubPartitions()
     {
@@ -82,7 +73,7 @@ class Partition extends SubPartition
     /**
      * Returns the number of data rows
      *
-     * @return integer number of rows
+     * @return int number of rows
      */
     public function getRows()
     {
@@ -94,13 +85,14 @@ class Partition extends SubPartition
         foreach ($this->subPartitions as $subPartition) {
             $rows += $subPartition->rows;
         }
+
         return $rows;
     }
 
     /**
      * Returns the total data length
      *
-     * @return integer data length
+     * @return int data length
      */
     public function getDataLength()
     {
@@ -112,13 +104,14 @@ class Partition extends SubPartition
         foreach ($this->subPartitions as $subPartition) {
             $dataLength += $subPartition->dataLength;
         }
+
         return $dataLength;
     }
 
     /**
      * Returns the tatal index length
      *
-     * @return integer index length
+     * @return int index length
      */
     public function getIndexLength()
     {
@@ -130,6 +123,7 @@ class Partition extends SubPartition
         foreach ($this->subPartitions as $subPartition) {
             $indexLength += $subPartition->indexLength;
         }
+
         return $indexLength;
     }
 
@@ -149,14 +143,15 @@ class Partition extends SubPartition
      * @param string $db    database name
      * @param string $table table name
      *
-     * @access  public
      * @return Partition[]
+     *
+     * @access public
      */
     public static function getPartitions($db, $table)
     {
-        if (Partition::havePartitioning()) {
+        if (self::havePartitioning()) {
             $result = $GLOBALS['dbi']->fetchResult(
-                "SELECT * FROM `information_schema`.`PARTITIONS`"
+                'SELECT * FROM `information_schema`.`PARTITIONS`'
                 . " WHERE `TABLE_SCHEMA` = '" . $GLOBALS['dbi']->escapeString($db)
                 . "' AND `TABLE_NAME` = '" . $GLOBALS['dbi']->escapeString($table) . "'"
             );
@@ -176,8 +171,10 @@ class Partition extends SubPartition
                         $parentPartition->addSubPartition($partition);
                     }
                 }
+
                 return array_values($partitionMap);
             }
+
             return [];
         }
 
@@ -190,14 +187,15 @@ class Partition extends SubPartition
      * @param string $db    database name
      * @param string $table table name
      *
-     * @access  public
      * @return array   of partition names
+     *
+     * @access public
      */
     public static function getPartitionNames($db, $table)
     {
-        if (Partition::havePartitioning()) {
+        if (self::havePartitioning()) {
             return $GLOBALS['dbi']->fetchResult(
-                "SELECT DISTINCT `PARTITION_NAME` FROM `information_schema`.`PARTITIONS`"
+                'SELECT DISTINCT `PARTITION_NAME` FROM `information_schema`.`PARTITIONS`'
                 . " WHERE `TABLE_SCHEMA` = '" . $GLOBALS['dbi']->escapeString($db)
                 . "' AND `TABLE_NAME` = '" . $GLOBALS['dbi']->escapeString($table) . "'"
             );
@@ -216,28 +214,30 @@ class Partition extends SubPartition
      */
     public static function getPartitionMethod($db, $table)
     {
-        if (Partition::havePartitioning()) {
+        if (self::havePartitioning()) {
             $partition_method = $GLOBALS['dbi']->fetchResult(
-                "SELECT `PARTITION_METHOD` FROM `information_schema`.`PARTITIONS`"
+                'SELECT `PARTITION_METHOD` FROM `information_schema`.`PARTITIONS`'
                 . " WHERE `TABLE_SCHEMA` = '" . $GLOBALS['dbi']->escapeString($db) . "'"
                 . " AND `TABLE_NAME` = '" . $GLOBALS['dbi']->escapeString($table) . "'"
-                . " LIMIT 1"
+                . ' LIMIT 1'
             );
             if (! empty($partition_method)) {
                 return $partition_method[0];
             }
         }
+
         return null;
     }
 
     /**
      * checks if MySQL server supports partitioning
      *
+     * @return bool
+     *
      * @static
      * @staticvar boolean $have_partitioning
      * @staticvar boolean $already_checked
-     * @access  public
-     * @return boolean
+     * @access public
      */
     public static function havePartitioning()
     {
@@ -247,7 +247,7 @@ class Partition extends SubPartition
         if (! $already_checked) {
             if ($GLOBALS['dbi']->getVersion() < 50600) {
                 if ($GLOBALS['dbi']->fetchValue(
-                    "SELECT @@have_partitioning;"
+                    'SELECT @@have_partitioning;'
                 )) {
                     $have_partitioning = true;
                 }
@@ -255,7 +255,7 @@ class Partition extends SubPartition
                 $have_partitioning = true;
             } else {
                 // see https://dev.mysql.com/doc/refman/5.6/en/partitioning.html
-                $plugins = $GLOBALS['dbi']->fetchResult("SHOW PLUGINS");
+                $plugins = $GLOBALS['dbi']->fetchResult('SHOW PLUGINS');
                 foreach ($plugins as $value) {
                     if ($value['Name'] == 'partition') {
                         $have_partitioning = true;
@@ -265,6 +265,7 @@ class Partition extends SubPartition
             }
             $already_checked = true;
         }
+
         return $have_partitioning;
     }
 }

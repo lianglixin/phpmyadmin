@@ -1,25 +1,16 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for ListDatabase class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\ListDatabase;
-use PhpMyAdmin\Tests\PmaTestCase;
 use ReflectionClass;
-
-$GLOBALS['server'] = 1;
-$GLOBALS['cfg']['Server']['DisableIS'] = false;
 
 /**
  * tests for ListDatabase class
- *
- * @package PhpMyAdmin-test
  */
 class ListDatabaseTest extends PmaTestCase
 {
@@ -32,11 +23,11 @@ class ListDatabaseTest extends PmaTestCase
 
     /**
      * SetUp for test cases
-     *
-     * @return void
      */
     protected function setUp(): void
     {
+        $GLOBALS['server'] = 1;
+        $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfg']['Server']['only_db'] = ['single\\_db'];
         $this->object = new ListDatabase();
     }
@@ -54,6 +45,7 @@ class ListDatabaseTest extends PmaTestCase
         $class = new ReflectionClass(ListDatabase::class);
         $method = $class->getMethod($name);
         $method->setAccessible(true);
+
         return $method->invokeArgs($this->object, $params);
     }
 
@@ -79,17 +71,30 @@ class ListDatabaseTest extends PmaTestCase
         $this->assertEquals(true, $arr->exists('single_db'));
     }
 
-    /**
-     * Test for ListDatabase::getHtmlOptions
-     *
-     * @return void
-     */
-    public function testHtmlOptions()
+    public function testGetList(): void
     {
         $arr = new ListDatabase();
+
+        $GLOBALS['db'] = 'db';
         $this->assertEquals(
-            '<option value="single_db">single_db</option>' . "\n",
-            $arr->getHtmlOptions()
+            [
+                [
+                    'name' => 'single_db',
+                    'is_selected' => false,
+                ],
+            ],
+            $arr->getList()
+        );
+
+        $GLOBALS['db'] = 'single_db';
+        $this->assertEquals(
+            [
+                [
+                    'name' => 'single_db',
+                    'is_selected' => true,
+                ],
+            ],
+            $arr->getList()
         );
     }
 

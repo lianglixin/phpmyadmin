@@ -14,7 +14,7 @@
     </script>
 
     <form id="import_file_form"
-        action="import.php"
+        action="{{ url('/import') }}"
         method="post"
         enctype="multipart/form-data"
         name="import"
@@ -33,7 +33,7 @@
         {% endif %}
         <input type="hidden" name="import_type" value="{{ import_type }}">
 
-        <div class="exportoptions row" id="header">
+        <div class="exportoptions" id="header">
             <h2>
                 {{ get_image('b_import', 'Import'|trans) }}
                 {% if import_type == 'server' %}
@@ -46,7 +46,7 @@
             </h2>
         </div>
 
-        <div class="importoptions row">
+        <div class="importoptions">
             <h3>{% trans 'File to import:' %}</h3>
 
             {# We don't have show anything about compression, when no supported #}
@@ -65,30 +65,68 @@
                     <ul>
                         <li>
                             <input type="radio" name="file_location" id="radio_import_file" required="required">
-                            {{ get_browse_upload_file_block(max_upload_size) }}
-                            {% trans 'You may also drag and drop a file on any page.' %}
+                            <label for="radio_import_file">{% trans 'Browse your computer:' %}</label>
+
+                            <div id="upload_form_status" class="hide"></div>
+                            <div id="upload_form_status_info" class="hide"></div>
+
+                            <input type="file" name="import_file" id="input_import_file" aria-label="{% trans 'Browse your computer' %}">
+
+                            {{ get_formatted_maximum_upload_size(max_upload_size) }}
+
+                            <input type="hidden" name="MAX_FILE_SIZE" value="{{ max_upload_size }}">
+
+                            <p>{% trans 'You may also drag and drop a file on any page.' %}</p>
                         </li>
                         <li>
-                            <input type="radio" name="file_location" id="radio_local_import_file"
-                                {%- if timeout_passed_global is not empty and local_import_file is not empty %}
-                                    checked="checked"
-                                {%- endif %}>
-                            {{ get_select_upload_file_block(
-                                import_list,
-                                upload_dir
-                            ) }}
+                          <input type="radio" name="file_location" id="radio_local_import_file"
+                            {{- timeout_passed_global is not empty and local_import_file is not empty ? ' checked' }}>
+                          <label for="radio_local_import_file">
+                            {{ 'Select from the web server upload directory [strong]%s[/strong]:'|trans|format(user_upload_dir)|sanitize }}
+                          </label>
+
+                          {% if local_files is same as(false) %}
+                            {{ 'The directory you set for upload work cannot be reached.'|trans|error }}
+                          {% elseif local_files is not empty %}
+                            <select size="1" name="local_import_file" id="select_local_import_file" aria-label="{% trans 'Select file to import' %}">
+                              <option value=""></option>
+                              {{ local_files|raw }}
+                            </select>
+                          {% else %}
+                            <em>{% trans 'There are no files to upload!' %}</em>
+                          {% endif %}
                         </li>
                     </ul>
                 {% elseif is_upload %}
-                    {{ get_browse_upload_file_block(max_upload_size) }}
+                    <label for="input_import_file">{% trans 'Browse your computer:' %}</label>
+
+                    <div id="upload_form_status" class="hide"></div>
+                    <div id="upload_form_status_info" class="hide"></div>
+
+                    <input type="file" name="import_file" id="input_import_file">
+
+                    {{ get_formatted_maximum_upload_size(max_upload_size) }}
+
+                    <input type="hidden" name="MAX_FILE_SIZE" value="{{ max_upload_size }}">
+
                     <p>{% trans 'You may also drag and drop a file on any page.' %}</p>
-                {% elseif not is_upload %}
-                    {{ 'File uploads are not allowed on this server.'|trans|notice }}
                 {% elseif upload_dir is not empty %}
-                    {{ get_select_upload_file_block(
-                        import_list,
-                        upload_dir
-                    ) }}
+                  <label for="select_local_import_file">
+                    {{ 'Select from the web server upload directory [strong]%s[/strong]:'|trans|format(user_upload_dir)|sanitize }}
+                  </label>
+
+                  {% if local_files is same as(false) %}
+                    {{ 'The directory you set for upload work cannot be reached.'|trans|error }}
+                  {% elseif local_files is not empty %}
+                    <select size="1" name="local_import_file" id="select_local_import_file">
+                      <option value=""></option>
+                      {{ local_files|raw }}
+                    </select>
+                  {% else %}
+                    <em>{% trans 'There are no files to upload!' %}</em>
+                  {% endif %}
+                {% else %}
+                    {{ 'File uploads are not allowed on this server.'|trans|notice }}
                 {% endif %}
             </div>
 
@@ -121,7 +159,7 @@
             </div>
         </div>
 
-        <div class="importoptions row">
+        <div class="importoptions">
             <h3>{% trans 'Partial import:' %}</h3>
 
             {% if timeout_passed is defined and timeout_passed %}
@@ -158,20 +196,22 @@
             {% endif %}
         </div>
 
-        <div class="importoptions row">
+        <div class="importoptions">
             <h3>{% trans 'Other options:' %}</h3>
             <div class="formelementrow">
-                {{ get_fk_checkbox() }}
+                <input type="hidden" name="fk_checks" value="0">
+                <input type="checkbox" name="fk_checks" id="fk_checks" value="1"{{ is_foreign_key_check ? ' checked' }}>
+                <label for="fk_checks">{% trans 'Enable foreign key checks' %}</label>
             </div>
         </div>
 
-        <div class="importoptions row">
+        <div class="importoptions">
             <h3>{% trans 'Format:' %}</h3>
             {{ get_choice('Import', 'format', import_list) }}
             <div id="import_notification"></div>
         </div>
 
-        <div class="importoptions row" id="format_specific_opts">
+        <div class="importoptions" id="format_specific_opts">
             <h3>{% trans 'Format-specific options:' %}</h3>
             <p class="no_js_msg" id="scroll_to_options_msg">
                 {% trans 'Scroll down to fill in the options for the selected format and ignore the options for other formats.' %}
@@ -188,7 +228,7 @@
             </div>
         {% endif %}
 
-        <div class="importoptions row justify-content-end" id="submit">
+        <div class="importoptions justify-content-end" id="submit">
             <input id="buttonGo" class="btn btn-primary" type="submit" value="{% trans 'Go' %}">
         </div>
     </form>

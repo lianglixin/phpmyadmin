@@ -1,24 +1,37 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Manages the rendering of pages in PMA
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Core;
-use PhpMyAdmin\Footer;
-use PhpMyAdmin\Header;
-use PhpMyAdmin\Message;
-use PhpMyAdmin\OutputBuffering;
+use const JSON_ERROR_CTRL_CHAR;
+use const JSON_ERROR_DEPTH;
+use const JSON_ERROR_INF_OR_NAN;
+use const JSON_ERROR_NONE;
+use const JSON_ERROR_RECURSION;
+use const JSON_ERROR_STATE_MISMATCH;
+use const JSON_ERROR_SYNTAX;
+use const JSON_ERROR_UNSUPPORTED_TYPE;
+use const JSON_ERROR_UTF8;
+use const PHP_SAPI;
+use function chdir;
+use function defined;
+use function explode;
+use function getcwd;
+use function headers_sent;
+use function http_response_code;
+use function in_array;
+use function is_array;
+use function json_encode;
+use function json_last_error;
+use function mb_strlen;
+use function register_shutdown_function;
+use function strlen;
 
 /**
  * Singleton class used to manage the rendering of pages in PMA
- *
- * @package PhpMyAdmin
  */
 class Response
 {
@@ -90,8 +103,9 @@ class Response
     private $_CWD;
 
     /**
-     * @var array<int, string>
      * @see http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+     *
+     * @var array<int, string>
      */
     protected static $httpStatusMessages = [
         // Informational
@@ -191,8 +205,6 @@ class Response
      * we are servicing an ajax request
      *
      * @param bool $isAjax Whether we are servicing an ajax request
-     *
-     * @return void
      */
     public function setAjax(bool $isAjax): void
     {
@@ -211,6 +223,7 @@ class Response
         if (empty(self::$_instance)) {
             self::$_instance = new Response();
         }
+
         return self::$_instance;
     }
 
@@ -219,8 +232,6 @@ class Response
      * whether it is a success or an error
      *
      * @param bool $state Whether the request was successfully processed
-     *
-     * @return void
      */
     public function setRequestStatus(bool $state): void
     {
@@ -230,8 +241,6 @@ class Response
     /**
      * Returns true or false depending on whether
      * we are servicing an ajax request
-     *
-     * @return bool
      */
     public function isAjax(): bool
     {
@@ -343,6 +352,7 @@ class Response
         $retval  = $this->_header->getDisplay();
         $retval .= $this->_HTML;
         $retval .= $this->_footer->getDisplay();
+
         return $retval;
     }
 
@@ -366,6 +376,7 @@ class Response
         /* Avoid wrapping in case we're disabled */
         if ($this->_isDisabled) {
             echo $this->_getDisplay();
+
             return;
         }
 
@@ -555,8 +566,6 @@ class Response
      * Sets http response code.
      *
      * @param int $responseCode will set the response code.
-     *
-     * @return void
      */
     public function setHttpResponseCode(int $responseCode): void
     {
@@ -600,6 +609,7 @@ class Response
             $this->setRequestStatus(false);
             // redirect_flag redirects to the login page
             $this->addJSON('redirect_flag', '1');
+
             return true;
         }
 
@@ -609,6 +619,7 @@ class Response
         $header->setTitle('phpMyAdmin');
         $header->disableMenuAndConsole();
         $header->disableWarnings();
+
         return false;
     }
 }

@@ -1,8 +1,6 @@
 <?php
 /**
  * Tests for PhpMyAdmin\Database\Search
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -11,19 +9,14 @@ namespace PhpMyAdmin\Tests\Database;
 use PhpMyAdmin\Database\Search;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Tests\PmaTestCase;
-use PhpMyAdmin\Theme;
 use ReflectionClass;
 
 /**
  * Tests for database search.
- *
- * @package PhpMyAdmin-test
  */
 class SearchTest extends PmaTestCase
 {
-    /**
-     * @access protected
-     */
+    /** @access protected */
     protected $object;
 
     /**
@@ -31,7 +24,6 @@ class SearchTest extends PmaTestCase
      * This method is called before a test is executed.
      *
      * @access protected
-     * @return void
      */
     protected function setUp(): void
     {
@@ -64,7 +56,6 @@ class SearchTest extends PmaTestCase
      * This method is called after a test is executed.
      *
      * @access protected
-     * @return void
      */
     protected function tearDown(): void
     {
@@ -84,6 +75,7 @@ class SearchTest extends PmaTestCase
         $class = new ReflectionClass(Search::class);
         $method = $class->getMethod($name);
         $method->setAccessible(true);
+
         return $method->invokeArgs($this->object, $params);
     }
 
@@ -92,8 +84,6 @@ class SearchTest extends PmaTestCase
      *
      * @param string $type     type
      * @param string $expected expected result
-     *
-     * @return void
      *
      * @dataProvider searchTypes
      */
@@ -209,7 +199,7 @@ class SearchTest extends PmaTestCase
             $main
         );
         $this->assertStringContainsString(
-            '<a id="togglequerybox"',
+            '<button class="btn btn-secondary" id="togglequerybox"',
             $main
         );
     }

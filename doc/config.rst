@@ -9,7 +9,7 @@ All configurable data is placed in :file:`config.inc.php` in phpMyAdmin's
 toplevel directory.  If this file does not exist, please refer to the
 :ref:`setup` section to create one. This file only needs to contain the
 parameters you want to change from their corresponding default value in
-:file:`libraries/config.default.php` (this file is not inteded for changes).
+:file:`libraries/config.default.php` (this file is not intended for changes).
 
 .. seealso::
 
@@ -711,7 +711,7 @@ Server connection settings
 
     More information on regular expressions can be found in the `PCRE
     pattern syntax
-    <https://secure.php.net/manual/en/reference.pcre.pattern.syntax.php>`_ portion
+    <https://www.php.net/manual/en/reference.pcre.pattern.syntax.php>`_ portion
     of the PHP reference manual.
 
 .. config:option:: $cfg['Servers'][$i]['verbose']
@@ -1044,7 +1044,7 @@ Server connection settings
 
     Since release 4.1.0 you can create different user groups with menu items
     attached to them. Users can be assigned to these groups and the logged in
-    user would only see menu items configured to the usergroup he is assigned to.
+    user would only see menu items configured to the usergroup they are assigned to.
     To do this it needs two tables "usergroups" (storing allowed menu items for each
     user group) and "users" (storing users and their assignments to user groups).
 
@@ -1362,11 +1362,11 @@ Server connection settings
     from all'`` if your rule order is set to ``'allow,deny'`` or
     ``'explicit'``.
 
-    For the :term:`IP address` matching
+    For the :term:`IP Address` matching
     system, the following work:
 
-    * ``xxx.xxx.xxx.xxx`` (an exact :term:`IP address`)
-    * ``xxx.xxx.xxx.[yyy-zzz]`` (an :term:`IP address` range)
+    * ``xxx.xxx.xxx.xxx`` (an exact :term:`IP Address`)
+    * ``xxx.xxx.xxx.[yyy-zzz]`` (an :term:`IP Address` range)
     * ``xxx.xxx.xxx.xxx/nn`` (CIDR, Classless Inter-Domain Routing type :term:`IP` addresses)
 
     But the following does not work:
@@ -1458,7 +1458,7 @@ Server connection settings
     An associative array of session cookie parameters of other authentication system.
     It is not needed if the other system doesn't use session_set_cookie_params().
     Keys should include 'lifetime', 'path', 'domain', 'secure' or 'httponly'.
-    Valid values are mentioned in `session_get_cookie_params <https://secure.php.net/manual/en/
+    Valid values are mentioned in `session_get_cookie_params <https://www.php.net/manual/en/
     function.session-get-cookie-params.php>`_, they should be set to same values as the
     other application uses. Takes effect only if
     :config:option:`$cfg['Servers'][$i]['SignonScript']` is not configured.
@@ -1588,14 +1588,14 @@ Generic settings
     :type: boolean
     :default: false
 
-    Whether `persistent connections <https://secure.php.net/manual/en/features
+    Whether `persistent connections <https://www.php.net/manual/en/features
     .persistent-connections.php>`_ should be used or not. Works with
     following extensions:
 
-    * mysql (`mysql\_pconnect <https://secure.php.net/manual/en/function.mysql-
+    * mysql (`mysql\_pconnect <https://www.php.net/manual/en/function.mysql-
       pconnect.php>`_),
     * mysqli (requires PHP 5.3.0 or newer, `more information
-      <https://secure.php.net/manual/en/mysqli.persistconns.php>`_).
+      <https://www.php.net/manual/en/mysqli.persistconns.php>`_).
 
 .. config:option:: $cfg['ForceSSL']
 
@@ -1632,7 +1632,7 @@ Generic settings
     :default: ``''``
 
     Path for storing session data (`session\_save\_path PHP parameter
-    <https://secure.php.net/session_save_path>`_).
+    <https://www.php.net/session_save_path>`_).
 
     .. warning::
 
@@ -1798,7 +1798,7 @@ Cookie authentication options
 
     Define how long a login cookie is valid. Please note that php
     configuration option `session.gc\_maxlifetime
-    <https://secure.php.net/manual/en/session.configuration.php#ini.session.gc-
+    <https://www.php.net/manual/en/session.configuration.php#ini.session.gc-
     maxlifetime>`_ might limit session validity and if the session is lost,
     the login cookie is also invalidated. So it is a good idea to set
     ``session.gc_maxlifetime`` at least to the same value of
@@ -1878,7 +1878,7 @@ Cookie authentication options
     :default: ``''``
 
     The public key for the reCaptcha service that can be obtained from
-    https://www.google.com/recaptcha/intro/.
+    https://www.google.com/recaptcha/intro/v3.html.
 
     reCaptcha will be then used in :ref:`cookie`.
 
@@ -1888,9 +1888,20 @@ Cookie authentication options
     :default: ``''``
 
     The private key for the reCaptcha service that can be obtain from
-    https://www.google.com/recaptcha/intro/.
+    https://www.google.com/recaptcha/intro/v3.html.
 
     reCaptcha will be then used in :ref:`cookie`.
+
+.. config:option:: $cfg['CaptchaSiteVerifyURL']
+
+    :type: string
+    :default: ``''``
+
+    The URL for the reCaptcha service to do siteverify action.
+
+    reCaptcha will be then used in :ref:`cookie`.
+
+    .. versionadded:: 5.1.0
 
 Navigation panel setup
 ----------------------
@@ -2667,8 +2678,8 @@ Languages
     :default: ``'//TRANSLIT'``
 
     Specify some parameters for iconv used in charset conversion. See
-    `iconv documentation <https://www.gnu.org/software/libiconv/documentati
-    on/libiconv/iconv_open.3.html>`_ for details. By default
+    `iconv documentation <https://www.gnu.org/savannah-checkouts/gnu/libiconv/documentati
+    on/libiconv-1.15/iconv_open.3.html>`_ for details. By default
     ``//TRANSLIT`` is used, so that invalid characters will be
     transliterated.
 
@@ -2874,6 +2885,16 @@ Design customization
     name of the column. The comment is shown as a tool-tip for that
     column.
 
+.. config:option:: $cfg['FirstDayOfCalendar']
+
+    :type: integer
+    :default: 0
+
+    This will define the first day of week in the calendar. The number
+    can be set from 0 to 6, which represents the seven days of the week,
+    Sunday to Saturday respectively. This value can also be configured by the user
+    in server settings -> features -> general -> First Day calendar field.
+
 Text fields
 -----------
 
@@ -3048,9 +3069,9 @@ the files.
     :type: string
     :default: ``''``
 
-    The name of the directory where dumps can be saved.
+    The name of the webserver directory where exported files can be saved.
 
-    If you want different directory for each user, %u will be replaced with
+    If you want a different directory for each user, %u will be replaced with the
     username.
 
     Please note that the directory must exist and has to be writable for
@@ -3422,6 +3443,18 @@ Developer
 .. warning::
 
     These settings might have huge effect on performance or security.
+
+.. config:option:: $cfg['environment']
+
+    :type: string
+    :default: ``'production'``
+
+    Sets the working environment.
+
+    This only needs to be changed when you are developing phpMyAdmin itself.
+    The ``development`` mode may display debug information in some places.
+
+    Possible values are ``'production'`` or ``'development'``.
 
 .. config:option:: $cfg['DBG']
 

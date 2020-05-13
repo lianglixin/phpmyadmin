@@ -1,10 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Front controller for setup script
- *
- * @package PhpMyAdmin-Setup
- * @license https://www.gnu.org/licenses/gpl.html GNU GPL 2.0
  */
 declare(strict_types=1);
 
@@ -17,7 +13,9 @@ use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 
 if (! defined('ROOT_PATH')) {
+    // phpcs:disable PSR1.Files.SideEffects
     define('ROOT_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
+    // phpcs:enable
 }
 
 global $cfg;
@@ -49,7 +47,7 @@ if ($page === 'form') {
     ]);
 } elseif ($page === 'servers') {
     $controller = new ServersController($GLOBALS['ConfigFile'], new Template());
-    if (isset($_GET['mode']) && $_GET['mode'] === 'remove') {
+    if (isset($_GET['mode']) && $_GET['mode'] === 'remove' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         $controller->destroy([
             'id' => $_GET['id'] ?? null,
         ]);

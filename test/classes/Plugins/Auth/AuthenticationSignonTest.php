@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationSignon class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -12,11 +9,16 @@ namespace PhpMyAdmin\Tests\Plugins\Auth;
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Plugins\Auth\AuthenticationSignon;
 use PhpMyAdmin\Tests\PmaTestCase;
+use function ob_get_clean;
+use function ob_start;
+use function phpversion;
+use function session_get_cookie_params;
+use function session_id;
+use function session_name;
+use function version_compare;
 
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationSignon class
- *
- * @package PhpMyAdmin-test
  */
 class AuthenticationSignonTest extends PmaTestCase
 {
@@ -24,8 +26,6 @@ class AuthenticationSignonTest extends PmaTestCase
 
     /**
      * Configures global environment.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -40,8 +40,6 @@ class AuthenticationSignonTest extends PmaTestCase
 
     /**
      * tearDown for test cases
-     *
-     * @return void
      */
     protected function tearDown(): void
     {
@@ -346,7 +344,7 @@ class AuthenticationSignonTest extends PmaTestCase
         $this->object->showFailure('no-activity');
 
         $this->assertEquals(
-            'No activity within 1440 seconds; please log in again.',
+            'You have been automatically logged out due to inactivity of 1440 seconds. Once you log in again, you should be able to resume the work where you left off.',
             $_SESSION['PMA_single_signon_error_message']
         );
     }

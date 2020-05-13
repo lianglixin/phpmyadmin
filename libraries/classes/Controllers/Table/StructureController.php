@@ -1,10 +1,4 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
-/**
- * Holds the PhpMyAdmin\Controllers\Table\StructureController
- *
- * @package PhpMyAdmin\Controllers
- */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -12,16 +6,20 @@ namespace PhpMyAdmin\Controllers\Table;
 use PhpMyAdmin\CentralColumns;
 use PhpMyAdmin\Charsets;
 use PhpMyAdmin\CheckUserPrivileges;
+use PhpMyAdmin\Common;
 use PhpMyAdmin\Config\PageSettings;
+use PhpMyAdmin\Controllers\SqlController;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\CreateAddField;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Engines\Innodb;
+use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Index;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\ParseAnalyze;
 use PhpMyAdmin\Partition;
 use PhpMyAdmin\Relation;
+use PhpMyAdmin\RelationCleanup;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Sql;
 use PhpMyAdmin\SqlParser\Context;
@@ -29,6 +27,7 @@ use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Statements\CreateStatement;
 use PhpMyAdmin\StorageEngine;
 use PhpMyAdmin\Table;
+use PhpMyAdmin\Table\ColumnsDefinition;
 use PhpMyAdmin\TablePartitionDefinition;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Tracker;
@@ -36,80 +35,60 @@ use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 use stdClass;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use function array_keys;
+use function array_splice;
+use function count;
+use function define;
+use function htmlspecialchars;
+use function implode;
+use function in_array;
+use function is_array;
+use function is_string;
+use function mb_strpos;
+use function mb_strtoupper;
+use function preg_replace;
+use function sprintf;
+use function str_replace;
+use function strlen;
+use function strpos;
+use function strrpos;
+use function substr;
+use function trim;
 
 /**
- * Handles table structure logic
- *
- * @package PhpMyAdmin\Controllers
+ * Displays table structure infos like columns, indexes, size, rows
+ * and allows manipulation of indexes and columns.
  */
 class StructureController extends AbstractController
 {
-    /**
-     * @var Table  The table object
-     */
+    /** @var Table  The table object */
     protected $table_obj;
-    /**
-     * @var string  The URL query string
-     */
-    protected $_url_query;
-    /**
-     * @var bool DB is information_schema
-     */
-    protected $_db_is_system_schema;
-    /**
-     * @var bool Table is a view
-     */
-    protected $_tbl_is_view;
-    /**
-     * @var string Table storage engine
-     */
-    protected $_tbl_storage_engine;
-    /**
-     * @var int Number of rows
-     */
-    protected $_table_info_num_rows;
-    /**
-     * @var string Table collation
-     */
-    protected $_tbl_collation;
-    /**
-     * @var array Show table info
-     */
-    protected $_showtable;
 
-    /**
-     * @var CreateAddField
-     */
+    /** @var string  The URL query string */
+    protected $_url_query;
+
+    /** @var CreateAddField */
     private $createAddField;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
-    /**
-     * @var Transformations
-     */
+    /** @var Transformations */
     private $transformations;
 
+    /** @var RelationCleanup */
+    private $relationCleanup;
+
     /**
-     * StructureController constructor
-     *
-     * @param Response          $response            Response object
-     * @param DatabaseInterface $dbi                 DatabaseInterface object
-     * @param Template          $template            Template object
-     * @param string            $db                  Database name
-     * @param string            $table               Table name
-     * @param bool              $db_is_system_schema DB is information_schema
-     * @param bool              $tbl_is_view         Table is a view
-     * @param string            $tbl_storage_engine  Table storage engine
-     * @param int               $table_info_num_rows Number of rows
-     * @param string            $tbl_collation       Table collation
-     * @param array             $showtable           Show table info
-     * @param Relation          $relation            Relation instance
-     * @param Transformations   $transformations     Transformations instance
-     * @param CreateAddField    $createAddField      CreateAddField instance
+     * @param Response          $response        Response object
+     * @param DatabaseInterface $dbi             DatabaseInterface object
+     * @param Template          $template        Template object
+     * @param string            $db              Database name
+     * @param string            $table           Table name
+     * @param Relation          $relation        Relation instance
+     * @param Transformations   $transformations Transformations instance
+     * @param CreateAddField    $createAddField  CreateAddField instance
+     * @param RelationCleanup   $relationCleanup RelationCleanup instance.
      */
     public function __construct(
         $response,
@@ -117,42 +96,43 @@ class StructureController extends AbstractController
         Template $template,
         $db,
         $table,
-        $db_is_system_schema,
-        $tbl_is_view,
-        $tbl_storage_engine,
-        $table_info_num_rows,
-        $tbl_collation,
-        $showtable,
         Relation $relation,
         Transformations $transformations,
-        CreateAddField $createAddField
+        CreateAddField $createAddField,
+        RelationCleanup $relationCleanup
     ) {
         parent::__construct($response, $dbi, $template, $db, $table);
-
-        $this->_db_is_system_schema = $db_is_system_schema;
-        $this->_url_query = Url::getCommonRaw(['db' => $db, 'table' => $table]);
-        $this->_tbl_is_view = $tbl_is_view;
-        $this->_tbl_storage_engine = $tbl_storage_engine;
-        $this->_table_info_num_rows = $table_info_num_rows;
-        $this->_tbl_collation = $tbl_collation;
-        $this->_showtable = $showtable;
-        $this->table_obj = $this->dbi->getTable($this->db, $this->table);
-
         $this->createAddField = $createAddField;
         $this->relation = $relation;
         $this->transformations = $transformations;
+        $this->relationCleanup = $relationCleanup;
+
+        $this->_url_query = Url::getCommonRaw(['db' => $db, 'table' => $table]);
+        $this->table_obj = $this->dbi->getTable($this->db, $this->table);
     }
 
-    /**
-     * Index action
-     *
-     * @param ContainerBuilder $containerBuilder ContainerBuilder instance
-     *
-     * @return void
-     */
-    public function indexAction(ContainerBuilder $containerBuilder): void
+    public function index(): void
     {
-        global $sql_query;
+        global $containerBuilder, $sql_query, $reread_info, $showtable;
+        global $tbl_is_view, $tbl_storage_engine, $tbl_collation, $table_info_num_rows;
+        global $db, $table, $goto, $message, $mult_btn, $query_type;
+        global $selected, $selected_fld, $submit_mult, $url_query;
+
+        $this->dbi->selectDb($this->db);
+        $reread_info = $this->table_obj->getStatusInfo(null, true);
+        $showtable = $this->table_obj->getStatusInfo(
+            null,
+            (isset($reread_info) && $reread_info)
+        );
+        if ($this->table_obj->isView()) {
+            $tbl_is_view = true;
+            $tbl_storage_engine = __('View');
+        } else {
+            $tbl_is_view = false;
+            $tbl_storage_engine = $this->table_obj->getStorageEngine();
+        }
+        $tbl_collation = $this->table_obj->getCollation();
+        $table_info_num_rows = $this->table_obj->getNumRows();
 
         PageSettings::showGroup('TableStructure');
 
@@ -174,6 +154,7 @@ class StructureController extends AbstractController
             && $this->response->isAjax()
         ) {
             $this->moveColumns();
+
             return;
         }
 
@@ -209,6 +190,7 @@ class StructureController extends AbstractController
             } else {
                 $this->response->setRequestStatus(false);
             }
+
             return;
         }
         /**
@@ -217,9 +199,9 @@ class StructureController extends AbstractController
         if (isset($_GET['change_column'])) {
             $this->displayHtmlForColumnChange(
                 null,
-                Url::getFromRoute('/table/structure'),
-                $containerBuilder
+                Url::getFromRoute('/table/structure')
             );
+
             return;
         }
 
@@ -230,6 +212,7 @@ class StructureController extends AbstractController
             && ! isset($_POST['save_partitioning'])
         ) {
             $this->displayHtmlForPartitionChange();
+
             return;
         }
 
@@ -253,19 +236,18 @@ class StructureController extends AbstractController
                     // handle confirmation of deleting multiple columns
                     $action = Url::getFromRoute('/table/structure');
                     $GLOBALS['selected'] = $_POST['selected_fld'];
-                    list(
-                        $what_ret, $query_type_ret, $is_unset_submit_mult,
-                        $mult_btn_ret, $centralColsError
-                        )
-                            = $this->getDataForSubmitMult(
-                                $submit_mult,
-                                $_POST['selected_fld'],
-                                $action,
-                                $containerBuilder
-                            );
+                    [
+                        $what_ret,
+                        $query_type_ret,
+                        $is_unset_submit_mult,
+                        $mult_btn_ret,
+                        $centralColsError,
+                    ] = $this->getDataForSubmitMult(
+                        $submit_mult,
+                        $_POST['selected_fld'],
+                        $action
+                    );
                     //update the existing variables
-                    // todo: refactor mult_submits.inc.php such as
-                    // below globals are not needed anymore
                     if (isset($what_ret)) {
                         $GLOBALS['what'] = $what_ret;
                         global $what;
@@ -281,7 +263,188 @@ class StructureController extends AbstractController
                         $GLOBALS['mult_btn'] = $mult_btn_ret;
                         global $mult_btn;
                     }
-                    include ROOT_PATH . 'libraries/mult_submits.inc.php';
+
+                    $goto = $_POST['goto'] ?? $goto ?? null;
+                    $mult_btn = $_POST['mult_btn'] ?? $mult_btn ?? null;
+                    $query_type = $_POST['query_type'] ?? $query_type ?? null;
+                    $selected = $_POST['selected'] ?? $selected ?? null;
+                    $selected_fld = $_POST['selected_fld'] ?? $selected_fld ?? null;
+                    $sql_query = $_POST['sql_query'] ?? $sql_query ?? null;
+                    $submit_mult = $_POST['submit_mult'] ?? $submit_mult ?? null;
+                    $url_query = $_POST['url_query'] ?? $url_query ?? null;
+
+                    if (! empty($submit_mult)
+                        && $submit_mult != __('With selected:')
+                        && ! empty($selected_fld)
+                    ) {
+                        // phpcs:disable PSR1.Files.SideEffects
+                        define('PMA_SUBMIT_MULT', 1);
+                        // phpcs:enable
+                    }
+
+                    if (! empty($submit_mult) && ! empty($what)) {
+                        unset($message);
+
+                        Common::table();
+                        $url_query .= Url::getCommon([
+                            'goto' => Url::getFromRoute('/table/sql'),
+                            'back' => Url::getFromRoute('/table/sql'),
+                        ], '&');
+
+                        $full_query_views = null;
+                        $full_query = '';
+                        $selectedCount = count($selected);
+
+                        $i = 0;
+                        foreach ($selected as $selectedValue) {
+                            switch ($what) {
+                                case 'primary_fld':
+                                    if ($full_query == '') {
+                                        $full_query .= 'ALTER TABLE '
+                                            . Util::backquote(htmlspecialchars($table))
+                                            . '<br>&nbsp;&nbsp;DROP PRIMARY KEY,'
+                                            . '<br>&nbsp;&nbsp; ADD PRIMARY KEY('
+                                            . '<br>&nbsp;&nbsp;&nbsp;&nbsp; '
+                                            . Util::backquote(htmlspecialchars($selectedValue))
+                                            . ',';
+                                    } else {
+                                        $full_query .= '<br>&nbsp;&nbsp;&nbsp;&nbsp; '
+                                            . Util::backquote(htmlspecialchars($selectedValue))
+                                            . ',';
+                                    }
+                                    if ($i == $selectedCount - 1) {
+                                        $full_query = preg_replace('@,$@', ');<br>', $full_query);
+                                    }
+                                    break;
+                                case 'drop_fld':
+                                    if ($full_query == '') {
+                                        $full_query .= 'ALTER TABLE '
+                                            . Util::backquote(htmlspecialchars($table));
+                                    }
+                                    $full_query .= '<br>&nbsp;&nbsp;DROP '
+                                        . Util::backquote(htmlspecialchars($selectedValue))
+                                        . ',';
+                                    if ($i == $selectedCount - 1) {
+                                        $full_query = preg_replace('@,$@', ';<br>', $full_query);
+                                    }
+                                    break;
+                            }
+                            $i++;
+                        }
+
+                        $_url_params = [
+                            'db' => $db,
+                            'table' => $table,
+                            'query_type' => $what,
+                        ];
+                        foreach ($selected as $selectedValue) {
+                            $_url_params['selected'][] = $selectedValue;
+                        }
+
+                        $this->render('mult_submits/other_actions', [
+                            'action' => $action,
+                            'url_params' => $_url_params,
+                            'what' => $what,
+                            'full_query' => $full_query,
+                            'is_foreign_key_check' => Util::isForeignKeyCheck(),
+                        ]);
+
+                        exit;
+                    } elseif (! empty($mult_btn) && $mult_btn == __('Yes')) {
+                        if ($query_type == 'primary_fld') {
+                            // Gets table primary key
+                            $this->dbi->selectDb($db);
+                            $result = $this->dbi->query(
+                                'SHOW KEYS FROM ' . Util::backquote($table) . ';'
+                            );
+                            $primary = '';
+                            while ($row = $this->dbi->fetchAssoc($result)) {
+                                // Backups the list of primary keys
+                                if ($row['Key_name'] == 'PRIMARY') {
+                                    $primary .= $row['Column_name'] . ', ';
+                                }
+                            }
+                            $this->dbi->freeResult($result);
+                        }
+
+                        $sql_query = '';
+                        $sql_query_views = null;
+                        $result = null;
+                        $selectedCount = count($selected);
+
+                        for ($i = 0; $i < $selectedCount; $i++) {
+                            switch ($query_type) {
+                                case 'drop_fld':
+                                    $this->relationCleanup->column($db, $table, $selected[$i]);
+                                    $sql_query .= (empty($sql_query)
+                                            ? 'ALTER TABLE ' . Util::backquote($table)
+                                            : ',')
+                                        . ' DROP ' . Util::backquote($selected[$i])
+                                        . ($i == $selectedCount - 1 ? ';' : '');
+                                    break;
+
+                                case 'primary_fld':
+                                    $sql_query .= (empty($sql_query)
+                                            ? 'ALTER TABLE ' . Util::backquote($table)
+                                            . (empty($primary)
+                                                ? ''
+                                                : ' DROP PRIMARY KEY,') . ' ADD PRIMARY KEY( '
+                                            : ', ')
+                                        . Util::backquote($selected[$i])
+                                        . ($i == $selectedCount - 1 ? ');' : '');
+                                    break;
+
+                                case 'index_fld':
+                                    $sql_query .= (empty($sql_query)
+                                            ? 'ALTER TABLE ' . Util::backquote($table)
+                                            . ' ADD INDEX( '
+                                            : ', ')
+                                        . Util::backquote($selected[$i])
+                                        . ($i == $selectedCount - 1 ? ');' : '');
+                                    break;
+
+                                case 'unique_fld':
+                                    $sql_query .= (empty($sql_query)
+                                            ? 'ALTER TABLE ' . Util::backquote($table)
+                                            . ' ADD UNIQUE( '
+                                            : ', ')
+                                        . Util::backquote($selected[$i])
+                                        . ($i == $selectedCount - 1 ? ');' : '');
+                                    break;
+
+                                case 'spatial_fld':
+                                    $sql_query .= (empty($sql_query)
+                                            ? 'ALTER TABLE ' . Util::backquote($table)
+                                            . ' ADD SPATIAL( '
+                                            : ', ')
+                                        . Util::backquote($selected[$i])
+                                        . ($i == $selectedCount - 1 ? ');' : '');
+                                    break;
+
+                                case 'fulltext_fld':
+                                    $sql_query .= (empty($sql_query)
+                                            ? 'ALTER TABLE ' . Util::backquote($table)
+                                            . ' ADD FULLTEXT( '
+                                            : ', ')
+                                        . Util::backquote($selected[$i])
+                                        . ($i == $selectedCount - 1 ? ');' : '');
+                                    break;
+                            }
+                        }
+
+                        $this->dbi->selectDb($db);
+                        $result = $this->dbi->tryQuery($sql_query);
+                        if ($result && ! empty($sql_query_views)) {
+                            $sql_query .= ' ' . $sql_query_views . ';';
+                            $result = $this->dbi->tryQuery($sql_query_views);
+                            unset($sql_query_views);
+                        }
+
+                        if (! $result) {
+                            $message = Message::error((string) $this->dbi->getError());
+                        }
+                    }
+
                     /**
                      * if $submit_mult == 'change', execution will have stopped
                      * at this point
@@ -290,7 +453,7 @@ class StructureController extends AbstractController
                         $message = Message::success();
                     }
                     $this->response->addHTML(
-                        Util::getMessage($message, $sql_query)
+                        Generator::getMessage($message, $sql_query)
                     );
                 }
             } else {
@@ -323,14 +486,10 @@ class StructureController extends AbstractController
         if (isset($_POST['add_key'])
             || isset($_POST['partition_maintenance'])
         ) {
-            //todo: set some variables for /sql include, to be eliminated
-            //after refactoring /sql
-            $db = $this->db;
-            $table = $this->table;
-            $sql_query = $GLOBALS['sql_query'];
-            $cfg = $GLOBALS['cfg'];
-            $pmaThemeImage = $GLOBALS['pmaThemeImage'];
-            include ROOT_PATH . 'libraries/entry_points/sql.php';
+            /** @var SqlController $controller */
+            $controller = $containerBuilder->get(SqlController::class);
+            $controller->index();
+
             $GLOBALS['reload'] = true;
         }
 
@@ -347,8 +506,9 @@ class StructureController extends AbstractController
         $db = &$this->db;
         $table = &$this->table;
         $url_params = [];
-        include_once ROOT_PATH . 'libraries/tbl_common.inc.php';
-        $this->_db_is_system_schema = $db_is_system_schema;
+
+        Common::table();
+
         $this->_url_query = Url::getCommonRaw([
             'db' => $db,
             'table' => $table,
@@ -409,6 +569,9 @@ class StructureController extends AbstractController
         $column_names = array_keys($columns);
         $changes = [];
 
+        // @see https://mariadb.com/kb/en/library/changes-improvements-in-mariadb-102/#information-schema
+        $usesLiteralNull = $this->dbi->isMariaDB() && $this->dbi->getVersion() >= 100200;
+        $defaultNullValue = $usesLiteralNull ? 'NULL' : null;
         // move columns from first to last
         for ($i = 0, $l = count($_POST['move_columns']); $i < $l; $i++) {
             $column = $_POST['move_columns'][$i];
@@ -431,7 +594,8 @@ class StructureController extends AbstractController
                 && ($data['Default'] == 'CURRENT_TIMESTAMP'
                     || $data['Default'] == 'current_timestamp()');
 
-            if ($data['Null'] === 'YES' && $data['Default'] === null) {
+            // @see https://mariadb.com/kb/en/library/information-schema-columns-table/#examples
+            if ($data['Null'] === 'YES' && in_array($data['Default'], [$defaultNullValue, null])) {
                 $default_type = 'NULL';
             } elseif ($current_timestamp) {
                 $default_type = 'CURRENT_TIMESTAMP';
@@ -461,8 +625,8 @@ class StructureController extends AbstractController
                 mb_strtoupper($extracted_columnspec['type']),
                 $extracted_columnspec['spec_in_brackets'],
                 $extracted_columnspec['attribute'],
-                isset($data['Collation']) ? $data['Collation'] : '',
-                $data['Null'] === 'YES' ? 'NULL' : 'NOT NULL',
+                $data['Collation'] ?? '',
+                $data['Null'] === 'YES' ? 'YES' : 'NO',
                 $default_type,
                 $current_timestamp ? '' : $data['Default'],
                 isset($data['Extra']) && $data['Extra'] !== '' ? $data['Extra']
@@ -484,6 +648,7 @@ class StructureController extends AbstractController
         }
         if (empty($changes) && ! isset($_REQUEST['preview_sql'])) { // should never happen
             $this->response->setRequestStatus(false);
+
             return;
         }
         // query for moving the columns
@@ -519,15 +684,13 @@ class StructureController extends AbstractController
     /**
      * Displays HTML for changing one or more columns
      *
-     * @param array            $selected         the selected columns
-     * @param string           $action           target script to call
-     * @param ContainerBuilder $containerBuilder Container builder instance (Used in tbl_columns_definition_form.inc.php)
+     * @param array  $selected the selected columns
+     * @param string $action   target script to call
      *
      * @return void
      */
-    protected function displayHtmlForColumnChange($selected, $action, ContainerBuilder $containerBuilder)
+    protected function displayHtmlForColumnChange($selected, $action)
     {
-        // $selected comes from mult_submits.inc.php
         if (empty($selected)) {
             $selected[] = $_REQUEST['field'];
             $selected_cnt = 1;
@@ -543,7 +706,7 @@ class StructureController extends AbstractController
             $value = $this->dbi->getColumns(
                 $this->db,
                 $this->table,
-                $selected[$i],
+                $this->dbi->escapeString($selected[$i]),
                 true
             );
             if (count($value) === 0) {
@@ -557,10 +720,7 @@ class StructureController extends AbstractController
             }
         }
         $num_fields = count($fields_meta);
-        // set these globals because tbl_columns_definition_form.inc.php
-        // verifies them
-        // @todo: refactor tbl_columns_definition_form.inc.php so that it uses
-        // protected function params
+
         $GLOBALS['action'] = $action;
         $GLOBALS['num_fields'] = $num_fields;
 
@@ -570,7 +730,18 @@ class StructureController extends AbstractController
         $checkUserPrivileges = new CheckUserPrivileges($this->dbi);
         $checkUserPrivileges->getPrivileges();
 
-        include ROOT_PATH . 'libraries/tbl_columns_definition_form.inc.php';
+        ColumnsDefinition::displayForm(
+            $this->response,
+            $this->template,
+            $this->transformations,
+            $this->relation,
+            $this->dbi,
+            $action,
+            $num_fields,
+            null,
+            $selected,
+            $fields_meta
+        );
     }
 
     /**
@@ -585,14 +756,15 @@ class StructureController extends AbstractController
             $partitionDetails = $this->_extractPartitionDetails();
         }
 
+        $storageEngines = StorageEngine::getArray();
+
         $partitionDetails = TablePartitionDefinition::getDetails($partitionDetails);
-        $this->response->addHTML(
-            $this->template->render('table/structure/partition_definition_form', [
-                'db' => $this->db,
-                'table' => $this->table,
-                'partition_details' => $partitionDetails,
-            ])
-        );
+        $this->render('table/structure/partition_definition_form', [
+            'db' => $this->db,
+            'table' => $this->table,
+            'partition_details' => $partitionDetails,
+            'storage_engines' => $storageEngines,
+        ]);
     }
 
     /**
@@ -600,7 +772,7 @@ class StructureController extends AbstractController
      *
      * @return array[]|null array of partition details
      */
-    private function _extractPartitionDetails()
+    private function _extractPartitionDetails(): ?array
     {
         $createTable = (new Table($this->table, $this->db))->showCreate();
         if (! $createTable) {
@@ -620,8 +792,8 @@ class StructureController extends AbstractController
         $partitionDetails['partition_count'] = '';
 
         if (! empty($stmt->partitionBy)) {
-            $openPos = strpos($stmt->partitionBy, "(");
-            $closePos = strrpos($stmt->partitionBy, ")");
+            $openPos = strpos($stmt->partitionBy, '(');
+            $closePos = strrpos($stmt->partitionBy, ')');
 
             $partitionDetails['partition_by']
                 = trim(substr($stmt->partitionBy, 0, $openPos));
@@ -640,8 +812,8 @@ class StructureController extends AbstractController
         $partitionDetails['subpartition_count'] = '';
 
         if (! empty($stmt->subpartitionBy)) {
-            $openPos = strpos($stmt->subpartitionBy, "(");
-            $closePos = strrpos($stmt->subpartitionBy, ")");
+            $openPos = strpos($stmt->subpartitionBy, '(');
+            $closePos = strrpos($stmt->subpartitionBy, ')');
 
             $partitionDetails['subpartition_by']
                 = trim(substr($stmt->subpartitionBy, 0, $openPos));
@@ -762,7 +934,7 @@ class StructureController extends AbstractController
      */
     protected function updatePartitioning()
     {
-        $sql_query = "ALTER TABLE " . Util::backquote($this->table) . " "
+        $sql_query = 'ALTER TABLE ' . Util::backquote($this->table) . ' '
             . $this->createAddField->getPartitionsDefinition();
 
         // Execute alter query
@@ -774,7 +946,7 @@ class StructureController extends AbstractController
             );
             $message->addParam($this->table);
             $this->response->addHTML(
-                Util::getMessage($message, $sql_query, 'success')
+                Generator::getMessage($message, $sql_query, 'success')
             );
         } else {
             $this->response->setRequestStatus(false);
@@ -819,6 +991,7 @@ class StructureController extends AbstractController
             if (isset($_POST['selected'])) {
                 $_POST['selected_fld'] = $_POST['selected'];
             }
+
             return 'row_delete';
         }
 
@@ -849,17 +1022,15 @@ class StructureController extends AbstractController
 
         // Parse and analyze the query
         $db = &$this->db;
-        list(
+        [
             $analyzed_sql_results,
             $db,
-        ) = ParseAnalyze::sqlQuery($sql_query, $db);
-        // @todo: possibly refactor
-        extract($analyzed_sql_results);
+        ] = ParseAnalyze::sqlQuery($sql_query, $db);
 
         $sql = new Sql();
         $this->response->addHTML(
             $sql->executeQueryAndGetQueryResponse(
-                isset($analyzed_sql_results) ? $analyzed_sql_results : '',
+                $analyzed_sql_results ?? '',
                 false, // is_gotofile
                 $this->db, // db
                 $this->table, // table
@@ -884,8 +1055,7 @@ class StructureController extends AbstractController
     /**
      * Update the table's structure based on $_REQUEST
      *
-     * @return boolean              true if error occurred
-     *
+     * @return bool true if error occurred
      */
     protected function updateColumns()
     {
@@ -914,7 +1084,7 @@ class StructureController extends AbstractController
                 $_POST['field_length'][$i],
                 $_POST['field_attribute'][$i],
                 Util::getValueByKey($_POST, "field_collation.${i}", ''),
-                Util::getValueByKey($_POST, "field_null.${i}", 'NOT NULL'),
+                Util::getValueByKey($_POST, "field_null.${i}", 'NO'),
                 $_POST['field_default_type'][$i],
                 $_POST['field_default_value'][$i],
                 Util::getValueByKey($_POST, "field_extra.${i}", false),
@@ -956,21 +1126,24 @@ class StructureController extends AbstractController
              * @todo if someone selects A_I when altering a column we need to check:
              *  - no other column with A_I
              *  - the column has an index, if not create one
-             *
              */
 
             // To allow replication, we first select the db to use
             // and then run queries on this db.
             if (! $this->dbi->selectDb($this->db)) {
-                Util::mysqlDie(
+                Generator::mysqlDie(
                     $this->dbi->getError(),
                     'USE ' . Util::backquote($this->db) . ';',
                     false,
                     $err_url
                 );
             }
+
             $sql_query = 'ALTER TABLE ' . Util::backquote($this->table) . ' ';
             $sql_query .= implode(', ', $changes) . $key_query;
+            if (isset($_POST['online_transaction'])) {
+                $sql_query .= ', ALGORITHM=INPLACE, LOCK=NONE';
+            }
             $sql_query .= ';';
 
             // If there is a request for SQL previewing.
@@ -1041,7 +1214,7 @@ class StructureController extends AbstractController
                 $message->addParam($this->table);
 
                 $this->response->addHTML(
-                    Util::getMessage($message, $sql_query, 'success')
+                    Generator::getMessage($message, $sql_query, 'success')
                 );
             } else {
                 // An error happened while inserting/updating a table definition
@@ -1060,7 +1233,7 @@ class StructureController extends AbstractController
                             $_POST['field_length_orig'][$i],
                             $_POST['field_attribute_orig'][$i],
                             Util::getValueByKey($_POST, "field_collation_orig.${i}", ''),
-                            Util::getValueByKey($_POST, "field_null_orig.${i}", 'NOT NULL'),
+                            Util::getValueByKey($_POST, "field_null_orig.${i}", 'NO'),
                             $_POST['field_default_type_orig'][$i],
                             $_POST['field_default_value_orig'][$i],
                             Util::getValueByKey($_POST, "field_extra_orig.${i}", false),
@@ -1127,6 +1300,7 @@ class StructureController extends AbstractController
                 }
             }
         }
+
         return $regenerate;
     }
 
@@ -1136,7 +1310,7 @@ class StructureController extends AbstractController
      * @param array $adjust_privileges assoc array of old col names mapped to new
      *                                 cols
      *
-     * @return boolean  boolean whether at least one column privileges
+     * @return bool boolean whether at least one column privileges
      * adjusted
      */
     protected function adjustColumnPrivileges(array $adjust_privileges)
@@ -1170,7 +1344,7 @@ class StructureController extends AbstractController
 
             if ($changed) {
                 // Finally FLUSH the new privileges
-                $this->dbi->query("FLUSH PRIVILEGES;");
+                $this->dbi->query('FLUSH PRIVILEGES;');
             }
         }
 
@@ -1180,10 +1354,9 @@ class StructureController extends AbstractController
     /**
      * Verifies if some elements of a column have changed
      *
-     * @param integer $i column index in the request
+     * @param int $i column index in the request
      *
-     * @return boolean true if we need to generate ALTER TABLE
-     *
+     * @return bool true if we need to generate ALTER TABLE
      */
     protected function columnNeedsAlterTable($i)
     {
@@ -1217,6 +1390,7 @@ class StructureController extends AbstractController
                 return true;
             }
         }
+
         return ! empty($_POST['field_move_to'][$i]);
     }
 
@@ -1242,6 +1416,8 @@ class StructureController extends AbstractController
         array $fields,
         array $columns_with_index
     ) {
+        global $route, $db_is_system_schema, $tbl_is_view, $tbl_storage_engine;
+
         // prepare comments
         $comments_map = [];
         $mime_map = [];
@@ -1257,32 +1433,23 @@ class StructureController extends AbstractController
             $this->db,
             $this->table
         );
-        $columns_list = [];
 
         $titles = [
-            'Change' => Util::getIcon('b_edit', __('Change')),
-            'Drop' => Util::getIcon('b_drop', __('Drop')),
-            'NoDrop' => Util::getIcon('b_drop', __('Drop')),
-            'Primary' => Util::getIcon('b_primary', __('Primary')),
-            'Index' => Util::getIcon('b_index', __('Index')),
-            'Unique' => Util::getIcon('b_unique', __('Unique')),
-            'Spatial' => Util::getIcon('b_spatial', __('Spatial')),
-            'IdxFulltext' => Util::getIcon('b_ftext', __('Fulltext')),
-            'NoPrimary' => Util::getIcon('bd_primary', __('Primary')),
-            'NoIndex' => Util::getIcon('bd_index', __('Index')),
-            'NoUnique' => Util::getIcon('bd_unique', __('Unique')),
-            'NoSpatial' => Util::getIcon('bd_spatial', __('Spatial')),
-            'NoIdxFulltext' => Util::getIcon('bd_ftext', __('Fulltext')),
-            'DistinctValues' => Util::getIcon('b_browse', __('Distinct values')),
+            'Change' => Generator::getIcon('b_edit', __('Change')),
+            'Drop' => Generator::getIcon('b_drop', __('Drop')),
+            'NoDrop' => Generator::getIcon('b_drop', __('Drop')),
+            'Primary' => Generator::getIcon('b_primary', __('Primary')),
+            'Index' => Generator::getIcon('b_index', __('Index')),
+            'Unique' => Generator::getIcon('b_unique', __('Unique')),
+            'Spatial' => Generator::getIcon('b_spatial', __('Spatial')),
+            'IdxFulltext' => Generator::getIcon('b_ftext', __('Fulltext')),
+            'NoPrimary' => Generator::getIcon('bd_primary', __('Primary')),
+            'NoIndex' => Generator::getIcon('bd_index', __('Index')),
+            'NoUnique' => Generator::getIcon('bd_unique', __('Unique')),
+            'NoSpatial' => Generator::getIcon('bd_spatial', __('Spatial')),
+            'NoIdxFulltext' => Generator::getIcon('bd_ftext', __('Fulltext')),
+            'DistinctValues' => Generator::getIcon('b_browse', __('Distinct values')),
         ];
-
-        $edit_view_url = '';
-        if ($this->_tbl_is_view && ! $this->_db_is_system_schema) {
-            $edit_view_url = Url::getCommon([
-                'db' => $this->db,
-                'table' => $this->table,
-            ]);
-        }
 
         /**
          * Displays Space usage and row statistics
@@ -1322,7 +1489,7 @@ class StructureController extends AbstractController
 
             $displayed_fields[$rownum] = new stdClass();
             $displayed_fields[$rownum]->text = $field['Field'];
-            $displayed_fields[$rownum]->icon = "";
+            $displayed_fields[$rownum]->icon = '';
             $row_comments[$rownum] = '';
 
             if (isset($comments_map[$field['Field']])) {
@@ -1332,12 +1499,12 @@ class StructureController extends AbstractController
 
             if ($primary_index && $primary_index->hasColumn($field['Field'])) {
                 $displayed_fields[$rownum]->icon .=
-                Util::getImage('b_primary', __('Primary'));
+                    Generator::getImage('b_primary', __('Primary'));
             }
 
             if (in_array($field['Field'], $columns_with_index)) {
                 $displayed_fields[$rownum]->icon .=
-                Util::getImage('bd_primary', __('Index'));
+                    Generator::getImage('bd_primary', __('Index'));
             }
 
             $collation = Charsets::findCollationByName(
@@ -1354,26 +1521,30 @@ class StructureController extends AbstractController
         }
 
         $engine = $this->table_obj->getStorageEngine();
+
         return $this->template->render('table/structure/display_structure', [
-            'url_params' => $url_params,
+            'url_params' => [
+                'db' => $this->db,
+                'table' => $this->table,
+            ],
             'collations' => $collations,
             'is_foreign_key_supported' => Util::isForeignKeySupported($engine),
-            'displayIndexesHtml' => Index::getHtmlForDisplayIndexes(),
+            'indexes' => Index::getFromTable($this->table, $this->db),
+            'indexes_duplicates' => Index::findDuplicates($this->table, $this->db),
             'cfg_relation' => $this->relation->getRelationsParam(),
             'hide_structure_actions' => $hideStructureActions,
             'db' => $this->db,
             'table' => $this->table,
-            'db_is_system_schema' => $this->_db_is_system_schema,
-            'tbl_is_view' => $this->_tbl_is_view,
+            'db_is_system_schema' => $db_is_system_schema,
+            'tbl_is_view' => $tbl_is_view,
             'mime_map' => $mime_map,
             'url_query' => $this->_url_query,
             'titles' => $titles,
-            'tbl_storage_engine' => $this->_tbl_storage_engine,
+            'tbl_storage_engine' => $tbl_storage_engine,
             'primary' => $primary_index,
             'columns_with_unique_index' => $columns_with_unique_index,
-            'edit_view_url' => $edit_view_url,
             'columns_list' => $columns_list,
-            'table_stats' => isset($tablestats) ? $tablestats : null,
+            'table_stats' => $tablestats ?? null,
             'fields' => $fields,
             'extracted_columnspecs' => $extracted_columnspecs,
             'columns_with_index' => $columns_with_index,
@@ -1397,6 +1568,7 @@ class StructureController extends AbstractController
             'attributes' => $attributes,
             'displayed_fields' => $displayed_fields,
             'row_comments' => $row_comments,
+            'route' => $route,
         ]);
     }
 
@@ -1407,71 +1579,77 @@ class StructureController extends AbstractController
      */
     protected function getTableStats()
     {
-        if (empty($this->_showtable)) {
-            $this->_showtable = $this->dbi->getTable(
+        global $showtable, $db_is_system_schema, $tbl_is_view, $tbl_storage_engine, $table_info_num_rows, $tbl_collation;
+
+        if (empty($showtable)) {
+            $showtable = $this->dbi->getTable(
                 $this->db,
                 $this->table
             )->getStatusInfo(null, true);
         }
 
-        if (empty($this->_showtable['Data_length'])) {
-            $this->_showtable['Data_length'] = 0;
-        }
-        if (empty($this->_showtable['Index_length'])) {
-            $this->_showtable['Index_length'] = 0;
+        if (is_string($showtable)) {
+            $showtable = [];
         }
 
-        $is_innodb = (isset($this->_showtable['Type'])
-            && $this->_showtable['Type'] == 'InnoDB');
+        if (empty($showtable['Data_length'])) {
+            $showtable['Data_length'] = 0;
+        }
+        if (empty($showtable['Index_length'])) {
+            $showtable['Index_length'] = 0;
+        }
+
+        $is_innodb = (isset($showtable['Type'])
+            && $showtable['Type'] == 'InnoDB');
 
         $mergetable = $this->table_obj->isMerge();
 
         // this is to display for example 261.2 MiB instead of 268k KiB
         $max_digits = 3;
         $decimals = 1;
-        list($data_size, $data_unit) = Util::formatByteDown(
-            $this->_showtable['Data_length'],
+        [$data_size, $data_unit] = Util::formatByteDown(
+            $showtable['Data_length'],
             $max_digits,
             $decimals
         );
         if ($mergetable === false) {
-            list($index_size, $index_unit) = Util::formatByteDown(
-                $this->_showtable['Index_length'],
+            [$index_size, $index_unit] = Util::formatByteDown(
+                $showtable['Index_length'],
                 $max_digits,
                 $decimals
             );
         }
-        if (isset($this->_showtable['Data_free'])) {
-            list($free_size, $free_unit) = Util::formatByteDown(
-                $this->_showtable['Data_free'],
+        if (isset($showtable['Data_free'])) {
+            [$free_size, $free_unit] = Util::formatByteDown(
+                $showtable['Data_free'],
                 $max_digits,
                 $decimals
             );
-            list($effect_size, $effect_unit) = Util::formatByteDown(
-                $this->_showtable['Data_length']
-                + $this->_showtable['Index_length']
-                - $this->_showtable['Data_free'],
+            [$effect_size, $effect_unit] = Util::formatByteDown(
+                $showtable['Data_length']
+                + $showtable['Index_length']
+                - $showtable['Data_free'],
                 $max_digits,
                 $decimals
             );
         } else {
-            list($effect_size, $effect_unit) = Util::formatByteDown(
-                $this->_showtable['Data_length']
-                + $this->_showtable['Index_length'],
+            [$effect_size, $effect_unit] = Util::formatByteDown(
+                $showtable['Data_length']
+                + $showtable['Index_length'],
                 $max_digits,
                 $decimals
             );
         }
-        list($tot_size, $tot_unit) = Util::formatByteDown(
-            $this->_showtable['Data_length'] + $this->_showtable['Index_length'],
+        [$tot_size, $tot_unit] = Util::formatByteDown(
+            $showtable['Data_length'] + $showtable['Index_length'],
             $max_digits,
             $decimals
         );
-        if ($this->_table_info_num_rows > 0) {
-            list($avg_size, $avg_unit) = Util::formatByteDown(
-                ($this->_showtable['Data_length']
-                + $this->_showtable['Index_length'])
-                / $this->_showtable['Rows'],
+        if ($table_info_num_rows > 0) {
+            [$avg_size, $avg_unit] = Util::formatByteDown(
+                ($showtable['Data_length']
+                + $showtable['Index_length'])
+                / $showtable['Rows'],
                 6,
                 1
             );
@@ -1488,7 +1666,7 @@ class StructureController extends AbstractController
         $collation = Charsets::findCollationByName(
             $this->dbi,
             $GLOBALS['cfg']['Server']['DisableIS'],
-            $this->_tbl_collation
+            $tbl_collation
         );
         if ($collation !== null) {
             $tableCollation = [
@@ -1496,6 +1674,7 @@ class StructureController extends AbstractController
                 'description' => $collation->getDescription(),
             ];
         }
+
         return $this->template->render('table/structure/display_table_stats', [
             'url_params' => [
                 'db' => $GLOBALS['db'],
@@ -1503,24 +1682,24 @@ class StructureController extends AbstractController
             ],
             'is_foreign_key_supported' => Util::isForeignKeySupported($engine),
             'cfg_relation' => $this->relation->getRelationsParam(),
-            'showtable' => $this->_showtable,
-            'table_info_num_rows' => $this->_table_info_num_rows,
-            'tbl_is_view' => $this->_tbl_is_view,
-            'db_is_system_schema' => $this->_db_is_system_schema,
-            'tbl_storage_engine' => $this->_tbl_storage_engine,
+            'showtable' => $showtable,
+            'table_info_num_rows' => $table_info_num_rows,
+            'tbl_is_view' => $tbl_is_view,
+            'db_is_system_schema' => $db_is_system_schema,
+            'tbl_storage_engine' => $tbl_storage_engine,
             'url_query' => $this->_url_query,
             'table_collation' => $tableCollation,
             'is_innodb' => $is_innodb,
             'mergetable' => $mergetable,
-            'avg_size' => isset($avg_size) ? $avg_size : null,
-            'avg_unit' => isset($avg_unit) ? $avg_unit : null,
+            'avg_size' => $avg_size ?? null,
+            'avg_unit' => $avg_unit ?? null,
             'data_size' => $data_size,
             'data_unit' => $data_unit,
-            'index_size' => isset($index_size) ? $index_size : null,
-            'index_unit' => isset($index_unit) ? $index_unit : null,
+            'index_size' => $index_size ?? null,
+            'index_unit' => $index_unit ?? null,
             'innodb_file_per_table' => $innodb_file_per_table,
-            'free_size' => isset($free_size) ? $free_size : null,
-            'free_unit' => isset($free_unit) ? $free_unit : null,
+            'free_size' => $free_size ?? null,
+            'free_unit' => $free_unit ?? null,
             'effect_size' => $effect_size,
             'effect_unit' => $effect_unit,
             'tot_size' => $tot_size,
@@ -1555,14 +1734,13 @@ class StructureController extends AbstractController
     /**
      * Get List of information for Submit Mult
      *
-     * @param string           $submit_mult      mult_submit type
-     * @param array            $selected         the selected columns
-     * @param string           $action           action type
-     * @param ContainerBuilder $containerBuilder Container builder instance
+     * @param string $submit_mult mult_submit type
+     * @param array  $selected    the selected columns
+     * @param string $action      action type
      *
      * @return array
      */
-    protected function getDataForSubmitMult($submit_mult, $selected, $action, ContainerBuilder $containerBuilder)
+    protected function getDataForSubmitMult($submit_mult, $selected, $action)
     {
         $centralColumns = new CentralColumns($this->dbi);
         $what = null;
@@ -1621,7 +1799,7 @@ class StructureController extends AbstractController
                 );
                 break;
             case 'change':
-                $this->displayHtmlForColumnChange($selected, $action, $containerBuilder);
+                $this->displayHtmlForColumnChange($selected, $action);
                 // execution stops here but PhpMyAdmin\Response correctly finishes
                 // the rendering
                 exit;

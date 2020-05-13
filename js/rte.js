@@ -1,4 +1,3 @@
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * JavaScript functionality for Routines, Triggers and Events.
  *
@@ -170,7 +169,7 @@ RTE.COMMON = {
                 /**
                  * Display the dialog to the user
                  */
-                data.message = '<textarea cols="40" rows="15" class="all100">' + data.message + '</textarea>';
+                data.message = '<textarea cols="40" rows="15" class="w-100">' + data.message + '</textarea>';
                 var $ajaxDialog = $('<div>' + data.message + '</div>').dialog({
                     width: 500,
                     buttons: buttonOptions,
@@ -337,11 +336,13 @@ RTE.COMMON = {
                 that.$ajaxDialog = $('<div id="rteDialog">' + data.message + '</div>').dialog({
                     width: 700,
                     minWidth: 500,
-                    maxHeight: $(window).height(),
                     buttons: that.buttonOptions,
-                    title: data.title,
+                    // Issue #15810 - use button titles for modals (eg: new procedure)
+                    // Respect the order: title on href tag, href content, title sent in response
+                    title: $this.attr('title') || $this.text() || $(data.title).text(),
                     modal: true,
                     open: function () {
+                        $('#rteDialog').dialog('option', 'max-height', $(window).height());
                         if ($('#rteDialog').parents('.ui-dialog').height() > $(window).height()) {
                             $('#rteDialog').dialog('option', 'height', $(window).height());
                         }
@@ -802,15 +803,15 @@ RTE.ROUTINE = {
         case 'MEDIUMTEXT':
         case 'LONGBLOB':
         case 'LONGTEXT':
-            $text.closest('tr').find('a:first').hide();
+            $text.closest('tr').find('a').first().hide();
             $len.parent().hide();
             $noLen.show();
             break;
         default:
             if ($type.val() === 'ENUM' || $type.val() === 'SET') {
-                $text.closest('tr').find('a:first').show();
+                $text.closest('tr').find('a').first().show();
             } else {
-                $text.closest('tr').find('a:first').hide();
+                $text.closest('tr').find('a').first().hide();
             }
             $len.parent().show();
             $noLen.hide();

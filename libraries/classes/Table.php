@@ -1,20 +1,14 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Holds the Table class
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Index;
-use PhpMyAdmin\Message;
-use PhpMyAdmin\Plugins;
+use PhpMyAdmin\Html\Generator;
+use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\Plugins\Export\ExportSql;
-use PhpMyAdmin\Relation;
 use PhpMyAdmin\SqlParser\Components\Expression;
 use PhpMyAdmin\SqlParser\Components\OptionsArray;
 use PhpMyAdmin\SqlParser\Context;
@@ -23,13 +17,40 @@ use PhpMyAdmin\SqlParser\Statements\AlterStatement;
 use PhpMyAdmin\SqlParser\Statements\CreateStatement;
 use PhpMyAdmin\SqlParser\Statements\DropStatement;
 use PhpMyAdmin\SqlParser\Utils\Table as TableUtils;
-use PhpMyAdmin\Util;
+use const E_USER_WARNING;
+use function array_key_exists;
+use function array_map;
+use function count;
+use function end;
+use function explode;
+use function htmlspecialchars;
+use function implode;
+use function in_array;
+use function is_array;
+use function json_decode;
+use function json_encode;
+use function mb_stripos;
+use function mb_strlen;
+use function mb_substr;
+use function preg_match;
+use function preg_replace;
+use function rtrim;
+use function sprintf;
+use function str_replace;
+use function stripos;
+use function strlen;
+use function strpos;
+use function strtolower;
+use function strtoupper;
+use function substr;
+use function substr_compare;
+use function trigger_error;
+use function trim;
 
 /**
  * Handles everything related to tables
  *
  * @todo make use of Message and Error
- * @package PhpMyAdmin
  */
 class Table
 {
@@ -40,54 +61,34 @@ class Table
     public const PROP_COLUMN_ORDER = 'col_order';
     public const PROP_COLUMN_VISIB = 'col_visib';
 
-    /**
-     * @var string  engine (innodb, myisam, bdb, ...)
-     */
+    /** @var string  engine (innodb, myisam, bdb, ...) */
     public $engine = '';
 
-    /**
-     * @var string  type (view, base table, system view)
-     */
+    /** @var string  type (view, base table, system view) */
     public $type = '';
 
-    /**
-     * @var array UI preferences
-     */
+    /** @var array UI preferences */
     public $uiprefs;
 
-    /**
-     * @var array errors occurred
-     */
+    /** @var array errors occurred */
     public $errors = [];
 
-    /**
-     * @var array messages
-     */
+    /** @var array messages */
     public $messages = [];
 
-    /**
-     * @var string  table name
-     */
+    /** @var string  table name */
     protected $_name = '';
 
-    /**
-     * @var string  database name
-     */
+    /** @var string  database name */
     protected $_db_name = '';
 
-    /**
-     * @var DatabaseInterface
-     */
+    /** @var DatabaseInterface */
     protected $_dbi;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     private $relation;
 
     /**
-     * Constructor
-     *
      * @param string                 $table_name table name
      * @param string                 $db_name    database name
      * @param DatabaseInterface|null $dbi        database interface for the table
@@ -107,6 +108,7 @@ class Table
      * returns table name
      *
      * @see Table::getName()
+     *
      * @return string  table name
      */
     public function __toString()
@@ -151,7 +153,7 @@ class Table
     /**
      * returns table name
      *
-     * @param boolean $backquoted whether to quote name with backticks ``
+     * @param bool $backquoted whether to quote name with backticks ``
      *
      * @return string  table name
      */
@@ -160,13 +162,14 @@ class Table
         if ($backquoted) {
             return Util::backquote($this->_name);
         }
+
         return $this->_name;
     }
 
     /**
      * returns database name for this table
      *
-     * @param boolean $backquoted whether to quote name with backticks ``
+     * @param bool $backquoted whether to quote name with backticks ``
      *
      * @return string  database name for this table
      */
@@ -175,13 +178,14 @@ class Table
         if ($backquoted) {
             return Util::backquote($this->_db_name);
         }
+
         return $this->_db_name;
     }
 
     /**
      * returns full name for table, including database name
      *
-     * @param boolean $backquoted whether to quote name with backticks ``
+     * @param bool $backquoted whether to quote name with backticks ``
      *
      * @return string
      */
@@ -190,7 +194,6 @@ class Table
         return $this->getDbName($backquoted) . '.'
         . $this->getName($backquoted);
     }
-
 
     /**
      * Checks the storage engine used to create table
@@ -211,6 +214,7 @@ class Table
                     return true;
                 }
             }
+
             return false;
         } else {
             return $tbl_storage_engine == $engine;
@@ -220,7 +224,7 @@ class Table
     /**
      * returns whether the table is actually a view
      *
-     * @return boolean whether the given is a view
+     * @return bool whether the given is a view
      */
     public function isView()
     {
@@ -235,6 +239,7 @@ class Table
             || $GLOBALS['cfg']['Server']['DisableIS']
         ) {
             $type = $this->getStatusInfo('TABLE_TYPE');
+
             return $type == 'VIEW' || $type == 'SYSTEM VIEW';
         }
 
@@ -245,18 +250,19 @@ class Table
 
         // query information_schema
         $result = $this->_dbi->fetchResult(
-            "SELECT TABLE_NAME
-            FROM information_schema.VIEWS
-            WHERE TABLE_SCHEMA = '" . $this->_dbi->escapeString((string) $db) . "'
-                AND TABLE_NAME = '" . $this->_dbi->escapeString((string) $table) . "'"
+            'SELECT TABLE_NAME'
+            . ' FROM information_schema.VIEWS'
+            . ' WHERE TABLE_SCHEMA = \'' . $this->_dbi->escapeString((string) $db) . '\''
+            . ' AND TABLE_NAME = \'' . $this->_dbi->escapeString((string) $table) . '\''
         );
-        return $result ? true : false;
+
+        return (bool) $result;
     }
 
     /**
      * Returns whether the table is actually an updatable view
      *
-     * @return boolean whether the given is an updatable view
+     * @return bool whether the given is an updatable view
      */
     public function isUpdatableView()
     {
@@ -265,13 +271,14 @@ class Table
         }
 
         $result = $this->_dbi->fetchResult(
-            "SELECT TABLE_NAME
-            FROM information_schema.VIEWS
-            WHERE TABLE_SCHEMA = '" . $this->_dbi->escapeString($this->_db_name) . "'
-                AND TABLE_NAME = '" . $this->_dbi->escapeString($this->_name) . "'
-                AND IS_UPDATABLE = 'YES'"
+            'SELECT TABLE_NAME'
+            . ' FROM information_schema.VIEWS'
+            . ' WHERE TABLE_SCHEMA = \'' . $this->_dbi->escapeString($this->_db_name) . '\''
+            . ' AND TABLE_NAME = \'' . $this->_dbi->escapeString($this->_name) . '\''
+            . ' AND IS_UPDATABLE = \'YES\''
         );
-        return $result ? true : false;
+
+        return (bool) $result;
     }
 
     /**
@@ -280,7 +287,7 @@ class Table
      * If the ENGINE of the table is MERGE or MRG_MYISAM (alias),
      * this is a merge table.
      *
-     * @return boolean  true if it is a merge table
+     * @return bool true if it is a merge table
      */
     public function isMerge()
     {
@@ -291,14 +298,14 @@ class Table
      * Returns full table status info, or specific if $info provided
      * this info is collected from information_schema
      *
-     * @param string  $info          specific information to be fetched
-     * @param boolean $force_read    read new rather than serving from cache
-     * @param boolean $disable_error if true, disables error message
+     * @param string $info          specific information to be fetched
+     * @param bool   $force_read    read new rather than serving from cache
+     * @param bool   $disable_error if true, disables error message
+     *
+     * @return mixed
      *
      * @todo DatabaseInterface::getTablesFull needs to be merged
      * somehow into this class or at least better documented
-     *
-     * @return mixed
      */
     public function getStatusInfo(
         $info = null,
@@ -328,7 +335,7 @@ class Table
             return '';
         }
 
-        if (null === $info) {
+        if ($info === null) {
             return $this->_dbi->getCachedTableContent([$db, $table]);
         }
 
@@ -344,6 +351,7 @@ class Table
                     E_USER_WARNING
                 );
             }
+
             return false;
         }
 
@@ -353,7 +361,7 @@ class Table
     /**
      * Returns the Table storage Engine for current table.
      *
-     * @return   string               Return storage engine info if it is set for
+     * @return string                 Return storage engine info if it is set for
      *                                the selected table else return blank.
      */
     public function getStorageEngine()
@@ -362,6 +370,7 @@ class Table
         if ($table_storage_engine === false) {
             return '';
         }
+
         return strtoupper((string) $table_storage_engine);
     }
 
@@ -376,6 +385,7 @@ class Table
         if ($table_comment === false) {
             return '';
         }
+
         return $table_comment;
     }
 
@@ -390,22 +400,24 @@ class Table
         if ($table_collation === false) {
             return '';
         }
+
         return $table_collation;
     }
 
     /**
      * Returns the info about no of rows for current table.
      *
-     * @return integer Return no of rows info if it is not null for the selected table or return 0.
+     * @return int Return no of rows info if it is not null for the selected table or return 0.
      */
     public function getNumRows()
     {
         $table_num_row_info = $this->getStatusInfo('TABLE_ROWS', false, true);
-        if (false === $table_num_row_info) {
+        if ($table_num_row_info === false) {
             $table_num_row_info = $this->_dbi->getTable($this->_db_name, $GLOBALS['showtable']['Name'])
             ->countRecords(true);
         }
-        return $table_num_row_info ?: 0 ;
+
+        return $table_num_row_info ?: 0;
     }
 
     /**
@@ -419,22 +431,25 @@ class Table
         if ($table_row_format === false) {
             return '';
         }
+
         return $table_row_format;
     }
 
     /**
      * Returns the auto increment option for current table.
      *
-     * @return integer Return auto increment info if it is set for the selected table or return blank.
+     * @return int Return auto increment info if it is set for the selected table or return blank.
      */
     public function getAutoIncrement()
     {
         $table_auto_increment = $this->getStatusInfo('AUTO_INCREMENT', false, true);
-        return isset($table_auto_increment) ? $table_auto_increment : '';
+
+        return $table_auto_increment ?? '';
     }
 
     /**
      * Returns the array for CREATE statement for current table.
+     *
      * @return array Return options array info if it is set for the selected table or return blank.
      */
     public function getCreateOptions()
@@ -453,9 +468,10 @@ class Table
             }
         }
         // we need explicit DEFAULT value here (different from '0')
-        $create_options['pack_keys'] = (! isset($create_options['pack_keys']) || strlen($create_options['pack_keys']) == 0)
+        $create_options['pack_keys'] = ! isset($create_options['pack_keys']) || strlen($create_options['pack_keys']) == 0
             ? 'DEFAULT'
             : $create_options['pack_keys'];
+
         return $create_options;
     }
 
@@ -478,12 +494,13 @@ class Table
      * @param string      $expression         expression for the virtual column
      * @param string      $move_to            new position for column
      * @param array       $columns_with_index Fields having PRIMARY or UNIQUE KEY indexes
+     * @param string      $oldColumnName      Old column name
+     *
+     * @return string  field specification
      *
      * @todo    move into class PMA_Column
      * @todo on the interface, some js to clear the default value when the
      * default current_timestamp is checked
-     *
-     * @return string  field specification
      */
     public static function generateFieldSpec(
         $name,
@@ -499,7 +516,8 @@ class Table
         $virtuality = '',
         $expression = '',
         $move_to = '',
-        $columns_with_index = null
+        $columns_with_index = null,
+        $oldColumnName = null
     ) {
         /** @var DatabaseInterface $dbi */
         $dbi = $GLOBALS['dbi'];
@@ -512,7 +530,6 @@ class Table
         //
         // MySQL permits a non-standard syntax for FLOAT and DOUBLE,
         // see https://dev.mysql.com/doc/refman/5.5/en/floating-point-types.html
-        //
         $pattern = '@^(DATE|TINYBLOB|TINYTEXT|BLOB|TEXT|'
             . 'MEDIUMBLOB|MEDIUMTEXT|LONGBLOB|LONGTEXT|SERIAL|BOOLEAN|UUID)$@i';
         if (strlen($length) !== 0 && ! preg_match($pattern, $type)) {
@@ -525,7 +542,7 @@ class Table
             $query .= ' ' . $attribute;
 
             if ($is_timestamp
-                && false !== stripos($attribute, "TIMESTAMP")
+                && stripos($attribute, 'TIMESTAMP') !== false
                 && strlen($length) !== 0
                 && $length !== 0
             ) {
@@ -557,7 +574,7 @@ class Table
 
         if (! $virtuality || $isVirtualColMysql) {
             if ($null !== false) {
-                if ($null == 'NULL') {
+                if ($null == 'YES') {
                     $query .= ' NULL';
                 } else {
                     $query .= ' NOT NULL';
@@ -596,7 +613,7 @@ class Table
                     case 'NULL':
                         // If user uncheck null checkbox and not change default value null,
                         // default value will be ignored.
-                        if ($null !== false && $null !== 'NULL') {
+                        if ($null !== false && $null !== 'YES') {
                             break;
                         }
                         // else fall-through intended, no break here
@@ -638,8 +655,14 @@ class Table
             $query .= ' AFTER ' . Util::backquote($move_to);
         }
         if (! $virtuality && ! empty($extra)) {
-            if (is_array($columns_with_index) && ! in_array($name, $columns_with_index)) {
-                $query .= ', add PRIMARY KEY (' . Util::backquote($name) . ')';
+            if ($oldColumnName === null) {
+                if (is_array($columns_with_index) && ! in_array($name, $columns_with_index)) {
+                    $query .= ', add PRIMARY KEY (' . Util::backquote($name) . ')';
+                }
+            } else {
+                if (is_array($columns_with_index) && ! in_array($oldColumnName, $columns_with_index)) {
+                    $query .= ', add PRIMARY KEY (' . Util::backquote($name) . ')';
+                }
             }
         }
 
@@ -711,6 +734,7 @@ class Table
                     'ExactRows',
                 ]
             );
+
             return $row_count;
         }
         $row_count = false;
@@ -743,7 +767,7 @@ class Table
             }
         }
         // for a VIEW, $row_count is always false at this point
-        if (false !== $row_count
+        if ($row_count !== false
             && $row_count >= $GLOBALS['cfg']['MaxExactCount']
         ) {
             return $row_count;
@@ -790,6 +814,8 @@ class Table
     /**
      * Generates column specification for ALTER syntax
      *
+     * @see Table::generateFieldSpec()
+     *
      * @param string      $oldcol             old column name
      * @param string      $newcol             new column name
      * @param string      $type               type ('INT', 'VARCHAR', 'BIT', ...)
@@ -807,8 +833,6 @@ class Table
      * @param string      $expression         expression for the virtual column
      * @param string      $move_to            new position for column
      * @param array       $columns_with_index Fields having PRIMARY or UNIQUE KEY indexes
-     *
-     * @see Table::generateFieldSpec()
      *
      * @return string  field specification
      */
@@ -844,7 +868,8 @@ class Table
             $virtuality,
             $expression,
             $move_to,
-            $columns_with_index
+            $columns_with_index,
+            $oldcol
         );
     } // end function
 
@@ -864,9 +889,7 @@ class Table
      *                             from the old entry
      *                             (array('FIELDNAME' => 'NEW FIELDVALUE'))
      *
-     * @global relation variable
-     *
-     * @return int|boolean
+     * @return int|bool
      */
     public static function duplicateInfo(
         $work,
@@ -976,6 +999,7 @@ class Table
             $tbl = new Table($source_table, $source_db);
             if ($tbl->rename($target_table, $target_db)) {
                 $GLOBALS['message'] = $tbl->getLastMessage();
+
                 return true;
             }
         }
@@ -1002,11 +1026,13 @@ class Table
                     )
                 );
             }
+
             return false;
         }
 
         /**
          * The full name of source table, quoted.
+         *
          * @var string $source
          */
         $source = Util::backquote($source_db)
@@ -1024,6 +1050,7 @@ class Table
 
         /**
          * The full name of target table, quoted.
+         *
          * @var string $target
          */
         $target = Util::backquote($target_db)
@@ -1037,8 +1064,8 @@ class Table
              * @var ExportSql $export_sql_plugin
              */
             $export_sql_plugin = Plugins::getPlugin(
-                "export",
-                "sql",
+                'export',
+                'sql',
                 'libraries/classes/Plugins/Export/',
                 [
                     'export_type' => 'table',
@@ -1055,6 +1082,7 @@ class Table
 
             /**
              * The old structure of the table..
+             *
              * @var string $sql_structure
              */
             $sql_structure = $export_sql_plugin->getTableDef(
@@ -1073,6 +1101,7 @@ class Table
 
             /**
              * The destination where the table is moved or copied to.
+             *
              * @var Expression
              */
             $destination = new Expression(
@@ -1085,7 +1114,7 @@ class Table
             // queries.
             // One of the options that alters the behaviour is `ANSI_QUOTES`.
             Context::setMode(
-                $dbi->fetchValue("SELECT @@sql_mode")
+                $dbi->fetchValue('SELECT @@sql_mode')
             );
 
             // -----------------------------------------------------------------
@@ -1098,6 +1127,7 @@ class Table
 
                 /**
                  * Drop statement used for building the query.
+                 *
                  * @var DropStatement $statement
                  */
                 $statement = new DropStatement();
@@ -1130,6 +1160,7 @@ class Table
 
             /**
              * The parser responsible for parsing the old queries.
+             *
              * @var Parser $parser
              */
             $parser = new Parser($sql_structure);
@@ -1138,6 +1169,7 @@ class Table
 
                 /**
                  * The CREATE statement of this structure.
+                 *
                  * @var CreateStatement $statement
                  */
                 $statement = $parser->statements[0];
@@ -1164,6 +1196,7 @@ class Table
 
                 /**
                  * The ALTER statement that generates the constraints.
+                 *
                  * @var AlterStatement $statement
                  */
                 $statement = $parser->statements[0];
@@ -1202,6 +1235,7 @@ class Table
                 $GLOBALS['sql_indexes'] = '';
                 /**
                  * The ALTER statement that generates the indexes.
+                 *
                  * @var AlterStatement $statement
                  */
                 foreach ($parser->statements as $statement) {
@@ -1242,6 +1276,7 @@ class Table
 
                     /**
                      * The ALTER statement that alters the AUTO_INCREMENT value.
+                     *
                      * @var AlterStatement $statement
                      */
                     $statement = $parser->statements[0];
@@ -1310,6 +1345,7 @@ class Table
             );
 
             $GLOBALS['sql_query'] .= "\n\n" . $sql_drop_query . ';';
+
             // end if ($move)
             return true;
         }
@@ -1489,13 +1525,14 @@ class Table
      * checks if given name is a valid table name,
      * currently if not empty, trailing spaces, '.', '/' and '\'
      *
-     * @param string  $table_name    name to check
-     * @param boolean $is_backquoted whether this name is used inside backquotes or not
-     *
-     * @todo add check for valid chars in filename on current system/os
      * @see  https://dev.mysql.com/doc/refman/5.0/en/legal-names.html
      *
-     * @return boolean whether the string is valid or not
+     * @param string $table_name    name to check
+     * @param bool   $is_backquoted whether this name is used inside backquotes or not
+     *
+     * @return bool whether the string is valid or not
+     *
+     * @todo add check for valid chars in filename on current system/os
      */
     public static function isValidName($table_name, $is_backquoted = false)
     {
@@ -1541,10 +1578,11 @@ class Table
             $new_name = strtolower($new_name);
         }
 
-        if (null !== $new_db && $new_db !== $this->getDbName()) {
+        if ($new_db !== null && $new_db !== $this->getDbName()) {
             // Ensure the target is valid
             if (! $GLOBALS['dblist']->databases->exists($new_db)) {
                 $this->errors[] = __('Invalid database:') . ' ' . $new_db;
+
                 return false;
             }
         } else {
@@ -1563,6 +1601,7 @@ class Table
         if (! self::isValidName($new_name, true)) {
             $this->errors[] = __('Invalid table name:') . ' '
                 . $new_table->getFullName();
+
             return false;
         }
 
@@ -1602,6 +1641,7 @@ class Table
                 $this->getFullName(),
                 $new_table->getFullName()
             );
+
             return false;
         }
 
@@ -1623,6 +1663,7 @@ class Table
             htmlspecialchars($old_name),
             htmlspecialchars($new_name)
         );
+
         return true;
     }
 
@@ -1815,11 +1856,11 @@ class Table
     protected function getUiPrefsFromDb()
     {
         $cfgRelation = $this->relation->getRelationsParam();
-        $pma_table = Util::backquote($cfgRelation['db']) . "."
+        $pma_table = Util::backquote($cfgRelation['db']) . '.'
             . Util::backquote($cfgRelation['table_uiprefs']);
 
         // Read from phpMyAdmin database
-        $sql_query = " SELECT `prefs` FROM " . $pma_table
+        $sql_query = ' SELECT `prefs` FROM ' . $pma_table
             . " WHERE `username` = '" . $this->_dbi->escapeString($GLOBALS['cfg']['Server']['user']) . "'"
             . " AND `db_name` = '" . $this->_dbi->escapeString($this->_db_name) . "'"
             . " AND `table_name` = '" . $this->_dbi->escapeString($this->_name) . "'";
@@ -1840,13 +1881,13 @@ class Table
     protected function saveUiPrefsToDb()
     {
         $cfgRelation = $this->relation->getRelationsParam();
-        $pma_table = Util::backquote($cfgRelation['db']) . "."
+        $pma_table = Util::backquote($cfgRelation['db']) . '.'
             . Util::backquote($cfgRelation['table_uiprefs']);
 
         $secureDbName = $this->_dbi->escapeString($this->_db_name);
 
         $username = $GLOBALS['cfg']['Server']['user'];
-        $sql_query = " REPLACE INTO " . $pma_table
+        $sql_query = ' REPLACE INTO ' . $pma_table
             . " (username, db_name, table_name, prefs) VALUES ('"
             . $this->_dbi->escapeString($username) . "', '" . $secureDbName
             . "', '" . $this->_dbi->escapeString($this->_name) . "', '"
@@ -1864,6 +1905,7 @@ class Table
                 ),
                 '<br><br>'
             );
+
             return $message;
         }
 
@@ -1890,7 +1932,7 @@ class Table
                             'Failed to cleanup table UI preferences (see ' .
                             '$cfg[\'Servers\'][$i][\'MaxTableUiprefs\'] %s)'
                         ),
-                        Util::showDocu('config', 'cfg_Servers_MaxTableUiprefs')
+                        MySQLDocumentation::showDocumentation('config', 'cfg_Servers_MaxTableUiprefs')
                     )
                 );
                 $message->addMessage(
@@ -1899,6 +1941,7 @@ class Table
                     ),
                     '<br><br>'
                 );
+
                 return $message;
             }
         }
@@ -1975,6 +2018,7 @@ class Table
             }
             // remove the property, since it no longer exists in database
             $this->removeUiProp($property);
+
             return false;
         }
 
@@ -1993,11 +2037,12 @@ class Table
 
             // remove the property, since the table has been modified
             $this->removeUiProp($property);
+
             return false;
         }
 
         // default behaviour for other property:
-        return isset($this->uiprefs[$property]) ? $this->uiprefs[$property] : false;
+        return $this->uiprefs[$property] ?? false;
     }
 
     /**
@@ -2014,7 +2059,7 @@ class Table
      * @param string $table_create_time Needed for PROP_COLUMN_ORDER
      *                                  and PROP_COLUMN_VISIB
      *
-     * @return boolean|Message
+     * @return bool|Message
      */
     public function setUiProp($property, $value, $table_create_time = null)
     {
@@ -2055,6 +2100,7 @@ class Table
         if ($cfgRelation['uiprefswork']) {
             return $this->saveUiPrefsToDb();
         }
+
         return true;
     }
 
@@ -2079,6 +2125,7 @@ class Table
                 return $this->saveUiPrefsToDb();
             }
         }
+
         return true;
     }
 
@@ -2086,6 +2133,7 @@ class Table
      * Get all column names which are MySQL reserved words
      *
      * @return array
+     *
      * @access public
      */
     public function getReservedColumnNames()
@@ -2099,6 +2147,7 @@ class Table
                 $return[] = $column_name;
             }
         }
+
         return $return;
     }
 
@@ -2125,6 +2174,7 @@ class Table
                 $columns[$row['Field']] = $row['Type'];
             }
         }
+
         return $columns;
     }
 
@@ -2258,7 +2308,7 @@ class Table
      * @param string $display_field display field
      * @param array  $cfgRelation   configuration relation
      *
-     * @return boolean True on update succeed or False on failure
+     * @return bool True on update succeed or False on failure
      */
     public function updateDisplayField($display_field, array $cfgRelation)
     {
@@ -2288,8 +2338,10 @@ class Table
                 0,
                 false
             );
+
             return true;
         }
+
         return false;
     }
 
@@ -2303,7 +2355,7 @@ class Table
      * @param array      $cfgRelation             configuration relation
      * @param array|null $existrel                db, table, column
      *
-     * @return boolean
+     * @return bool
      */
     public function updateInternalRelations(
         array $multi_edit_columns_name,
@@ -2379,6 +2431,7 @@ class Table
                 $updated = true;
             }
         }
+
         return $updated;
     }
 
@@ -2493,7 +2546,7 @@ class Table
 
                     if (! empty($tmp_error_drop)) {
                         $seen_error = true;
-                        $html_output .= Util::mysqlDie(
+                        $html_output .= Generator::mysqlDie(
                             $tmp_error_drop,
                             $drop_query,
                             false,
@@ -2539,7 +2592,7 @@ class Table
                         $message->addParam(implode(', ', $master_field));
                         $html_output .= $message->getDisplay();
                     } else {
-                        $html_output .= Util::mysqlDie(
+                        $html_output .= Generator::mysqlDie(
                             $tmp_error_create,
                             $create_query,
                             false,
@@ -2547,9 +2600,9 @@ class Table
                             false
                         );
                     }
-                    $html_output .= Util::showMySQLDocu(
-                        'InnoDB_foreign_key_constraints'
-                    ) . "\n";
+                    $html_output .= MySQLDocumentation::show(
+                            'InnoDB_foreign_key_constraints'
+                        ) . "\n";
                 }
             } else {
                 $preview_sql_data .= $create_query . "\n";
@@ -2569,8 +2622,8 @@ class Table
                     $existrel_foreign[$master_field_md5]['ref_table_name'],
                     $existrel_foreign[$master_field_md5]['ref_index_list'],
                     $existrel_foreign[$master_field_md5]['constraint'],
-                    $options_array[$existrel_foreign[$master_field_md5]['on_delete']],
-                    $options_array[$existrel_foreign[$master_field_md5]['on_update']]
+                    $options_array[$existrel_foreign[$master_field_md5]['on_delete'] ?? ''] ?? null,
+                    $options_array[$existrel_foreign[$master_field_md5]['on_update'] ?? ''] ?? null
                 );
                 if (! isset($_POST['preview_sql'])) {
                     $display_query .= $sql_query_recreate . "\n";
@@ -2647,8 +2700,8 @@ class Table
      *
      * @param string $column name of the column
      *
-     * @return array|boolean associative array of column name and their expressions
-     *                       or false on failure
+     * @return array|bool associative array of column name and their expressions
+     * or false on failure
      */
     public function getColumnGenerationExpression($column = null)
     {
@@ -2670,6 +2723,7 @@ class Table
                 $sql .= " AND  `COLUMN_NAME` = '" . $this->_dbi->escapeString($column)
                     . "'";
             }
+
             return $this->_dbi->fetchResult($sql, 'Field', 'Expression');
         }
 
@@ -2687,6 +2741,7 @@ class Table
         if ($column != null) {
             $expression = isset($fields[$column]['expr']) ?
                 substr($fields[$column]['expr'], 1, -1) : '';
+
             return [$column => $expression];
         }
 
@@ -2696,6 +2751,7 @@ class Table
                 $ret[$field] = substr($options['expr'], 1, -1);
             }
         }
+
         return $ret;
     }
 
@@ -2730,6 +2786,7 @@ class Table
                 Util::backquote($this->_name)
             )
         );
+
         return $result['row_count'];
     }
 
@@ -2753,6 +2810,7 @@ class Table
                 $columns_with_index[] = $column_name;
             }
         }
+
         return $columns_with_index;
     }
 }

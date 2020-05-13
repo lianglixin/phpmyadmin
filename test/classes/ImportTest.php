@@ -1,36 +1,31 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Test for PhpMyAdmin\Import
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
+use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Import;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\Url;
-use PhpMyAdmin\Util;
 use PHPUnit\Framework\TestCase;
+use const PHP_INT_MAX;
+use function implode;
+use function sprintf;
+use function time;
 
 /**
  * Tests for import functions
- *
- * @package PhpMyAdmin-test
  */
 class ImportTest extends TestCase
 {
-    /**
-     * @var Import $import
-     */
+    /** @var Import $import */
     private $import;
 
     /**
      * Prepares environment for the test.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -154,8 +149,6 @@ class ImportTest extends TestCase
      * @param string $expected Expected result of the function
      * @param int    $num      The column number
      *
-     * @return void
-     *
      * @dataProvider provGetColumnAlphaName
      */
     public function testGetColumnAlphaName($expected, $num): void
@@ -203,8 +196,6 @@ class ImportTest extends TestCase
      *
      * @param int         $expected Expected result of the function
      * @param string|null $name     column name(i.e. "A", or "BC", etc.)
-     *
-     * @return void
      *
      * @dataProvider provGetColumnNumberFromName
      */
@@ -254,8 +245,6 @@ class ImportTest extends TestCase
      * @param int         $expected Expected result of the function
      * @param string|null $size     Size of field
      *
-     * @return void
-     *
      * @dataProvider provGetDecimalPrecision
      */
     public function testGetDecimalPrecision($expected, $size): void
@@ -295,8 +284,6 @@ class ImportTest extends TestCase
      *
      * @param int         $expected Expected result of the function
      * @param string|null $size     Size of field
-     *
-     * @return void
      *
      * @dataProvider provGetDecimalScale
      */
@@ -338,8 +325,6 @@ class ImportTest extends TestCase
      * @param array       $expected Expected result of the function
      * @param string|null $cell     Cell content
      *
-     * @return void
-     *
      * @dataProvider provGetDecimalSize
      */
     public function testGetDecimalSize($expected, $cell): void
@@ -360,28 +345,32 @@ class ImportTest extends TestCase
                     2,
                     1,
                     '2,1',
-                ], '2.1',
+                ],
+                '2.1',
             ],
             [
                 [
                     2,
                     1,
                     '2,1',
-                ], '6.2',
+                ],
+                '6.2',
             ],
             [
                 [
                     3,
                     1,
                     '3,1',
-                ], '10.0',
+                ],
+                '10.0',
             ],
             [
                 [
                     4,
                     2,
                     '4,2',
-                ], '30.20',
+                ],
+                '30.20',
             ],
         ];
     }
@@ -394,8 +383,6 @@ class ImportTest extends TestCase
      *                              BIGINT or DECIMAL or NONE)
      * @param string|null $cell     String representation of the cell for which a
      *                              best-fit type is to be determined
-     *
-     * @return void
      *
      * @dataProvider provDetectType
      */
@@ -411,7 +398,7 @@ class ImportTest extends TestCase
      */
     public function provDetectType()
     {
-        return [
+        $data = [
             [
                 Import::NONE,
                 null,
@@ -458,16 +445,6 @@ class ImportTest extends TestCase
                 '10.2',
             ],
             [
-                Import::BIGINT,
-                Import::BIGINT,
-                '2147483648',
-            ],
-            [
-                Import::BIGINT,
-                Import::INT,
-                '2147483648',
-            ],
-            [
                 Import::VARCHAR,
                 Import::VARCHAR,
                 'test',
@@ -478,6 +455,34 @@ class ImportTest extends TestCase
                 'test',
             ],
         ];
+
+        if (PHP_INT_MAX > 2147483647) {
+            $data[] = [
+                Import::BIGINT,
+                Import::BIGINT,
+                '2147483648',
+            ];
+            $data[] = [
+                Import::BIGINT,
+                Import::INT,
+                '2147483648',
+            ];
+        } else {
+            // To be fixed ?
+            // Can not detect a BIGINT since the value is over PHP_INT_MAX
+            $data[] = [
+                Import::VARCHAR,
+                Import::BIGINT,
+                '2147483648',
+            ];
+            $data[] = [
+                Import::VARCHAR,
+                Import::INT,
+                '2147483648',
+            ];
+        }
+
+        return $data;
     }
 
     /**
@@ -556,7 +561,7 @@ class ImportTest extends TestCase
 
         $this->assertEquals(
             [
-                'sql_query' => Util::formatSql(
+                'sql_query' => Generator::formatSql(
                     $analyzed_sql_results['query']
                 ),
                 'matched_rows' => 2,
@@ -636,5 +641,57 @@ class ImportTest extends TestCase
             . 'WHERE 1';
 
         $this->assertEquals(true, $this->import->checkIfRollbackPossible($sql_query));
+    }
+
+    /**
+     * Data provider for testSkipByteOrderMarksFromContents
+     *
+     * @return array[]
+     */
+    public function providerContentWithByteOrderMarks(): array
+    {
+        return [
+            [
+                "\xEF\xBB\xBF blabla",
+                ' blabla',
+            ],
+            [
+                "\xEF\xBB\xBF blabla\xEF\xBB\xBF",
+                " blabla\xEF\xBB\xBF",
+            ],
+            [
+                "\xFE\xFF blabla",
+                ' blabla',
+            ],
+            [
+                "\xFE\xFF blabla\xFE\xFF",
+                " blabla\xFE\xFF",
+            ],
+            [
+                "\xFF\xFE blabla",
+                ' blabla',
+            ],
+            [
+                "\xFF\xFE blabla\xFF\xFE",
+                " blabla\xFF\xFE",
+            ],
+            [
+                "\xEF\xBB\xBF\x44\x52\x4F\x50\x20\x54\x41\x42\x4C\x45\x20\x49\x46\x20\x45\x58\x49\x53\x54\x53",
+                'DROP TABLE IF EXISTS',
+            ],
+        ];
+    }
+
+    /**
+     * Test for skipByteOrderMarksFromContents
+     *
+     * @param string $input         The contents to strip BOM
+     * @param string $cleanContents The contents cleaned
+     *
+     * @dataProvider providerContentWithByteOrderMarks
+     */
+    public function testSkipByteOrderMarksFromContents(string $input, string $cleanContents): void
+    {
+        $this->assertEquals($cleanContents, $this->import->skipByteOrderMarksFromContents($input));
     }
 }

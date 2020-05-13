@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * tests for TwoFactor class
- *
- * @package PhpMyAdmin-test
  */
 declare(strict_types=1);
 
@@ -13,17 +10,14 @@ use PhpMyAdmin\Plugins\TwoFactor\Application;
 use PhpMyAdmin\TwoFactor;
 use Samyoul\U2F\U2FServer\RegistrationRequest;
 use Samyoul\U2F\U2FServer\SignRequest;
+use function count;
+use function in_array;
 
 /**
  * Tests behaviour of TwoFactor class
- *
- * @package PhpMyAdmin-test
  */
 class TwoFactorTest extends PmaTestCase
 {
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         $GLOBALS['server'] = 1;
@@ -55,6 +49,7 @@ class TwoFactorTest extends PmaTestCase
             ->getMock();
         $result->method('readConfig')->willReturn($config);
         $result->__construct($user);
+
         return $result;
     }
 
@@ -263,11 +258,12 @@ class TwoFactorTest extends PmaTestCase
         $_POST['u2f_authentication_response'] = '';
         $this->assertFalse($object->check(true));
 
-        $_SESSION['authenticationRequest'] = [new SignRequest([
-            'challenge' => 'fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g',
-            'keyHandle' => 'CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w',
-            'appId' => 'http://demo.example.com',
-        ]),
+        $_SESSION['authenticationRequest'] = [
+            new SignRequest([
+                'challenge' => 'fEnc9oV79EaBgK5BoNERU5gPKM2XGYWrz4fUjgc0Q7g',
+                'keyHandle' => 'CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w',
+                'appId' => 'http://demo.example.com',
+            ]),
         ];
         $this->assertFalse($object->check(true));
         $_POST['u2f_authentication_response'] = '{ "signatureData": "AQAAAAQwRQIhAI6FSrMD3KUUtkpiP0jpIEakql-HNhwWFngyw553pS1CAiAKLjACPOhxzZXuZsVO8im-HStEcYGC50PKhsGp_SUAng==", "clientData": "eyAiY2hhbGxlbmdlIjogImZFbmM5b1Y3OUVhQmdLNUJvTkVSVTVnUEtNMlhHWVdyejRmVWpnYzBRN2ciLCAib3JpZ2luIjogImh0dHA6XC9cL2RlbW8uZXhhbXBsZS5jb20iLCAidHlwIjogIm5hdmlnYXRvci5pZC5nZXRBc3NlcnRpb24iIH0=", "keyHandle": "CTUayZo8hCBeC-sGQJChC0wW-bBg99bmOlGCgw8XGq4dLsxO3yWh9mRYArZxocP5hBB1pEGB3bbJYiM-5acc5w", "errorCode": 0 }';

@@ -1,16 +1,17 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * PhpMyAdmin\Server\Status\Data class
  * Used by server_status_*.php pages
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Server\Status;
 
+use PhpMyAdmin\ReplicationInfo;
 use PhpMyAdmin\Url;
+use function basename;
+use function mb_strpos;
+use function mb_strtolower;
 
 /**
  * This class provides data about the server status
@@ -20,8 +21,6 @@ use PhpMyAdmin\Url;
  * TODO: Use lazy initialisation for some of the properties
  *       since not all of the server_status_*.php pages need
  *       all the data that this class provides.
- *
- * @package PhpMyAdmin
  */
 class Data
 {
@@ -194,14 +193,11 @@ class Data
         $links['Slow_queries']['doc'] = 'slow_query_log';
 
         $links['innodb'][__('Variables')] = [
-            'url' => Url::getFromRoute('/server/engines', ['engine' => 'InnoDB']),
+            'url' => Url::getFromRoute('/server/engines/InnoDB'),
             'params' => '',
         ];
         $links['innodb'][__('InnoDB Status')] = [
-            'url' => Url::getFromRoute('/server/engines', [
-                'engine' => 'InnoDB',
-                'page' => 'Status',
-            ]),
+            'url' => Url::getFromRoute('/server/engines/InnoDB/Status'),
             'params' => '',
         ];
         $links['innodb']['doc'] = 'innodb';
@@ -266,6 +262,7 @@ class Data
                 = 100 - $server_status['Threads_created']
                 / $server_status['Connections'] * 100;
         }
+
         return $server_status;
     }
 
@@ -305,6 +302,7 @@ class Data
                 $sectionUsed['other'] = true;
             }
         }
+
         return [
             $allocationMap,
             $sectionUsed,
@@ -312,11 +310,14 @@ class Data
         ];
     }
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
+        global $replication_info;
+
+        if (! isset($replication_info)) {
+            ReplicationInfo::load();
+        }
+
         $this->selfUrl = basename($GLOBALS['PMA_PHP_SELF']);
 
         // get status from server
@@ -383,8 +384,9 @@ class Data
 
         // Set all class properties
         $this->db_isLocal = false;
+        // can be null if $cfg['ServerDefault'] = 0;
         $serverHostToLower = mb_strtolower(
-            $GLOBALS['cfg']['Server']['host']
+            (string) $GLOBALS['cfg']['Server']['host']
         );
         if ($serverHostToLower === 'localhost'
             || $GLOBALS['cfg']['Server']['host'] === '127.0.0.1'
@@ -420,6 +422,7 @@ class Data
                 unset($server_status[$old]);
             }
         }
+
         return $server_status;
     }
 }

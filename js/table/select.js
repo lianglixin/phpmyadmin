@@ -1,4 +1,3 @@
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * @fileoverview JavaScript functions used on /table/search
  *
@@ -78,7 +77,7 @@ AJAX.registerOnload('table/select.js', function () {
             return false;
         });
 
-    var tableRows = $('#fieldset_table_qbe select');
+    var tableRows = $('#fieldset_table_qbe select.column-operator');
     $.each(tableRows, function (index, item) {
         $(item).on('change', function () {
             changeValueFieldType(this, index);
@@ -132,7 +131,7 @@ AJAX.registerOnload('table/select.js', function () {
             }
 
             if (values['geom_func[' + a + ']'] &&
-                $.isArray(values['geom_func[' + a + ']'], geomUnaryFunctions) >= 0) {
+                $.inArray(values['geom_func[' + a + ']'], geomUnaryFunctions) >= 0) {
                 continue;
             }
 
@@ -227,7 +226,7 @@ AJAX.registerOnload('table/select.js', function () {
         var outputGeomFunctions = binaryFunctions.concat(tempArray);
 
         // If the chosen function takes two geometry objects as parameters
-        var $operator = $geomFuncSelector.parents('tr').find('td:nth-child(5)').find('select');
+        var $operator = $geomFuncSelector.parents('tr').find(document.querySelectorAll('td:nth-child(5)')).find('select');
         if ($.inArray($geomFuncSelector.val(), binaryFunctions) >= 0) {
             $operator.prop('readonly', true);
         } else {
@@ -281,7 +280,8 @@ AJAX.registerOnload('table/select.js', function () {
         // Get the column name.
         var columnName = $(this)
             .closest('tr')
-            .find('th:first')
+            .find('th')
+            .first()
             .text();
 
         // Get the data-type of column excluding size.
@@ -380,7 +380,7 @@ AJAX.registerOnload('table/select.js', function () {
                             '<span class="small_font">' + max + '</span>' +
                             '</fieldset>'
                         ).dialog({
-                            minWidth: 500,
+                            width: 'auto',
                             maxHeight: 400,
                             modal: true,
                             buttons: buttonOptions,

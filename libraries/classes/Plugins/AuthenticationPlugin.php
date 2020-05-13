@@ -1,9 +1,6 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Abstract class for the authentication plugins
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -15,17 +12,23 @@ use PhpMyAdmin\IpAllowDeny;
 use PhpMyAdmin\Logging;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
-use PhpMyAdmin\Sanitize;
 use PhpMyAdmin\Session;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\TwoFactor;
 use PhpMyAdmin\Url;
+use function defined;
+use function htmlspecialchars;
+use function intval;
+use function max;
+use function min;
+use function session_destroy;
+use function session_unset;
+use function sprintf;
+use function time;
 
 /**
  * Provides a common interface that will have to be implemented by all of the
  * authentication plugins.
- *
- * @package PhpMyAdmin
  */
 abstract class AuthenticationPlugin
 {
@@ -43,19 +46,12 @@ abstract class AuthenticationPlugin
      */
     public $password = '';
 
-    /**
-     * @var IpAllowDeny
-     */
+    /** @var IpAllowDeny */
     protected $ipAllowDeny;
 
-    /**
-     * @var Template
-     */
+    /** @var Template */
     public $template;
 
-    /**
-     * AuthenticationPlugin constructor.
-     */
     public function __construct()
     {
         $this->ipAllowDeny = new IpAllowDeny();
@@ -65,21 +61,21 @@ abstract class AuthenticationPlugin
     /**
      * Displays authentication form
      *
-     * @return boolean
+     * @return bool
      */
     abstract public function showLoginForm();
 
     /**
      * Gets authentication credentials
      *
-     * @return boolean
+     * @return bool
      */
     abstract public function readCredentials();
 
     /**
      * Set the user and password after last checkings if required
      *
-     * @return boolean
+     * @return bool
      */
     public function storeCredentials()
     {
@@ -121,6 +117,8 @@ abstract class AuthenticationPlugin
      */
     public function logOut()
     {
+        global $PMA_Config;
+
         /* Obtain redirect URL (before doing logout) */
         if (! empty($GLOBALS['cfg']['Server']['LogoutURL'])) {
             $redirect_url = $GLOBALS['cfg']['Server']['LogoutURL'];
@@ -140,7 +138,7 @@ abstract class AuthenticationPlugin
             && $GLOBALS['cfg']['Server']['auth_type'] == 'cookie'
         ) {
             foreach ($GLOBALS['cfg']['Servers'] as $key => $val) {
-                if (isset($_COOKIE['pmaAuth-' . $key])) {
+                if ($PMA_Config->issetCookie('pmaAuth-' . $key)) {
                     $server = $key;
                 }
             }
@@ -159,7 +157,7 @@ abstract class AuthenticationPlugin
             /* Redirect to other autenticated server */
             $_SESSION['partial_logout'] = true;
             Core::sendHeaderLocation(
-                './index.php' . Url::getCommonRaw(['server' => $server])
+                './index.php?route=/' . Url::getCommonRaw(['server' => $server], '&')
             );
         }
     }
@@ -171,7 +169,7 @@ abstract class AuthenticationPlugin
      */
     public function getLoginFormURL()
     {
-        return './index.php';
+        return './index.php?route=/';
     }
 
     /**
@@ -192,7 +190,8 @@ abstract class AuthenticationPlugin
             return __('Access denied!');
         } elseif ($failure == 'no-activity') {
             return sprintf(
-                __('No activity within %s seconds; please log in again.'),
+                __('You have been automatically logged out due to inactivity of %s seconds.'
+                . ' Once you log in again, you should be able to resume the work where you left off.'),
                 intval($GLOBALS['cfg']['LoginCookieValidity'])
             );
         }
@@ -330,9 +329,9 @@ abstract class AuthenticationPlugin
      * Checks whether two factor authentication is active
      * for given user and performs it.
      *
-     * @return boolean|void
+     * @return void
      */
-    public function checkTwoFactor()
+    public function checkTwoFactor(): void
     {
         $twofactor = new TwoFactor($this->user);
 
@@ -362,5 +361,7 @@ abstract class AuthenticationPlugin
         if (! defined('TESTSUITE')) {
             exit;
         }
+
+        return;
     }
 }

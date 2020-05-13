@@ -1,41 +1,63 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * A simple rules engine, that parses and executes the rules in advisory_rules.txt.
  * Adjusted to phpMyAdmin.
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
 use Exception;
-use PhpMyAdmin\Core;
-use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\SysInfo;
-use PhpMyAdmin\Url;
-use PhpMyAdmin\Util;
+use PhpMyAdmin\Server\SysInfo\SysInfo;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Throwable;
+use const FILE_IGNORE_NEW_LINES;
+use function array_merge;
+use function array_merge_recursive;
+use function count;
+use function file;
+use function htmlspecialchars;
+use function implode;
+use function mb_substr;
+use function pow;
+use function preg_match;
+use function preg_replace;
+use function preg_replace_callback;
+use function preg_split;
+use function round;
+use function rtrim;
+use function sprintf;
+use function strpos;
+use function substr;
+use function vsprintf;
 
 /**
  * Advisor class
- *
- * @package PhpMyAdmin
  */
 class Advisor
 {
+    public const GENERIC_RULES_FILE = 'libraries/advisory_rules_generic.txt';
+    public const BEFORE_MYSQL80003_RULES_FILE = 'libraries/advisory_rules_mysql_before80003.txt';
+
+    /** @var DatabaseInterface */
     protected $dbi;
+
+    /** @var array */
     protected $variables;
+
+    /** @var array */
     protected $globals;
+
+    /** @var array */
     protected $parseResult;
+
+    /** @var array */
     protected $runResult;
+
+    /** @var ExpressionLanguage */
     protected $expression;
 
     /**
-     * Constructor
-     *
      * @param DatabaseInterface  $dbi        DatabaseInterface object
      * @param ExpressionLanguage $expression ExpressionLanguage object
      */
@@ -51,6 +73,10 @@ class Advisor
             'round',
             function () {
             },
+            /**
+             * @param null $arguments
+             * @param float $num
+             */
             function ($arguments, $num) {
                 return round($num);
             }
@@ -59,6 +85,12 @@ class Advisor
             'substr',
             function () {
             },
+            /**
+             * @param null $arguments
+             * @param string $string
+             * @param int $start
+             * @param int $length
+             */
             function ($arguments, $string, $start, $length) {
                 return substr($string, $start, $length);
             }
@@ -67,6 +99,11 @@ class Advisor
             'preg_match',
             function () {
             },
+            /**
+             * @param null $arguments
+             * @param string $pattern
+             * @param string $subject
+             */
             function ($arguments, $pattern, $subject) {
                 return preg_match($pattern, $subject);
             }
@@ -75,6 +112,11 @@ class Advisor
             'ADVISOR_bytime',
             function () {
             },
+            /**
+             * @param null $arguments
+             * @param float $num
+             * @param int $precision
+             */
             function ($arguments, $num, $precision) {
                 return self::byTime($num, $precision);
             }
@@ -83,6 +125,10 @@ class Advisor
             'ADVISOR_timespanFormat',
             function () {
             },
+            /**
+             * @param null $arguments
+             * @param string $seconds
+             */
             function ($arguments, $seconds) {
                 return self::timespanFormat((int) $seconds);
             }
@@ -91,6 +137,12 @@ class Advisor
             'ADVISOR_formatByteDown',
             function () {
             },
+            /**
+             * @param null $arguments
+             * @param int $value
+             * @param int $limes
+             * @param int $comma
+             */
             function ($arguments, $value, $limes = 6, $comma = 0) {
                 return self::formatByteDown($value, $limes, $comma);
             }
@@ -99,6 +151,10 @@ class Advisor
             'fired',
             function () {
             },
+            /**
+             * @param null $arguments
+             * @param int $value
+             */
             function ($arguments, $value) {
                 if (! isset($this->runResult['fired'])) {
                     return 0;
@@ -123,9 +179,9 @@ class Advisor
     /**
      * Get variables
      *
-     * @return mixed
+     * @return array
      */
-    public function getVariables()
+    public function getVariables(): array
     {
         return $this->variables;
     }
@@ -162,9 +218,9 @@ class Advisor
     /**
      * Get parseResult
      *
-     * @return mixed
+     * @return array
      */
-    public function getParseResult()
+    public function getParseResult(): array
     {
         return $this->parseResult;
     }
@@ -186,9 +242,9 @@ class Advisor
     /**
      * Get runResult
      *
-     * @return mixed
+     * @return array
      */
-    public function getRunResult()
+    public function getRunResult(): array
     {
         return $this->runResult;
     }
@@ -227,11 +283,17 @@ class Advisor
         // Add total memory to variables as well
         $sysinfo = SysInfo::get();
         $memory  = $sysinfo->memory();
-        $this->variables['system_memory']
-            = isset($memory['MemTotal']) ? $memory['MemTotal'] : 0;
+        $this->variables['system_memory'] = $memory['MemTotal'] ?? 0;
+
+        $ruleFiles = $this->defineRulesFiles();
 
         // Step 2: Read and parse the list of rules
-        $this->setParseResult(static::parseRulesFile());
+        $parsedResults = [];
+        foreach ($ruleFiles as $ruleFile) {
+            $parsedResults[] = static::parseRulesFile($ruleFile);
+        }
+        $this->setParseResult(array_merge_recursive(...$parsedResults));
+
         // Step 3: Feed the variables to the rules and let them fire. Sets
         // $runResult
         $this->runRules();
@@ -247,8 +309,6 @@ class Advisor
      *
      * @param string    $description description of an error.
      * @param Throwable $exception   exception raised
-     *
-     * @return void
      */
     public function storeError(string $description, Throwable $exception): void
     {
@@ -262,8 +322,6 @@ class Advisor
 
     /**
      * Executes advisor rules
-     *
-     * @return boolean
      */
     public function runRules(): bool
     {
@@ -283,7 +341,7 @@ class Advisor
             if (isset($rule['precondition'])) {
                 try {
                      $precond = $this->ruleExprEvaluate($rule['precondition']);
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     $this->storeError(
                         sprintf(
                             __('Failed evaluating precondition for rule \'%s\'.'),
@@ -300,7 +358,7 @@ class Advisor
             } else {
                 try {
                     $value = $this->ruleExprEvaluate($rule['formula']);
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     $this->storeError(
                         sprintf(
                             __('Failed calculating value for rule \'%s\'.'),
@@ -319,7 +377,7 @@ class Advisor
                     } else {
                         $this->addRule('notfired', $rule);
                     }
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     $this->storeError(
                         sprintf(
                             __('Failed running test for rule \'%s\'.'),
@@ -338,8 +396,6 @@ class Advisor
      * Escapes percent string to be used in format string.
      *
      * @param string $str string to escape
-     *
-     * @return string
      */
     public static function escapePercent(string $str): string
     {
@@ -352,7 +408,6 @@ class Advisor
      * @param string $str   the string
      * @param string $param the parameters
      *
-     * @return string
      * @throws Exception
      */
     public function translate(string $str, ?string $param = null): string
@@ -363,6 +418,7 @@ class Advisor
         } else {
             $params = [];
         }
+
         return vsprintf($string, $params);
     }
 
@@ -376,12 +432,13 @@ class Advisor
     public static function splitJustification(array $rule): array
     {
         $jst = preg_split('/\s*\|\s*/', $rule['justification'], 2);
-        if (count($jst) > 1) {
+        if ($jst !== false && count($jst) > 1) {
             return [
                 $jst[0],
                 $jst[1],
             ];
         }
+
         return [$rule['justification']];
     }
 
@@ -391,7 +448,6 @@ class Advisor
      * @param string $type type of rule
      * @param array  $rule rule itself
      *
-     * @return void
      * @throws Exception
      */
     public function addRule(string $type, array $rule): void
@@ -404,7 +460,7 @@ class Advisor
                     try {
                         /* Translate */
                         $str = $this->translate($jst[0], $jst[1]);
-                    } catch (Exception $e) {
+                    } catch (Throwable $e) {
                         $this->storeError(
                             sprintf(
                                 __('Failed formatting string for rule \'%s\'.'),
@@ -412,6 +468,7 @@ class Advisor
                             ),
                             $e
                         );
+
                         return;
                     }
 
@@ -447,6 +504,23 @@ class Advisor
         }
 
         $this->runResult[$type][] = $rule;
+    }
+
+    /**
+     * Defines the rules files to use
+     *
+     * @return array
+     */
+    protected function defineRulesFiles(): array
+    {
+        $isMariaDB = strpos($this->getVariables()['version'], 'MariaDB') !== false;
+        $ruleFiles = [self::GENERIC_RULES_FILE];
+        // If MariaDB (= not MySQL) OR MYSQL < 8.0.3, add another rules file.
+        if ($isMariaDB || $this->globals['PMA_MYSQL_INT_VERSION'] < 80003) {
+            $ruleFiles[] = self::BEFORE_MYSQL80003_RULES_FILE;
+        }
+
+        return $ruleFiles;
     }
 
     /**
@@ -500,11 +574,12 @@ class Advisor
      * Reads the rule file into an array, throwing errors messages on syntax
      * errors.
      *
+     * @param string $filename Name of file to parse
+     *
      * @return array with parsed data
      */
-    public static function parseRulesFile(): array
+    public static function parseRulesFile(string $filename): array
     {
-        $filename = 'libraries/advisory_rules.txt';
         $file = file($filename, FILE_IGNORE_NEW_LINES);
 
         $errors = [];
@@ -516,6 +591,7 @@ class Advisor
                 __('Error in reading file: The file \'%s\' does not exist or is not readable!'),
                 $filename
             );
+
             return [
                 'rules' => $rules,
                 'lines' => $lines,
@@ -538,7 +614,7 @@ class Advisor
 
         for ($i = 0; $i < $numLines; $i++) {
             $line = $file[$i];
-            if ($line == "" || $line[0] == '#') {
+            if ($line == '' || $line[0] == '#') {
                 continue;
             }
 
@@ -618,8 +694,8 @@ class Advisor
     /**
      * Formats interval like 10 per hour
      *
-     * @param float   $num       number to format
-     * @param integer $precision required precision
+     * @param float $num       number to format
+     * @param int   $precision required precision
      *
      * @return string formatted string
      */
@@ -644,7 +720,7 @@ class Advisor
             $num = '<' . pow(10, -$precision);
         }
 
-        return "$num $per";
+        return $num . ' ' . $per;
     }
 
     /**
@@ -666,9 +742,9 @@ class Advisor
      *
      * This function is used when evaluating advisory_rules.txt
      *
-     * @param double|string $value the value to format
-     * @param int           $limes the sensitiveness
-     * @param int           $comma the number of decimals to retain
+     * @param double|int $value the value to format
+     * @param int        $limes the sensitiveness
+     * @param int        $comma the number of decimals to retain
      *
      * @return string the formatted value with unit
      */

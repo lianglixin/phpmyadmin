@@ -1,10 +1,7 @@
 <?php
-/* vim: set expandtab sw=4 ts=4 sts=4: */
 /**
  * Contains PhpMyAdmin\Plugins\Schema\ExportRelationSchema class which is
  * inherited by all schema classes.
- *
- * @package PhpMyAdmin
  */
 declare(strict_types=1);
 
@@ -13,13 +10,13 @@ namespace PhpMyAdmin\Plugins\Schema;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function htmlspecialchars;
+use function rawurldecode;
 
 /**
  * This class is inherited by all schema classes
  * It contains those methods which are common in them
  * it works like factory pattern
- *
- * @package PhpMyAdmin
  */
 class ExportRelationSchema
 {
@@ -34,14 +31,10 @@ class ExportRelationSchema
     protected $pageNumber;
     protected $offline;
 
-    /**
-     * @var Relation
-     */
+    /** @var Relation */
     protected $relation;
 
     /**
-     * Constructor.
-     *
      * @param string                                       $db      database name
      * @param Pdf\Pdf|Svg\Svg|Eps\Eps|Dia\Dia|Pdf\Pdf|null $diagram schema diagram
      */
@@ -49,7 +42,7 @@ class ExportRelationSchema
     {
         $this->db = $db;
         $this->diagram = $diagram;
-        $this->setPageNumber($_REQUEST['page_number']);
+        $this->setPageNumber((int) $_REQUEST['page_number']);
         $this->setOffline(isset($_REQUEST['offline_export']));
         $this->relation = new Relation($GLOBALS['dbi']);
     }
@@ -57,19 +50,19 @@ class ExportRelationSchema
     /**
      * Set Page Number
      *
-     * @param integer $value Page Number of the document to be created
+     * @param int $value Page Number of the document to be created
      *
      * @return void
      */
-    public function setPageNumber($value)
+    public function setPageNumber(int $value): void
     {
-        $this->pageNumber = intval($value);
+        $this->pageNumber = $value;
     }
 
     /**
      * Returns the schema page number
      *
-     * @return integer schema page number
+     * @return int schema page number
      */
     public function getPageNumber()
     {
@@ -79,11 +72,11 @@ class ExportRelationSchema
     /**
      * Sets showColor
      *
-     * @param boolean $value whether to show colors
+     * @param bool $value whether to show colors
      *
      * @return void
      */
-    public function setShowColor($value)
+    public function setShowColor(bool $value): void
     {
         $this->showColor = $value;
     }
@@ -91,7 +84,7 @@ class ExportRelationSchema
     /**
      * Returns whether to show colors
      *
-     * @return boolean whether to show colors
+     * @return bool whether to show colors
      */
     public function isShowColor()
     {
@@ -101,11 +94,11 @@ class ExportRelationSchema
     /**
      * Set Table Dimension
      *
-     * @param boolean $value show table co-ordinates or not
+     * @param bool $value show table co-ordinates or not
      *
      * @return void
      */
-    public function setTableDimension($value)
+    public function setTableDimension(bool $value): void
     {
         $this->tableDimension = $value;
     }
@@ -113,7 +106,7 @@ class ExportRelationSchema
     /**
      * Returns whether to show table dimensions
      *
-     * @return boolean whether to show table dimensions
+     * @return bool whether to show table dimensions
      */
     public function isTableDimension()
     {
@@ -123,11 +116,11 @@ class ExportRelationSchema
     /**
      * Set same width of All Tables
      *
-     * @param boolean $value set same width of all tables or not
+     * @param bool $value set same width of all tables or not
      *
      * @return void
      */
-    public function setAllTablesSameWidth($value)
+    public function setAllTablesSameWidth(bool $value): void
     {
         $this->sameWide = $value;
     }
@@ -135,7 +128,7 @@ class ExportRelationSchema
     /**
      * Returns whether to use same width for all tables or not
      *
-     * @return boolean whether to use same width for all tables or not
+     * @return bool whether to use same width for all tables or not
      */
     public function isAllTableSameWidth()
     {
@@ -145,13 +138,13 @@ class ExportRelationSchema
     /**
      * Set Show only keys
      *
-     * @param boolean $value show only keys or not
+     * @param bool $value show only keys or not
      *
      * @return void
      *
      * @access public
      */
-    public function setShowKeys($value)
+    public function setShowKeys(bool $value): void
     {
         $this->showKeys = $value;
     }
@@ -159,7 +152,7 @@ class ExportRelationSchema
     /**
      * Returns whether to show keys
      *
-     * @return boolean whether to show keys
+     * @return bool whether to show keys
      */
     public function isShowKeys()
     {
@@ -175,7 +168,7 @@ class ExportRelationSchema
      *
      * @access public
      */
-    public function setOrientation($value)
+    public function setOrientation(string $value): void
     {
         $this->orientation = $value == 'P' ? 'P' : 'L';
     }
@@ -199,7 +192,7 @@ class ExportRelationSchema
      *
      * @access public
      */
-    public function setPaper($value)
+    public function setPaper(string $value): void
     {
         $this->paper = $value;
     }
@@ -217,13 +210,13 @@ class ExportRelationSchema
     /**
      * Set whether the document is generated from client side DB
      *
-     * @param boolean $value offline or not
+     * @param bool $value offline or not
      *
      * @return void
      *
      * @access public
      */
-    public function setOffline($value)
+    public function setOffline(bool $value): void
     {
         $this->offline = $value;
     }
@@ -231,7 +224,7 @@ class ExportRelationSchema
     /**
      * Returns whether the client side database is used
      *
-     * @return boolean
+     * @return bool
      *
      * @access public
      */
@@ -243,15 +236,14 @@ class ExportRelationSchema
     /**
      * Get the table names from the request
      *
-     * @return array an array of table names
+     * @return string[] an array of table names
      */
-    protected function getTablesFromRequest()
+    protected function getTablesFromRequest(): array
     {
         $tables = [];
-        $dbLength = mb_strlen($this->db);
-        foreach ($_REQUEST['t_h'] as $key => $value) {
-            if ($value) {
-                $tables[] = mb_substr($key, $dbLength + 1);
+        if (isset($_POST['t_tbl'])) {
+            foreach ($_POST['t_tbl'] as $table) {
+                $tables[] = rawurldecode($table);
             }
         }
 
@@ -261,11 +253,11 @@ class ExportRelationSchema
     /**
      * Returns the file name
      *
-     * @param String $extension file extension
+     * @param string $extension file extension
      *
      * @return string file name
      */
-    protected function getFileName($extension)
+    protected function getFileName($extension): string
     {
         $filename = $this->db . $extension;
         // Get the name of this page to use as filename
@@ -285,17 +277,17 @@ class ExportRelationSchema
     /**
      * Displays an error message
      *
-     * @param integer $pageNumber    ID of the chosen page
-     * @param string  $type          Schema Type
-     * @param string  $error_message The error message
-     *
-     * @access public
+     * @param int    $pageNumber    ID of the chosen page
+     * @param string $type          Schema Type
+     * @param string $error_message The error message
      *
      * @return void
+     *
+     * @access public
      */
     public static function dieSchema($pageNumber, $type = '', $error_message = '')
     {
-        echo "<p><strong>" , __("SCHEMA ERROR: ") , $type , "</strong></p>" , "\n";
+        echo '<p><strong>' , __('SCHEMA ERROR: ') , $type , '</strong></p>' , "\n";
         if (! empty($error_message)) {
             $error_message = htmlspecialchars($error_message);
         }
@@ -305,6 +297,7 @@ class ExportRelationSchema
         echo '<a href="';
         echo Url::getFromRoute('/database/designer', [
             'db' => $GLOBALS['db'],
+            'server' => $GLOBALS['server'],
             'page' => $pageNumber,
         ]);
         echo '">' . __('Back') . '</a>';
