@@ -2,19 +2,19 @@
 /**
  * Test for PhpMyAdmin\Navigation\NavigationTree class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Navigation;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Navigation\NavigationTree;
 use PhpMyAdmin\Template;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Navigation\NavigationTree class
  */
-class NavigationTreeTest extends PmaTestCase
+class NavigationTreeTest extends AbstractTestCase
 {
     /** @var NavigationTree */
     protected $object;
@@ -26,8 +26,10 @@ class NavigationTreeTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::setLanguage();
+        parent::setGlobalConfig();
         $GLOBALS['server'] = 1;
-        $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['cfg']['Server']['host'] = 'localhost';
         $GLOBALS['cfg']['Server']['user'] = 'user';
@@ -41,6 +43,7 @@ class NavigationTreeTest extends PmaTestCase
         $GLOBALS['pmaThemeImage'] = 'image';
         $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = '';
+        $GLOBALS['PMA_PHP_SELF'] = '';
 
         $this->object = new NavigationTree(new Template(), $GLOBALS['dbi']);
     }
@@ -52,6 +55,7 @@ class NavigationTreeTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 

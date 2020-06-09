@@ -2,14 +2,21 @@
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportTexytext class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Export\ExportTexytext;
+use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup;
+use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
+use PhpMyAdmin\Properties\Options\Items\BoolPropertyItem;
+use PhpMyAdmin\Properties\Options\Items\RadioPropertyItem;
+use PhpMyAdmin\Properties\Options\Items\TextPropertyItem;
+use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
 use PhpMyAdmin\Relation;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionMethod;
 use ReflectionProperty;
 use function array_shift;
@@ -21,7 +28,7 @@ use function ob_start;
  *
  * @group medium
  */
-class ExportTexytextTest extends PmaTestCase
+class ExportTexytextTest extends AbstractTestCase
 {
     protected $object;
 
@@ -30,6 +37,9 @@ class ExportTexytextTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::loadDefaultConfig();
         $GLOBALS['server'] = 0;
         $GLOBALS['output_kanji_conversion'] = false;
         $GLOBALS['buffer_needed'] = false;
@@ -47,6 +57,7 @@ class ExportTexytextTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -57,16 +68,16 @@ class ExportTexytextTest extends PmaTestCase
      */
     public function testSetProperties()
     {
-        $method = new ReflectionMethod('PhpMyAdmin\Plugins\Export\ExportTexytext', 'setProperties');
+        $method = new ReflectionMethod(ExportTexytext::class, 'setProperties');
         $method->setAccessible(true);
         $method->invoke($this->object, null);
 
-        $attrProperties = new ReflectionProperty('PhpMyAdmin\Plugins\Export\ExportTexytext', 'properties');
+        $attrProperties = new ReflectionProperty(ExportTexytext::class, 'properties');
         $attrProperties->setAccessible(true);
         $properties = $attrProperties->getValue($this->object);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Plugins\ExportPluginProperties',
+            ExportPluginProperties::class,
             $properties
         );
 
@@ -88,7 +99,7 @@ class ExportTexytextTest extends PmaTestCase
         $options = $properties->getOptions();
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup',
+            OptionsPropertyRootGroup::class,
             $options
         );
 
@@ -102,7 +113,7 @@ class ExportTexytextTest extends PmaTestCase
         $generalOptions = array_shift($generalOptionsArray);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup',
+            OptionsPropertyMainGroup::class,
             $generalOptions
         );
 
@@ -121,14 +132,14 @@ class ExportTexytextTest extends PmaTestCase
         $property = array_shift($generalProperties);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Items\RadioPropertyItem',
+            RadioPropertyItem::class,
             $property
         );
 
         $generalOptions = array_shift($generalOptionsArray);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup',
+            OptionsPropertyMainGroup::class,
             $generalOptions
         );
 
@@ -142,7 +153,7 @@ class ExportTexytextTest extends PmaTestCase
         $property = array_shift($generalProperties);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Items\BoolPropertyItem',
+            BoolPropertyItem::class,
             $property
         );
 
@@ -154,7 +165,7 @@ class ExportTexytextTest extends PmaTestCase
         $property = array_shift($generalProperties);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Items\TextPropertyItem',
+            TextPropertyItem::class,
             $property
         );
 
@@ -234,7 +245,7 @@ class ExportTexytextTest extends PmaTestCase
      */
     public function testExportData()
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -300,7 +311,7 @@ class ExportTexytextTest extends PmaTestCase
      */
     public function testGetTableDefStandIn()
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -331,7 +342,7 @@ class ExportTexytextTest extends PmaTestCase
 
         $GLOBALS['dbi'] = $dbi;
 
-        $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Export\ExportTexytext')
+        $this->object = $this->getMockBuilder(ExportTexytext::class)
             ->disableOriginalConstructor()
             ->setMethods(['formatOneColumnDefinition'])
             ->getMock();
@@ -361,13 +372,13 @@ class ExportTexytextTest extends PmaTestCase
      */
     public function testGetTableDef()
     {
-        $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Export\ExportTexytext')
+        $this->object = $this->getMockBuilder(ExportTexytext::class)
             ->setMethods(['formatOneColumnDefinition'])
             ->getMock();
 
         // case 1
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -465,7 +476,7 @@ class ExportTexytextTest extends PmaTestCase
      */
     public function testGetTriggers()
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -505,7 +516,7 @@ class ExportTexytextTest extends PmaTestCase
      */
     public function testExportStructure()
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -514,7 +525,7 @@ class ExportTexytextTest extends PmaTestCase
             ->with('db', 't&bl')
             ->will($this->returnValue(1));
 
-        $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Export\ExportTexytext')
+        $this->object = $this->getMockBuilder(ExportTexytext::class)
             ->setMethods(['getTableDef', 'getTriggers', 'getTableDefStandIn'])
             ->getMock();
 
@@ -642,9 +653,7 @@ class ExportTexytextTest extends PmaTestCase
             'Type' => 'set(abc)enum123',
         ];
 
-        $unique_keys = [
-            'field',
-        ];
+        $unique_keys = ['field'];
 
         $this->assertEquals(
             '|//**field**//|set(abc)|Yes|NULL',
@@ -659,9 +668,7 @@ class ExportTexytextTest extends PmaTestCase
             'Default' => 'def',
         ];
 
-        $unique_keys = [
-            'field',
-        ];
+        $unique_keys = ['field'];
 
         $this->assertEquals(
             '|fields|&amp;nbsp;|No|def',

@@ -2,6 +2,7 @@
 /**
  * CSV export code
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Export;
@@ -325,9 +326,11 @@ class ExportCsv extends ExportPlugin
                 } else {
                     $schema_insert .= '';
                 }
-                if ($j < $fields_cnt - 1) {
-                    $schema_insert .= $csv_separator;
+                if ($j >= $fields_cnt - 1) {
+                    continue;
                 }
+
+                $schema_insert .= $csv_separator;
             } // end for
 
             if (! $this->export->outputHandler($schema_insert . $csv_terminated)) {

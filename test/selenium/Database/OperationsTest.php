@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for table related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium\Database;
@@ -27,7 +28,7 @@ class OperationsTest extends TestBase
     /**
      * @return void
      */
-    private function _getToDBOperations()
+    private function getToDBOperations()
     {
         $this->gotoHomepage();
 
@@ -51,7 +52,7 @@ class OperationsTest extends TestBase
     {
         $this->skipIfNotPMADB();
 
-        $this->_getToDBOperations();
+        $this->getToDBOperations();
         $this->byName('comment')->sendKeys('comment_foobar');
         $this->byCssSelector(
             "form#formDatabaseComment input[type='submit']"
@@ -74,7 +75,7 @@ class OperationsTest extends TestBase
      */
     public function testRenameDB()
     {
-        $this->_getToDBOperations();
+        $this->getToDBOperations();
 
         $new_db_name = $this->database_name . 'rename';
 
@@ -116,7 +117,7 @@ class OperationsTest extends TestBase
      */
     public function testCopyDb()
     {
-        $this->_getToDBOperations();
+        $this->getToDBOperations();
 
         $this->reloadPage();// Reload or scrolling will not work ..
         $new_db_name = $this->database_name . 'copy';
@@ -138,6 +139,6 @@ class OperationsTest extends TestBase
         );
         $this->assertEquals(1, $result->num_rows);
 
-        $this->dbQuery('DROP DATABASE ' . $new_db_name);
+        $this->dbQuery('DROP DATABASE `' . $new_db_name . '`;');
     }
 }

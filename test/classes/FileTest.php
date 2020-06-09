@@ -2,6 +2,7 @@
 /**
  * tests for File class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -13,13 +14,15 @@ use function file_get_contents;
 /**
  * tests for PhpMyAdmin\File class
  */
-class FileTest extends PmaTestCase
+class FileTest extends AbstractTestCase
 {
     /**
      * Setup function for test cases
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
         $GLOBALS['charset_conversion'] = false;
     }
 
@@ -58,7 +61,7 @@ class FileTest extends PmaTestCase
      *
      * @dataProvider compressedFiles
      * @requires extension bz2 1
-     * @requires extension zip 1
+     * @requires extension zip
      */
     public function testReadCompressed($file): void
     {

@@ -2,6 +2,7 @@
 /**
  * Set of functions used to build XML dumps of tables
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Export;
@@ -65,10 +66,12 @@ class ExportXml extends ExportPlugin
     protected function initSpecificVariables()
     {
         global $table, $tables;
-        $this->_setTable($table);
-        if (is_array($tables)) {
-            $this->_setTables($tables);
+        $this->setTable($table);
+        if (! is_array($tables)) {
+            return;
         }
+
+        $this->setTables($tables);
     }
 
     /**
@@ -166,7 +169,7 @@ class ExportXml extends ExportPlugin
      *
      * @return string XML with definitions
      */
-    private function _exportRoutines($db, $type, $dbitype)
+    private function exportRoutinesDefinition($db, $type, $dbitype)
     {
         // Export routines
         $routines = $GLOBALS['dbi']->getProceduresOrFunctions(
@@ -174,7 +177,7 @@ class ExportXml extends ExportPlugin
             $dbitype
         );
 
-        return $this->_exportDefinitions($db, $type, $dbitype, $routines);
+        return $this->exportDefinitions($db, $type, $dbitype, $routines);
     }
 
     /**
@@ -187,7 +190,7 @@ class ExportXml extends ExportPlugin
      *
      * @return string XML with definitions
      */
-    private function _exportDefinitions($db, $type, $dbitype, array $names)
+    private function exportDefinitions($db, $type, $dbitype, array $names)
     {
         global $crlf;
 
@@ -221,8 +224,8 @@ class ExportXml extends ExportPlugin
     {
         $this->initSpecificVariables();
         global $crlf, $cfg, $db;
-        $table = $this->_getTable();
-        $tables = $this->_getTables();
+        $table = $this->getTable();
+        $tables = $this->getTables();
 
         $export_struct = isset($GLOBALS['xml_export_functions'])
             || isset($GLOBALS['xml_export_procedures'])
@@ -320,41 +323,45 @@ class ExportXml extends ExportPlugin
                 $head .= $tbl . ';' . $crlf;
                 $head .= '            </pma:' . $type . '>' . $crlf;
 
-                if (isset($GLOBALS['xml_export_triggers'])
-                    && $GLOBALS['xml_export_triggers']
+                if (! isset($GLOBALS['xml_export_triggers'])
+                    || ! $GLOBALS['xml_export_triggers']
                 ) {
-                    // Export triggers
-                    $triggers = $GLOBALS['dbi']->getTriggers($db, $table);
-                    if ($triggers) {
-                        foreach ($triggers as $trigger) {
-                            $code = $trigger['create'];
-                            $head .= '            <pma:trigger name="'
-                                . htmlspecialchars($trigger['name']) . '">' . $crlf;
-
-                            // Do some formatting
-                            $code = mb_substr(rtrim($code), 0, -3);
-                            $code = '                ' . htmlspecialchars($code);
-                            $code = str_replace("\n", "\n                ", $code);
-
-                            $head .= $code . $crlf;
-                            $head .= '            </pma:trigger>' . $crlf;
-                        }
-
-                        unset($trigger, $triggers);
-                    }
+                    continue;
                 }
+
+                // Export triggers
+                $triggers = $GLOBALS['dbi']->getTriggers($db, $table);
+                if (! $triggers) {
+                    continue;
+                }
+
+                foreach ($triggers as $trigger) {
+                    $code = $trigger['create'];
+                    $head .= '            <pma:trigger name="'
+                        . htmlspecialchars($trigger['name']) . '">' . $crlf;
+
+                    // Do some formatting
+                    $code = mb_substr(rtrim($code), 0, -3);
+                    $code = '                ' . htmlspecialchars($code);
+                    $code = str_replace("\n", "\n                ", $code);
+
+                    $head .= $code . $crlf;
+                    $head .= '            </pma:trigger>' . $crlf;
+                }
+
+                unset($trigger, $triggers);
             }
 
             if (isset($GLOBALS['xml_export_functions'])
                 && $GLOBALS['xml_export_functions']
             ) {
-                $head .= $this->_exportRoutines($db, 'function', 'FUNCTION');
+                $head .= $this->exportRoutinesDefinition($db, 'function', 'FUNCTION');
             }
 
             if (isset($GLOBALS['xml_export_procedures'])
                 && $GLOBALS['xml_export_procedures']
             ) {
-                $head .= $this->_exportRoutines($db, 'procedure', 'PROCEDURE');
+                $head .= $this->exportRoutinesDefinition($db, 'procedure', 'PROCEDURE');
             }
 
             if (isset($GLOBALS['xml_export_events'])
@@ -366,7 +373,7 @@ class ExportXml extends ExportPlugin
                     . "WHERE EVENT_SCHEMA='" . $GLOBALS['dbi']->escapeString($db)
                     . "'"
                 );
-                $head .= $this->_exportDefinitions(
+                $head .= $this->exportDefinitions(
                     $db,
                     'event',
                     'EVENT',
@@ -552,7 +559,7 @@ class ExportXml extends ExportPlugin
      *
      * @return string
      */
-    private function _getTable()
+    private function getTable()
     {
         return $this->_table;
     }
@@ -564,7 +571,7 @@ class ExportXml extends ExportPlugin
      *
      * @return void
      */
-    private function _setTable($table)
+    private function setTable($table)
     {
         $this->_table = $table;
     }
@@ -574,7 +581,7 @@ class ExportXml extends ExportPlugin
      *
      * @return array
      */
-    private function _getTables()
+    private function getTables()
     {
         return $this->_tables;
     }
@@ -586,7 +593,7 @@ class ExportXml extends ExportPlugin
      *
      * @return void
      */
-    private function _setTables(array $tables)
+    private function setTables(array $tables)
     {
         $this->_tables = $tables;
     }

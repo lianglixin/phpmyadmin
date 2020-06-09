@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Database;
@@ -12,6 +13,7 @@ use PhpMyAdmin\Message;
 use PhpMyAdmin\Operations;
 use PhpMyAdmin\Plugins;
 use PhpMyAdmin\Plugins\Export\ExportSql;
+use PhpMyAdmin\Query\Utilities;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\RelationCleanup;
 use PhpMyAdmin\Response;
@@ -291,7 +293,7 @@ class OperationsController extends AbstractController
         }
 
         $db_collation = $this->dbi->getDbCollation($db);
-        $is_information_schema = $this->dbi->isSystemSchema($db);
+        $is_information_schema = Utilities::isSystemSchema($db);
 
         if ($is_information_schema) {
             return;
@@ -322,7 +324,10 @@ class OperationsController extends AbstractController
                     '%sFind out why%s.'
                 )
             );
-            $message->addParamHtml('<a href="' . Url::getFromRoute('/check-relations') . '" data-post="' . $url_query . '">');
+            $message->addParamHtml(
+                '<a href="' . Url::getFromRoute('/check-relations')
+                . '" data-post="' . $url_query . '">'
+            );
             $message->addParamHtml('</a>');
             /* Show error if user has configured something, notice elsewhere */
             if (! empty($cfg['Servers'][$server]['pmadb'])) {

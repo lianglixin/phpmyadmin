@@ -2,6 +2,7 @@
 /**
  * holds the database index class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -117,7 +118,7 @@ class Index
      */
     public static function singleton($schema, $table, $index_name = '')
     {
-        self::_loadIndexes($table, $schema);
+        self::loadIndexes($table, $schema);
         if (! isset(self::$_registry[$schema][$table][$index_name])) {
             $index = new Index();
             if (strlen($index_name) > 0) {
@@ -141,7 +142,7 @@ class Index
      */
     public static function getFromTable($table, $schema)
     {
-        self::_loadIndexes($table, $schema);
+        self::loadIndexes($table, $schema);
 
         if (isset(self::$_registry[$schema][$table])) {
             return self::$_registry[$schema][$table];
@@ -183,11 +184,13 @@ class Index
             ) {
                 $indexes[] = $index;
             }
-            if (($choices & self::FULLTEXT)
-                && $index->getChoice() == 'FULLTEXT'
+            if ((! ($choices & self::FULLTEXT))
+                || $index->getChoice() != 'FULLTEXT'
             ) {
-                $indexes[] = $index;
+                continue;
             }
+
+            $indexes[] = $index;
         }
 
         return $indexes;
@@ -203,7 +206,7 @@ class Index
      */
     public static function getPrimary($table, $schema)
     {
-        self::_loadIndexes($table, $schema);
+        self::loadIndexes($table, $schema);
 
         if (isset(self::$_registry[$schema][$table]['PRIMARY'])) {
             return self::$_registry[$schema][$table]['PRIMARY'];
@@ -220,7 +223,7 @@ class Index
      *
      * @return bool whether loading was successful
      */
-    private static function _loadIndexes($table, $schema)
+    private static function loadIndexes($table, $schema)
     {
         if (isset(self::$_registry[$schema][$table])) {
             return true;
@@ -252,11 +255,13 @@ class Index
      */
     public function addColumn(array $params)
     {
-        if (isset($params['Column_name'])
-            && strlen($params['Column_name']) > 0
+        if (! isset($params['Column_name'])
+            || strlen($params['Column_name']) <= 0
         ) {
-            $this->_columns[$params['Column_name']] = new IndexColumn($params);
+            return;
         }
+
+        $this->_columns[$params['Column_name']] = new IndexColumn($params);
     }
 
     /**
@@ -360,9 +365,11 @@ class Index
         if (isset($params['Key_block_size'])) {
             $this->_key_block_size = $params['Key_block_size'];
         }
-        if (isset($params['Parser'])) {
-            $this->_parser = $params['Parser'];
+        if (! isset($params['Parser'])) {
+            return;
         }
+
+        $this->_parser = $params['Parser'];
     }
 
     /**

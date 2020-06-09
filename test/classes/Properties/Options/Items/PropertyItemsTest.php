@@ -2,6 +2,7 @@
 /**
  * tests for *PhpMyAdmin\Properties\PropertyItem class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Properties\Options\Items;
@@ -13,12 +14,12 @@ use PhpMyAdmin\Properties\Options\Items\MessageOnlyPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\RadioPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\SelectPropertyItem;
 use PhpMyAdmin\Properties\Options\Items\TextPropertyItem;
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * tests for *PhpMyAdmin\Properties\PropertyItem class
  */
-class PropertyItemsTest extends TestCase
+class PropertyItemsTest extends AbstractTestCase
 {
     /**
      * Test for PhpMyAdmin\Properties\Options\Items\BoolPropertyItem::getText

@@ -2,20 +2,19 @@
 /**
  * Tests for Footer class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\ErrorHandler;
 use PhpMyAdmin\Footer;
-use ReflectionClass;
 use function json_encode;
 
 /**
  * Tests for Footer class
  */
-class FooterTest extends PmaTestCase
+class FooterTest extends AbstractTestCase
 {
     /** @var array store private attributes of PhpMyAdmin\Footer */
     public $privates = [];
@@ -31,12 +30,14 @@ class FooterTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::setLanguage();
         $_SERVER['SCRIPT_NAME'] = 'index.php';
         $GLOBALS['PMA_PHP_SELF'] = 'index.php';
         $GLOBALS['db'] = '';
         $GLOBALS['table'] = '';
         $GLOBALS['text_dir'] = 'ltr';
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setGlobalConfig();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfg']['Server']['verbose'] = 'verbose host';
@@ -58,24 +59,8 @@ class FooterTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
-    }
-
-    /**
-     * Call private functions by setting visibility to public.
-     *
-     * @param string $name   method name
-     * @param array  $params parameters for the invocation
-     *
-     * @return mixed the output from the private method.
-     */
-    private function _callPrivateFunction($name, $params)
-    {
-        $class = new ReflectionClass(Footer::class);
-        $method = $class->getMethod($name);
-        $method->setAccessible(true);
-
-        return $method->invokeArgs($this->object, $params);
     }
 
     /**
@@ -109,7 +94,7 @@ class FooterTest extends PmaTestCase
     }
 
     /**
-     * Test for _removeRecursion
+     * Test for removeRecursion
      *
      * @return void
      */
@@ -119,8 +104,10 @@ class FooterTest extends PmaTestCase
         $object->child = (object) [];
         $object->child->parent = $object;
 
-        $this->_callPrivateFunction(
-            '_removeRecursion',
+        $this->callFunction(
+            $this->object,
+            Footer::class,
+            'removeRecursion',
             [
                 &$object,
             ]
@@ -133,7 +120,7 @@ class FooterTest extends PmaTestCase
     }
 
     /**
-     * Test for _getSelfLink
+     * Test for getSelfLink
      *
      * @return void
      */
@@ -149,8 +136,10 @@ class FooterTest extends PmaTestCase
             . 'table=table&amp;server=1&amp;lang=en'
             . '" title="Open new phpMyAdmin window" '
             . 'target="_blank" rel="noopener noreferrer">Open new phpMyAdmin window</a></div>',
-            $this->_callPrivateFunction(
-                '_getSelfLink',
+            $this->callFunction(
+                $this->object,
+                Footer::class,
+                'getSelfLink',
                 [
                     $this->object->getSelfUrl(),
                 ]
@@ -159,7 +148,7 @@ class FooterTest extends PmaTestCase
     }
 
     /**
-     * Test for _getSelfLink
+     * Test for getSelfLink
      *
      * @return void
      */
@@ -174,8 +163,10 @@ class FooterTest extends PmaTestCase
             . 'target="_blank" rel="noopener noreferrer"><img src="themes/dot.gif" title="Open new '
             . 'phpMyAdmin window" alt="Open new phpMyAdmin window" '
             . 'class="icon ic_window-new"></a></div>',
-            $this->_callPrivateFunction(
-                '_getSelfLink',
+            $this->callFunction(
+                $this->object,
+                Footer::class,
+                'getSelfLink',
                 [
                     $this->object->getSelfUrl(),
                 ]
@@ -184,7 +175,7 @@ class FooterTest extends PmaTestCase
     }
 
     /**
-     * Test for _getSelfLink
+     * Test for getSelfLink
      *
      * @return void
      */
@@ -199,8 +190,10 @@ class FooterTest extends PmaTestCase
             . '&amp;server=1&amp;lang=en'
             . '" title="Open new phpMyAdmin window" '
             . 'target="_blank" rel="noopener noreferrer">Open new phpMyAdmin window</a></div>',
-            $this->_callPrivateFunction(
-                '_getSelfLink',
+            $this->callFunction(
+                $this->object,
+                Footer::class,
+                'getSelfLink',
                 [
                     $this->object->getSelfUrl(),
                 ]

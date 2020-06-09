@@ -4,6 +4,7 @@
  *
  * this class is for testing StructureController class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Controllers\Database;
@@ -17,7 +18,7 @@ use PhpMyAdmin\RelationCleanup;
 use PhpMyAdmin\Replication;
 use PhpMyAdmin\Table;
 use PhpMyAdmin\Template;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
 use PhpMyAdmin\Transformations;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -32,7 +33,7 @@ use function json_encode;
  *
  * this class is for testing StructureController class
  */
-class StructureControllerTest extends PmaTestCase
+class StructureControllerTest extends AbstractTestCase
 {
     /** @var ResponseStub */
     private $response;
@@ -60,6 +61,10 @@ class StructureControllerTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::loadDefaultConfig();
+        $GLOBALS['text_dir'] = 'ltr';
         $GLOBALS['server'] = 1;
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['table'] = 'table';
@@ -134,7 +139,7 @@ class StructureControllerTest extends PmaTestCase
             'Index_length' => 0,
             'TABLE_NAME' => 'table',
         ];
-        list($currentTable,,, $sumSize) = $method->invokeArgs(
+        [$currentTable,,, $sumSize] = $method->invokeArgs(
             $controller,
             [
                 $currentTable,
@@ -142,8 +147,7 @@ class StructureControllerTest extends PmaTestCase
             ]
         );
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $currentTable['COUNTED']
         );
         $this->assertEquals(
@@ -156,7 +160,7 @@ class StructureControllerTest extends PmaTestCase
         );
 
         $currentTable['ENGINE'] = 'MYISAM';
-        list($currentTable,,, $sumSize) = $method->invokeArgs(
+        [$currentTable,,, $sumSize] = $method->invokeArgs(
             $controller,
             [
                 $currentTable,
@@ -164,8 +168,7 @@ class StructureControllerTest extends PmaTestCase
             ]
         );
 
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $currentTable['COUNTED']
         );
         $this->assertEquals(
@@ -187,10 +190,9 @@ class StructureControllerTest extends PmaTestCase
         );
 
         $currentTable['ENGINE'] = 'InnoDB';
-        list($currentTable,,, $sumSize)
+        [$currentTable,,, $sumSize]
             = $method->invokeArgs($controller, [$currentTable, 10]);
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $currentTable['COUNTED']
         );
         $this->assertEquals(
@@ -199,10 +201,9 @@ class StructureControllerTest extends PmaTestCase
         );
 
         $currentTable['ENGINE'] = 'MYISAM';
-        list($currentTable,,, $sumSize)
+        [$currentTable,,, $sumSize]
             = $method->invokeArgs($controller, [$currentTable, 10]);
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $currentTable['COUNTED']
         );
         $this->assertEquals(
@@ -249,7 +250,7 @@ class StructureControllerTest extends PmaTestCase
             'Name'         => 'table',
             'Data_free'    => 300,
         ];
-        list($currentTable,,,,, $overheadSize, $sumSize) = $method->invokeArgs(
+        [$currentTable,,,,, $overheadSize, $sumSize] = $method->invokeArgs(
             $controller,
             [
                 $currentTable,
@@ -275,7 +276,7 @@ class StructureControllerTest extends PmaTestCase
         );
 
         unset($currentTable['Data_free']);
-        list($currentTable,,,,, $overheadSize,)  = $method->invokeArgs(
+        [$currentTable,,,,, $overheadSize]  = $method->invokeArgs(
             $controller,
             [
                 $currentTable,
@@ -300,7 +301,7 @@ class StructureControllerTest extends PmaTestCase
             $this->relationCleanup,
             $this->operations
         );
-        list($currentTable,,,,,, $sumSize) = $method->invokeArgs(
+        [$currentTable,,,,,, $sumSize] = $method->invokeArgs(
             $controller,
             [
                 $currentTable,
@@ -325,7 +326,7 @@ class StructureControllerTest extends PmaTestCase
             $this->relationCleanup,
             $this->operations
         );
-        list($currentTable,,,,,,) = $method->invokeArgs(
+        [$currentTable] = $method->invokeArgs(
             $controller,
             [
                 $currentTable,
@@ -366,26 +367,19 @@ class StructureControllerTest extends PmaTestCase
         );
 
         // When parameter $db is empty
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $method->invokeArgs($controller, [[], 'table'])
         );
 
         // Correct parameter
-        $tables = [
-            'db.table',
-        ];
-        $this->assertEquals(
-            true,
+        $tables = ['db.table'];
+        $this->assertTrue(
             $method->invokeArgs($controller, [$tables, 'table'])
         );
 
         // Table not in database
-        $tables = [
-            'db.tab1e',
-        ];
-        $this->assertEquals(
-            false,
+        $tables = ['db.tab1e'];
+        $this->assertFalse(
             $method->invokeArgs($controller, [$tables, 'table'])
         );
     }
@@ -422,13 +416,11 @@ class StructureControllerTest extends PmaTestCase
             ],
         ];
 
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $method->invokeArgs($controller, [''])
         );
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $method->invokeArgs($controller, ['table'])
         );
     }

@@ -2,6 +2,7 @@
 /**
  * Hold the PhpMyAdmin\Util class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -9,6 +10,8 @@ namespace PhpMyAdmin;
 use Closure;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Html\MySQLDocumentation;
+use PhpMyAdmin\Query\Utilities;
+use PhpMyAdmin\SqlParser\Components\Expression;
 use PhpMyAdmin\SqlParser\Context;
 use PhpMyAdmin\SqlParser\Token;
 use phpseclib\Crypt\Random;
@@ -100,7 +103,7 @@ class Util
      *
      * @return bool Whether to show icons.
      */
-    public static function showIcons($value)
+    public static function showIcons($value): bool
     {
         return in_array($GLOBALS['cfg'][$value], ['icons', 'both']);
     }
@@ -112,7 +115,7 @@ class Util
      *
      * @return bool Whether to show text.
      */
-    public static function showText($value)
+    public static function showText($value): bool
     {
         return in_array($GLOBALS['cfg'][$value], ['text', 'both']);
     }
@@ -126,7 +129,7 @@ class Util
      *
      * @access public
      */
-    public static function getFormattedMaximumUploadSize($max_upload_size)
+    public static function getFormattedMaximumUploadSize($max_upload_size): string
     {
         // I have to reduce the second parameter (sensitiveness) from 6 to 4
         // to avoid weird results like 512 kKib
@@ -146,10 +149,10 @@ class Util
      *
      * @access public
      */
-    public static function escapeMysqlWildcards($name)
+    public static function escapeMysqlWildcards($name): string
     {
         return strtr($name, ['_' => '\\_', '%' => '\\%']);
-    } // end of the 'escapeMysqlWildcards()' function
+    }
 
     /**
      * removes slashes before "_" and "%" characters
@@ -157,14 +160,14 @@ class Util
      *
      * @param string $name the string to escape
      *
-     * @return string   the escaped string
+     * @return string the escaped string
      *
      * @access public
      */
-    public static function unescapeMysqlWildcards($name)
+    public static function unescapeMysqlWildcards($name): string
     {
         return strtr($name, ['\\_' => '_', '\\%' => '%']);
-    } // end of the 'unescapeMysqlWildcards()' function
+    }
 
     /**
      * removes quotes (',",`) from a quoted string
@@ -176,7 +179,7 @@ class Util
      *
      * @return string unqoted string
      */
-    public static function unQuote($quoted_string, $quote = null)
+    public static function unQuote(string $quoted_string, ?string $quote = null): string
     {
         $quotes = [];
 
@@ -217,7 +220,7 @@ class Util
      *
      * @access public
      */
-    public static function getMySQLDocuURL($link, $anchor = '')
+    public static function getMySQLDocuURL(string $link, string $anchor = ''): string
     {
         // Fixup for newly used names:
         $link = str_replace('_', '-', mb_strtolower($link));
@@ -276,7 +279,7 @@ class Util
      *
      * @return int the possibly modified row count
      */
-    private static function _checkRowCount($db, array $table)
+    private static function checkRowCount($db, array $table)
     {
         $rowCount = 0;
 
@@ -292,7 +295,7 @@ class Util
             // set this because Table::countRecords() can use it
             $tbl_is_view = $table['TABLE_TYPE'] == 'VIEW';
 
-            if ($tbl_is_view || $GLOBALS['dbi']->isSystemSchema($db)) {
+            if ($tbl_is_view || Utilities::isSystemSchema($db)) {
                 $rowCount = $GLOBALS['dbi']
                     ->getTable($db, $table['Name'])
                     ->countRecords();
@@ -317,7 +320,7 @@ class Util
         $tables = null,
         $limit_offset = 0,
         $limit_count = false
-    ) {
+    ): array {
         $sep = $GLOBALS['cfg']['NavigationTreeTableSeparator'];
 
         if ($tables === null) {
@@ -347,7 +350,7 @@ class Util
         $table_groups = [];
 
         foreach ($tables as $table_name => $table) {
-            $table['Rows'] = self::_checkRowCount($db, $table);
+            $table['Rows'] = self::checkRowCount($db, $table);
 
             // in $group we save the reference to the place in $table_groups
             // where to store the table info
@@ -426,7 +429,7 @@ class Util
     public static function backquote($a_name, $do_it = true)
     {
         return static::backquoteCompat($a_name, 'NONE', $do_it);
-    } // end of the 'backquote()' function
+    }
 
     /**
      * Adds backquotes on both sides of a database, table or field name.
@@ -878,9 +881,9 @@ class Util
      *
      * @param int $seconds the timespan
      *
-     * @return string  the formatted value
+     * @return string the formatted value
      */
-    public static function timespanFormat($seconds)
+    public static function timespanFormat($seconds): string
     {
         $days = floor($seconds / 86400);
         if ($days > 0) {
@@ -915,11 +918,9 @@ class Util
      *                          script
      * @param bool     $request Check parameters in request
      *
-     * @return void
-     *
      * @access public
      */
-    public static function checkParameters($params, $request = false)
+    public static function checkParameters($params, $request = false): void
     {
         $reported_script_name = basename($GLOBALS['PMA_PHP_SELF']);
         $found_error = false;
@@ -931,37 +932,108 @@ class Util
         }
 
         foreach ($params as $param) {
-            if (! isset($array[$param])) {
-                $error_message .= $reported_script_name
-                    . ': ' . __('Missing parameter:') . ' '
-                    . $param
-                    . MySQLDocumentation::showDocumentation('faq', 'faqmissingparameters', true)
-                    . '[br]';
-                $found_error = true;
+            if (isset($array[$param])) {
+                continue;
             }
+
+            $error_message .= $reported_script_name
+                . ': ' . __('Missing parameter:') . ' '
+                . $param
+                . MySQLDocumentation::showDocumentation('faq', 'faqmissingparameters', true)
+                . '[br]';
+            $found_error = true;
         }
-        if ($found_error) {
-            Core::fatalError($error_message);
+        if (! $found_error) {
+            return;
         }
-    } // end function
+
+        Core::fatalError($error_message);
+    }
+
+    /**
+     * Build a condition and with a value
+     *
+     * @param string|int|float|null $row          The row value
+     * @param stdClass              $meta         The field metadata
+     * @param string                $fieldFlags   The field flags
+     * @param int                   $fieldsCount  A number of fields
+     * @param string                $conditionKey A key used for BINARY fields functions
+     * @param string                $condition    The condition
+     *
+     * @return array<int,string|null>
+     */
+    private static function getConditionValue(
+        $row,
+        stdClass $meta,
+        string $fieldFlags,
+        int $fieldsCount,
+        string $conditionKey,
+        string $condition
+    ): array {
+        if ($row === null) {
+            return ['IS NULL', $condition];
+        }
+
+        $conditionValue = '';
+        // timestamp is numeric on some MySQL 4.1
+        // for real we use CONCAT above and it should compare to string
+        if ($meta->numeric
+            && ($meta->type !== 'timestamp')
+            && ($meta->type !== 'real')
+        ) {
+            $conditionValue = '= ' . $row;
+        } elseif (($meta->type === 'blob') || ($meta->type === 'string')
+            && stripos($fieldFlags, 'BINARY') !== false
+            && ! empty($row)
+        ) {
+            // hexify only if this is a true not empty BLOB or a BINARY
+
+            // do not waste memory building a too big condition
+            if (mb_strlen((string) $row) < 1000) {
+                // use a CAST if possible, to avoid problems
+                // if the field contains wildcard characters % or _
+                $conditionValue = '= CAST(0x' . bin2hex((string) $row) . ' AS BINARY)';
+            } elseif ($fieldsCount === 1) {
+                // when this blob is the only field present
+                // try settling with length comparison
+                $condition = ' CHAR_LENGTH(' . $conditionKey . ') ';
+                $conditionValue = ' = ' . mb_strlen((string) $row);
+            } else {
+                // this blob won't be part of the final condition
+                $conditionValue = null;
+            }
+        } elseif (in_array($meta->type, self::getGISDatatypes())
+            && ! empty($row)
+        ) {
+            // do not build a too big condition
+            if (mb_strlen((string) $row) < 5000) {
+                $condition .= '=0x' . bin2hex((string) $row) . ' AND';
+            } else {
+                $condition = '';
+            }
+        } elseif ($meta->type === 'bit') {
+            $conditionValue = "= b'"
+                . self::printableBitValue((int) $row, (int) $meta->length) . "'";
+        } else {
+            $conditionValue = '= \''
+                . $GLOBALS['dbi']->escapeString($row) . '\'';
+        }
+
+        return [$conditionValue, $condition];
+    }
 
     /**
      * Function to generate unique condition for specified row.
      *
-     * @param resource    $handle               current query result
-     * @param int         $fields_cnt           number of fields
-     * @param stdClass[]  $fields_meta          meta information about fields
-     * @param array       $row                  current row
-     * @param bool        $force_unique         generate condition only on pk
-     *                                          or unique
-     * @param string|bool $restrict_to_table    restrict the unique condition
-     *                                          to this table or false if
-     *                                          none
-     * @param array|null  $analyzed_sql_results the analyzed query
+     * @param resource|int $handle            current query result
+     * @param int          $fields_cnt        number of fields
+     * @param stdClass[]   $fields_meta       meta information about fields
+     * @param array        $row               current row
+     * @param bool         $force_unique      generate condition only on pk or unique
+     * @param string|bool  $restrict_to_table restrict the unique condition to this table or false if none
+     * @param Expression[] $expressions       An array of Expression instances.
      *
      * @return array the calculated condition and whether condition is unique
-     *
-     * @access public
      */
     public static function getUniqueCondition(
         $handle,
@@ -970,8 +1042,8 @@ class Util
         array $row,
         $force_unique = false,
         $restrict_to_table = false,
-        $analyzed_sql_results = null
-    ) {
+        array $expressions = []
+    ): array {
         $primary_key          = '';
         $unique_key           = '';
         $nonprimary_condition = '';
@@ -982,23 +1054,19 @@ class Util
         $condition_array = [];
 
         for ($i = 0; $i < $fields_cnt; ++$i) {
-            $con_val     = '';
-            $field_flags = $GLOBALS['dbi']->fieldFlags($handle, $i);
             $meta        = $fields_meta[$i];
 
             // do not use a column alias in a condition
             if (! isset($meta->orgname) || strlen($meta->orgname) === 0) {
                 $meta->orgname = $meta->name;
 
-                if (! empty($analyzed_sql_results['statement']->expr)) {
-                    foreach ($analyzed_sql_results['statement']->expr as $expr) {
-                        if (empty($expr->alias) || empty($expr->column)) {
-                            continue;
-                        }
-                        if (strcasecmp($meta->name, $expr->alias) == 0) {
-                            $meta->orgname = $expr->column;
-                            break;
-                        }
+                foreach ($expressions as $expression) {
+                    if (empty($expression->alias) || empty($expression->column)) {
+                        continue;
+                    }
+                    if (strcasecmp($meta->name, $expression->alias) == 0) {
+                        $meta->orgname = $expression->column;
+                        break;
                     }
                 }
             }
@@ -1041,68 +1109,31 @@ class Util
             } // end if... else...
             $condition = ' ' . $con_key . ' ';
 
-            if (! isset($row[$i]) || $row[$i] === null) {
-                $con_val = 'IS NULL';
-            } else {
-                // timestamp is numeric on some MySQL 4.1
-                // for real we use CONCAT above and it should compare to string
-                if ($meta->numeric
-                    && ($meta->type != 'timestamp')
-                    && ($meta->type != 'real')
-                ) {
-                    $con_val = '= ' . $row[$i];
-                } elseif (($meta->type == 'blob') || ($meta->type == 'string')
-                    && stripos($field_flags, 'BINARY') !== false
-                    && ! empty($row[$i])
-                ) {
-                    // hexify only if this is a true not empty BLOB or a BINARY
+            [$con_val, $condition] = self::getConditionValue(
+                ! isset($row[$i]) || $row[$i] === null ? null : $row[$i],
+                $meta,
+                $GLOBALS['dbi']->fieldFlags($handle, $i),
+                $fields_cnt,
+                $con_key,
+                $condition
+            );
 
-                    // do not waste memory building a too big condition
-                    if (mb_strlen($row[$i]) < 1000) {
-                        // use a CAST if possible, to avoid problems
-                        // if the field contains wildcard characters % or _
-                        $con_val = '= CAST(0x' . bin2hex($row[$i]) . ' AS BINARY)';
-                    } elseif ($fields_cnt == 1) {
-                        // when this blob is the only field present
-                        // try settling with length comparison
-                        $condition = ' CHAR_LENGTH(' . $con_key . ') ';
-                        $con_val = ' = ' . mb_strlen($row[$i]);
-                    } else {
-                        // this blob won't be part of the final condition
-                        $con_val = null;
-                    }
-                } elseif (in_array($meta->type, self::getGISDatatypes())
-                    && ! empty($row[$i])
-                ) {
-                    // do not build a too big condition
-                    if (mb_strlen($row[$i]) < 5000) {
-                        $condition .= '=0x' . bin2hex($row[$i]) . ' AND';
-                    } else {
-                        $condition = '';
-                    }
-                } elseif ($meta->type == 'bit') {
-                    $con_val = "= b'"
-                        . self::printableBitValue((int) $row[$i], (int) $meta->length) . "'";
-                } else {
-                    $con_val = '= \''
-                        . $GLOBALS['dbi']->escapeString($row[$i]) . '\'';
-                }
+            if ($con_val === null) {
+                continue;
             }
 
-            if ($con_val != null) {
-                $condition .= $con_val . ' AND';
+            $condition .= $con_val . ' AND';
 
-                if ($meta->primary_key > 0) {
-                    $primary_key .= $condition;
-                    $primary_key_array[$con_key] = $con_val;
-                } elseif ($meta->unique_key > 0) {
-                    $unique_key  .= $condition;
-                    $unique_key_array[$con_key] = $con_val;
-                }
-
-                $nonprimary_condition .= $condition;
-                $nonprimary_condition_array[$con_key] = $con_val;
+            if ($meta->primary_key > 0) {
+                $primary_key .= $condition;
+                $primary_key_array[$con_key] = $con_val;
+            } elseif ($meta->unique_key > 0) {
+                $unique_key  .= $condition;
+                $unique_key_array[$con_key] = $con_val;
             }
+
+            $nonprimary_condition .= $condition;
+            $nonprimary_condition_array[$con_key] = $con_val;
         } // end for
 
         // Correction University of Virginia 19991216:
@@ -1136,10 +1167,8 @@ class Util
      *
      * @param string $collation Collation
      * @param bool   $override  (optional) force 'CHARACTER SET' keyword
-     *
-     * @return string
      */
-    public static function getCharsetQueryPart($collation, $override = false)
+    public static function getCharsetQueryPart(string $collation, bool $override = false): string
     {
         [$charset] = explode('_', $collation);
         $keyword = ' CHARSET=';
@@ -1170,8 +1199,6 @@ class Util
      *                            be considered "nearby" and displayed as well?
      * @param string $prompt      The prompt to display (sometimes empty)
      *
-     * @return string
-     *
      * @access public
      */
     public static function pageselector(
@@ -1185,7 +1212,7 @@ class Util
         $percent = 20,
         $range = 10,
         $prompt = ''
-    ) {
+    ): string {
         $increment = floor($nbTotalPage / $percent);
         $pageNowMinusRange = $pageNow - $range;
         $pageNowPlusRange = $pageNow + $range;
@@ -1235,9 +1262,11 @@ class Util
                     }
                 }
 
-                if ($i > 0 && $i <= $x) {
-                    $pages[] = $i;
+                if ($i <= 0 || $i > $x) {
+                    continue;
                 }
+
+                $pages[] = $i;
             }
 
             /*
@@ -1259,9 +1288,11 @@ class Util
             while ($i < $x) {
                 $dist = 2 * $dist;
                 $i = $pageNow + $dist;
-                if ($i > 0 && $i <= $x) {
-                    $pages[] = $i;
+                if ($i <= 0 || $i > $x) {
+                    continue;
                 }
+
+                $pages[] = $i;
             }
 
             $i = $pageNow;
@@ -1269,9 +1300,11 @@ class Util
             while ($i > 0) {
                 $dist = 2 * $dist;
                 $i = $pageNow - $dist;
-                if ($i > 0 && $i <= $x) {
-                    $pages[] = $i;
+                if ($i <= 0 || $i > $x) {
+                    continue;
                 }
+
+                $pages[] = $i;
             }
 
             // Since because of ellipsing of the current page some numbers may be
@@ -1321,9 +1354,9 @@ class Util
      *
      * @param string $dir with wildcard for user
      *
-     * @return string  per user directory
+     * @return string per user directory
      */
-    public static function userDir($dir)
+    public static function userDir($dir): string
     {
         // add trailing slash
         if (mb_substr($dir, -1) != '/') {
@@ -1335,10 +1368,8 @@ class Util
 
     /**
      * Clears cache content which needs to be refreshed on user change.
-     *
-     * @return void
      */
-    public static function clearUserCache()
+    public static function clearUserCache(): void
     {
         self::cacheUnset('is_superuser');
         self::cacheUnset('is_createuser');
@@ -1347,10 +1378,8 @@ class Util
 
     /**
      * Calculates session cache key
-     *
-     * @return string
      */
-    public static function cacheKey()
+    public static function cacheKey(): string
     {
         if (isset($GLOBALS['cfg']['Server']['user'])) {
             return 'server_' . $GLOBALS['server'] . '_' . $GLOBALS['cfg']['Server']['user'];
@@ -1363,10 +1392,8 @@ class Util
      * Verifies if something is cached in the session
      *
      * @param string $var variable name
-     *
-     * @return bool
      */
-    public static function cacheExists($var)
+    public static function cacheExists($var): bool
     {
         return isset($_SESSION['cache'][self::cacheKey()][$var]);
     }
@@ -1400,10 +1427,8 @@ class Util
      *
      * @param string $var variable name
      * @param mixed  $val value
-     *
-     * @return void
      */
-    public static function cacheSet($var, $val = null)
+    public static function cacheSet($var, $val = null): void
     {
         $_SESSION['cache'][self::cacheKey()][$var] = $val;
     }
@@ -1412,10 +1437,8 @@ class Util
      * Removes cached information from the session
      *
      * @param string $var variable name
-     *
-     * @return void
      */
-    public static function cacheUnset($var)
+    public static function cacheUnset($var): void
     {
         unset($_SESSION['cache'][self::cacheKey()][$var]);
     }
@@ -1473,7 +1496,12 @@ class Util
      */
     public static function convertBitDefaultValue(?string $bitDefaultValue): string
     {
-        return (string) preg_replace("/^b'(\d*)'?$/", '$1', htmlspecialchars_decode((string) $bitDefaultValue, ENT_QUOTES), 1);
+        return (string) preg_replace(
+            "/^b'(\d*)'?$/",
+            '$1',
+            htmlspecialchars_decode((string) $bitDefaultValue, ENT_QUOTES),
+            1
+        );
     }
 
     /**
@@ -1606,19 +1634,19 @@ class Util
      * Verifies if this table's engine supports foreign keys
      *
      * @param string $engine engine
-     *
-     * @return bool
      */
-    public static function isForeignKeySupported($engine)
+    public static function isForeignKeySupported($engine): bool
     {
         $engine = strtoupper((string) $engine);
-        if (($engine == 'INNODB') || ($engine == 'PBXT')) {
+        if (($engine === 'INNODB') || ($engine === 'PBXT')) {
             return true;
-        } elseif ($engine == 'NDBCLUSTER' || $engine == 'NDB') {
+        }
+
+        if ($engine === 'NDBCLUSTER' || $engine === 'NDB') {
             $ndbver = strtolower(
                 $GLOBALS['dbi']->fetchValue('SELECT @@ndb_version_string')
             );
-            if (substr($ndbver, 0, 4) == 'ndb-') {
+            if (substr($ndbver, 0, 4) === 'ndb-') {
                 $ndbver = substr($ndbver, 4);
             }
 
@@ -1630,18 +1658,18 @@ class Util
 
     /**
      * Is Foreign key check enabled?
-     *
-     * @return bool
      */
-    public static function isForeignKeyCheck()
+    public static function isForeignKeyCheck(): bool
     {
         if ($GLOBALS['cfg']['DefaultForeignKeyChecks'] === 'enable') {
             return true;
-        } elseif ($GLOBALS['cfg']['DefaultForeignKeyChecks'] === 'disable') {
+        }
+
+        if ($GLOBALS['cfg']['DefaultForeignKeyChecks'] === 'disable') {
             return false;
         }
 
-        return $GLOBALS['dbi']->getVariable('FOREIGN_KEY_CHECKS') == 'ON';
+        return $GLOBALS['dbi']->getVariable('FOREIGN_KEY_CHECKS') === 'ON';
     }
 
     /**
@@ -1670,10 +1698,8 @@ class Util
      * Cleanup changes done for foreign key check
      *
      * @param bool $default_fk_check_value original value for 'FOREIGN_KEY_CHECKS'
-     *
-     * @return void
      */
-    public static function handleDisableFKCheckCleanup($default_fk_check_value)
+    public static function handleDisableFKCheckCleanup($default_fk_check_value): void
     {
         $GLOBALS['dbi']->setVariable(
             'FOREIGN_KEY_CHECKS',
@@ -1726,7 +1752,7 @@ class Util
      *
      * @return string with the chars replaced
      */
-    public static function duplicateFirstNewline($string)
+    public static function duplicateFirstNewline(string $string): string
     {
         $first_occurence = mb_strpos($string, "\r\n");
         if ($first_occurence === 0) {
@@ -1950,9 +1976,11 @@ class Util
             foreach ($GLOBALS['dbi']->types->getColumns() as $value) {
                 if (is_array($value)) {
                     foreach ($value as $subvalue) {
-                        if ($subvalue !== '-') {
-                            $retval[] = $subvalue;
+                        if ($subvalue === '-') {
+                            continue;
                         }
+
+                        $retval[] = $subvalue;
                     }
                 } else {
                     if ($value !== '-') {
@@ -1967,11 +1995,11 @@ class Util
 
     /**
      * Returns a list of datatypes that are not (yet) handled by PMA.
-     * Used by: /table/change and libraries/db_routines.inc.php
+     * Used by: /table/change and libraries/Routines.php
      *
-     * @return array   list of datatypes
+     * @return array list of datatypes
      */
-    public static function unsupportedDatatypes()
+    public static function unsupportedDatatypes(): array
     {
         return [];
     }
@@ -2018,7 +2046,9 @@ class Util
             . 'POLYGON|MULTIPOLYGON|GEOMETRYCOLLECTION)';
         if (preg_match("/^'" . $geom_types . "\(.*\)',[0-9]*$/i", $gis_string)) {
             return $geomFromText . '(' . $gis_string . ')';
-        } elseif (preg_match('/^' . $geom_types . '\(.*\)$/i', $gis_string)) {
+        }
+
+        if (preg_match('/^' . $geom_types . '\(.*\)$/i', $gis_string)) {
             return $geomFromText . "('" . $gis_string . "')";
         }
 
@@ -2036,14 +2066,14 @@ class Util
      * @param bool   $display   if set to true separators will be added to the
      *                          output array.
      *
-     * @return array names and details of the functions that can be applied on
-     *               geometry data types.
+     * @return array<int|string,array<string,int|string>> names and details of the functions that can be applied on
+     *                                                    geometry data types.
      */
     public static function getGISFunctions(
         $geom_type = null,
         $binary = true,
         $display = false
-    ) {
+    ): array {
         $funcs = [];
         if ($display) {
             $funcs[] = ['display' => ' '];
@@ -2158,75 +2188,44 @@ class Util
                 $funcs[] = ['display' => '--------'];
             }
 
-            if ($GLOBALS['dbi']->getVersion() < 50601) {
-                $funcs['Crosses']    = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['Contains']   = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['Disjoint']   = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['Equals']     = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['Intersects'] = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['Overlaps']   = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['Touches']    = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['Within']     = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-            } else {
-                // If MySQl version is greater than or equal 5.6.1,
+            $spatialPrefix = '';
+            if ($GLOBALS['dbi']->getVersion() >= 50601) {
+                // If MySQL version is greater than or equal 5.6.1,
                 // use the ST_ prefix.
-                $funcs['ST_Crosses']    = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['ST_Contains']   = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['ST_Disjoint']   = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['ST_Equals']     = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['ST_Intersects'] = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['ST_Overlaps']   = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['ST_Touches']    = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
-                $funcs['ST_Within']     = [
-                    'params' => 2,
-                    'type' => 'int',
-                ];
+                $spatialPrefix = 'ST_';
             }
+            $funcs[$spatialPrefix . 'Crosses']    = [
+                'params' => 2,
+                'type' => 'int',
+            ];
+            $funcs[$spatialPrefix . 'Contains']   = [
+                'params' => 2,
+                'type' => 'int',
+            ];
+            $funcs[$spatialPrefix . 'Disjoint']   = [
+                'params' => 2,
+                'type' => 'int',
+            ];
+            $funcs[$spatialPrefix . 'Equals']     = [
+                'params' => 2,
+                'type' => 'int',
+            ];
+            $funcs[$spatialPrefix . 'Intersects'] = [
+                'params' => 2,
+                'type' => 'int',
+            ];
+            $funcs[$spatialPrefix . 'Overlaps']   = [
+                'params' => 2,
+                'type' => 'int',
+            ];
+            $funcs[$spatialPrefix . 'Touches']    = [
+                'params' => 2,
+                'type' => 'int',
+            ];
+            $funcs[$spatialPrefix . 'Within']     = [
+                'params' => 2,
+                'type' => 'int',
+            ];
 
             if ($display) {
                 $funcs[] = ['display' => '--------'];
@@ -2276,15 +2275,15 @@ class Util
      *            // 'CREATE ROUTINE' privilege or, if not, checks if the
      *            // user has this privilege on database 'mydb'.
      *
-     * @param string $priv The privilege to check
-     * @param mixed  $db   null, to only check global privileges
-     *                     string, db name where to also check for privileges
-     * @param mixed  $tbl  null, to only check global/db privileges
-     *                     string, table name where to also check for privileges
-     *
-     * @return bool
+     * @param string      $priv The privilege to check
+     * @param string|null $db   null, to only check global privileges
+     *                          string, db name where to also check
+     *                          for privileges
+     * @param string|null $tbl  null, to only check global/db privileges
+     *                          string, table name where to also check
+     *                          for privileges
      */
-    public static function currentUserHasPrivilege($priv, $db = null, $tbl = null)
+    public static function currentUserHasPrivilege(string $priv, ?string $db = null, ?string $tbl = null): bool
     {
         // Get the username for the current user in the format
         // required to use in the information schema database.
@@ -2319,24 +2318,24 @@ class Util
         }
         // If a database name was provided and user does not have the
         // required global privilege, try database-wise permissions.
-        if ($db !== null) {
-            $query .= " AND '%s' LIKE `TABLE_SCHEMA`";
-            $schema_privileges = $GLOBALS['dbi']->fetchValue(
-                sprintf(
-                    $query,
-                    'SCHEMA_PRIVILEGES',
-                    $username,
-                    $priv,
-                    $GLOBALS['dbi']->escapeString($db)
-                )
-            );
-            if ($schema_privileges) {
-                return true;
-            }
-        } else {
+        if ($db === null) {
             // There was no database name provided and the user
             // does not have the correct global privilege.
             return false;
+        }
+
+        $query .= " AND '%s' LIKE `TABLE_SCHEMA`";
+        $schema_privileges = $GLOBALS['dbi']->fetchValue(
+            sprintf(
+                $query,
+                'SCHEMA_PRIVILEGES',
+                $username,
+                $priv,
+                $GLOBALS['dbi']->escapeString($db)
+            )
+        );
+        if ($schema_privileges) {
+            return true;
         }
         // If a table name was also provided and we still didn't
         // find any valid privileges, try table-wise privileges.
@@ -2458,14 +2457,18 @@ class Util
         $regex = null;
 
         foreach ($regex_array as $test_regex) {
-            if (preg_match($test_regex, $query, $matches, PREG_OFFSET_CAPTURE)) {
-                if ($minimum_first_occurence_index === null
-                    || ($matches[0][1] < $minimum_first_occurence_index)
-                ) {
-                    $regex = $test_regex;
-                    $minimum_first_occurence_index = $matches[0][1];
-                }
+            if (! preg_match($test_regex, $query, $matches, PREG_OFFSET_CAPTURE)) {
+                continue;
             }
+
+            if ($minimum_first_occurence_index !== null
+                && ($matches[0][1] >= $minimum_first_occurence_index)
+            ) {
+                continue;
+            }
+
+            $regex = $test_regex;
+            $minimum_first_occurence_index = $matches[0][1];
         }
 
         return $regex;
@@ -2529,7 +2532,9 @@ class Util
 
         if ($level == null) {
             return $tabList;
-        } elseif (array_key_exists($level, $tabList)) {
+        }
+
+        if (array_key_exists($level, $tabList)) {
             return $tabList[$level];
         }
 
@@ -2602,7 +2607,9 @@ class Util
         $names = $GLOBALS['dbi']->getLowerCaseNames();
         if ($names === '0') {
             return 'COLLATE utf8_bin';
-        } elseif ($names === '2') {
+        }
+
+        if ($names === '2') {
             return 'COLLATE utf8_general_ci';
         }
 
@@ -2649,10 +2656,12 @@ class Util
 
             $indexes_data[$row['Key_name']][$row['Seq_in_index']]['Column_name']
                 = $row['Column_name'];
-            if (isset($row['Sub_part'])) {
-                $indexes_data[$row['Key_name']][$row['Seq_in_index']]['Sub_part']
-                    = $row['Sub_part'];
+            if (! isset($row['Sub_part'])) {
+                continue;
             }
+
+            $indexes_data[$row['Key_name']][$row['Seq_in_index']]['Sub_part']
+                = $row['Sub_part'];
         } // end while
 
         return [
@@ -2714,7 +2723,7 @@ class Util
          */
         $db_is_system_schema = false;
 
-        if ($GLOBALS['dbi']->isSystemSchema($db)) {
+        if (Utilities::isSystemSchema($db)) {
             $is_show_stats = false;
             $db_is_system_schema = true;
         }
@@ -2814,7 +2823,7 @@ class Util
                 $groupTable,
                 $GLOBALS['dbi']->getTablesFull(
                     $db,
-                    $groupWithSeparator,
+                    $groupWithSeparator !== false ? $groupWithSeparator : '',
                     $groupWithSeparator !== false,
                     $limit_offset,
                     $limit_count,
@@ -2861,7 +2870,7 @@ class Util
      *
      * @return array list of tables
      */
-    public static function getTablesWhenOpen($db, $db_info_result)
+    public static function getTablesWhenOpen($db, $db_info_result): array
     {
         $sot_cache = [];
         $tables = [];
@@ -2938,17 +2947,25 @@ class Util
     }
 
     /**
+     * Checks whether database extension is loaded
+     *
+     * @param string $extension mysql extension to check
+     */
+    public static function checkDbExtension(string $extension = 'mysqli'): bool
+    {
+        return function_exists($extension . '_connect');
+    }
+
+    /**
      * Returs list of used PHP extensions.
      *
-     * @return array of strings
+     * @return string[]
      */
-    public static function listPHPExtensions()
+    public static function listPHPExtensions(): array
     {
         $result = [];
-        if (DatabaseInterface::checkDbExtension('mysqli')) {
+        if (self::checkDbExtension('mysqli')) {
             $result[] = 'mysqli';
-        } else {
-            $result[] = 'mysql';
         }
 
         if (extension_loaded('curl')) {
@@ -2969,7 +2986,7 @@ class Util
      *
      * @return string
      */
-    public static function requestString($value)
+    public static function requestString($value): string
     {
         while (is_array($value) || is_object($value)) {
             $value = reset($value);
@@ -3000,9 +3017,11 @@ class Util
             // to get ASCII only range
             $byte = ord($random_func(1)) & 0x7f;
             // We want only ASCII chars
-            if ($byte > 32) {
-                $result .= chr($byte);
+            if ($byte <= 32) {
+                continue;
             }
+
+            $result .= chr($byte);
         }
 
         return $asHex ? bin2hex($result) : $result;
@@ -3026,15 +3045,15 @@ class Util
 
     /**
      * Wrapper around php's set_time_limit
-     *
-     * @return void
      */
-    public static function setTimeLimit()
+    public static function setTimeLimit(): void
     {
         // The function can be disabled in php.ini
-        if (function_exists('set_time_limit')) {
-            @set_time_limit((int) $GLOBALS['cfg']['ExecTimeLimit']);
+        if (! function_exists('set_time_limit')) {
+            return;
         }
+
+        @set_time_limit((int) $GLOBALS['cfg']['ExecTimeLimit']);
     }
 
     /**
@@ -3093,21 +3112,21 @@ class Util
                 $futureSortOrder = 'DESC';
                 // current sort order is ASC
                 $orderImg = ' ' . Generator::getImage(
-                        's_asc',
-                        __('Ascending'),
-                        [
-                            'class' => 'sort_arrow',
-                            'title' => '',
-                        ]
-                    );
+                    's_asc',
+                    __('Ascending'),
+                    [
+                        'class' => 'sort_arrow',
+                        'title' => '',
+                    ]
+                );
                 $orderImg .= ' ' . Generator::getImage(
-                        's_desc',
-                        __('Descending'),
-                        [
-                            'class' => 'sort_arrow hide',
-                            'title' => '',
-                        ]
-                    );
+                    's_desc',
+                    __('Descending'),
+                    [
+                        'class' => 'sort_arrow hide',
+                        'title' => '',
+                    ]
+                );
                 // but on mouse over, show the reverse order (DESC)
                 $orderLinkParams['onmouseover'] = "$('.sort_arrow').toggle();";
                 // on mouse out, show current sort order (ASC)
@@ -3116,21 +3135,21 @@ class Util
                 $futureSortOrder = 'ASC';
                 // current sort order is DESC
                 $orderImg = ' ' . Generator::getImage(
-                        's_asc',
-                        __('Ascending'),
-                        [
-                            'class' => 'sort_arrow hide',
-                            'title' => '',
-                        ]
-                    );
+                    's_asc',
+                    __('Ascending'),
+                    [
+                        'class' => 'sort_arrow hide',
+                        'title' => '',
+                    ]
+                );
                 $orderImg .= ' ' . Generator::getImage(
-                        's_desc',
-                        __('Descending'),
-                        [
-                            'class' => 'sort_arrow',
-                            'title' => '',
-                        ]
-                    );
+                    's_desc',
+                    __('Descending'),
+                    [
+                        'class' => 'sort_arrow',
+                        'title' => '',
+                    ]
+                );
                 // but on mouse over, show the reverse order (ASC)
                 $orderLinkParams['onmouseover'] = "$('.sort_arrow').toggle();";
                 // on mouse out, show current sort order (DESC)
@@ -3213,15 +3232,17 @@ class Util
             $parts = explode(';', $hops[0]);
             foreach ($parts as $part) {
                 $keyValueArray = explode('=', $part, 2);
-                if (count($keyValueArray) === 2) {
-                    [
-                        $keyName,
-                        $value,
-                    ] = $keyValueArray;
-                    $value = trim(strtolower($value));
-                    if (strtolower(trim($keyName)) === 'proto' && in_array($value, ['http', 'https'])) {
-                        return $value;
-                    }
+                if (count($keyValueArray) !== 2) {
+                    continue;
+                }
+
+                [
+                    $keyName,
+                    $value,
+                ] = $keyValueArray;
+                $value = trim(strtolower($value));
+                if (strtolower(trim($keyName)) === 'proto' && in_array($value, ['http', 'https'])) {
+                    return $value;
                 }
             }
         }

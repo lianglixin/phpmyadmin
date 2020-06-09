@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for table related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium\Database;
@@ -50,7 +51,7 @@ class TriggersTest extends TestBase
      *
      * @return void
      */
-    private function _triggerSQL()
+    private function triggerSQL()
     {
         $this->dbQuery(
             'CREATE TRIGGER `test_trigger` '
@@ -136,7 +137,7 @@ class TriggersTest extends TestBase
     {
         $this->expandMore();
 
-        $this->_triggerSQL();
+        $this->triggerSQL();
         $this->waitForElement('partialLinkText', 'Triggers')->click();
         $this->waitAjax();
 
@@ -177,7 +178,7 @@ class TriggersTest extends TestBase
     {
         $this->expandMore();
 
-        $this->_triggerSQL();
+        $this->triggerSQL();
         $ele = $this->waitForElement('partialLinkText', 'Triggers');
         $ele->click();
 

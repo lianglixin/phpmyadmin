@@ -15,6 +15,7 @@
  *
  * All directives are explained in the documentation
  */
+
 declare(strict_types=1);
 
 /**
@@ -2400,13 +2401,11 @@ $cfg['AvailableCharsets'] = [
 /*******************************************************************************
  * Customization & design
  *
- * The graphical settings are now located in themes/theme-name/layout.inc.php
+ * The graphical settings are now located in themes/theme-name/scss/_variables.scss
  */
 
 /**
  * enable the left panel pointer
- * see also LeftPointerColor
- * in layout.inc.php
  *
  * @global boolean $cfg['NavigationTreePointerEnable']
  */
@@ -2414,8 +2413,6 @@ $cfg['NavigationTreePointerEnable'] = true;
 
 /**
  * enable the browse pointer
- * see also BrowsePointerColor
- * in layout.inc.php
  *
  * @global boolean $cfg['BrowsePointerEnable']
  */
@@ -2423,8 +2420,6 @@ $cfg['BrowsePointerEnable'] = true;
 
 /**
  * enable the browse marker
- * see also BrowseMarkerColor
- * in layout.inc.php
  *
  * @global boolean $cfg['BrowseMarkerEnable']
  */

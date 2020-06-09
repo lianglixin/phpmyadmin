@@ -2,6 +2,7 @@
 /**
  * Test for Message class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -12,7 +13,7 @@ use function md5;
 /**
  * Test for Message class
  */
-class MessageTest extends PmaTestCase
+class MessageTest extends AbstractTestCase
 {
     /**
      * @var Message
@@ -28,17 +29,8 @@ class MessageTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = new Message();
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     *
-     * @access protected
-     */
-    protected function tearDown(): void
-    {
     }
 
     /**
@@ -418,6 +410,18 @@ class MessageTest extends PmaTestCase
                 '[doc@foo]link[/doc]',
                 '<a href="./url.php?url=https%3A%2F%2Fdocs.phpmyadmin.net%2Fen%2F'
                 . 'latest%2Fsetup.html%23foo" '
+                . 'target="documentation">link</a>',
+            ],
+            [
+                '[doc@page@anchor]link[/doc]',
+                '<a href="./url.php?url=https%3A%2F%2Fdocs.phpmyadmin.net%2Fen%2F'
+                . 'latest%2Fpage.html%23anchor" '
+                . 'target="documentation">link</a>',
+            ],
+            [
+                '[doc@faqmysql]link[/doc]',
+                '<a href="./url.php?url=https%3A%2F%2Fdocs.phpmyadmin.net%2Fen%2F'
+                . 'latest%2Ffaq.html%23faqmysql" '
                 . 'target="documentation">link</a>',
             ],
         ];

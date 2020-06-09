@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\UserPreferences class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -219,11 +220,11 @@ class UserPreferences
     {
         $prefs = $this->load();
         if ($value === $default_value) {
-            if (isset($prefs['config_data'][$path])) {
-                unset($prefs['config_data'][$path]);
-            } else {
+            if (! isset($prefs['config_data'][$path])) {
                 return true;
             }
+
+            unset($prefs['config_data'][$path]);
         } else {
             $prefs['config_data'][$path] = $value;
         }

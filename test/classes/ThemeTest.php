@@ -2,18 +2,18 @@
 /**
  * Test class for Theme.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Theme;
 use function filemtime;
 
 /**
  * Test class for Theme.
  */
-class ThemeTest extends PmaTestCase
+class ThemeTest extends AbstractTestCase
 {
     /** @var Theme */
     protected $object;
@@ -27,10 +27,13 @@ class ThemeTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::setTheme();
         $this->object = new Theme();
         $this->backup = $GLOBALS['PMA_Theme'];
         $GLOBALS['PMA_Theme'] = $this->object;
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setGlobalConfig();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['text_dir'] = 'ltr';
         $GLOBALS['server'] = '99';
@@ -42,6 +45,7 @@ class ThemeTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         $GLOBALS['PMA_Theme'] = $this->backup;
     }
 
@@ -234,6 +238,7 @@ class ThemeTest extends PmaTestCase
      */
     public function testGetPrintPreview()
     {
+        parent::setLanguage();
         $this->assertStringContainsString(
             '<h2>' . "\n" . '         (0.0.0.0)',
             $this->object->getPrintPreview()

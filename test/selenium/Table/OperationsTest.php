@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for table related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium\Table;
@@ -164,7 +165,7 @@ class OperationsTest extends TestBase
         $this->scrollIntoView('copyTable');
         $this->waitUntilElementIsVisible('cssSelector', 'form#copyTable', 30);
         $this->byCssSelector("form#copyTable input[name='new_name']")->sendKeys('2');
-        $this->byCssSelector("label[for='what_data']")->click();
+        $this->byCssSelector('label[for="whatRadio2"]')->click();
         $this->byCssSelector("form#copyTable input[type='submit']")->click();
         $this->waitAjax();
 

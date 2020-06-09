@@ -2,16 +2,18 @@
 /**
  * Tests for libraries/SystemDatabase.php
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\SystemDatabase;
 
 /**
  * Tests for libraries/SystemDatabase.php
  */
-class SystemDatabaseTest extends PmaTestCase
+class SystemDatabaseTest extends AbstractTestCase
 {
     /**
      * SystemDatabase instance
@@ -27,13 +29,15 @@ class SystemDatabaseTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         /**
          * SET these to avoid undefine d index error
          */
         $GLOBALS['server'] = 1;
         $GLOBALS['cfg']['Server']['pmadb'] = '';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 

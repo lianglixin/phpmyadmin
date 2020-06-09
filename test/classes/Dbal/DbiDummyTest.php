@@ -2,22 +2,25 @@
 /**
  * Test for faked database access
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Dbal;
 
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Query\Utilities;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests basic functionality of dummy dbi driver
  */
-class DbiDummyTest extends TestCase
+class DbiDummyTest extends AbstractTestCase
 {
     /**
      * Configures test parameters.
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['cfg']['DBG']['sql'] = false;
         $GLOBALS['cfg']['IconvExtraParams'] = '';
         $GLOBALS['server'] = 1;
@@ -58,7 +61,7 @@ class DbiDummyTest extends TestCase
      */
     public function testSystemSchema($schema, $expected): void
     {
-        $this->assertEquals($expected, $GLOBALS['dbi']->isSystemSchema($schema));
+        $this->assertEquals($expected, Utilities::isSystemSchema($schema));
     }
 
     /**
@@ -94,7 +97,7 @@ class DbiDummyTest extends TestCase
         $GLOBALS['server'] = 1;
         $this->assertEquals(
             $expected,
-            $GLOBALS['dbi']->formatError($number, $message)
+            Utilities::formatError($number, $message)
         );
     }
 

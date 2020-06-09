@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for export related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium;
@@ -44,7 +45,7 @@ class ExportTest extends TestBase
      */
     public function testServerExport($plugin, $expected): void
     {
-        $text = $this->_doExport('server', $plugin);
+        $text = $this->doExport('server', $plugin);
 
         foreach ($expected as $str) {
             $this->assertStringContainsString($str, $text);
@@ -64,7 +65,7 @@ class ExportTest extends TestBase
     {
         $this->navigateDatabase($this->database_name);
 
-        $text = $this->_doExport('db', $plugin);
+        $text = $this->doExport('db', $plugin);
 
         foreach ($expected as $str) {
             $this->assertStringContainsString($str, $text);
@@ -86,7 +87,7 @@ class ExportTest extends TestBase
 
         $this->navigateTable('test_table');
 
-        $text = $this->_doExport('table', $plugin);
+        $text = $this->doExport('table', $plugin);
 
         foreach ($expected as $str) {
             $this->assertStringContainsString($str, $text);
@@ -128,7 +129,7 @@ class ExportTest extends TestBase
      *
      * @return string export string
      */
-    private function _doExport($type, $plugin)
+    private function doExport($type, $plugin)
     {
         $this->expandMore();
         $this->waitForElement('partialLinkText', 'Export')->click();
@@ -146,7 +147,7 @@ class ExportTest extends TestBase
             $this->scrollIntoView('databases_and_tables', 200);
             $this->byPartialLinkText('Unselect all')->click();
 
-            $this->byCssSelector('option[value=' . $this->database_name . ']')->click();
+            $this->byCssSelector('option[value="' . $this->database_name . '"]')->click();
         }
 
         if ($type === 'table') {
@@ -177,8 +178,6 @@ class ExportTest extends TestBase
         $this->byId('buttonGo')->click();
         $this->waitAjax();
 
-        $text = $this->waitForElement('id', 'textSQLDUMP')->getText();
-
-        return $text;
+        return $this->waitForElement('id', 'textSQLDUMP')->getText();
     }
 }

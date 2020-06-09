@@ -2,19 +2,20 @@
 /**
  * Tests for PhpMyAdmin\Relation
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Relation;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for PhpMyAdmin\Relation
  *
  * @group medium
  */
-class RelationTest extends TestCase
+class RelationTest extends AbstractTestCase
 {
     /** @var Relation */
     private $relation;
@@ -27,6 +28,9 @@ class RelationTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::setTheme();
         $GLOBALS['server'] = 1;
         $GLOBALS['db'] = 'db';
         $GLOBALS['cfg']['Server']['user'] = 'root';
@@ -49,7 +53,7 @@ class RelationTest extends TestCase
      */
     public function testPMAQueryAsControlUser()
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -83,12 +87,10 @@ class RelationTest extends TestCase
     public function testPMAGetRelationsParam()
     {
         $relationsPara = $this->relation->getRelationsParam();
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $relationsPara['relwork']
         );
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $relationsPara['bookmarkwork']
         );
         $this->assertEquals(
@@ -189,8 +191,7 @@ class RelationTest extends TestCase
 
         $db = 'information_schema';
         $table = 'PMA';
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->relation->getDisplayField($db, $table)
         );
     }
@@ -205,7 +206,7 @@ class RelationTest extends TestCase
         $GLOBALS['cfg']['ServerDefault'] = 0;
         $_SESSION['relation'] = [];
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -251,7 +252,7 @@ class RelationTest extends TestCase
      */
     public function testPMATryUpgradeTransformations()
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->any())
@@ -271,15 +272,13 @@ class RelationTest extends TestCase
 
         // Case 1
         $actual = $this->relation->tryUpgradeTransformations();
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $actual
         );
 
         // Case 2
         $actual = $this->relation->tryUpgradeTransformations();
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $actual
         );
     }

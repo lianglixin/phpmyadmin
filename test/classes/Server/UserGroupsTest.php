@@ -2,25 +2,29 @@
 /**
  * Tests for PhpMyAdmin\Server\UserGroups
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Server;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Server\UserGroups;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Url;
-use PHPUnit\Framework\TestCase;
 use function htmlspecialchars;
 
 /**
  * Tests for PhpMyAdmin\Server\UserGroups
  */
-class UserGroupsTest extends TestCase
+class UserGroupsTest extends AbstractTestCase
 {
     /**
      * Prepares environment for the test.
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         $GLOBALS['cfg']['ServerDefault'] = 1;
         $GLOBALS['cfg']['ActionLinksMode'] = 'both';
 
@@ -45,7 +49,7 @@ class UserGroupsTest extends TestCase
         $expectedQuery = 'SELECT * FROM `pmadb`.`usergroups`'
             . ' ORDER BY `usergroup` ASC';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -82,7 +86,7 @@ class UserGroupsTest extends TestCase
         $expectedQuery = 'SELECT * FROM `pmadb`.`usergroups`'
             . ' ORDER BY `usergroup` ASC';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -168,7 +172,7 @@ class UserGroupsTest extends TestCase
         $userGrpDelQuery = 'DELETE FROM `pmadb`.`usergroups`'
             . " WHERE `usergroup`='ug'";
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->at(1))
@@ -206,7 +210,7 @@ class UserGroupsTest extends TestCase
 
         $expectedQuery = 'SELECT * FROM `pmadb`.`usergroups`'
             . " WHERE `usergroup`='ug'";
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())

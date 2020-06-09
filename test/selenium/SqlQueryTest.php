@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for typing and executing SQL query tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium;
@@ -73,7 +74,7 @@ class SqlQueryTest extends TestBase
         );
 
         // test inline edit button
-        $this->_testInlineEdit();
+        $this->assertInlineEdit();
     }
 
     /**
@@ -107,7 +108,7 @@ class SqlQueryTest extends TestBase
         );
 
         // test inline edit button
-        $this->_testInlineEdit();
+        $this->assertInlineEdit();
     }
 
     /**
@@ -146,13 +147,10 @@ class SqlQueryTest extends TestBase
         );
 
         // test inline edit button
-        $this->_testInlineEdit();
+        $this->assertInlineEdit();
     }
 
-    /**
-     * @return void
-     */
-    private function _testInlineEdit()
+    private function assertInlineEdit(): void
     {
         $this->waitForElement('cssSelector', 'a.inline_edit_sql')->click();
         // empty current query

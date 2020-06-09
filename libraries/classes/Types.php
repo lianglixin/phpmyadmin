@@ -2,6 +2,7 @@
 /**
  * SQL data types definition
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -617,28 +618,28 @@ class Types
                         'ST_PolyFromWKB',
                         'ST_MPolyFromWKB',
                     ];
-                } else {
-                    return [
-                        'GeomFromText',
-                        'GeomFromWKB',
-
-                        'GeomCollFromText',
-                        'LineFromText',
-                        'MLineFromText',
-                        'PointFromText',
-                        'MPointFromText',
-                        'PolyFromText',
-                        'MPolyFromText',
-
-                        'GeomCollFromWKB',
-                        'LineFromWKB',
-                        'MLineFromWKB',
-                        'PointFromWKB',
-                        'MPointFromWKB',
-                        'PolyFromWKB',
-                        'MPolyFromWKB',
-                    ];
                 }
+
+                return [
+                    'GeomFromText',
+                    'GeomFromWKB',
+
+                    'GeomCollFromText',
+                    'LineFromText',
+                    'MLineFromText',
+                    'PointFromText',
+                    'MPointFromText',
+                    'PolyFromText',
+                    'MPolyFromText',
+
+                    'GeomCollFromWKB',
+                    'LineFromWKB',
+                    'MLineFromWKB',
+                    'PointFromWKB',
+                    'MPointFromWKB',
+                    'PolyFromWKB',
+                    'MPolyFromWKB',
+                ];
         }
 
         return [];
@@ -774,9 +775,7 @@ class Types
 
         if (($isMariaDB && $serverVersion > 100207)
             || (! $isMariaDB && $serverVersion >= 50708)) {
-            $ret['JSON'] = [
-                'JSON',
-            ];
+            $ret['JSON'] = ['JSON'];
         }
 
         return $ret;

@@ -2,6 +2,7 @@
 /**
  * Functions used for database and table tracking
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -530,9 +531,7 @@ class Tracking
         $drop_image_or_text
     ) {
         // no need for the secondth returned parameter
-        [
-            $html,
-        ] = $this->getHtmlForDataStatements(
+        [$html] = $this->getHtmlForDataStatements(
             $data,
             $filter_users,
             $filter_ts_from,
@@ -712,9 +711,7 @@ class Tracking
      */
     public function getHtmlForColumns(array $columns)
     {
-        return $this->template->render('table/tracking/structure_snapshot_columns', [
-            'columns' => $columns,
-        ]);
+        return $this->template->render('table/tracking/structure_snapshot_columns', ['columns' => $columns]);
     }
 
     /**
@@ -726,9 +723,7 @@ class Tracking
      */
     public function getHtmlForIndexes(array $indexes)
     {
-        return $this->template->render('table/tracking/structure_snapshot_indexes', [
-            'indexes' => $indexes,
-        ]);
+        return $this->template->render('table/tracking/structure_snapshot_indexes', ['indexes' => $indexes]);
     }
 
     /**
@@ -1207,7 +1202,7 @@ class Tracking
             }
         }
 
-        $html = $this->template->render('database/tracking/tables', [
+        return $this->template->render('database/tracking/tables', [
             'db' => $db,
             'head_version_exists' => $headVersionExists,
             'untracked_tables_exists' => count($untrackedTables) > 0,
@@ -1217,8 +1212,6 @@ class Tracking
             'untracked_tables' => $untrackedTables,
             'pma_theme_image' => $pmaThemeImage,
         ]);
-
-        return $html;
     }
 
     /**
@@ -1239,7 +1232,8 @@ class Tracking
             if (is_array($value) && array_key_exists('is' . $sep . 'group', $value)
                 && $value['is' . $sep . 'group']
             ) {
-                $untracked_tables = array_merge($this->extractTableNames($value, $db), $untracked_tables); //Recursion step
+                // Recursion step
+                $untracked_tables = array_merge($this->extractTableNames($value, $db), $untracked_tables);
             } else {
                 if (is_array($value) && ($testing || Tracker::getVersion($db, $value['Name']) == -1)) {
                     $untracked_tables[] = $value['Name'];

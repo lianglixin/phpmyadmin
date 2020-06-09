@@ -2,6 +2,7 @@
 /**
  * Output buffering wrapper
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -37,7 +38,7 @@ class OutputBuffering
      */
     private function __construct()
     {
-        $this->_mode = $this->_getMode();
+        $this->_mode = $this->getMode();
         $this->_on = false;
     }
 
@@ -46,7 +47,7 @@ class OutputBuffering
      *
      * @return int the output buffer mode
      */
-    private function _getMode()
+    private function getMode()
     {
         $mode = 0;
         if ($GLOBALS['cfg']['OBGzip'] && function_exists('ob_start')) {
@@ -95,22 +96,24 @@ class OutputBuffering
      */
     public function start()
     {
-        if (! $this->_on) {
-            if ($this->_mode && function_exists('ob_gzhandler')) {
-                ob_start('ob_gzhandler');
-            }
-            ob_start();
-            if (! defined('TESTSUITE')) {
-                header('X-ob_mode: ' . $this->_mode);
-            }
-            register_shutdown_function(
-                [
-                    self::class,
-                    'stop',
-                ]
-            );
-            $this->_on = true;
+        if ($this->_on) {
+            return;
         }
+
+        if ($this->_mode && function_exists('ob_gzhandler')) {
+            ob_start('ob_gzhandler');
+        }
+        ob_start();
+        if (! defined('TESTSUITE')) {
+            header('X-ob_mode: ' . $this->_mode);
+        }
+        register_shutdown_function(
+            [
+                self::class,
+                'stop',
+            ]
+        );
+        $this->_on = true;
     }
 
     /**
@@ -123,13 +126,17 @@ class OutputBuffering
     public static function stop()
     {
         $buffer = self::getInstance();
-        if ($buffer->_on) {
-            $buffer->_on = false;
-            $buffer->_content = ob_get_contents();
-            if (ob_get_length() > 0) {
-                ob_end_clean();
-            }
+        if (! $buffer->_on) {
+            return;
         }
+
+        $buffer->_on = false;
+        $buffer->_content = ob_get_contents();
+        if (ob_get_length() <= 0) {
+            return;
+        }
+
+        ob_end_clean();
     }
 
     /**

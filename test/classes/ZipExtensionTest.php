@@ -2,6 +2,7 @@
 /**
  * Tests zip extension usage.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -16,14 +17,17 @@ use function unlink;
 
 /**
  * Tests zip extension usage.
+ *
+ * @requires extension zip
  */
-class ZipExtensionTest extends PmaTestCase
+class ZipExtensionTest extends AbstractTestCase
 {
     /** @var ZipExtension */
     private $zipExtension;
 
     protected function setUp(): void
     {
+        parent::setUp();
         $this->zipExtension = new ZipExtension();
     }
 
@@ -124,8 +128,7 @@ class ZipExtensionTest extends PmaTestCase
      */
     public function testExtract()
     {
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->zipExtension->extract(
                 './test/test_data/test.zip',
                 'wrongName'
@@ -173,8 +176,7 @@ class ZipExtensionTest extends PmaTestCase
      */
     public function testCreateFailure()
     {
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->zipExtension->createFile(
                 'Content',
                 [

@@ -2,6 +2,7 @@
 /**
  * Holds the Table class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -9,6 +10,7 @@ namespace PhpMyAdmin;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\Plugins\Export\ExportSql;
+use PhpMyAdmin\Query\Generator as QueryGenerator;
 use PhpMyAdmin\SqlParser\Components\Expression;
 use PhpMyAdmin\SqlParser\Components\OptionsArray;
 use PhpMyAdmin\SqlParser\Context;
@@ -216,9 +218,9 @@ class Table
             }
 
             return false;
-        } else {
-            return $tbl_storage_engine == $engine;
         }
+
+        return $tbl_storage_engine == $engine;
     }
 
     /**
@@ -235,7 +237,7 @@ class Table
         }
 
         // use cached data or load information with SHOW command
-        if ($this->_dbi->getCachedTableContent([$db, $table]) != null
+        if ($this->_dbi->getCache()->getCachedTableContent([$db, $table]) != null
             || $GLOBALS['cfg']['Server']['DisableIS']
         ) {
             $type = $this->getStatusInfo('TABLE_TYPE');
@@ -319,16 +321,18 @@ class Table
             $disable_error = true;
         }
 
+        $cachedResult = $this->_dbi->getCache()->getCachedTableContent([$db, $table]);
+
         // sometimes there is only one entry (ExactRows) so
         // we have to get the table's details
-        if ($this->_dbi->getCachedTableContent([$db, $table]) == null
+        if ($cachedResult === null
             || $force_read
-            || count($this->_dbi->getCachedTableContent([$db, $table])) === 1
+            || count($cachedResult) === 1
         ) {
             $this->_dbi->getTablesFull($db, $table);
         }
 
-        if ($this->_dbi->getCachedTableContent([$db, $table]) == null) {
+        if ($cachedResult === null) {
             // happens when we enter the table creation dialog
             // or when we really did not get any status info, for example
             // when $table == 'TABLE_NAMES' after the user tried SHOW TABLES
@@ -336,13 +340,13 @@ class Table
         }
 
         if ($info === null) {
-            return $this->_dbi->getCachedTableContent([$db, $table]);
+            return $cachedResult;
         }
 
         // array_key_exists allows for null values
         if (! array_key_exists(
             $info,
-            $this->_dbi->getCachedTableContent([$db, $table])
+            $cachedResult
         )
         ) {
             if (! $disable_error) {
@@ -355,7 +359,7 @@ class Table
             return false;
         }
 
-        return $this->_dbi->getCachedTableContent([$db, $table, $info]);
+        return $this->_dbi->getCache()->getCachedTableContent([$db, $table, $info]);
     }
 
     /**
@@ -364,7 +368,7 @@ class Table
      * @return string                 Return storage engine info if it is set for
      *                                the selected table else return blank.
      */
-    public function getStorageEngine()
+    public function getStorageEngine(): string
     {
         $table_storage_engine = $this->getStatusInfo('ENGINE', false, true);
         if ($table_storage_engine === false) {
@@ -462,15 +466,16 @@ class Table
         // unset($pack_keys);
         foreach ($create_options_tmp as $each_create_option) {
             $each_create_option = explode('=', $each_create_option);
-            if (isset($each_create_option[1])) {
-                // ensure there is no ambiguity for PHP 5 and 7
-                $create_options[$each_create_option[0]] = $each_create_option[1];
+            if (! isset($each_create_option[1])) {
+                continue;
             }
+
+            // ensure there is no ambiguity for PHP 5 and 7
+            $create_options[$each_create_option[0]] = $each_create_option[1];
         }
         // we need explicit DEFAULT value here (different from '0')
-        $create_options['pack_keys'] = ! isset($create_options['pack_keys']) || strlen($create_options['pack_keys']) == 0
-            ? 'DEFAULT'
-            : $create_options['pack_keys'];
+        $hasPackKeys = isset($create_options['pack_keys']) && strlen($create_options['pack_keys']) > 0;
+        $create_options['pack_keys'] = $hasPackKeys ? $create_options['pack_keys'] : 'DEFAULT';
 
         return $create_options;
     }
@@ -726,26 +731,24 @@ class Table
         $db = $this->_db_name;
         $table = $this->_name;
 
-        if ($this->_dbi->getCachedTableContent([$db, $table, 'ExactRows']) != null) {
-            $row_count = $this->_dbi->getCachedTableContent(
+        if ($this->_dbi->getCache()->getCachedTableContent([$db, $table, 'ExactRows']) != null) {
+            return $this->_dbi->getCache()->getCachedTableContent(
                 [
                     $db,
                     $table,
                     'ExactRows',
                 ]
             );
-
-            return $row_count;
         }
         $row_count = false;
 
         if (! $force_exact) {
-            if (($this->_dbi->getCachedTableContent([$db, $table, 'Rows']) == null)
+            if (($this->_dbi->getCache()->getCachedTableContent([$db, $table, 'Rows']) == null)
                 && ! $is_view
             ) {
                 $tmp_tables = $this->_dbi->getTablesFull($db, $table);
                 if (isset($tmp_tables[$table])) {
-                    $this->_dbi->cacheTableContent(
+                    $this->_dbi->getCache()->cacheTableContent(
                         [
                             $db,
                             $table,
@@ -754,8 +757,8 @@ class Table
                     );
                 }
             }
-            if ($this->_dbi->getCachedTableContent([$db, $table, 'Rows']) != null) {
-                $row_count = $this->_dbi->getCachedTableContent(
+            if ($this->_dbi->getCache()->getCachedTableContent([$db, $table, 'Rows']) != null) {
+                $row_count = $this->_dbi->getCache()->getCachedTableContent(
                     [
                         $db,
                         $table,
@@ -805,7 +808,7 @@ class Table
             }
         }
         if ($row_count) {
-            $this->_dbi->cacheTableContent([$db, $table, 'ExactRows'], $row_count);
+            $this->_dbi->getCache()->cacheTableContent([$db, $table, 'ExactRows'], $row_count);
         }
 
         return $row_count;
@@ -944,9 +947,11 @@ class Table
         while ($table_copy_row = @$dbi->fetchAssoc($table_copy_rs)) {
             $value_parts = [];
             foreach ($table_copy_row as $_key => $_val) {
-                if (isset($row_fields[$_key]) && $row_fields[$_key] == 'cc') {
-                    $value_parts[] = $dbi->escapeString($_val);
+                if (! isset($row_fields[$_key]) || $row_fields[$_key] != 'cc') {
+                    continue;
                 }
+
+                $value_parts[] = $dbi->escapeString($_val);
             }
 
             $new_table_query = 'INSERT IGNORE INTO '
@@ -1207,9 +1212,11 @@ class Table
                 // Removing the name of the constraints.
                 foreach ($statement->altered as $idx => $altered) {
                     // All constraint names are removed because they must be unique.
-                    if ($altered->options->has('CONSTRAINT')) {
-                        $altered->field = null;
+                    if (! $altered->options->has('CONSTRAINT')) {
+                        continue;
                     }
+
+                    $altered->field = null;
                 }
 
                 // Building back the query.
@@ -1245,9 +1252,11 @@ class Table
                     // Removing the name of the constraints.
                     foreach ($statement->altered as $idx => $altered) {
                         // All constraint names are removed because they must be unique.
-                        if ($altered->options->has('CONSTRAINT')) {
-                            $altered->field = null;
+                        if (! $altered->options->has('CONSTRAINT')) {
+                            continue;
                         }
+
+                        $altered->field = null;
                     }
 
                     // Building back the query.
@@ -1555,13 +1564,10 @@ class Table
             // only allow the above regex in unquoted identifiers
             // see : https://dev.mysql.com/doc/refman/5.7/en/identifiers.html
             return true;
-        } elseif ($is_backquoted) {
-            // If backquoted, all characters should be allowed (except w/ trailing spaces)
-            return true;
         }
 
-        // If not backquoted and doesn't follow the above regex
-        return false;
+        // If backquoted, all characters should be allowed (except w/ trailing spaces).
+        return $is_backquoted;
     }
 
     /**
@@ -1686,7 +1692,7 @@ class Table
      */
     public function getUniqueColumns($backquoted = true, $fullName = true)
     {
-        $sql = $this->_dbi->getTableIndexesSql(
+        $sql = QueryGenerator::getTableIndexesSql(
             $this->getDbName(),
             $this->getName(),
             'Non_unique = 0'
@@ -1716,9 +1722,11 @@ class Table
                 $possible_column .= $index[0];
             }
             // a column might have a primary and an unique index on it
-            if (! in_array($possible_column, $return)) {
-                $return[] = $possible_column;
+            if (in_array($possible_column, $return)) {
+                continue;
             }
+
+            $return[] = $possible_column;
         }
 
         return $return;
@@ -1737,7 +1745,7 @@ class Table
      *
      * @return array
      */
-    private function _formatColumns(array $indexed, $backquoted, $fullName)
+    private function formatColumns(array $indexed, $backquoted, $fullName)
     {
         $return = [];
         foreach ($indexed as $column) {
@@ -1762,14 +1770,14 @@ class Table
      */
     public function getIndexedColumns($backquoted = true, $fullName = true)
     {
-        $sql = $this->_dbi->getTableIndexesSql(
+        $sql = QueryGenerator::getTableIndexesSql(
             $this->getDbName(),
             $this->getName(),
             ''
         );
         $indexed = $this->_dbi->fetchResult($sql, 'Column_name', 'Column_name');
 
-        return $this->_formatColumns($indexed, $backquoted, $fullName);
+        return $this->formatColumns($indexed, $backquoted, $fullName);
     }
 
     /**
@@ -1787,7 +1795,7 @@ class Table
         $sql = 'SHOW COLUMNS FROM ' . $this->getFullName(true);
         $indexed = $this->_dbi->fetchResult($sql, 'Field', 'Field');
 
-        return $this->_formatColumns($indexed, $backquoted, $fullName);
+        return $this->formatColumns($indexed, $backquoted, $fullName);
     }
 
     /**
@@ -1805,10 +1813,10 @@ class Table
         $move_columns_sql_result = $this->_dbi->tryQuery($move_columns_sql_query);
         if ($move_columns_sql_result !== false) {
             return $this->_dbi->getFieldsMeta($move_columns_sql_result);
-        } else {
-            // unsure how to reproduce but it was seen on the reporting server
-            return [];
         }
+
+        // unsure how to reproduce but it was seen on the reporting server
+        return [];
     }
 
     /**
@@ -1837,11 +1845,13 @@ class Table
                 }
 
                 if ((
-                    strpos($column['Extra'], 'GENERATED') === false
-                    && strpos($column['Extra'], 'VIRTUAL') === false
-                    ) || $column['Extra'] === 'DEFAULT_GENERATED') {
-                    $ret[] = $value;
+                    strpos($column['Extra'], 'GENERATED') !== false
+                    || strpos($column['Extra'], 'VIRTUAL') !== false
+                    ) && $column['Extra'] !== 'DEFAULT_GENERATED') {
+                    continue;
                 }
+
+                $ret[] = $value;
             }
         }
 
@@ -1964,9 +1974,8 @@ class Table
         // set session variable if it's still undefined
         if (! isset($_SESSION['tmpval']['table_uiprefs'][$server_id][$this->_db_name][$this->_name])) {
             // check whether we can get from pmadb
-            $_SESSION['tmpval']['table_uiprefs'][$server_id][$this->_db_name][$this->_name] = $cfgRelation['uiprefswork']
-                ?  $this->getUiPrefsFromDb()
-                : [];
+            $uiPrefs = $cfgRelation['uiprefswork'] ? $this->getUiPrefsFromDb() : [];
+            $_SESSION['tmpval']['table_uiprefs'][$server_id][$this->_db_name][$this->_name] = $uiPrefs;
         }
         $this->uiprefs =& $_SESSION['tmpval']['table_uiprefs'][$server_id][$this->_db_name][$this->_name];
     }
@@ -2072,11 +2081,9 @@ class Table
             || $property == self::PROP_COLUMN_VISIB)
         ) {
             $curr_create_time = $this->getStatusInfo('CREATE_TIME');
-            if (isset($table_create_time)
-                && $table_create_time == $curr_create_time
+            if (! isset($table_create_time)
+                || $table_create_time != $curr_create_time
             ) {
-                $this->uiprefs['CREATE_TIME'] = $curr_create_time;
-            } else {
                 // there is no $table_create_time, or
                 // supplied $table_create_time is older than current create time,
                 // so don't save
@@ -2091,6 +2098,8 @@ class Table
                     )
                 );
             }
+
+            $this->uiprefs['CREATE_TIME'] = $curr_create_time;
         }
         // save the value
         $this->uiprefs[$property] = $value;
@@ -2143,9 +2152,11 @@ class Table
         foreach ($columns as $column) {
             $temp = explode('.', $column);
             $column_name = $temp[2];
-            if (Context::isKeyword($column_name, true)) {
-                $return[] = $column_name;
+            if (! Context::isKeyword($column_name, true)) {
+                continue;
             }
+
+            $return[] = $column_name;
         }
 
         return $return;
@@ -2253,9 +2264,11 @@ class Table
         $index_fields = [];
         foreach ($index->getColumns() as $key => $column) {
             $index_fields[$key] = Util::backquote($column->getName());
-            if ($column->getSubPart()) {
-                $index_fields[$key] .= '(' . $column->getSubPart() . ')';
+            if (! $column->getSubPart()) {
+                continue;
             }
+
+            $index_fields[$key] .= '(' . $column->getSubPart() . ')';
         } // end while
 
         if (empty($index_fields)) {
@@ -2421,15 +2434,17 @@ class Table
                     . $this->_dbi->escapeString($master_field) . '\'';
             } // end if... else....
 
-            if (isset($upd_query)) {
-                $this->_dbi->query(
-                    $upd_query,
-                    DatabaseInterface::CONNECT_CONTROL,
-                    0,
-                    false
-                );
-                $updated = true;
+            if (! isset($upd_query)) {
+                continue;
             }
+
+            $this->_dbi->query(
+                $upd_query,
+                DatabaseInterface::CONNECT_CONTROL,
+                0,
+                false
+            );
+            $updated = true;
         }
 
         return $updated;
@@ -2486,9 +2501,11 @@ class Table
                     $empty_fields = true;
                 }
 
-                if (empty($one_field) && empty($foreign_field[$key])) {
-                    unset($master_field[$key], $foreign_field[$key]);
+                if (! empty($one_field) || ! empty($foreign_field[$key])) {
+                    continue;
                 }
+
+                unset($master_field[$key], $foreign_field[$key]);
             }
 
             if (! empty($foreign_db)
@@ -2564,7 +2581,7 @@ class Table
                 continue;
             }
 
-            $create_query = $this->_getSQLToCreateForeignKey(
+            $create_query = $this->getSQLToCreateForeignKey(
                 $table,
                 $master_field,
                 $foreign_db,
@@ -2601,8 +2618,8 @@ class Table
                         );
                     }
                     $html_output .= MySQLDocumentation::show(
-                            'InnoDB_foreign_key_constraints'
-                        ) . "\n";
+                        'InnoDB_foreign_key_constraints'
+                    ) . "\n";
                 }
             } else {
                 $preview_sql_data .= $create_query . "\n";
@@ -2610,27 +2627,29 @@ class Table
 
             // this is an alteration and the old constraint has been dropped
             // without creation of a new one
-            if ($drop && $create && empty($tmp_error_drop)
-                && ! empty($tmp_error_create)
+            if (! $drop || ! empty($tmp_error_drop)
+                || empty($tmp_error_create)
             ) {
-                // a rollback may be better here
-                $sql_query_recreate = '# Restoring the dropped constraint...' . "\n";
-                $sql_query_recreate .= $this->_getSQLToCreateForeignKey(
-                    $table,
-                    $master_field,
-                    $existrel_foreign[$master_field_md5]['ref_db_name'],
-                    $existrel_foreign[$master_field_md5]['ref_table_name'],
-                    $existrel_foreign[$master_field_md5]['ref_index_list'],
-                    $existrel_foreign[$master_field_md5]['constraint'],
-                    $options_array[$existrel_foreign[$master_field_md5]['on_delete'] ?? ''] ?? null,
-                    $options_array[$existrel_foreign[$master_field_md5]['on_update'] ?? ''] ?? null
-                );
-                if (! isset($_POST['preview_sql'])) {
-                    $display_query .= $sql_query_recreate . "\n";
-                    $this->_dbi->tryQuery($sql_query_recreate);
-                } else {
-                    $preview_sql_data .= $sql_query_recreate;
-                }
+                continue;
+            }
+
+            // a rollback may be better here
+            $sql_query_recreate = '# Restoring the dropped constraint...' . "\n";
+            $sql_query_recreate .= $this->getSQLToCreateForeignKey(
+                $table,
+                $master_field,
+                $existrel_foreign[$master_field_md5]['ref_db_name'],
+                $existrel_foreign[$master_field_md5]['ref_table_name'],
+                $existrel_foreign[$master_field_md5]['ref_index_list'],
+                $existrel_foreign[$master_field_md5]['constraint'],
+                $options_array[$existrel_foreign[$master_field_md5]['on_delete'] ?? ''] ?? null,
+                $options_array[$existrel_foreign[$master_field_md5]['on_update'] ?? ''] ?? null
+            );
+            if (! isset($_POST['preview_sql'])) {
+                $display_query .= $sql_query_recreate . "\n";
+                $this->_dbi->tryQuery($sql_query_recreate);
+            } else {
+                $preview_sql_data .= $sql_query_recreate;
             }
         } // end foreach
 
@@ -2656,7 +2675,7 @@ class Table
      *
      * @return string SQL query for foreign key constraint creation
      */
-    private function _getSQLToCreateForeignKey(
+    private function getSQLToCreateForeignKey(
         $table,
         array $field,
         $foreignDb,
@@ -2747,9 +2766,11 @@ class Table
 
         $ret = [];
         foreach ($fields as $field => $options) {
-            if (isset($options['expr'])) {
-                $ret[$field] = substr($options['expr'], 1, -1);
+            if (! isset($options['expr'])) {
+                continue;
             }
+
+            $ret[$field] = substr($options['expr'], 1, -1);
         }
 
         return $ret;

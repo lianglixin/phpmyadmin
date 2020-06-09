@@ -2,17 +2,17 @@
 /**
  * tests for ListDatabase class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\ListDatabase;
-use ReflectionClass;
 
 /**
  * tests for ListDatabase class
  */
-class ListDatabaseTest extends PmaTestCase
+class ListDatabaseTest extends AbstractTestCase
 {
     /**
      * ListDatabase instance
@@ -26,27 +26,11 @@ class ListDatabaseTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['server'] = 1;
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfg']['Server']['only_db'] = ['single\\_db'];
         $this->object = new ListDatabase();
-    }
-
-    /**
-     * Call protected functions by setting visibility to public.
-     *
-     * @param string $name   method name
-     * @param array  $params parameters for the invocation
-     *
-     * @return mixed the output from the protected method.
-     */
-    private function _callProtectedFunction($name, $params)
-    {
-        $class = new ReflectionClass(ListDatabase::class);
-        $method = $class->getMethod($name);
-        $method->setAccessible(true);
-
-        return $method->invokeArgs($this->object, $params);
     }
 
     /**
@@ -68,7 +52,7 @@ class ListDatabaseTest extends PmaTestCase
     public function testExists()
     {
         $arr = new ListDatabase();
-        $this->assertEquals(true, $arr->exists('single_db'));
+        $this->assertTrue($arr->exists('single_db'));
     }
 
     public function testGetList(): void
@@ -107,7 +91,9 @@ class ListDatabaseTest extends PmaTestCase
     {
         $GLOBALS['cfg']['Server']['hide_db'] = 'single\\_db';
         $this->assertEquals(
-            $this->_callProtectedFunction(
+            $this->callFunction(
+                $this->object,
+                ListDatabase::class,
                 'checkHideDatabase',
                 []
             ),

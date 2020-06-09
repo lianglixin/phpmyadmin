@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for user related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium;
@@ -94,7 +95,7 @@ class CreateRemoveUserTest extends TestBase
 
         // Removing the newly added user
         $this->waitForElement('partialLinkText', 'User accounts')->click();
-        $el = $this->waitForElement('id', 'usersForm');
+        $this->waitForElement('id', 'usersForm');
         $temp = $this->_txtUsername . '&amp;#27;localhost';
 
         $this->byXPath(

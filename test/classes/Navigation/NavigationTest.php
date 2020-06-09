@@ -2,20 +2,22 @@
 /**
  * Test for PhpMyAdmin\Navigation\Navigation class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Navigation;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Navigation\Navigation;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Template;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Url;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Navigation class
  */
-class NavigationTest extends PmaTestCase
+class NavigationTest extends AbstractTestCase
 {
     /** @var Navigation */
     protected $object;
@@ -27,6 +29,9 @@ class NavigationTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
+        parent::setLanguage();
         $GLOBALS['server'] = 1;
         $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = '';
@@ -42,6 +47,8 @@ class NavigationTest extends PmaTestCase
             new Relation($GLOBALS['dbi']),
             $GLOBALS['dbi']
         );
+        $GLOBALS['cfgRelation']['db'] = 'pmadb';
+        $GLOBALS['cfgRelation']['navigationhiding'] = 'navigationhiding';
     }
 
     /**
@@ -51,6 +58,7 @@ class NavigationTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -66,7 +74,7 @@ class NavigationTest extends PmaTestCase
         $expectedQuery = 'INSERT INTO `pmadb`.`navigationhiding`'
             . '(`username`, `item_name`, `item_type`, `db_name`, `table_name`)'
             . " VALUES ('user','itemName','itemType','db','')";
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -92,7 +100,7 @@ class NavigationTest extends PmaTestCase
         $expectedQuery = 'DELETE FROM `pmadb`.`navigationhiding`'
             . " WHERE `username`='user' AND `item_name`='itemName'"
             . " AND `item_type`='itemType' AND `db_name`='db'";
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())

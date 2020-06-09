@@ -2,6 +2,7 @@
 /**
  * tests for Advisor class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -14,7 +15,7 @@ use function strtolower;
 /**
  * Tests behaviour of PMA_Advisor class
  */
-class LanguageTest extends PmaTestCase
+class LanguageTest extends AbstractTestCase
 {
     /** @var LanguageManager */
     private $manager;
@@ -24,6 +25,7 @@ class LanguageTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $loc = LOCALE_PATH . '/cs/LC_MESSAGES/phpmyadmin.mo';
         if (! is_readable($loc)) {
             $this->markTestSkipped('Missing compiled locales.');
@@ -33,6 +35,7 @@ class LanguageTest extends PmaTestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         // Ensure we have English locale after tests
         $this->manager->getLanguage('en')->activate();
     }
@@ -137,7 +140,7 @@ class LanguageTest extends PmaTestCase
         $this->assertEquals('Czech', $lang->getEnglishName());
         $this->assertEquals('Čeština', $lang->getNativeName());
         $lang = $this->manager->getLanguage('nonexisting');
-        $this->assertEquals(false, $lang);
+        $this->assertFalse($lang);
     }
 
     /**

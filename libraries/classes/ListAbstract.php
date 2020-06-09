@@ -2,11 +2,13 @@
 /**
  * hold the ListAbstract base class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
 use ArrayObject;
+use PhpMyAdmin\Query\Utilities;
 use function in_array;
 
 /**
@@ -59,7 +61,7 @@ abstract class ListAbstract extends ArrayObject
 
         $list = [];
         foreach ($this as $eachItem) {
-            if ($GLOBALS['dbi']->isSystemSchema($eachItem)) {
+            if (Utilities::isSystemSchema($eachItem)) {
                 continue;
             }
 

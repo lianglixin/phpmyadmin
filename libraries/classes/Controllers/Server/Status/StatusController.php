@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\Controllers\Server\Status\StatusController
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server\Status;
@@ -247,11 +248,13 @@ class StatusController extends AbstractController
 
         $output = '';
         foreach ($replication_types as $type) {
-            if (isset($replication_info[$type]['status'])
-                && $replication_info[$type]['status']
+            if (! isset($replication_info[$type]['status'])
+                || ! $replication_info[$type]['status']
             ) {
-                $output .= $this->replicationGui->getHtmlForReplicationStatusTable($type);
+                continue;
             }
+
+            $output .= $this->replicationGui->getHtmlForReplicationStatusTable($type);
         }
 
         return $output;

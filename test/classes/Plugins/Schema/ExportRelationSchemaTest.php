@@ -2,17 +2,18 @@
 /**
  * Tests for PhpMyAdmin\Plugins\Schema\ExportRelationSchema class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Schema;
 
 use PhpMyAdmin\Plugins\Schema\ExportRelationSchema;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Plugins\Schema\ExportRelationSchema class
  */
-class ExportRelationSchemaTest extends PmaTestCase
+class ExportRelationSchemaTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -25,6 +26,8 @@ class ExportRelationSchemaTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         $_REQUEST['page_number'] = 33;
         $this->object = new ExportRelationSchema('information_schema', null);
     }
@@ -37,6 +40,7 @@ class ExportRelationSchemaTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -66,13 +70,11 @@ class ExportRelationSchemaTest extends PmaTestCase
     public function testSetShowColor()
     {
         $this->object->setShowColor(true);
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isShowColor()
         );
         $this->object->setShowColor(false);
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->object->isShowColor()
         );
     }
@@ -108,13 +110,11 @@ class ExportRelationSchemaTest extends PmaTestCase
     public function testSetTableDimension()
     {
         $this->object->setTableDimension(true);
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isTableDimension()
         );
         $this->object->setTableDimension(false);
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->object->isTableDimension()
         );
     }
@@ -150,13 +150,11 @@ class ExportRelationSchemaTest extends PmaTestCase
     public function testSetAllTablesSameWidth()
     {
         $this->object->setAllTablesSameWidth(true);
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isAllTableSameWidth()
         );
         $this->object->setAllTablesSameWidth(false);
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->object->isAllTableSameWidth()
         );
     }
@@ -171,13 +169,11 @@ class ExportRelationSchemaTest extends PmaTestCase
     public function testSetShowKeys()
     {
         $this->object->setShowKeys(true);
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isShowKeys()
         );
         $this->object->setShowKeys(false);
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->object->isShowKeys()
         );
     }

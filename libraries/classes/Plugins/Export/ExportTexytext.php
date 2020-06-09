@@ -2,6 +2,7 @@
 /**
  * Export to Texy! text.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Export;
@@ -281,9 +282,11 @@ class ExportTexytext extends ExportPlugin
         $unique_keys = [];
         $keys = $GLOBALS['dbi']->getTableIndexes($db, $view);
         foreach ($keys as $key) {
-            if ($key['Non_unique'] == 0) {
-                $unique_keys[] = $key['Column_name'];
+            if ($key['Non_unique'] != 0) {
+                continue;
             }
+
+            $unique_keys[] = $key['Column_name'];
         }
 
         /**
@@ -365,9 +368,11 @@ class ExportTexytext extends ExportPlugin
         $unique_keys = [];
         $keys = $GLOBALS['dbi']->getTableIndexes($db, $table);
         foreach ($keys as $key) {
-            if ($key['Non_unique'] == 0) {
-                $unique_keys[] = $key['Column_name'];
+            if ($key['Non_unique'] != 0) {
+                continue;
             }
+
+            $unique_keys[] = $key['Column_name'];
         }
 
         /**
@@ -376,7 +381,7 @@ class ExportTexytext extends ExportPlugin
         $GLOBALS['dbi']->selectDb($db);
 
         // Check if we can use Relations
-        list($res_rel, $have_rel) = $this->relation->getRelationsAndStatus(
+        [$res_rel, $have_rel] = $this->relation->getRelationsAndStatus(
             $do_relation && ! empty($cfgRelation['relation']),
             $db,
             $table

@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for change password related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium;
@@ -64,13 +65,13 @@ class ChangePasswordTest extends TestBase
         $this->assertNotEquals('', $this->byName('pma_pw2')->getAttribute('value'));
         $this->assertNotEquals('', $this->byName('generated_pw')->getAttribute('value'));
 
-        if ($GLOBALS['TESTSUITE_PASSWORD'] != '') {
+        if ($this->getTestSuiteUserPassword() !== '') {
             $this->byName('pma_pw')->clear();
             $this->byName('pma_pw2')->clear();
 
-            $this->byName('pma_pw')->click()->sendKeys($GLOBALS['TESTSUITE_PASSWORD']);
+            $this->byName('pma_pw')->click()->sendKeys($this->getTestSuiteUserPassword());
 
-            $this->byName('pma_pw2')->click()->sendKeys($GLOBALS['TESTSUITE_PASSWORD']);
+            $this->byName('pma_pw2')->click()->sendKeys($this->getTestSuiteUserPassword());
         } else {
             $this->byId('nopass_1')->click();
         }

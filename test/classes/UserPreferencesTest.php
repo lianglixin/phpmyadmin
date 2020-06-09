@@ -2,6 +2,7 @@
 /**
  * tests for methods under PhpMyAdmin\UserPreferences class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -17,7 +18,7 @@ use function time;
 /**
  * tests for methods under PhpMyAdmin\UserPreferences class
  */
-class UserPreferencesTest extends PmaTestCase
+class UserPreferencesTest extends AbstractNetworkTestCase
 {
     /** @var UserPreferences */
     private $userPreferences;
@@ -27,11 +28,12 @@ class UserPreferencesTest extends PmaTestCase
      */
     protected function setUp(): void
     {
-        global $cfg;
-        include ROOT_PATH . 'libraries/config.default.php';
+        parent::setUp();
+        parent::loadDefaultConfig();
+        parent::defineVersionConstants();
         $GLOBALS['server'] = 0;
+        $GLOBALS['text_dir'] = 'ltr';
         $GLOBALS['PMA_PHP_SELF'] = '/phpmyadmin/';
-        $cfg['Server']['DisableIS'] = false;
 
         $this->userPreferences = new UserPreferences();
     }
@@ -55,9 +57,7 @@ class UserPreferencesTest extends PmaTestCase
         $this->assertEquals(
             [
                 'Servers' => [
-                    1 => [
-                        'hide_db' => 'testval123',
-                    ],
+                    1 => ['hide_db' => 'testval123'],
                 ],
             ],
             $_SESSION['ConfigFile' . $GLOBALS['server']]
@@ -106,7 +106,7 @@ class UserPreferencesTest extends PmaTestCase
         $_SESSION['relation'][$GLOBALS['server']]['userconfig'] = 'testconf';
         $_SESSION['relation'][$GLOBALS['server']]['user'] = 'user';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -203,7 +203,7 @@ class UserPreferencesTest extends PmaTestCase
         $query2 = 'UPDATE `pmadb`.`testconf` SET `timevalue` = NOW(), `config_data` = \''
             . json_encode([1]) . '\' WHERE `username` = \'user\'';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -234,7 +234,7 @@ class UserPreferencesTest extends PmaTestCase
         $query2 = 'INSERT INTO `pmadb`.`testconf` (`username`, `timevalue`,`config_data`) '
             . 'VALUES (\'user\', NOW(), \'' . json_encode([1]) . '\')';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -291,9 +291,7 @@ class UserPreferencesTest extends PmaTestCase
 
         $this->assertEquals(
             [
-                'Server' => [
-                    'hide_db' => 1,
-                ],
+                'Server' => ['hide_db' => 1],
             ],
             $result
         );
@@ -308,9 +306,7 @@ class UserPreferencesTest extends PmaTestCase
     {
         $GLOBALS['cfg']['UserprefsDeveloperTab'] = true;
         $result = $this->userPreferences->apply(
-            [
-                'DBG/sql' => true,
-            ]
+            ['DBG/sql' => true]
         );
 
         $this->assertEquals(
@@ -397,7 +393,7 @@ class UserPreferencesTest extends PmaTestCase
 
         $_REQUEST['prefs_autoload'] = 'nohide';
         $GLOBALS['cfg']['ServerDefault'] = 1;
-        $GLOBALS['PMA_PHP_SELF'] = 'phpunit';
+        $GLOBALS['PMA_PHP_SELF'] = 'index.php';
         $result = $this->userPreferences->autoloadGetHeader();
 
         $this->assertStringContainsString(
@@ -421,7 +417,7 @@ class UserPreferencesTest extends PmaTestCase
         );
 
         $this->assertStringContainsString(
-            '<input type="hidden" name="return_url" value="phpunit?">',
+            '<input type="hidden" name="return_url" value="index.php?">',
             $result
         );
     }

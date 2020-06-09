@@ -2,6 +2,7 @@
 /**
  * Tests for PhpMyAdmin\Database\Designer
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Database;
@@ -10,13 +11,13 @@ use PhpMyAdmin\Database\Designer;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Template;
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionMethod;
 
 /**
  * Tests for PhpMyAdmin\Database\Designer
  */
-class DesignerTest extends TestCase
+class DesignerTest extends AbstractTestCase
 {
     /** @var Designer */
     private $designer;
@@ -26,6 +27,9 @@ class DesignerTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+
         $GLOBALS['server'] = 1;
         $GLOBALS['cfg']['ServerDefault'] = 1;
         $GLOBALS['cfg']['PDFPageSizes'] = [
@@ -56,9 +60,9 @@ class DesignerTest extends TestCase
      *
      * @return void
      */
-    private function _mockDatabaseInteraction($db)
+    private function mockDatabaseInteraction($db)
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -102,7 +106,7 @@ class DesignerTest extends TestCase
     public function testGetPageIdsAndNames()
     {
         $db = 'db';
-        $this->_mockDatabaseInteraction($db);
+        $this->mockDatabaseInteraction($db);
 
         $template = new Template();
         $this->designer = new Designer($GLOBALS['dbi'], new Relation($GLOBALS['dbi'], $template), $template);
@@ -129,7 +133,7 @@ class DesignerTest extends TestCase
     {
         $db = 'db';
         $operation = 'edit';
-        $this->_mockDatabaseInteraction($db);
+        $this->mockDatabaseInteraction($db);
 
         $template = new Template();
         $this->designer = new Designer($GLOBALS['dbi'], new Relation($GLOBALS['dbi'], $template), $template);
@@ -158,7 +162,7 @@ class DesignerTest extends TestCase
     public function testGetHtmlForPageSaveAs()
     {
         $db = 'db';
-        $this->_mockDatabaseInteraction($db);
+        $this->mockDatabaseInteraction($db);
 
         $template = new Template();
         $this->designer = new Designer($GLOBALS['dbi'], new Relation($GLOBALS['dbi'], $template), $template);

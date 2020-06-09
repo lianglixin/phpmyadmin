@@ -2,6 +2,7 @@
 /**
  * Page-related settings
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Config;
@@ -80,11 +81,11 @@ class PageSettings
         if (isset($_POST['submit_save'])
             && $_POST['submit_save'] == $formGroupName
         ) {
-            $this->_processPageSettings($formDisplay, $cf, $error);
+            $this->processPageSettings($formDisplay, $cf, $error);
         }
 
         // Display forms
-        $this->_HTML = $this->_getPageSettingsDisplay($formDisplay, $error);
+        $this->_HTML = $this->getPageSettingsDisplay($formDisplay, $error);
     }
 
     /**
@@ -96,22 +97,24 @@ class PageSettings
      *
      * @return void
      */
-    private function _processPageSettings(&$formDisplay, &$cf, &$error)
+    private function processPageSettings(&$formDisplay, &$cf, &$error)
     {
-        if ($formDisplay->process(false) && ! $formDisplay->hasErrors()) {
-            // save settings
-            $result = $this->userPreferences->save($cf->getConfigArray());
-            if ($result === true) {
-                // reload page
-                $response = Response::getInstance();
-                Core::sendHeaderLocation(
-                    $response->getFooter()->getSelfUrl()
-                );
-                exit;
-            } else {
-                $error = $result;
-            }
+        if (! $formDisplay->process(false) || $formDisplay->hasErrors()) {
+            return;
         }
+
+        // save settings
+        $result = $this->userPreferences->save($cf->getConfigArray());
+        if ($result === true) {
+            // reload page
+            $response = Response::getInstance();
+            Core::sendHeaderLocation(
+                $response->getFooter()->getSelfUrl()
+            );
+            exit;
+        }
+
+        $error = $result;
     }
 
     /**
@@ -122,7 +125,7 @@ class PageSettings
      *
      * @return void
      */
-    private function _storeError(&$formDisplay, &$error)
+    private function storeError(&$formDisplay, &$error)
     {
         $retval = '';
         if ($error) {
@@ -149,13 +152,13 @@ class PageSettings
      *
      * @return string
      */
-    private function _getPageSettingsDisplay(&$formDisplay, &$error)
+    private function getPageSettingsDisplay(&$formDisplay, &$error)
     {
         $response = Response::getInstance();
 
         $retval = '';
 
-        $this->_storeError($formDisplay, $error);
+        $this->storeError($formDisplay, $error);
 
         $retval .= '<div id="' . $this->_elemId . '">';
         $retval .= '<div class="page_settings">';

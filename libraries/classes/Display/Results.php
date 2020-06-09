@@ -2,6 +2,7 @@
 /**
  * Hold the PhpMyAdmin\Display\Results class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Display;
@@ -253,7 +254,7 @@ class Results
         $this->transformations = new Transformations();
         $this->template = new Template();
 
-        $this->_setDefaultTransformations();
+        $this->setDefaultTransformations();
 
         $this->__set('db', $db);
         $this->__set('table', $table);
@@ -285,9 +286,11 @@ class Results
      */
     public function __set($property, $value)
     {
-        if (array_key_exists($property, $this->_property_array)) {
-            $this->_property_array[$property] = $value;
+        if (! array_key_exists($property, $this->_property_array)) {
+            return;
         }
+
+        $this->_property_array[$property] = $value;
     }
 
     /**
@@ -295,7 +298,7 @@ class Results
      *
      * @return void
      */
-    private function _setDefaultTransformations()
+    private function setDefaultTransformations()
     {
         $json_highlighting_data = [
             'libraries/classes/Plugins/Transformations/Output/Text_Plain_Json.php',
@@ -319,33 +322,19 @@ class Results
         ];
         $this->transformation_info = [
             'information_schema' => [
-                'events' => [
-                    'event_definition' => $sql_highlighting_data,
-                ],
-                'processlist' => [
-                    'info' => $sql_highlighting_data,
-                ],
-                'routines' => [
-                    'routine_definition' => $sql_highlighting_data,
-                ],
-                'triggers' => [
-                    'action_statement' => $sql_highlighting_data,
-                ],
-                'views' => [
-                    'view_definition' => $sql_highlighting_data,
-                ],
+                'events' => ['event_definition' => $sql_highlighting_data],
+                'processlist' => ['info' => $sql_highlighting_data],
+                'routines' => ['routine_definition' => $sql_highlighting_data],
+                'triggers' => ['action_statement' => $sql_highlighting_data],
+                'views' => ['view_definition' => $sql_highlighting_data],
             ],
             'mysql' => [
                 'event' => [
                     'body' => $blob_sql_highlighting_data,
                     'body_utf8' => $blob_sql_highlighting_data,
                 ],
-                'general_log' => [
-                    'argument' => $sql_highlighting_data,
-                ],
-                'help_category' => [
-                    'url' => $link_data,
-                ],
+                'general_log' => ['argument' => $sql_highlighting_data],
+                'help_category' => ['url' => $link_data],
                 'help_topic' => [
                     'example' => $sql_highlighting_data,
                     'url' => $link_data,
@@ -356,68 +345,52 @@ class Results
                     'body' => $blob_sql_highlighting_data,
                     'body_utf8' => $blob_sql_highlighting_data,
                 ],
-                'slow_log' => [
-                    'sql_text' => $sql_highlighting_data,
-                ],
+                'slow_log' => ['sql_text' => $sql_highlighting_data],
             ],
         ];
 
         $cfgRelation = $this->relation->getRelationsParam();
-        if ($cfgRelation['db']) {
-            $this->transformation_info[$cfgRelation['db']] = [];
-            $relDb = &$this->transformation_info[$cfgRelation['db']];
-            if (! empty($cfgRelation['history'])) {
-                $relDb[$cfgRelation['history']] = [
-                    'sqlquery' => $sql_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['bookmark'])) {
-                $relDb[$cfgRelation['bookmark']] = [
-                    'query' => $sql_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['tracking'])) {
-                $relDb[$cfgRelation['tracking']] = [
-                    'schema_sql' => $sql_highlighting_data,
-                    'data_sql' => $sql_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['favorite'])) {
-                $relDb[$cfgRelation['favorite']] = [
-                    'tables' => $json_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['recent'])) {
-                $relDb[$cfgRelation['recent']] = [
-                    'tables' => $json_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['savedsearches'])) {
-                $relDb[$cfgRelation['savedsearches']] = [
-                    'search_data' => $json_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['designer_settings'])) {
-                $relDb[$cfgRelation['designer_settings']] = [
-                    'settings_data' => $json_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['table_uiprefs'])) {
-                $relDb[$cfgRelation['table_uiprefs']] = [
-                    'prefs' => $json_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['userconfig'])) {
-                $relDb[$cfgRelation['userconfig']] = [
-                    'config_data' => $json_highlighting_data,
-                ];
-            }
-            if (! empty($cfgRelation['export_templates'])) {
-                $relDb[$cfgRelation['export_templates']] = [
-                    'template_data' => $json_highlighting_data,
-                ];
-            }
+        if (! $cfgRelation['db']) {
+            return;
         }
+
+        $this->transformation_info[$cfgRelation['db']] = [];
+        $relDb = &$this->transformation_info[$cfgRelation['db']];
+        if (! empty($cfgRelation['history'])) {
+            $relDb[$cfgRelation['history']] = ['sqlquery' => $sql_highlighting_data];
+        }
+        if (! empty($cfgRelation['bookmark'])) {
+            $relDb[$cfgRelation['bookmark']] = ['query' => $sql_highlighting_data];
+        }
+        if (! empty($cfgRelation['tracking'])) {
+            $relDb[$cfgRelation['tracking']] = [
+                'schema_sql' => $sql_highlighting_data,
+                'data_sql' => $sql_highlighting_data,
+            ];
+        }
+        if (! empty($cfgRelation['favorite'])) {
+            $relDb[$cfgRelation['favorite']] = ['tables' => $json_highlighting_data];
+        }
+        if (! empty($cfgRelation['recent'])) {
+            $relDb[$cfgRelation['recent']] = ['tables' => $json_highlighting_data];
+        }
+        if (! empty($cfgRelation['savedsearches'])) {
+            $relDb[$cfgRelation['savedsearches']] = ['search_data' => $json_highlighting_data];
+        }
+        if (! empty($cfgRelation['designer_settings'])) {
+            $relDb[$cfgRelation['designer_settings']] = ['settings_data' => $json_highlighting_data];
+        }
+        if (! empty($cfgRelation['table_uiprefs'])) {
+            $relDb[$cfgRelation['table_uiprefs']] = ['prefs' => $json_highlighting_data];
+        }
+        if (! empty($cfgRelation['userconfig'])) {
+            $relDb[$cfgRelation['userconfig']] = ['config_data' => $json_highlighting_data];
+        }
+        if (empty($cfgRelation['export_templates'])) {
+            return;
+        }
+
+        $relDb[$cfgRelation['export_templates']] = ['template_data' => $json_highlighting_data];
     }
 
     /**
@@ -498,7 +471,7 @@ class Results
      *
      * @access private
      */
-    private function _setDisplayPartsForPrintView(array $displayParts)
+    private function setDisplayPartsForPrintView(array $displayParts)
     {
         // set all elements to false!
         $displayParts['edit_lnk']  = self::NO_EDIT_OR_DELETE; // no edit link
@@ -521,7 +494,7 @@ class Results
      *
      * @access private
      */
-    private function _setDisplayPartsForShow(array $displayParts)
+    private function setDisplayPartsForShow(array $displayParts)
     {
         preg_match(
             '@^SHOW[[:space:]]+(VARIABLES|(FULL[[:space:]]+)?'
@@ -569,7 +542,7 @@ class Results
      *
      * @access private
      */
-    private function _setDisplayPartsForNonData(array $displayParts)
+    private function setDisplayPartsForNonData(array $displayParts)
     {
         // Statement is a "SELECT COUNT", a
         // "CHECK/ANALYZE/REPAIR/OPTIMIZE/CHECKSUM", an "EXPLAIN" one or
@@ -599,7 +572,7 @@ class Results
      *
      * @access private
      */
-    private function _setDisplayPartsForSelect(array $displayParts)
+    private function setDisplayPartsForSelect(array $displayParts)
     {
         // Other statements (ie "SELECT" ones) -> updates
         // $displayParts['edit_lnk'], $displayParts['del_lnk'] and
@@ -636,9 +609,11 @@ class Results
 
             // Always display print view link
             $displayParts['pview_lnk'] = (string) '1';
-            if ($fields_meta[$i]->table != '') {
-                $prev_table = $fields_meta[$i]->table;
+            if ($fields_meta[$i]->table == '') {
+                continue;
             }
+
+            $prev_table = $fields_meta[$i]->table;
         } // end for
 
         if ($prev_table == '') { // no table for any of the columns
@@ -668,7 +643,7 @@ class Results
      *
      * @access private
      */
-    private function _setDisplayPartsAndTotal(array $displayParts)
+    private function setDisplayPartsAndTotal(array $displayParts)
     {
         $the_total = 0;
 
@@ -682,15 +657,15 @@ class Results
 
         // 2. Updates the display parts
         if ($printview == '1') {
-            $displayParts = $this->_setDisplayPartsForPrintView($displayParts);
+            $displayParts = $this->setDisplayPartsForPrintView($displayParts);
         } elseif ($this->__get('is_count') || $this->__get('is_analyse')
             || $this->__get('is_maint') || $this->__get('is_explain')
         ) {
-            $displayParts = $this->_setDisplayPartsForNonData($displayParts);
+            $displayParts = $this->setDisplayPartsForNonData($displayParts);
         } elseif ($this->__get('is_show')) {
-            $displayParts = $this->_setDisplayPartsForShow($displayParts);
+            $displayParts = $this->setDisplayPartsForShow($displayParts);
         } else {
-            $displayParts = $this->_setDisplayPartsForSelect($displayParts);
+            $displayParts = $this->setDisplayPartsForSelect($displayParts);
         } // end if..elseif...else
 
         // 3. Gets the total number of rows if it is unknown
@@ -736,7 +711,7 @@ class Results
      * Return true if we are executing a query in the form of
      * "SELECT * FROM <a table> ..."
      *
-     * @see getTableHeaders(), _getColumnParams()
+     * @see getTableHeaders(), getColumnParams()
      *
      * @param array $analyzed_sql_results analyzed sql results
      *
@@ -744,7 +719,7 @@ class Results
      *
      * @access private
      */
-    private function _isSelect(array $analyzed_sql_results)
+    private function isSelect(array $analyzed_sql_results)
     {
         return ! ($this->__get('is_count')
                 || $this->__get('is_export')
@@ -759,8 +734,8 @@ class Results
     /**
      * Get a navigation button
      *
-     * @see     _getMoveBackwardButtonsForTableNavigation(),
-     *          _getMoveForwardButtonsForTableNavigation()
+     * @see     getMoveBackwardButtonsForTableNavigation(),
+     *          getMoveForwardButtonsForTableNavigation()
      *
      * @param string $caption            iconic caption for button
      * @param string $title              text for button
@@ -775,7 +750,7 @@ class Results
      *
      * @access private
      */
-    private function _getTableNavigationButton(
+    private function getTableNavigationButton(
         $caption,
         $title,
         $pos,
@@ -824,7 +799,7 @@ class Results
      *
      * @access private
      */
-    private function _getHtmlPageSelector(): array
+    private function getHtmlPageSelector(): array
     {
         $pageNow = @floor(
             $_SESSION['tmpval']['pos']
@@ -891,7 +866,7 @@ class Results
         // Move to the beginning or to the previous page
         $moveBackwardButtons = '';
         if ($_SESSION['tmpval']['pos'] && ! $isShowingAll) {
-            $moveBackwardButtons = $this->_getMoveBackwardButtonsForTableNavigation(
+            $moveBackwardButtons = $this->getMoveBackwardButtonsForTableNavigation(
                 htmlspecialchars($this->__get('sql_query')),
                 $posPrevious
             );
@@ -903,7 +878,7 @@ class Results
             [
                 $pageSelector,
                 $numberTotalPage,
-            ] = $this->_getHtmlPageSelector();
+            ] = $this->getHtmlPageSelector();
         }
 
         // Move to the next page or to the last one
@@ -913,7 +888,7 @@ class Results
             && $_SESSION['tmpval']['pos'] + $_SESSION['tmpval']['max_rows'] < $this->__get('unlim_num_rows')
             && $this->__get('num_rows') >= $_SESSION['tmpval']['max_rows'])
         ) {
-            $moveForwardButtons = $this->_getMoveForwardButtonsForTableNavigation(
+            $moveForwardButtons = $this->getMoveForwardButtonsForTableNavigation(
                 htmlspecialchars($this->__get('sql_query')),
                 $posNext,
                 $isInnodb
@@ -956,18 +931,18 @@ class Results
      *
      * @access private
      */
-    private function _getMoveBackwardButtonsForTableNavigation(
+    private function getMoveBackwardButtonsForTableNavigation(
         $html_sql_query,
         $pos_prev
     ) {
-        return $this->_getTableNavigationButton(
+        return $this->getTableNavigationButton(
             '&lt;&lt;',
             _pgettext('First page', 'Begin'),
             0,
             $html_sql_query,
             true
         )
-        . $this->_getTableNavigationButton(
+        . $this->getTableNavigationButton(
             '&lt;',
             _pgettext('Previous page', 'Previous'),
             $pos_prev,
@@ -989,13 +964,13 @@ class Results
      *
      * @access private
      */
-    private function _getMoveForwardButtonsForTableNavigation(
+    private function getMoveForwardButtonsForTableNavigation(
         $html_sql_query,
         $pos_next,
         $is_innodb
     ) {
         // display the Next button
-        $buttons_html = $this->_getTableNavigationButton(
+        $buttons_html = $this->getTableNavigationButton(
             '&gt;',
             _pgettext('Next page', 'Next'),
             $pos_next,
@@ -1025,7 +1000,7 @@ class Results
             : 'false') . '"';
 
         // display the End button
-        $buttons_html .= $this->_getTableNavigationButton(
+        return $buttons_html . $this->getTableNavigationButton(
             '&gt;&gt;',
             _pgettext('Last page', 'End'),
             @(ceil(
@@ -1038,8 +1013,6 @@ class Results
             $input_for_real_end,
             $onclick
         );
-
-        return $buttons_html;
     }
 
     /**
@@ -1061,7 +1034,7 @@ class Results
      *
      * @access private
      */
-    private function _getTableHeadersForColumns(
+    private function getTableHeadersForColumns(
         array $displayParts,
         array $analyzed_sql_results,
         array $sort_expression,
@@ -1086,9 +1059,9 @@ class Results
 
         // Prepare Display column comments if enabled
         // ($GLOBALS['cfg']['ShowBrowseComments']).
-        $comments_map = $this->_getTableCommentsArray($analyzed_sql_results);
+        $comments_map = $this->getTableCommentsArray($analyzed_sql_results);
 
-        [$col_order, $col_visib] = $this->_getColumnParams(
+        [$col_order, $col_visib] = $this->getColumnParams(
             $analyzed_sql_results
         );
 
@@ -1109,12 +1082,12 @@ class Results
                 || isset($highlight_columns[Util::backquote($name)]);
 
             // Prepare comment-HTML-wrappers for each row, if defined/enabled.
-            $comments = $this->_getCommentForRow($comments_map, $fields_meta[$i]);
+            $comments = $this->getCommentForRow($comments_map, $fields_meta[$i]);
             $display_params = $this->__get('display_params');
 
             if (($displayParts['sort_lnk'] == '1') && ! $is_limited_display) {
                 [$order_link, $sorted_header_html]
-                    = $this->_getOrderLinkAndSortedHeaderHtml(
+                    = $this->getOrderLinkAndSortedHeaderHtml(
                         $fields_meta[$i],
                         $sort_expression,
                         $sort_expression_nodirection,
@@ -1137,7 +1110,7 @@ class Results
             } else {
                 // Results can't be sorted
                 $html
-                    .= $this->_getDraggableClassForNonSortableColumns(
+                    .= $this->getDraggableClassForNonSortableColumns(
                         $col_visib,
                         $col_visib_current,
                         $condition_field,
@@ -1205,12 +1178,12 @@ class Results
             $optionsBlock = $this->getOptionsBlock();
 
             // prepare full/partial text button or link
-            $fullOrPartialTextLink = $this->_getFullOrPartialTextButtonOrLink();
+            $fullOrPartialTextLink = $this->getFullOrPartialTextButtonOrLink();
         }
 
         // 1. Set $colspan and generate html with full/partial
         // text button or link
-        [$colspan, $buttonHtml] = $this->_getFieldVisibilityParams(
+        [$colspan, $buttonHtml] = $this->getFieldVisibilityParams(
             $displayParts,
             $fullOrPartialTextLink
         );
@@ -1221,10 +1194,10 @@ class Results
 
         // See if we have to highlight any header fields of a WHERE query.
         // Uses SQL-Parser results.
-        $this->_setHighlightedColumnGlobalField($analyzedSqlResults);
+        $this->setHighlightedColumnGlobalField($analyzedSqlResults);
 
         // Get the headers for all of the columns
-        $tableHeadersForColumns = $this->_getTableHeadersForColumns(
+        $tableHeadersForColumns = $this->getTableHeadersForColumns(
             $displayParts,
             $analyzedSqlResults,
             $sortExpression,
@@ -1237,7 +1210,7 @@ class Results
         // Display column at rightside - checkboxes or empty column
         $columnAtRightSide = '';
         if (! $printView) {
-            $columnAtRightSide = $this->_getColumnAtRightSide(
+            $columnAtRightSide = $this->getColumnAtRightSide(
                 $displayParts,
                 $fullOrPartialTextLink,
                 $colspan
@@ -1267,7 +1240,7 @@ class Results
      *
      * @access private
      */
-    private function _getUnsortedSqlAndSortByKeyDropDown(
+    private function getUnsortedSqlAndSortByKeyDropDown(
         array $analyzed_sql_results,
         ?array $sort_expression
     ) {
@@ -1281,7 +1254,7 @@ class Results
         );
 
         // Data is sorted by indexes only if it there is only one table.
-        if ($this->_isSelect($analyzed_sql_results)) {
+        if ($this->isSelect($analyzed_sql_results)) {
             // grab indexes data:
             $indexes = Index::getFromTable(
                 $this->__get('table'),
@@ -1290,7 +1263,7 @@ class Results
 
             // do we have any index?
             if (! empty($indexes)) {
-                $drop_down_html = $this->_getSortByKeyDropDown(
+                $drop_down_html = $this->getSortByKeyDropDown(
                     $indexes,
                     $sort_expression,
                     $unsorted_sql_query
@@ -1317,7 +1290,7 @@ class Results
      *
      * @access private
      */
-    private function _getSortByKeyDropDown(
+    private function getSortByKeyDropDown(
         $indexes,
         ?array $sortExpression,
         $unsortedSqlQuery
@@ -1396,7 +1369,7 @@ class Results
      *
      * @access private
      */
-    private function _getFieldVisibilityParams(
+    private function getFieldVisibilityParams(
         array &$displayParts,
         $full_or_partial_text_link
     ) {
@@ -1464,7 +1437,7 @@ class Results
      *
      * @access private
      */
-    private function _getTableCommentsArray(array $analyzed_sql_results)
+    private function getTableCommentsArray(array $analyzed_sql_results)
     {
         if (! $GLOBALS['cfg']['ShowBrowseComments']
             || empty($analyzed_sql_results['statement']->from)
@@ -1497,7 +1470,7 @@ class Results
      *
      * @access private
      */
-    private function _setHighlightedColumnGlobalField(array $analyzed_sql_results)
+    private function setHighlightedColumnGlobalField(array $analyzed_sql_results)
     {
         $highlight_columns = [];
 
@@ -1523,11 +1496,11 @@ class Results
      */
     private function getDataForResettingColumnOrder(array $analyzedSqlResults): array
     {
-        if (! $this->_isSelect($analyzedSqlResults)) {
+        if (! $this->isSelect($analyzedSqlResults)) {
             return [];
         }
 
-        [$columnOrder, $columnVisibility] = $this->_getColumnParams(
+        [$columnOrder, $columnVisibility] = $this->getColumnParams(
             $analyzedSqlResults
         );
 
@@ -1557,7 +1530,9 @@ class Results
      */
     private function getOptionsBlock(): array
     {
-        if (isset($_SESSION['tmpval']['possible_as_geometry']) && $_SESSION['tmpval']['possible_as_geometry'] == false) {
+        if (isset($_SESSION['tmpval']['possible_as_geometry'])
+            && $_SESSION['tmpval']['possible_as_geometry'] == false
+        ) {
             if ($_SESSION['tmpval']['geoOption'] == self::GEOMETRY_DISP_GEOM) {
                 $_SESSION['tmpval']['geoOption'] = self::GEOMETRY_DISP_WKT;
             }
@@ -1583,7 +1558,7 @@ class Results
      *
      * @access private
      */
-    private function _getFullOrPartialTextButtonOrLink()
+    private function getFullOrPartialTextButtonOrLink()
     {
         $url_params_full_text = [
             'db' => $this->__get('db'),
@@ -1623,7 +1598,7 @@ class Results
      *
      * @access private
      */
-    private function _getCommentForRow(array $commentsMap, $fieldsMeta)
+    private function getCommentForRow(array $commentsMap, $fieldsMeta)
     {
         return $this->template->render('display/results/comment_for_row', [
             'comments_map' => $commentsMap,
@@ -1645,15 +1620,14 @@ class Results
      * @param int      $session_max_rows            maximum rows resulted by sql
      * @param string   $comments                    comment for row
      * @param array    $sort_direction              sort direction
-     * @param bool     $col_visib                   column is visible(false)
-     *                                              array                                column isn't visible(string array)
+     * @param bool     $col_visib                   column is visible(false) or column isn't visible(string array)
      * @param string   $col_visib_j                 element of $col_visib array
      *
      * @return array   2 element array - $order_link, $sorted_header_html
      *
      * @access private
      */
-    private function _getOrderLinkAndSortedHeaderHtml(
+    private function getOrderLinkAndSortedHeaderHtml(
         $fields_meta,
         array $sort_expression,
         array $sort_expression_nodirection,
@@ -1686,7 +1660,7 @@ class Results
         // Generates the orderby clause part of the query which is part
         // of URL
         [$single_sort_order, $multi_sort_order, $order_img]
-            = $this->_getSingleAndMultiSortUrls(
+            = $this->getSingleAndMultiSortUrls(
                 $sort_expression,
                 $sort_expression_nodirection,
                 $sort_tbl,
@@ -1730,14 +1704,14 @@ class Results
 
         // Displays the sorting URL
         // enable sort order swapping for image
-        $order_link = $this->_getSortOrderLink(
+        $order_link = $this->getSortOrderLink(
             $order_img,
             $fields_meta,
             $single_order_url,
             $multi_order_url
         );
 
-        $sorted_header_html .= $this->_getDraggableClassForSortableColumns(
+        $sorted_header_html .= $this->getDraggableClassForSortableColumns(
             $col_visib,
             $col_visib_j,
             $fields_meta,
@@ -1754,7 +1728,7 @@ class Results
     /**
      * Prepare parameters and html for sorted table header fields
      *
-     * @see    _getOrderLinkAndSortedHeaderHtml()
+     * @see    getOrderLinkAndSortedHeaderHtml()
      *
      * @param array    $sort_expression             sort expression
      * @param array    $sort_expression_nodirection sort expression without direction
@@ -1769,7 +1743,7 @@ class Results
      *
      * @access private
      */
-    private function _getSingleAndMultiSortUrls(
+    private function getSingleAndMultiSortUrls(
         array $sort_expression,
         array $sort_expression_nodirection,
         $sort_tbl,
@@ -1779,7 +1753,7 @@ class Results
     ) {
         $sort_order = '';
         // Check if the current column is in the order by clause
-        $is_in_sort = $this->_isInSorted(
+        $is_in_sort = $this->isInSorted(
             $sort_expression,
             $sort_expression_nodirection,
             $sort_tbl,
@@ -1855,7 +1829,7 @@ class Results
                 }
                 if ($is_in_sort) {
                     [$single_sort_order, $order_img]
-                        = $this->_getSortingUrlParams(
+                        = $this->getSortingUrlParams(
                             $sort_direction,
                             $single_sort_order,
                             $index
@@ -1866,7 +1840,7 @@ class Results
             }
             if ($current_name == $name_to_use_in_sort && $is_in_sort) {
                 // We need to generate the arrow button and related html
-                [$sort_order, $order_img] = $this->_getSortingUrlParams(
+                [$sort_order, $order_img] = $this->getSortingUrlParams(
                     $sort_direction,
                     $sort_order,
                     $index
@@ -1910,7 +1884,7 @@ class Results
      *
      * @access private
      */
-    private function _isInSorted(
+    private function isInSorted(
         array $sort_expression,
         array $sort_expression_nodirection,
         $sort_tbl,
@@ -1978,7 +1952,7 @@ class Results
     /**
      * Get sort url parameters - sort order and order image
      *
-     * @see     _getSingleAndMultiSortUrls()
+     * @see     getSingleAndMultiSortUrls()
      *
      * @param array  $sort_direction the sort direction
      * @param string $sort_order     the sorting order
@@ -1988,44 +1962,44 @@ class Results
      *
      * @access private
      */
-    private function _getSortingUrlParams(array $sort_direction, $sort_order, $index)
+    private function getSortingUrlParams(array $sort_direction, $sort_order, $index)
     {
         if (strtoupper(trim($sort_direction[$index])) == self::DESCENDING_SORT_DIR) {
             $sort_order .= ' ASC';
             $order_img   = ' ' . Generator::getImage(
-                    's_desc',
-                    __('Descending'),
-                    [
-                        'class' => 'soimg',
-                        'title' => '',
-                    ]
-                );
+                's_desc',
+                __('Descending'),
+                [
+                    'class' => 'soimg',
+                    'title' => '',
+                ]
+            );
             $order_img  .= ' ' . Generator::getImage(
-                    's_asc',
-                    __('Ascending'),
-                    [
-                        'class' => 'soimg hide',
-                        'title' => '',
-                    ]
-                );
+                's_asc',
+                __('Ascending'),
+                [
+                    'class' => 'soimg hide',
+                    'title' => '',
+                ]
+            );
         } else {
             $sort_order .= ' DESC';
             $order_img   = ' ' . Generator::getImage(
-                    's_asc',
-                    __('Ascending'),
-                    [
-                        'class' => 'soimg',
-                        'title' => '',
-                    ]
-                );
+                's_asc',
+                __('Ascending'),
+                [
+                    'class' => 'soimg',
+                    'title' => '',
+                ]
+            );
             $order_img  .=  ' ' . Generator::getImage(
-                    's_desc',
-                    __('Descending'),
-                    [
-                        'class' => 'soimg hide',
-                        'title' => '',
-                    ]
-                );
+                's_desc',
+                __('Descending'),
+                [
+                    'class' => 'soimg hide',
+                    'title' => '',
+                ]
+            );
         }
 
         return [
@@ -2048,15 +2022,13 @@ class Results
      *
      * @access private
      */
-    private function _getSortOrderLink(
+    private function getSortOrderLink(
         $order_img,
         $fields_meta,
         $order_url,
         $multi_order_url
     ) {
-        $order_link_params = [
-            'class' => 'sortlink',
-        ];
+        $order_link_params = ['class' => 'sortlink'];
 
         $order_link_content = htmlspecialchars($fields_meta->name);
         $inner_link_content = $order_link_content . $order_img
@@ -2073,21 +2045,23 @@ class Results
      * Check if the column contains numeric data. If yes, then set the
      * column header's alignment right
      *
-     * @see  _getDraggableClassForSortableColumns()
+     * @see  getDraggableClassForSortableColumns()
      *
      * @param stdClass $fields_meta set of field properties
      * @param array    $th_class    array containing classes
      *
      * @return void
      */
-    private function _getClassForNumericColumnType($fields_meta, array &$th_class)
+    private function getClassForNumericColumnType($fields_meta, array &$th_class)
     {
-        if (preg_match(
+        if (! preg_match(
             '@int|decimal|float|double|real|bit|boolean|serial@i',
             (string) $fields_meta->type
         )) {
-            $th_class[] = 'right';
+            return;
         }
+
+        $th_class[] = 'right';
     }
 
     /**
@@ -2106,7 +2080,7 @@ class Results
      *
      * @access private
      */
-    private function _getDraggableClassForSortableColumns(
+    private function getDraggableClassForSortableColumns(
         $col_visib,
         $col_visib_j,
         $fields_meta,
@@ -2116,7 +2090,7 @@ class Results
         $draggable_html = '<th';
         $th_class = [];
         $th_class[] = 'draggable';
-        $this->_getClassForNumericColumnType($fields_meta, $th_class);
+        $this->getClassForNumericColumnType($fields_meta, $th_class);
         if ($col_visib && ! $col_visib_j) {
             $th_class[] = 'hide';
         }
@@ -2154,7 +2128,7 @@ class Results
      *
      * @access private
      */
-    private function _getDraggableClassForNonSortableColumns(
+    private function getDraggableClassForNonSortableColumns(
         $col_visib,
         $col_visib_j,
         $condition_field,
@@ -2164,7 +2138,7 @@ class Results
         $draggable_html = '<th';
         $th_class = [];
         $th_class[] = 'draggable';
-        $this->_getClassForNumericColumnType($fields_meta, $th_class);
+        $this->getClassForNumericColumnType($fields_meta, $th_class);
         if ($col_visib && ! $col_visib_j) {
             $th_class[] = 'hide';
         }
@@ -2198,7 +2172,7 @@ class Results
      *
      * @access private
      */
-    private function _getColumnAtRightSide(
+    private function getColumnAtRightSide(
         array &$displayParts,
         $full_or_partial_text_link,
         $colspan
@@ -2247,8 +2221,8 @@ class Results
     /**
      * Prepares the display for a value
      *
-     * @see     _getDataCellForGeometryColumns(),
-     *          _getDataCellForNonNumericColumns()
+     * @see     getDataCellForGeometryColumns(),
+     *          getDataCellForNonNumericColumns()
      *
      * @param string $class          class of table cell
      * @param bool   $conditionField whether to add CSS class condition
@@ -2258,7 +2232,7 @@ class Results
      *
      * @access private
      */
-    private function _buildValueDisplay($class, $conditionField, $value)
+    private function buildValueDisplay($class, $conditionField, $value)
     {
         return $this->template->render('display/results/value_display', [
             'class' => $class,
@@ -2270,9 +2244,9 @@ class Results
     /**
      * Prepares the display for a null value
      *
-     * @see     _getDataCellForNumericColumns(),
-     *          _getDataCellForGeometryColumns(),
-     *          _getDataCellForNonNumericColumns()
+     * @see     getDataCellForNumericColumns(),
+     *          getDataCellForGeometryColumns(),
+     *          getDataCellForNonNumericColumns()
      *
      * @param string   $class          class of table cell
      * @param bool     $conditionField whether to add CSS class condition
@@ -2283,9 +2257,9 @@ class Results
      *
      * @access private
      */
-    private function _buildNullDisplay($class, $conditionField, $meta, $align = '')
+    private function buildNullDisplay($class, $conditionField, $meta, $align = '')
     {
-        $classes = $this->_addClass($class, $conditionField, $meta, '');
+        $classes = $this->addClass($class, $conditionField, $meta, '');
 
         return $this->template->render('display/results/null_display', [
             'align' => $align,
@@ -2297,9 +2271,9 @@ class Results
     /**
      * Prepares the display for an empty value
      *
-     * @see     _getDataCellForNumericColumns(),
-     *          _getDataCellForGeometryColumns(),
-     *          _getDataCellForNonNumericColumns()
+     * @see     getDataCellForNumericColumns(),
+     *          getDataCellForGeometryColumns(),
+     *          getDataCellForNonNumericColumns()
      *
      * @param string   $class          class of table cell
      * @param bool     $conditionField whether to add CSS class condition
@@ -2310,9 +2284,9 @@ class Results
      *
      * @access private
      */
-    private function _buildEmptyDisplay($class, $conditionField, $meta, $align = '')
+    private function buildEmptyDisplay($class, $conditionField, $meta, $align = '')
     {
-        $classes = $this->_addClass($class, $conditionField, $meta, 'nowrap');
+        $classes = $this->addClass($class, $conditionField, $meta, 'nowrap');
 
         return $this->template->render('display/results/empty_display', [
             'align' => $align,
@@ -2323,7 +2297,7 @@ class Results
     /**
      * Adds the relevant classes.
      *
-     * @see _buildNullDisplay(), _getRowData()
+     * @see buildNullDisplay(), getRowData()
      *
      * @param string                       $class                 class of table cell
      * @param bool                         $condition_field       whether to add CSS class
@@ -2341,7 +2315,7 @@ class Results
      *
      * @access private
      */
-    private function _addClass(
+    private function addClass(
         $class,
         $condition_field,
         $meta,
@@ -2384,9 +2358,11 @@ class Results
         ];
 
         foreach ($matches as $key => $value) {
-            if (mb_strpos($meta->flags, $key) !== false) {
-                $classes[] = $value;
+            if (mb_strpos($meta->flags, $key) === false) {
+                continue;
             }
+
+            $classes[] = $value;
         }
 
         if (mb_strpos($meta->type, 'bit') !== false) {
@@ -2413,7 +2389,7 @@ class Results
      * @global array  $row                  current row data
      * @access private
      */
-    private function _getTableBody(
+    private function getTableBody(
         &$dt_result,
         array &$displayParts,
         array $map,
@@ -2427,7 +2403,7 @@ class Results
 
         // query without conditions to shorten URLs when needed, 200 is just
         // guess, it should depend on remaining URL length
-        $url_sql_query = $this->_getUrlSqlQuery($analyzed_sql_results);
+        $url_sql_query = $this->getUrlSqlQuery($analyzed_sql_results);
 
         $display_params = $this->__get('display_params');
 
@@ -2465,7 +2441,7 @@ class Results
         }
 
         // prepare to get the column order, if available
-        [$col_order, $col_visib] = $this->_getColumnParams(
+        [$col_order, $col_visib] = $this->getColumnParams(
             $analyzed_sql_results
         );
 
@@ -2487,7 +2463,7 @@ class Results
             if (($row_no != 0) && ($_SESSION['tmpval']['repeat_cells'] != 0)
                 && ! $row_no % $_SESSION['tmpval']['repeat_cells']
             ) {
-                $table_body_html .= $this->_getRepeatingHeaders(
+                $table_body_html .= $this->getRepeatingHeaders(
                     $display_params
                 );
             }
@@ -2507,14 +2483,27 @@ class Results
             // 1. Prepares the row
 
             // In print view these variable needs to be initialized
-            $del_url = $del_str = $edit_anchor_class
-                = $edit_str = $js_conf = $copy_url = $copy_str = $edit_url = null;
+            $del_url = null;
+            $del_str = null;
+            $edit_str = null;
+            $js_conf = null;
+            $copy_url = null;
+            $copy_str = null;
+            $edit_url = null;
 
             // 1.2 Defines the URLs for the modify/delete link(s)
 
             if (($displayParts['edit_lnk'] != self::NO_EDIT_OR_DELETE)
                 || ($displayParts['del_lnk'] != self::NO_EDIT_OR_DELETE)
             ) {
+                $expressions = [];
+
+                if (isset($analyzed_sql_results['statement'])
+                    && $analyzed_sql_results['statement'] instanceof SelectStatement
+                ) {
+                    $expressions = $analyzed_sql_results['statement']->expr;
+                }
+
                 // Results from a "SELECT" statement -> builds the
                 // WHERE clause to use in links (a unique key if possible)
                 /**
@@ -2522,20 +2511,17 @@ class Results
                  *       with only one field and it's a BLOB; in this case,
                  *       avoid to display the delete and edit links
                  */
-                [$where_clause, $clause_is_unique, $condition_array]
-                    = Util::getUniqueCondition(
-                        $dt_result, // handle
-                        $this->__get('fields_cnt'), // fields_cnt
-                        $this->__get('fields_meta'), // fields_meta
-                        $row, // row
-                        false, // force_unique
-                        $this->__get('table'), // restrict_to_table
-                        $analyzed_sql_results // analyzed_sql_results
-                    );
+                [$where_clause, $clause_is_unique, $condition_array] = Util::getUniqueCondition(
+                    $dt_result,
+                    $this->__get('fields_cnt'),
+                    $this->__get('fields_meta'),
+                    $row,
+                    false,
+                    $this->__get('table'),
+                    $expressions
+                );
                 $whereClauseMap[$row_no][$this->__get('table')] = $where_clause;
                 $this->__set('whereClauseMap', $whereClauseMap);
-
-                $where_clause_html = htmlspecialchars($where_clause);
 
                 // 1.2.1 Modify link(s) - update row case
                 if ($displayParts['edit_lnk'] == self::UPDATE_ROW) {
@@ -2544,9 +2530,8 @@ class Results
                         $copy_url,
                         $edit_str,
                         $copy_str,
-                        $edit_anchor_class,
                     ]
-                            = $this->_getModifiedLinks(
+                            = $this->getModifiedLinks(
                                 $where_clause,
                                 $clause_is_unique,
                                 $url_sql_query
@@ -2555,7 +2540,7 @@ class Results
 
                 // 1.2.2 Delete/Kill link(s)
                 [$del_url, $del_str, $js_conf]
-                    = $this->_getDeleteAndKillLinks(
+                    = $this->getDeleteAndKillLinks(
                         $where_clause,
                         $clause_is_unique,
                         $url_sql_query,
@@ -2597,9 +2582,9 @@ class Results
 
             // 2. Displays the rows' values
             if ($this->__get('mime_map') === null) {
-                $this->_setMimeMap();
+                $this->setMimeMap();
             }
-            $table_body_html .= $this->_getRowValues(
+            $table_body_html .= $this->getRowValues(
                 $dt_result,
                 $row,
                 $row_no,
@@ -2621,7 +2606,11 @@ class Results
                     $table_body_html .= $this->template->render('display/results/checkbox_and_links', [
                         'position' => self::POSITION_RIGHT,
                         'has_checkbox' => ! empty($del_url) && $displayParts['del_lnk'] !== self::KILL_PROCESS,
-                        'edit' => ['url' => $edit_url, 'string' => $edit_str, 'clause_is_unique' => $clause_is_unique ?? true],
+                        'edit' => [
+                            'url' => $edit_url,
+                            'string' => $edit_str,
+                            'clause_is_unique' => $clause_is_unique ?? true,
+                        ],
                         'copy' => ['url' => $copy_url, 'string' => $copy_str],
                         'delete' => ['url' => $del_url, 'string' => $del_str],
                         'row_number' => $row_no,
@@ -2646,7 +2635,7 @@ class Results
      *
      * @return void
      */
-    private function _setMimeMap()
+    private function setMimeMap()
     {
         $fields_meta = $this->__get('fields_meta');
         $mimeMap = [];
@@ -2656,18 +2645,20 @@ class Results
             $meta = $fields_meta[$currentColumn];
             $orgFullTableName = $this->__get('db') . '.' . $meta->orgtable;
 
-            if ($GLOBALS['cfgRelation']['commwork']
-                && $GLOBALS['cfgRelation']['mimework']
-                && $GLOBALS['cfg']['BrowseMIME']
-                && ! $_SESSION['tmpval']['hide_transformation']
-                && empty($added[$orgFullTableName])
+            if (! $GLOBALS['cfgRelation']['commwork']
+                || ! $GLOBALS['cfgRelation']['mimework']
+                || ! $GLOBALS['cfg']['BrowseMIME']
+                || $_SESSION['tmpval']['hide_transformation']
+                || ! empty($added[$orgFullTableName])
             ) {
-                $mimeMap = array_merge(
-                    $mimeMap,
-                    $this->transformations->getMime($this->__get('db'), $meta->orgtable, false, true)
-                );
-                $added[$orgFullTableName] = true;
+                continue;
             }
+
+            $mimeMap = array_merge(
+                $mimeMap,
+                $this->transformations->getMime($this->__get('db'), $meta->orgtable, false, true)
+            );
+            $added[$orgFullTableName] = true;
         }
 
         // special browser transformation for some SHOW statements
@@ -2711,11 +2702,10 @@ class Results
     /**
      * Get the values for one data row
      *
-     * @see     _getTableBody()
+     * @see     getTableBody()
      *
-     * @param int               $dt_result            the link id associated to
-     *                                                the query which results
-     *                                                have to be displayed
+     * @param int               $dt_result            the link id associated to the query
+     *                                                which results have to be displayed
      * @param array             $row                  current row data
      * @param int               $row_no               the index of current row
      * @param array|bool        $col_order            the column order false when
@@ -2734,7 +2724,7 @@ class Results
      *
      * @access private
      */
-    private function _getRowValues(
+    private function getRowValues(
         &$dt_result,
         array $row,
         $row_no,
@@ -2754,7 +2744,7 @@ class Results
         $highlight_columns = $this->__get('highlight_columns');
         $mime_map = $this->__get('mime_map');
 
-        $row_info = $this->_getRowInfoForSpecialLinks($row, $col_order);
+        $row_info = $this->getRowInfoForSpecialLinks($row, $col_order);
 
         $whereClauseMap = $this->__get('whereClauseMap');
 
@@ -2776,11 +2766,11 @@ class Results
 
             // handle datetime-related class, for grid editing
             $field_type_class
-                = $this->_getClassForDateTimeRelatedFields($meta->type);
+                = $this->getClassForDateTimeRelatedFields($meta->type);
 
             $is_field_truncated = false;
             // combine all the classes applicable to this column's value
-            $class = $this->_getClassesForColumn(
+            $class = $this->getClassesForColumn(
                 $grid_edit,
                 $not_null_class,
                 $relation_class,
@@ -2851,10 +2841,13 @@ class Results
                     $mime_map[$orgFullColName]['transformation_options'] ?? ''
                 );
 
+                $orgTable = mb_strtolower($meta->orgtable);
+                $orgName = mb_strtolower($meta->orgname);
+
                 $meta->mimetype = str_replace(
                     '_',
                     '/',
-                    $this->transformation_info[$dbLower][mb_strtolower($meta->orgtable)][mb_strtolower($meta->orgname)][2]
+                    $this->transformation_info[$dbLower][$orgTable][$orgName][2]
                 );
             }
 
@@ -2862,7 +2855,7 @@ class Results
             $specialSchemaLinks = SpecialSchemaLinks::get();
 
             if (! empty($specialSchemaLinks[$dbLower][$tblLower][$nameLower])) {
-                $linking_url = $this->_getSpecialLinkUrl(
+                $linking_url = $this->getSpecialLinkUrl(
                     $specialSchemaLinks,
                     $row[$i],
                     $row_info,
@@ -2882,7 +2875,15 @@ class Results
                 );
             }
 
-            /*
+            $expressions = [];
+
+            if (isset($analyzed_sql_results['statement'])
+                && $analyzed_sql_results['statement'] instanceof SelectStatement
+            ) {
+                $expressions = $analyzed_sql_results['statement']->expr;
+            }
+
+            /**
              * The result set can have columns from more than one table,
              * this is why we have to check for the unique conditions
              * related to this table; however getUniqueCondition() is
@@ -2891,13 +2892,13 @@ class Results
              */
             if (! isset($whereClauseMap[$row_no][$meta->orgtable])) {
                 $unique_conditions = Util::getUniqueCondition(
-                    $dt_result, // handle
-                    $this->__get('fields_cnt'), // fields_cnt
-                    $this->__get('fields_meta'), // fields_meta
-                    $row, // row
-                    false, // force_unique
-                    $meta->orgtable, // restrict_to_table
-                    $analyzed_sql_results // analyzed_sql_results
+                    $dt_result,
+                    $this->__get('fields_cnt'),
+                    $this->__get('fields_meta'),
+                    $row,
+                    false,
+                    $meta->orgtable,
+                    $expressions
                 );
                 $whereClauseMap[$row_no][$meta->orgtable] = $unique_conditions[0];
             }
@@ -2926,7 +2927,7 @@ class Results
                 // n u m e r i c
 
                 $display_params['data'][$row_no][$i]
-                    = $this->_getDataCellForNumericColumns(
+                    = $this->getDataCellForNumericColumns(
                         $row[$i] === null ? null : (string) $row[$i],
                         $class,
                         $condition_field,
@@ -2946,7 +2947,7 @@ class Results
                 $class = str_replace('grid_edit', '', $class);
 
                 $display_params['data'][$row_no][$i]
-                    = $this->_getDataCellForGeometryColumns(
+                    = $this->getDataCellForGeometryColumns(
                         $row[$i],
                         $class,
                         $meta,
@@ -2962,7 +2963,7 @@ class Results
                 // n o t   n u m e r i c
 
                 $display_params['data'][$row_no][$i]
-                    = $this->_getDataCellForNonNumericColumns(
+                    = $this->getDataCellForNonNumericColumns(
                         $row[$i],
                         $class,
                         $meta,
@@ -3006,14 +3007,16 @@ class Results
      *
      * @return string generated link
      */
-    private function _getSpecialLinkUrl(
+    private function getSpecialLinkUrl(
         array $specialSchemaLinks,
         $column_value,
         array $row_info,
         $field_name
     ) {
         $linking_url_params = [];
-        $link_relations = $specialSchemaLinks[mb_strtolower($this->__get('db'))][mb_strtolower($this->__get('table'))][$field_name];
+        $db = mb_strtolower($this->__get('db'));
+        $table = mb_strtolower($this->__get('table'));
+        $link_relations = $specialSchemaLinks[$db][$table][$field_name];
 
         if (! is_array($link_relations['link_param'])) {
             $linking_url_params[$link_relations['link_param']] = $column_value;
@@ -3063,7 +3066,7 @@ class Results
      *
      * @return array associative array with column nama -> value
      */
-    private function _getRowInfoForSpecialLinks(array $row, $col_order)
+    private function getRowInfoForSpecialLinks(array $row, $col_order)
     {
         $row_info = [];
         $fields_meta = $this->__get('fields_meta');
@@ -3080,7 +3083,7 @@ class Results
     /**
      * Get url sql query without conditions to shorten URLs
      *
-     * @see     _getTableBody()
+     * @see     getTableBody()
      *
      * @param array $analyzed_sql_results analyzed sql results
      *
@@ -3088,7 +3091,7 @@ class Results
      *
      * @access private
      */
-    private function _getUrlSqlQuery(array $analyzed_sql_results)
+    private function getUrlSqlQuery(array $analyzed_sql_results)
     {
         if (($analyzed_sql_results['querytype'] != 'SELECT')
             || (mb_strlen($this->__get('sql_query')) < 200)
@@ -3118,7 +3121,7 @@ class Results
     /**
      * Get column order and column visibility
      *
-     * @see    _getTableBody()
+     * @see    getTableBody()
      *
      * @param array $analyzed_sql_results analyzed sql results
      *
@@ -3126,19 +3129,21 @@ class Results
      *
      * @access private
      */
-    private function _getColumnParams(array $analyzed_sql_results)
+    private function getColumnParams(array $analyzed_sql_results)
     {
-        if ($this->_isSelect($analyzed_sql_results)) {
+        if ($this->isSelect($analyzed_sql_results)) {
             $pmatable = new Table($this->__get('table'), $this->__get('db'));
             $col_order = $pmatable->getUiProp(Table::PROP_COLUMN_ORDER);
             /* Validate the value */
             if ($col_order !== false) {
                 $fields_cnt = $this->__get('fields_cnt');
                 foreach ($col_order as $value) {
-                    if ($value >= $fields_cnt) {
-                        $pmatable->removeUiProp(Table::PROP_COLUMN_ORDER);
-                        $fields_cnt = false;
+                    if ($value < $fields_cnt) {
+                        continue;
                     }
+
+                    $pmatable->removeUiProp(Table::PROP_COLUMN_ORDER);
+                    $fields_cnt = false;
                 }
             }
             $col_visib = $pmatable->getUiProp(Table::PROP_COLUMN_VISIB);
@@ -3156,7 +3161,7 @@ class Results
     /**
      * Get HTML for repeating headers
      *
-     * @see    _getTableBody()
+     * @see    getTableBody()
      *
      * @param array $display_params holds various display info
      *
@@ -3164,7 +3169,7 @@ class Results
      *
      * @access private
      */
-    private function _getRepeatingHeaders(
+    private function getRepeatingHeaders(
         array $display_params
     ) {
         $header_html = '<tr>' . "\n";
@@ -3195,18 +3200,18 @@ class Results
     /**
      * Get modified links
      *
-     * @see     _getTableBody()
+     * @see     getTableBody()
      *
      * @param string $where_clause     the where clause of the sql
      * @param bool   $clause_is_unique the unique condition of clause
      * @param string $url_sql_query    the analyzed sql query
      *
-     * @return array   5 element array - $edit_url, $copy_url,
-     *                 $edit_str, $copy_str, $edit_anchor_class
+     * @return array<int,string>       5 element array - $edit_url, $copy_url,
+     *                                                   $edit_str, $copy_str
      *
      * @access private
      */
-    private function _getModifiedLinks(
+    private function getModifiedLinks(
         $where_clause,
         $clause_is_unique,
         $url_sql_query
@@ -3230,34 +3235,27 @@ class Results
             $_url_params + ['default_action' => 'insert']
         );
 
-        $edit_str = $this->_getActionLinkContent(
+        $edit_str = $this->getActionLinkContent(
             'b_edit',
             __('Edit')
         );
-        $copy_str = $this->_getActionLinkContent(
+        $copy_str = $this->getActionLinkContent(
             'b_insrow',
             __('Copy')
         );
-
-        // Class definitions required for grid editing jQuery scripts
-        $edit_anchor_class = 'edit_row_anchor';
-        if ($clause_is_unique == 0) {
-            $edit_anchor_class .= ' nonunique';
-        }
 
         return [
             $edit_url,
             $copy_url,
             $edit_str,
             $copy_str,
-            $edit_anchor_class,
         ];
     }
 
     /**
      * Get delete and kill links
      *
-     * @see     _getTableBody()
+     * @see     getTableBody()
      *
      * @param string $where_clause     the where clause of the sql
      * @param bool   $clause_is_unique the unique condition of clause
@@ -3270,7 +3268,7 @@ class Results
      *
      * @access private
      */
-    private function _getDeleteAndKillLinks(
+    private function getDeleteAndKillLinks(
         $where_clause,
         $clause_is_unique,
         $url_sql_query,
@@ -3308,7 +3306,7 @@ class Results
                 . ' WHERE ' . Sanitize::jsFormat($where_clause, false)
                 . ($clause_is_unique ? '' : ' LIMIT 1');
 
-            $del_str = $this->_getActionLinkContent('b_drop', __('Delete'));
+            $del_str = $this->getActionLinkContent('b_drop', __('Delete'));
         } elseif ($del_lnk == self::KILL_PROCESS) { // kill process case
             $_url_params = [
                 'db'        => $this->__get('db'),
@@ -3347,7 +3345,7 @@ class Results
     /**
      * Get content inside the table row action links (Edit/Copy/Delete)
      *
-     * @see     _getModifiedLinks(), _getDeleteAndKillLinks()
+     * @see     getModifiedLinks(), getDeleteAndKillLinks()
      *
      * @param string $icon         The name of the file to get
      * @param string $display_text The text displaying after the image icon
@@ -3356,7 +3354,7 @@ class Results
      *
      * @access private
      */
-    private function _getActionLinkContent($icon, $display_text)
+    private function getActionLinkContent($icon, $display_text)
     {
         $linkContent = '';
 
@@ -3386,7 +3384,7 @@ class Results
     /**
      * Get the combined classes for a column
      *
-     * @see     _getTableBody()
+     * @see     getTableBody()
      *
      * @param string $grid_edit_class  the class for all editable columns
      * @param string $not_null_class   the class for not null columns
@@ -3398,7 +3396,7 @@ class Results
      *
      * @access private
      */
-    private function _getClassesForColumn(
+    private function getClassesForColumn(
         $grid_edit_class,
         $not_null_class,
         $relation_class,
@@ -3412,7 +3410,7 @@ class Results
     /**
      * Get class for datetime related fields
      *
-     * @see    _getTableBody()
+     * @see    getTableBody()
      *
      * @param string $type the type of the column field
      *
@@ -3420,7 +3418,7 @@ class Results
      *
      * @access private
      */
-    private function _getClassForDateTimeRelatedFields($type)
+    private function getClassForDateTimeRelatedFields($type)
     {
         if ((substr($type, 0, 9) == self::TIMESTAMP_FIELD)
             || ($type == self::DATETIME_FIELD)
@@ -3442,7 +3440,7 @@ class Results
     /**
      * Prepare data cell for numeric type fields
      *
-     * @see    _getTableBody()
+     * @see    getTableBody()
      *
      * @param string|null           $column                the column's value
      * @param string                $class                 the html class for column
@@ -3463,7 +3461,7 @@ class Results
      *
      * @access private
      */
-    private function _getDataCellForNumericColumns(
+    private function getDataCellForNumericColumns(
         ?string $column,
         $class,
         $condition_field,
@@ -3476,7 +3474,7 @@ class Results
         array $transform_options
     ) {
         if (! isset($column) || $column === null) {
-            $cell = $this->_buildNullDisplay(
+            $cell = $this->buildNullDisplay(
                 'right ' . $class,
                 $condition_field,
                 $meta,
@@ -3486,7 +3484,7 @@ class Results
             $nowrap = ' nowrap';
             $where_comparison = ' = ' . $column;
 
-            $cell = $this->_getRowData(
+            $cell = $this->getRowData(
                 'right ' . $class,
                 $condition_field,
                 $analyzed_sql_results,
@@ -3503,7 +3501,7 @@ class Results
                 ''
             );
         } else {
-            $cell = $this->_buildEmptyDisplay(
+            $cell = $this->buildEmptyDisplay(
                 'right ' . $class,
                 $condition_field,
                 $meta,
@@ -3517,7 +3515,7 @@ class Results
     /**
      * Get data cell for geometry type fields
      *
-     * @see     _getTableBody()
+     * @see     getTableBody()
      *
      * @param string|null           $column                the relevant column in data row
      * @param string                $class                 the html class for column
@@ -3538,7 +3536,7 @@ class Results
      *
      * @access private
      */
-    private function _getDataCellForGeometryColumns(
+    private function getDataCellForGeometryColumns(
         ?string $column,
         $class,
         $meta,
@@ -3551,20 +3549,16 @@ class Results
         array $analyzed_sql_results
     ) {
         if (! isset($column) || $column === null) {
-            $cell = $this->_buildNullDisplay($class, $condition_field, $meta);
-
-            return $cell;
+            return $this->buildNullDisplay($class, $condition_field, $meta);
         }
 
         if ($column == '') {
-            $cell = $this->_buildEmptyDisplay($class, $condition_field, $meta);
-
-            return $cell;
+            return $this->buildEmptyDisplay($class, $condition_field, $meta);
         }
 
         // Display as [GEOMETRY - (size)]
         if ($_SESSION['tmpval']['geoOption'] == self::GEOMETRY_DISP_GEOM) {
-            $geometry_text = $this->_handleNonPrintableContents(
+            $geometry_text = $this->handleNonPrintableContents(
                 strtoupper(self::GEOMETRY_FIELD),
                 $column,
                 $transformation_plugin,
@@ -3574,13 +3568,11 @@ class Results
                 $_url_params
             );
 
-            $cell = $this->_buildValueDisplay(
+            return $this->buildValueDisplay(
                 $class,
                 $condition_field,
                 $geometry_text
             );
-
-            return $cell;
         }
 
         if ($_SESSION['tmpval']['geoOption'] == self::GEOMETRY_DISP_WKT) {
@@ -3593,9 +3585,9 @@ class Results
                 $is_field_truncated,
                 $displayedColumn,
                 // skip 3rd param
-            ] = $this->_getPartialText($wktval);
+            ] = $this->getPartialText($wktval);
 
-            $cell = $this->_getRowData(
+            return $this->getRowData(
                 $class,
                 $condition_field,
                 $analyzed_sql_results,
@@ -3611,8 +3603,6 @@ class Results
                 $is_field_truncated,
                 ''
             );
-
-            return $cell;
         }
 
         // Prepare in  Well Known Binary (WKB) format.
@@ -3625,9 +3615,9 @@ class Results
                 $is_field_truncated,
                 $displayedColumn,
                 // skip 3rd param
-            ] = $this->_getPartialText($wkbval);
+            ] = $this->getPartialText($wkbval);
 
-            $cell = $this->_getRowData(
+            return $this->getRowData(
                 $class,
                 $condition_field,
                 $analyzed_sql_results,
@@ -3643,11 +3633,9 @@ class Results
                 $is_field_truncated,
                 ''
             );
-
-            return $cell;
         }
 
-        $wkbval = $this->_handleNonPrintableContents(
+        $wkbval = $this->handleNonPrintableContents(
             self::BINARY_FIELD,
             $column,
             $transformation_plugin,
@@ -3657,19 +3645,17 @@ class Results
             $_url_params
         );
 
-        $cell = $this->_buildValueDisplay(
+        return $this->buildValueDisplay(
             $class,
             $condition_field,
             $wkbval
         );
-
-        return $cell;
     }
 
     /**
      * Get data cell for non numeric type fields
      *
-     * @see    _getTableBody()
+     * @see    getTableBody()
      *
      * @param string|null           $column                the relevant column in data row
      * @param string                $class                 the html class for column
@@ -3697,7 +3683,7 @@ class Results
      *
      * @access private
      */
-    private function _getDataCellForNonNumericColumns(
+    private function getDataCellForNonNumericColumns(
         ?string $column,
         $class,
         $meta,
@@ -3737,15 +3723,11 @@ class Results
         }
 
         if (! isset($column) || $column === null) {
-            $cell = $this->_buildNullDisplay($class, $condition_field, $meta);
-
-            return $cell;
+            return $this->buildNullDisplay($class, $condition_field, $meta);
         }
 
         if ($column == '') {
-            $cell = $this->_buildEmptyDisplay($class, $condition_field, $meta);
-
-            return $cell;
+            return $this->buildEmptyDisplay($class, $condition_field, $meta);
         }
 
         // Cut all fields to $GLOBALS['cfg']['LimitChars']
@@ -3759,7 +3741,7 @@ class Results
                 $is_field_truncated,
                 $column,
                 $original_length,
-            ] = $this->_getPartialText($column);
+            ] = $this->getPartialText($column);
         }
 
         $formatted = false;
@@ -3781,7 +3763,7 @@ class Results
             if ($meta->type === self::STRING_FIELD) {
                 $binary_or_blob = self::BINARY_FIELD;
             }
-            $displayedColumn = $this->_handleNonPrintableContents(
+            $displayedColumn = $this->handleNonPrintableContents(
                 $binary_or_blob,
                 $displayedColumn,
                 $transformation_plugin,
@@ -3791,7 +3773,7 @@ class Results
                 $_url_params,
                 $is_field_truncated
             );
-            $class = $this->_addClass(
+            $class = $this->addClass(
                 $class,
                 $condition_field,
                 $meta,
@@ -3810,13 +3792,11 @@ class Results
         }
 
         if ($formatted) {
-            $cell = $this->_buildValueDisplay(
+            return $this->buildValueDisplay(
                 $class,
                 $condition_field,
                 $displayedColumn
             );
-
-            return $cell;
         }
 
         // transform functions may enable no-wrapping:
@@ -3835,7 +3815,7 @@ class Results
             . $GLOBALS['dbi']->escapeString($column)
             . '\'';
 
-        $cell = $this->_getRowData(
+        return $this->getRowData(
             $class,
             $condition_field,
             $analyzed_sql_results,
@@ -3851,8 +3831,6 @@ class Results
             $is_field_truncated,
             $original_length
         );
-
-        return $cell;
     }
 
     /**
@@ -4072,13 +4050,13 @@ class Results
         [
             $displayParts,
             $total,
-        ]  = $this->_setDisplayPartsAndTotal($displayParts);
+        ]  = $this->setDisplayPartsAndTotal($displayParts);
 
         // 1.2 Defines offsets for the next and previous pages
         $pos_next = 0;
         $pos_prev = 0;
         if ($displayParts['nav_bar'] == '1') {
-            [$pos_next, $pos_prev] = $this->_getOffsets();
+            [$pos_next, $pos_prev] = $this->getOffsets();
         } // end if
 
         // 1.3 Extract sorting expressions.
@@ -4105,7 +4083,7 @@ class Results
         // 1.4 Prepares display of first and last value of the sorted column
         $sorted_column_message = '';
         for ($i = 0; $i < $number_of_columns; $i++) {
-            $sorted_column_message .= $this->_getSortedColumnMessage(
+            $sorted_column_message .= $this->getSortedColumnMessage(
                 $dt_result,
                 $sort_expression_nodirection[$i]
             );
@@ -4116,7 +4094,7 @@ class Results
         // 2.1 Prepares a messages with position information
         $sqlQueryMessage = '';
         if (($displayParts['nav_bar'] == '1') && $pos_next !== null) {
-            $message = $this->_setMessageInformation(
+            $message = $this->setMessageInformation(
                 $sorted_column_message,
                 $analyzed_sql_results,
                 $total,
@@ -4154,7 +4132,7 @@ class Results
         if ($displayParts['sort_lnk'] == '1' && $analyzed_sql_results['statement'] !== null) {
             // At this point, $sort_expression is an array
             [$unsorted_sql_query, $sort_by_key_html]
-                = $this->_getUnsortedSqlAndSortByKeyDropDown(
+                = $this->getUnsortedSqlAndSortByKeyDropDown(
                     $analyzed_sql_results,
                     $sort_expression
                 );
@@ -4180,7 +4158,7 @@ class Results
 
         if (strlen($this->__get('table')) > 0) {
             // This method set the values for $map array
-            $this->_setParamForLinkForeignKeyRelatedTables($map);
+            $this->setParamForLinkForeignKeyRelatedTables($map);
 
             // Coming from 'Distinct values' action of structure page
             // We manipulate relations mechanism to show a link to related rows.
@@ -4206,7 +4184,7 @@ class Results
             $is_limited_display
         );
 
-        $body = $this->_getTableBody(
+        $body = $this->getTableBody(
             $dt_result,
             $displayParts,
             $map,
@@ -4264,7 +4242,7 @@ class Results
      *
      * @access private
      */
-    private function _getOffsets()
+    private function getOffsets()
     {
         if ($_SESSION['tmpval']['max_rows'] == self::ALL_ROWS) {
             $pos_next     = 0;
@@ -4301,7 +4279,7 @@ class Results
      *
      * @access private
      */
-    private function _getSortedColumnMessage(
+    private function getSortedColumnMessage(
         &$dt_result,
         $sort_expression_nodirection
     ) {
@@ -4354,7 +4332,7 @@ class Results
         if (stripos($meta->type, self::BLOB_FIELD) !== false
             || ($meta->type == self::GEOMETRY_FIELD)
         ) {
-            $column_for_first_row = $this->_handleNonPrintableContents(
+            $column_for_first_row = $this->handleNonPrintableContents(
                 $meta->type,
                 $row[$sorted_column_index],
                 $transformation_plugin,
@@ -4383,7 +4361,7 @@ class Results
         if (stripos($meta->type, self::BLOB_FIELD) !== false
             || ($meta->type == self::GEOMETRY_FIELD)
         ) {
-            $column_for_last_row = $this->_handleNonPrintableContents(
+            $column_for_last_row = $this->handleNonPrintableContents(
                 $meta->type,
                 $row[$sorted_column_index],
                 $transformation_plugin,
@@ -4403,7 +4381,7 @@ class Results
             ) . '...'
         );
 
-        // reset to first row for the loop in _getTableBody()
+        // reset to first row for the loop in getTableBody()
         $GLOBALS['dbi']->dataSeek($dt_result, 0);
 
         // we could also use here $sort_expression_nodirection
@@ -4430,7 +4408,7 @@ class Results
      *
      * @access private
      */
-    private function _setMessageInformation(
+    private function setMessageInformation(
         $sorted_column_message,
         array $analyzed_sql_results,
         $total,
@@ -4530,7 +4508,7 @@ class Results
      *
      * @access private
      */
-    private function _setParamForLinkForeignKeyRelatedTables(array &$map)
+    private function setParamForLinkForeignKeyRelatedTables(array &$map)
     {
         // To be able to later display a link to the related table,
         // we verify both types of relations: either those that are
@@ -4545,34 +4523,36 @@ class Results
             self::POSITION_BOTH
         );
 
-        if (! empty($exist_rel)) {
-            foreach ($exist_rel as $master_field => $rel) {
-                if ($master_field != 'foreign_keys_data') {
-                    $display_field = $this->relation->getDisplayField(
-                        $rel['foreign_db'],
-                        $rel['foreign_table']
-                    );
-                    $map[$master_field] = [
-                        $rel['foreign_table'],
-                        $rel['foreign_field'],
-                        $display_field,
-                        $rel['foreign_db'],
-                    ];
-                } else {
-                    foreach ($rel as $key => $one_key) {
-                        foreach ($one_key['index_list'] as $index => $one_field) {
-                            $display_field = $this->relation->getDisplayField(
-                                $one_key['ref_db_name'] ?? $GLOBALS['db'],
-                                $one_key['ref_table_name']
-                            );
+        if (empty($exist_rel)) {
+            return;
+        }
 
-                            $map[$one_field] = [
-                                $one_key['ref_table_name'],
-                                $one_key['ref_index_list'][$index],
-                                $display_field,
-                                $one_key['ref_db_name'] ?? $GLOBALS['db'],
-                            ];
-                        }
+        foreach ($exist_rel as $master_field => $rel) {
+            if ($master_field != 'foreign_keys_data') {
+                $display_field = $this->relation->getDisplayField(
+                    $rel['foreign_db'],
+                    $rel['foreign_table']
+                );
+                $map[$master_field] = [
+                    $rel['foreign_table'],
+                    $rel['foreign_field'],
+                    $display_field,
+                    $rel['foreign_db'],
+                ];
+            } else {
+                foreach ($rel as $key => $one_key) {
+                    foreach ($one_key['index_list'] as $index => $one_field) {
+                        $display_field = $this->relation->getDisplayField(
+                            $one_key['ref_db_name'] ?? $GLOBALS['db'],
+                            $one_key['ref_table_name']
+                        );
+
+                        $map[$one_field] = [
+                            $one_key['ref_table_name'],
+                            $one_key['ref_index_list'][$index],
+                            $display_field,
+                            $one_key['ref_db_name'] ?? $GLOBALS['db'],
+                        ];
                     }
                 }
             }
@@ -4611,21 +4591,29 @@ class Results
             $row = [];
         }
 
+        $expressions = [];
+
+        if (isset($analyzed_sql_results['statement'])
+            && $analyzed_sql_results['statement'] instanceof SelectStatement
+        ) {
+            $expressions = $analyzed_sql_results['statement']->expr;
+        }
+
         /**
          * $clause_is_unique is needed by getTable() to generate the proper param
          * in the multi-edit and multi-delete form
          */
-        list(, $clause_is_unique,) = Util::getUniqueCondition(
+        [, $clause_is_unique] = Util::getUniqueCondition(
             $dt_result,
             $this->__get('fields_cnt'),
             $this->__get('fields_meta'),
             $row,
             false,
             false,
-            $analyzed_sql_results
+            $expressions
         );
 
-        // reset to first row for the loop in _getTableBody()
+        // reset to first row for the loop in getTableBody()
         $dbi->dataSeek($dt_result, 0);
 
         return [
@@ -4756,9 +4744,7 @@ class Results
      * Verifies what to do with non-printable contents (binary or BLOB)
      * in Browse mode.
      *
-     * @see     _getDataCellForGeometryColumns(),
-     *          _getDataCellForNonNumericColumns(),
-     *          _getSortedColumnMessage()
+     * @see getDataCellForGeometryColumns(), getDataCellForNonNumericColumns(), getSortedColumnMessage()
      *
      * @param string      $category              BLOB|BINARY|GEOMETRY
      * @param string|null $content               the binary content
@@ -4777,7 +4763,7 @@ class Results
      *
      * @access private
      */
-    private function _handleNonPrintableContents(
+    private function handleNonPrintableContents(
         $category,
         ?string $content,
         $transformation_plugin,
@@ -4851,7 +4837,7 @@ class Results
                 $is_truncated,
                 $result,
                 // skip 3rd param
-            ] = $this->_getPartialText($result);
+            ] = $this->getPartialText($result);
         }
 
         /* Create link to download */
@@ -4882,7 +4868,7 @@ class Results
      *
      * @access private
      */
-    private function _getFromForeign(array $map, $meta, $where_comparison)
+    private function getFromForeign(array $map, $meta, $where_comparison)
     {
         $dispsql = 'SELECT '
             . Util::backquote($map[$meta->name][2])
@@ -4915,8 +4901,8 @@ class Results
      * Prepares the displayable content of a data cell in Browse mode,
      * taking into account foreign key description field and transformations
      *
-     * @see     _getDataCellForNumericColumns(), _getDataCellForGeometryColumns(),
-     *          _getDataCellForNonNumericColumns(),
+     * @see     getDataCellForNumericColumns(), getDataCellForGeometryColumns(),
+     *          getDataCellForNonNumericColumns(),
      *
      * @param string                $class                 css classes for the td element
      * @param bool                  $condition_field       whether the column is a part of
@@ -4942,7 +4928,7 @@ class Results
      *
      * @access private
      */
-    private function _getRowData(
+    private function getRowData(
         $class,
         $condition_field,
         array $analyzed_sql_results,
@@ -4970,7 +4956,7 @@ class Results
         }
 
         $result .= ' class="'
-            . $this->_addClass(
+            . $this->addClass(
                 $class,
                 $condition_field,
                 $meta,
@@ -4986,9 +4972,11 @@ class Results
                 if (empty($expr->alias) || empty($expr->column)) {
                     continue;
                 }
-                if (strcasecmp($meta->name, $expr->alias) == 0) {
-                    $meta->name = $expr->column;
+                if (strcasecmp($meta->name, $expr->alias) != 0) {
+                    continue;
                 }
+
+                $meta->name = $expr->column;
             }
         }
 
@@ -4997,7 +4985,7 @@ class Results
             if (isset($map[$meta->name][2])
                 && strlen((string) $map[$meta->name][2]) > 0
             ) {
-                $dispval = $this->_getFromForeign(
+                $dispval = $this->getFromForeign(
                     $map,
                     $meta,
                     $where_comparison
@@ -5094,8 +5082,7 @@ class Results
      * and Session pftext variable
      * (string is truncated only if necessary)
      *
-     * @see     _handleNonPrintableContents(), _getDataCellForGeometryColumns(),
-     *          _getDataCellForNonNumericColumns
+     * @see handleNonPrintableContents(), getDataCellForGeometryColumns(), getDataCellForNonNumericColumns
      *
      * @param string $str string to be truncated
      *
@@ -5103,7 +5090,7 @@ class Results
      *
      * @access private
      */
-    private function _getPartialText($str): array
+    private function getPartialText($str): array
     {
         $original_length = mb_strlen($str);
         if ($original_length > $GLOBALS['cfg']['LimitChars']

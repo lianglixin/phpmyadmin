@@ -2,17 +2,30 @@
 /**
  * Tests for StorageEngine.php
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
+use PhpMyAdmin\Engines\Bdb;
+use PhpMyAdmin\Engines\Berkeleydb;
+use PhpMyAdmin\Engines\Binlog;
+use PhpMyAdmin\Engines\Innobase;
+use PhpMyAdmin\Engines\Innodb;
+use PhpMyAdmin\Engines\Memory;
+use PhpMyAdmin\Engines\Merge;
+use PhpMyAdmin\Engines\MrgMyisam;
+use PhpMyAdmin\Engines\Myisam;
+use PhpMyAdmin\Engines\Ndbcluster;
+use PhpMyAdmin\Engines\Pbxt;
+use PhpMyAdmin\Engines\PerformanceSchema;
 use PhpMyAdmin\StorageEngine;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Tests for StorageEngine.php
  */
-class StorageEngineTest extends PmaTestCase
+class StorageEngineTest extends AbstractTestCase
 {
     /** @var StorageEngine|MockObject */
     protected $object;
@@ -25,6 +38,7 @@ class StorageEngineTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['server'] = 1;
         $this->object = $this->getMockForAbstractClass(
             StorageEngine::class,
@@ -40,6 +54,7 @@ class StorageEngineTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -118,55 +133,55 @@ class StorageEngineTest extends PmaTestCase
     {
         return [
             [
-                'PhpMyAdmin\StorageEngine',
+                StorageEngine::class,
                 'unknown engine',
             ],
             [
-                'PhpMyAdmin\Engines\Bdb',
+                Bdb::class,
                 'Bdb',
             ],
             [
-                'PhpMyAdmin\Engines\Berkeleydb',
+                Berkeleydb::class,
                 'Berkeleydb',
             ],
             [
-                'PhpMyAdmin\Engines\Binlog',
+                Binlog::class,
                 'Binlog',
             ],
             [
-                'PhpMyAdmin\Engines\Innobase',
+                Innobase::class,
                 'Innobase',
             ],
             [
-                'PhpMyAdmin\Engines\Innodb',
+                Innodb::class,
                 'Innodb',
             ],
             [
-                'PhpMyAdmin\Engines\Memory',
+                Memory::class,
                 'Memory',
             ],
             [
-                'PhpMyAdmin\Engines\Merge',
+                Merge::class,
                 'Merge',
             ],
             [
-                'PhpMyAdmin\Engines\MrgMyisam',
+                MrgMyisam::class,
                 'Mrg_Myisam',
             ],
             [
-                'PhpMyAdmin\Engines\Myisam',
+                Myisam::class,
                 'Myisam',
             ],
             [
-                'PhpMyAdmin\Engines\Ndbcluster',
+                Ndbcluster::class,
                 'Ndbcluster',
             ],
             [
-                'PhpMyAdmin\Engines\Pbxt',
+                Pbxt::class,
                 'Pbxt',
             ],
             [
-                'PhpMyAdmin\Engines\PerformanceSchema',
+                PerformanceSchema::class,
                 'Performance_Schema',
             ],
         ];

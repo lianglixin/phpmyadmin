@@ -2,6 +2,7 @@
 /**
  * Test for PhpMyAdmin\Gis\GisPolygon
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Gis;
@@ -31,6 +32,7 @@ class GisPolygonTest extends GisGeomTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = GisPolygon::singleton();
     }
 
@@ -42,6 +44,7 @@ class GisPolygonTest extends GisGeomTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -50,7 +53,7 @@ class GisPolygonTest extends GisGeomTestCase
      *
      * @return array common data for data providers
      */
-    private function _getData()
+    private function getData()
     {
         return [
             'POLYGON' => [
@@ -109,7 +112,7 @@ class GisPolygonTest extends GisGeomTestCase
     public function providerForTestGenerateWkt()
     {
         $temp = [
-            0 => $this->_getData(),
+            0 => $this->getData(),
         ];
 
         $temp1 = $temp;
@@ -173,7 +176,7 @@ class GisPolygonTest extends GisGeomTestCase
      */
     public function providerForTestGenerateParams()
     {
-        $temp = $this->_getData();
+        $temp = $this->getData();
 
         $temp1 = $temp;
         $temp1['gis_type'] = 'POLYGON';
@@ -191,9 +194,7 @@ class GisPolygonTest extends GisGeomTestCase
             [
                 'POLYGON((35 10,10 20,15 40,45 45,35 10),(20 30,35 32,30 20,20 30))',
                 2,
-                [
-                    2 => $temp1,
-                ],
+                [2 => $temp1],
             ],
         ];
     }
@@ -387,7 +388,7 @@ class GisPolygonTest extends GisGeomTestCase
      */
     public function providerForTestGetPointOnSurface()
     {
-        $temp = $this->_getData();
+        $temp = $this->getData();
         unset($temp['POLYGON'][0]['no_of_points']);
         unset($temp['POLYGON'][1]['no_of_points']);
 
@@ -544,11 +545,11 @@ class GisPolygonTest extends GisGeomTestCase
     /**
      * test case for prepareRowAsSvg() method
      *
-     * @param string $spatial    GIS POLYGON object
-     * @param string $label      label for the GIS POLYGON object
-     * @param string $fill_color color for the GIS POLYGON object
-     * @param array  $scale_data array containing data related to scaling
-     * @param string $output     expected output
+     * @param string $spatial   GIS POLYGON object
+     * @param string $label     label for the GIS POLYGON object
+     * @param string $fillColor color for the GIS POLYGON object
+     * @param array  $scaleData array containing data related to scaling
+     * @param string $output    expected output
      *
      * @return void
      *
@@ -557,15 +558,15 @@ class GisPolygonTest extends GisGeomTestCase
     public function testPrepareRowAsSvg(
         $spatial,
         $label,
-        $fill_color,
-        $scale_data,
+        $fillColor,
+        $scaleData,
         $output
     ) {
         $string = $this->object->prepareRowAsSvg(
             $spatial,
             $label,
-            $fill_color,
-            $scale_data
+            $fillColor,
+            $scaleData
         );
         $this->assertEquals(1, preg_match($output, $string));
     }

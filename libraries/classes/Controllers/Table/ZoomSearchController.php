@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -77,7 +78,7 @@ class ZoomSearchController extends AbstractController
         $this->_columnNullFlags = [];
         $this->_geomColumnFlag = false;
         $this->_foreigners = [];
-        $this->_loadTableInfo();
+        $this->loadTableInfo();
     }
 
     public function index(): void
@@ -138,26 +139,28 @@ class ZoomSearchController extends AbstractController
          * Handle the input criteria and generate the query result
          * Form for displaying query results
          */
-        if (isset($_POST['zoom_submit'])
-            && $_POST['criteriaColumnNames'][0] != 'pma_null'
-            && $_POST['criteriaColumnNames'][1] != 'pma_null'
-            && $_POST['criteriaColumnNames'][0] != $_POST['criteriaColumnNames'][1]
+        if (! isset($_POST['zoom_submit'])
+            || $_POST['criteriaColumnNames'][0] == 'pma_null'
+            || $_POST['criteriaColumnNames'][1] == 'pma_null'
+            || $_POST['criteriaColumnNames'][0] == $_POST['criteriaColumnNames'][1]
         ) {
-            if (! isset($goto)) {
-                $goto = Util::getScriptNameForOption(
-                    $GLOBALS['cfg']['DefaultTabTable'],
-                    'table'
-                );
-            }
-            $this->zoomSubmitAction($dataLabel, $goto);
+            return;
         }
+
+        if (! isset($goto)) {
+            $goto = Util::getScriptNameForOption(
+                $GLOBALS['cfg']['DefaultTabTable'],
+                'table'
+            );
+        }
+        $this->zoomSubmitAction($dataLabel, $goto);
     }
 
     /**
      * Gets all the columns of a table along with their types, collations
      * and whether null or not.
      */
-    private function _loadTableInfo(): void
+    private function loadTableInfo(): void
     {
         // Gets the list and number of columns
         $columns = $this->dbi->getColumns(
@@ -230,11 +233,15 @@ class ZoomSearchController extends AbstractController
         $criteria_column_names = $_POST['criteriaColumnNames'] ?? null;
         $keys = [];
         for ($i = 0; $i < 4; $i++) {
-            if (isset($criteria_column_names[$i])) {
-                if ($criteria_column_names[$i] != 'pma_null') {
-                    $keys[$criteria_column_names[$i]] = array_search($criteria_column_names[$i], $column_names);
-                }
+            if (! isset($criteria_column_names[$i])) {
+                continue;
             }
+
+            if ($criteria_column_names[$i] == 'pma_null') {
+                continue;
+            }
+
+            $keys[$criteria_column_names[$i]] = array_search($criteria_column_names[$i], $column_names);
         }
 
         $this->render('table/zoom_search/index', [
@@ -349,13 +356,11 @@ class ZoomSearchController extends AbstractController
             }
             //Get unique condition on each row (will be needed for row update)
             $uniqueCondition = Util::getUniqueCondition(
-                $result, // handle
-                count($this->_columnNames), // fields_cnt
-                $fields_meta, // fields_meta
-                $tmpRow, // row
-                true, // force_unique
-                false, // restrict_to_table
-                null // analyzed_sql_results
+                $result,
+                count($this->_columnNames),
+                $fields_meta,
+                $tmpRow,
+                true
             );
             //Append it to row array as where_clause
             $row['where_clause'] = $uniqueCondition[0];

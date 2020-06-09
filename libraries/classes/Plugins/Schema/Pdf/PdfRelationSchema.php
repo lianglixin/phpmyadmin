@@ -2,6 +2,7 @@
 /**
  * PDF schema handling
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema\Pdf;
@@ -166,7 +167,7 @@ class PdfRelationSchema extends ExportRelationSchema
             if ($this->sameWide) {
                 $this->_tables[$table]->width = $this->_tablewidth;
             }
-            $this->_setMinMax($this->_tables[$table]);
+            $this->setMinMax($this->_tables[$table]);
         }
 
         // Defines the scale factor
@@ -193,7 +194,7 @@ class PdfRelationSchema extends ExportRelationSchema
 
         if ($this->_showGrid) {
             $this->diagram->SetFontSize(10);
-            $this->_strokeGrid();
+            $this->strokeGrid();
         }
         $this->diagram->setFontSizeScale(14);
         // previous logic was checking master tables and foreign tables
@@ -214,7 +215,7 @@ class PdfRelationSchema extends ExportRelationSchema
                 // to do a === false and this is not PHP3 compatible)
                 if ($master_field != 'foreign_keys_data') {
                     if (in_array($rel['foreign_table'], $alltables)) {
-                        $this->_addRelation(
+                        $this->addRelation(
                             $one_table,
                             $master_field,
                             $rel['foreign_table'],
@@ -230,7 +231,7 @@ class PdfRelationSchema extends ExportRelationSchema
                     }
 
                     foreach ($one_key['index_list'] as $index => $one_field) {
-                        $this->_addRelation(
+                        $this->addRelation(
                             $one_table,
                             $one_field,
                             $one_key['ref_table_name'],
@@ -242,9 +243,9 @@ class PdfRelationSchema extends ExportRelationSchema
         } // end while
 
         if ($seen_a_relation) {
-            $this->_drawRelations();
+            $this->drawRelations();
         }
-        $this->_drawTables();
+        $this->drawTables();
     }
 
     /**
@@ -330,7 +331,7 @@ class PdfRelationSchema extends ExportRelationSchema
      *
      * @return void
      */
-    private function _setMinMax($table)
+    private function setMinMax($table)
     {
         $this->_xMax = max($this->_xMax, $table->x + $table->width);
         $this->_yMax = max($this->_yMax, $table->y + $table->height);
@@ -341,7 +342,7 @@ class PdfRelationSchema extends ExportRelationSchema
     /**
      * Defines relation objects
      *
-     * @see _setMinMax
+     * @see setMinMax
      *
      * @param string $masterTable  The master table name
      * @param string $masterField  The relation field in the master table
@@ -350,7 +351,7 @@ class PdfRelationSchema extends ExportRelationSchema
      *
      * @return void
      */
-    private function _addRelation(
+    private function addRelation(
         $masterTable,
         $masterField,
         $foreignTable,
@@ -367,7 +368,7 @@ class PdfRelationSchema extends ExportRelationSchema
                 $this->showKeys,
                 $this->tableDimension
             );
-            $this->_setMinMax($this->_tables[$masterTable]);
+            $this->setMinMax($this->_tables[$masterTable]);
         }
         if (! isset($this->_tables[$foreignTable])) {
             $this->_tables[$foreignTable] = new TableStatsPdf(
@@ -380,7 +381,7 @@ class PdfRelationSchema extends ExportRelationSchema
                 $this->showKeys,
                 $this->tableDimension
             );
-            $this->_setMinMax($this->_tables[$foreignTable]);
+            $this->setMinMax($this->_tables[$foreignTable]);
         }
         $this->relations[] = new RelationStatsPdf(
             $this->diagram,
@@ -398,7 +399,7 @@ class PdfRelationSchema extends ExportRelationSchema
      *
      * @return void
      */
-    private function _strokeGrid()
+    private function strokeGrid()
     {
         $gridSize = 10;
         $labelHeight = 4;
@@ -459,7 +460,7 @@ class PdfRelationSchema extends ExportRelationSchema
      *
      * @return void
      */
-    private function _drawRelations()
+    private function drawRelations()
     {
         $i = 0;
         foreach ($this->relations as $relation) {
@@ -475,7 +476,7 @@ class PdfRelationSchema extends ExportRelationSchema
      *
      * @return void
      */
-    private function _drawTables()
+    private function drawTables()
     {
         foreach ($this->_tables as $table) {
             $table->tableDraw(null, $this->_withDoc, $this->showColor);
@@ -784,7 +785,8 @@ class PdfRelationSchema extends ExportRelationSchema
                 if ($foreigner
                     && isset($this->diagram->PMA_links['doc'][$foreigner['foreign_table']][$foreigner['foreign_field']])
                 ) {
-                    $links[6] = $this->diagram->PMA_links['doc'][$foreigner['foreign_table']][$foreigner['foreign_field']];
+                    $foreignTable = $this->diagram->PMA_links['doc'][$foreigner['foreign_table']];
+                    $links[6] = $foreignTable[$foreigner['foreign_field']];
                 }
                 $this->diagram->row($diagram_row, $links);
             } // end foreach

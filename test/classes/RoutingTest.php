@@ -11,7 +11,7 @@ use PhpMyAdmin\Routing;
 /**
  * Tests for PhpMyAdmin\Routing
  */
-class RoutingTest extends PmaTestCase
+class RoutingTest extends AbstractTestCase
 {
     /**
      * Test for Routing::getDispatcher
@@ -60,6 +60,7 @@ class RoutingTest extends PmaTestCase
      */
     public function testGetCurrentRoutePost(): void
     {
+        unset($_GET['route']);
         $_POST['route'] = '/testpost';
         $this->assertSame('/testpost', Routing::getCurrentRoute());
     }
@@ -83,6 +84,8 @@ class RoutingTest extends PmaTestCase
      */
     public function testGetCurrentRouteRedirectDbStructure(): void
     {
+        unset($_POST['route']);
+        unset($_GET['route']);
         $_GET['db'] = 'testDB';
         $this->assertSame('/database/structure', Routing::getCurrentRoute());
     }

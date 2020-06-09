@@ -2,6 +2,7 @@
 /**
  * set of functions with the Privileges section in pma
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Server;
@@ -96,9 +97,9 @@ class Privileges
             if ($response->isAjax()) {
                 $response->addJSON('message', $dialog);
                 exit;
-            } else {
-                $html .= $dialog;
             }
+
+            $html .= $dialog;
         }
 
         return $html;
@@ -119,22 +120,19 @@ class Privileges
      *
      * @return string the escaped (if necessary) database.table
      */
-    public function wildcardEscapeForGrant($dbname, $tablename)
+    public function wildcardEscapeForGrant(string $dbname, string $tablename): string
     {
         if (strlen($dbname) === 0) {
-            $db_and_table = '*.*';
-        } else {
-            if (strlen($tablename) > 0) {
-                $db_and_table = Util::backquote(
-                    Util::unescapeMysqlWildcards($dbname)
-                )
-                . '.' . Util::backquote($tablename);
-            } else {
-                $db_and_table = Util::backquote($dbname) . '.*';
-            }
+            return '*.*';
+        }
+        if (strlen($tablename) > 0) {
+            return Util::backquote(
+                Util::unescapeMysqlWildcards($dbname)
+            )
+            . '.' . Util::backquote($tablename);
         }
 
-        return $db_and_table;
+        return Util::backquote($dbname) . '.*';
     }
 
     /**
@@ -152,13 +150,11 @@ class Privileges
             return '';
         }
 
-        $ret = " WHERE `User` LIKE '"
+        return " WHERE `User` LIKE '"
             . $this->dbi->escapeString($initial) . "%'"
             . " OR `User` LIKE '"
             . $this->dbi->escapeString(mb_strtolower($initial))
             . "%'";
-
-        return $ret;
     }
 
     /**
@@ -224,46 +220,48 @@ class Privileges
         $privs = [];
         $allPrivileges = true;
         foreach ($grants as $current_grant) {
-            if (($row !== null && isset($row[$current_grant[0]]))
-                || ($row === null && isset($GLOBALS[$current_grant[0]]))
+            if (($row === null || ! isset($row[$current_grant[0]]))
+                && ($row !== null || ! isset($GLOBALS[$current_grant[0]]))
             ) {
-                if (($row !== null && $row[$current_grant[0]] == 'Y')
-                    || ($row === null
-                    && ($GLOBALS[$current_grant[0]] == 'Y'
-                    || (is_array($GLOBALS[$current_grant[0]])
-                    && count($GLOBALS[$current_grant[0]]) == $_REQUEST['column_count']
-                    && empty($GLOBALS[$current_grant[0] . '_none']))))
-                ) {
-                    if ($enableHTML) {
-                        $privs[] = '<dfn title="' . $current_grant[2] . '">'
-                        . $current_grant[1] . '</dfn>';
-                    } else {
-                        $privs[] = $current_grant[1];
-                    }
-                } elseif (! empty($GLOBALS[$current_grant[0]])
-                    && is_array($GLOBALS[$current_grant[0]])
-                    && empty($GLOBALS[$current_grant[0] . '_none'])
-                ) {
-                    // Required for proper escaping of ` (backtick) in a column name
-                    $grant_cols = array_map(
-                        /** @param string $val */
-                        function ($val) {
-                            return Util::backquote($val);
-                        },
-                        $GLOBALS[$current_grant[0]]
-                    );
+                continue;
+            }
 
-                    if ($enableHTML) {
-                        $privs[] = '<dfn title="' . $current_grant[2] . '">'
-                            . $current_grant[1] . '</dfn>'
-                            . ' (' . implode(', ', $grant_cols) . ')';
-                    } else {
-                        $privs[] = $current_grant[1]
-                            . ' (' . implode(', ', $grant_cols) . ')';
-                    }
+            if (($row !== null && $row[$current_grant[0]] == 'Y')
+                || ($row === null
+                && ($GLOBALS[$current_grant[0]] == 'Y'
+                || (is_array($GLOBALS[$current_grant[0]])
+                && count($GLOBALS[$current_grant[0]]) == $_REQUEST['column_count']
+                && empty($GLOBALS[$current_grant[0] . '_none']))))
+            ) {
+                if ($enableHTML) {
+                    $privs[] = '<dfn title="' . $current_grant[2] . '">'
+                    . $current_grant[1] . '</dfn>';
                 } else {
-                    $allPrivileges = false;
+                    $privs[] = $current_grant[1];
                 }
+            } elseif (! empty($GLOBALS[$current_grant[0]])
+                && is_array($GLOBALS[$current_grant[0]])
+                && empty($GLOBALS[$current_grant[0] . '_none'])
+            ) {
+                // Required for proper escaping of ` (backtick) in a column name
+                $grant_cols = array_map(
+                    /** @param string $val */
+                    static function ($val) {
+                        return Util::backquote($val);
+                    },
+                    $GLOBALS[$current_grant[0]]
+                );
+
+                if ($enableHTML) {
+                    $privs[] = '<dfn title="' . $current_grant[2] . '">'
+                        . $current_grant[1] . '</dfn>'
+                        . ' (' . implode(', ', $grant_cols) . ')';
+                } else {
+                    $privs[] = $current_grant[1]
+                        . ' (' . implode(', ', $grant_cols) . ')';
+                }
+            } else {
+                $allPrivileges = false;
             }
         }
         if (empty($privs)) {
@@ -529,7 +527,9 @@ class Privileges
             return 'SELECT * FROM `mysql`.`user`'
                 . " WHERE `User` = '" . $this->dbi->escapeString($username) . "'"
                 . " AND `Host` = '" . $this->dbi->escapeString($hostname) . "';";
-        } elseif ($table == '*') {
+        }
+
+        if ($table == '*') {
             return 'SELECT * FROM `mysql`.`db`'
                 . " WHERE `User` = '" . $this->dbi->escapeString($username) . "'"
                 . " AND `Host` = '" . $this->dbi->escapeString($hostname) . "'"
@@ -632,9 +632,11 @@ class Privileges
                     . " WHERE `username`='" . $this->dbi->escapeString($username) . "'";
             }
         }
-        if (isset($upd_query)) {
-            $this->relation->queryAsControlUser($upd_query);
+        if (! isset($upd_query)) {
+            return;
         }
+
+        $this->relation->queryAsControlUser($upd_query);
     }
 
     /**
@@ -1197,8 +1199,8 @@ class Privileges
      * @return array ($message, $sql_query)
      */
     public function getMessageAndSqlQueryForPrivilegesRevoke(
-        $dbname,
-        $tablename,
+        string $dbname,
+        string $tablename,
         $username,
         $hostname,
         $itemType
@@ -1232,7 +1234,7 @@ class Privileges
     }
 
     /**
-     * Get REQUIRE cluase
+     * Get REQUIRE clause
      *
      * @return string REQUIRE clause
      */
@@ -1393,9 +1395,11 @@ class Privileges
             foreach ($grantsArr as $grant) {
                 $specificPrivileges[$grant[0]] = 'N';
                 foreach ($tablePrivs as $tablePriv) {
-                    if ($grant[0] == $tablePriv) {
-                        $specificPrivileges[$grant[0]] = 'Y';
+                    if ($grant[0] != $tablePriv) {
+                        continue;
                     }
+
+                    $specificPrivileges[$grant[0]] = 'Y';
                 }
             }
             $privilege['privileges'] = $this->extractPrivInfo(
@@ -1632,9 +1636,8 @@ class Privileges
                 $html .= Generator::getIcon('b_tblexport', __('Export'));
                 break;
         }
-        $html .= '</a>';
 
-        return $html;
+        return $html . '</a>';
     }
 
     /**
@@ -1648,14 +1651,13 @@ class Privileges
         $user_group_table = Util::backquote($cfgRelation['db'])
             . '.' . Util::backquote($cfgRelation['usergroups']);
         $sql_query = 'SELECT COUNT(*) FROM ' . $user_group_table;
-        $user_group_count = $this->dbi->fetchValue(
+
+        return $this->dbi->fetchValue(
             $sql_query,
             0,
             0,
             DatabaseInterface::CONNECT_CONTROL
         );
-
-        return $user_group_count;
     }
 
     /**
@@ -1756,8 +1758,9 @@ class Privileges
             $new_user_initial = mb_strtoupper(
                 mb_substr($username, 0, 1)
             );
-            $newUserInitialString = '<a href="' . Url::getFromRoute('/server/privileges', ['initial' => $new_user_initial]) . '">'
-                . $new_user_initial . '</a>';
+            $newUserInitialString = '<a href="';
+            $newUserInitialString .= Url::getFromRoute('/server/privileges', ['initial' => $new_user_initial]);
+            $newUserInitialString .= '">' . $new_user_initial . '</a>';
             $extra_data['new_user_initial'] = $new_user_initial;
             $extra_data['new_user_initial_string'] = $newUserInitialString;
         }
@@ -1832,12 +1835,14 @@ class Privileges
 
         $db_rights_sqls = [];
         foreach ($tables_to_search_for_users as $table_search_in) {
-            if (in_array($table_search_in, $tables)) {
-                $db_rights_sqls[] = '
-                    SELECT DISTINCT `' . $dbOrTableName . '`
-                    FROM `mysql`.' . Util::backquote($table_search_in)
-                   . $user_host_condition;
+            if (! in_array($table_search_in, $tables)) {
+                continue;
             }
+
+            $db_rights_sqls[] = '
+                SELECT DISTINCT `' . $dbOrTableName . '`
+                FROM `mysql`.' . Util::backquote($table_search_in)
+               . $user_host_condition;
         }
 
         $user_defaults = [
@@ -1897,11 +1902,13 @@ class Privileges
             } else {
                 $db_rights[$row[$dbOrTableName]] = $row;
             }
-            if ($type == 'database') {
-                // there are db specific rights for this user
-                // so we can drop this db rights
-                $db_rights[$row['Db']]['can_delete'] = true;
+            if ($type != 'database') {
+                continue;
             }
+
+            // there are db specific rights for this user
+            // so we can drop this db rights
+            $db_rights[$row['Db']]['can_delete'] = true;
         }
         $this->dbi->freeResult($result);
 
@@ -2078,9 +2085,11 @@ class Privileges
                     // because the list of databases has special characters
                     // already escaped in $foundRows,
                     // contrary to the output of SHOW DATABASES
-                    if (! in_array($current_db_escaped, $foundRows)) {
-                        $databases[] = $current_db;
+                    if (in_array($current_db_escaped, $foundRows)) {
+                        continue;
                     }
+
+                    $databases[] = $current_db;
                 }
             }
             $data['databases'] = $databases;
@@ -2094,9 +2103,11 @@ class Privileges
             $tables = [];
             if ($result) {
                 while ($row = $this->dbi->fetchRow($result)) {
-                    if (! in_array($row[0], $foundRows)) {
-                        $tables[] = $row[0];
+                    if (in_array($row[0], $foundRows)) {
+                        continue;
                     }
+
+                    $tables[] = $row[0];
                 }
                 $this->dbi->freeResult($result);
             }
@@ -2106,9 +2117,11 @@ class Privileges
 
             $routines = [];
             foreach ($routineData as $routine) {
-                if (! in_array($routine['name'], $foundRows)) {
-                    $routines[] = $routine['name'];
+                if (in_array($routine['name'], $foundRows)) {
+                    continue;
                 }
+
+                $routines[] = $routine['name'];
             }
             $data['routines'] = $routines;
         }
@@ -2208,9 +2221,11 @@ class Privileges
     {
         // initialize to false the letters A-Z
         for ($letter_counter = 1; $letter_counter < 27; $letter_counter++) {
-            if (! isset($array_initials[mb_chr($letter_counter + 64)])) {
-                $array_initials[mb_chr($letter_counter + 64)] = false;
+            if (isset($array_initials[mb_chr($letter_counter + 64)])) {
+                continue;
             }
+
+            $array_initials[mb_chr($letter_counter + 64)] = false;
         }
 
         $initials = $this->dbi->tryQuery(
@@ -2257,13 +2272,15 @@ class Privileges
 
         $db_rights_sqls = [];
         foreach ($tablesSearchForUsers as $table_search_in) {
-            if (in_array($table_search_in, $tables)) {
-                $db_rights_sqls[] = 'SELECT DISTINCT `User`, `Host` FROM `mysql`.`'
-                    . $table_search_in . '` '
-                    . (isset($_GET['initial'])
-                    ? $this->rangeOfUsers($_GET['initial'])
-                    : '');
+            if (! in_array($table_search_in, $tables)) {
+                continue;
             }
+
+            $db_rights_sqls[] = 'SELECT DISTINCT `User`, `Host` FROM `mysql`.`'
+                . $table_search_in . '` '
+                . (isset($_GET['initial'])
+                ? $this->rangeOfUsers($_GET['initial'])
+                : '');
         }
         $user_defaults = [
             'User'       => '',
@@ -2311,11 +2328,15 @@ class Privileges
             }
             $drop_user_error = '';
             foreach ($queries as $sql_query) {
-                if ($sql_query[0] != '#') {
-                    if (! $this->dbi->tryQuery($sql_query)) {
-                        $drop_user_error .= $this->dbi->getError() . "\n";
-                    }
+                if ($sql_query[0] == '#') {
+                    continue;
                 }
+
+                if ($this->dbi->tryQuery($sql_query)) {
+                    continue;
+                }
+
+                $drop_user_error .= $this->dbi->getError() . "\n";
             }
             // tracking sets this, causing the deleted db to be shown in navi
             unset($GLOBALS['db']);
@@ -2339,16 +2360,15 @@ class Privileges
     /**
      * Update the privileges and return the success or error message
      *
-     * @param string $username  username
-     * @param string $hostname  host name
-     * @param string $tablename table name
-     * @param string $dbname    database name
-     * @param string $itemType  item type
-     *
      * @return array success message or error message for update
      */
-    public function updatePrivileges($username, $hostname, $tablename, $dbname, $itemType)
-    {
+    public function updatePrivileges(
+        string $username,
+        string $hostname,
+        string $tablename,
+        string $dbname,
+        string $itemType
+    ): array {
         $db_and_table = $this->wildcardEscapeForGrant($dbname, $tablename);
 
         $sql_query0 = 'REVOKE ALL PRIVILEGES ON ' . $itemType . ' ' . $db_and_table
@@ -2363,30 +2383,21 @@ class Privileges
             $sql_query1 = '';
         }
 
+        $grantBackQuery = null;
+        $alterUserQuery = null;
+
         // Should not do a GRANT USAGE for a table-specific privilege, it
         // causes problems later (cannot revoke it)
         if (! (strlen($tablename) > 0
             && implode('', $this->extractPrivInfo()) == 'USAGE')
         ) {
-            $sql_query2 = 'GRANT ' . implode(', ', $this->extractPrivInfo())
-                . ' ON ' . $itemType . ' ' . $db_and_table
-                . ' TO \'' . $this->dbi->escapeString($username) . '\'@\''
-                . $this->dbi->escapeString($hostname) . '\'';
-
-            if (strlen($dbname) === 0) {
-                // add REQUIRE clause
-                $sql_query2 .= $this->getRequireClause();
-            }
-
-            if ((isset($_POST['Grant_priv']) && $_POST['Grant_priv'] == 'Y')
-                || (strlen($dbname) === 0
-                && (isset($_POST['max_questions']) || isset($_POST['max_connections'])
-                || isset($_POST['max_updates'])
-                || isset($_POST['max_user_connections'])))
-            ) {
-                $sql_query2 .= $this->getWithClauseForAddUserAndUpdatePrivs();
-            }
-            $sql_query2 .= ';';
+            [$grantBackQuery, $alterUserQuery] = $this->generateQueriesForUpdatePrivileges(
+                $itemType,
+                $db_and_table,
+                $username,
+                $hostname,
+                $dbname
+            );
         }
         if (! $this->dbi->tryQuery($sql_query0)) {
             // This might fail when the executing user does not have
@@ -2398,12 +2409,20 @@ class Privileges
             // this one may fail, too...
             $sql_query1 = '';
         }
-        if (! empty($sql_query2)) {
-            $this->dbi->query($sql_query2);
+
+        if ($grantBackQuery !== null) {
+            $this->dbi->query($grantBackQuery);
         } else {
-            $sql_query2 = '';
+            $grantBackQuery = '';
         }
-        $sql_query = $sql_query0 . ' ' . $sql_query1 . ' ' . $sql_query2;
+
+        if ($alterUserQuery !== null) {
+            $this->dbi->query($alterUserQuery);
+        } else {
+            $alterUserQuery = '';
+        }
+
+        $sql_query = $sql_query0 . ' ' . $sql_query1 . ' ' . $grantBackQuery . ' ' . $alterUserQuery;
         $message = Message::success(__('You have updated the privileges for %s.'));
         $message->addParam('\'' . $username . '\'@\'' . $hostname . '\'');
 
@@ -2411,6 +2430,63 @@ class Privileges
             $sql_query,
             $message,
         ];
+    }
+
+    /**
+     * Generate the query for the GRANTS and requirements + limits
+     *
+     * @return array<int,string|null>
+     */
+    private function generateQueriesForUpdatePrivileges(
+        string $itemType,
+        string $db_and_table,
+        string $username,
+        string $hostname,
+        string $dbname
+    ): array {
+        $alterUserQuery = null;
+
+        $grantBackQuery = 'GRANT ' . implode(', ', $this->extractPrivInfo())
+            . ' ON ' . $itemType . ' ' . $db_and_table
+            . ' TO \'' . $this->dbi->escapeString($username) . '\'@\''
+            . $this->dbi->escapeString($hostname) . '\'';
+
+        $isMySqlOrPercona = Util::getServerType() == 'MySQL' || Util::getServerType() == 'Percona Server';
+        $needsToUseAlter = $isMySqlOrPercona && $this->dbi->getVersion() >= 80011;
+
+        if ($needsToUseAlter) {
+            $alterUserQuery = 'ALTER USER \'' . $this->dbi->escapeString($username) . '\'@\''
+            . $this->dbi->escapeString($hostname) . '\' ';
+        }
+
+        if (strlen($dbname) === 0) {
+            // add REQUIRE clause
+            if ($needsToUseAlter) {
+                $alterUserQuery .= $this->getRequireClause();
+            } else {
+                $grantBackQuery .= $this->getRequireClause();
+            }
+        }
+
+        if ((isset($_POST['Grant_priv']) && $_POST['Grant_priv'] == 'Y')
+            || (strlen($dbname) === 0
+            && (isset($_POST['max_questions']) || isset($_POST['max_connections'])
+            || isset($_POST['max_updates'])
+            || isset($_POST['max_user_connections'])))
+        ) {
+            if ($needsToUseAlter) {
+                $alterUserQuery .= $this->getWithClauseForAddUserAndUpdatePrivs();
+            } else {
+                $grantBackQuery .= $this->getWithClauseForAddUserAndUpdatePrivs();
+            }
+        }
+        $grantBackQuery .= ';';
+
+        if ($needsToUseAlter) {
+            $alterUserQuery .= ';';
+        }
+
+        return [$grantBackQuery, $alterUserQuery];
     }
 
     /**
@@ -2523,11 +2599,13 @@ class Privileges
                 . '\'@\'' . $this->dbi->escapeString($this_host) . '\';';
             $this->relationCleanup->user($this_user);
 
-            if (isset($_POST['drop_users_db'])) {
-                $queries[] = 'DROP DATABASE IF EXISTS '
-                    . Util::backquote($this_user) . ';';
-                $GLOBALS['reload'] = true;
+            if (! isset($_POST['drop_users_db'])) {
+                continue;
             }
+
+            $queries[] = 'DROP DATABASE IF EXISTS '
+                . Util::backquote($this_user) . ';';
+            $GLOBALS['reload'] = true;
         }
 
         return $queries;
@@ -2960,9 +3038,7 @@ class Privileges
             return '';
         }
         $rel_params = [];
-        $url_params = [
-            'adduser' => 1,
-        ];
+        $url_params = ['adduser' => 1];
         if (! empty($db)) {
             $url_params['dbname']
                 = $rel_params['checkprivsdb']
@@ -3350,9 +3426,11 @@ class Privileges
                 if (in_array('Update', $tmp_array)) {
                     $tmp_privs2['Update'][] = $row2['Column_name'];
                 }
-                if (in_array('References', $tmp_array)) {
-                    $tmp_privs2['References'][] = $row2['Column_name'];
+                if (! in_array('References', $tmp_array)) {
+                    continue;
                 }
+
+                $tmp_privs2['References'][] = $row2['Column_name'];
             }
             if (count($tmp_privs2['Select']) > 0 && ! in_array('SELECT', $tmp_privs1)) {
                 $tmp_privs1[] = 'SELECT (`' . implode('`, `', $tmp_privs2['Select']) . '`)';

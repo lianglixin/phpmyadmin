@@ -3,6 +3,7 @@
  * A simple rules engine, that parses and executes the rules in advisory_rules.txt.
  * Adjusted to phpMyAdmin.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -71,88 +72,88 @@ class Advisor
          */
         $this->expression->register(
             'round',
-            function () {
+            static function () {
             },
             /**
-             * @param null $arguments
+             * @param array $arguments
              * @param float $num
              */
-            function ($arguments, $num) {
+            static function ($arguments, $num) {
                 return round($num);
             }
         );
         $this->expression->register(
             'substr',
-            function () {
+            static function () {
             },
             /**
-             * @param null $arguments
+             * @param array $arguments
              * @param string $string
              * @param int $start
              * @param int $length
              */
-            function ($arguments, $string, $start, $length) {
+            static function ($arguments, $string, $start, $length) {
                 return substr($string, $start, $length);
             }
         );
         $this->expression->register(
             'preg_match',
-            function () {
+            static function () {
             },
             /**
-             * @param null $arguments
+             * @param array $arguments
              * @param string $pattern
              * @param string $subject
              */
-            function ($arguments, $pattern, $subject) {
+            static function ($arguments, $pattern, $subject) {
                 return preg_match($pattern, $subject);
             }
         );
         $this->expression->register(
             'ADVISOR_bytime',
-            function () {
+            static function () {
             },
             /**
-             * @param null $arguments
+             * @param array $arguments
              * @param float $num
              * @param int $precision
              */
-            function ($arguments, $num, $precision) {
+            static function ($arguments, $num, $precision) {
                 return self::byTime($num, $precision);
             }
         );
         $this->expression->register(
             'ADVISOR_timespanFormat',
-            function () {
+            static function () {
             },
             /**
-             * @param null $arguments
+             * @param array $arguments
              * @param string $seconds
              */
-            function ($arguments, $seconds) {
+            static function ($arguments, $seconds) {
                 return self::timespanFormat((int) $seconds);
             }
         );
         $this->expression->register(
             'ADVISOR_formatByteDown',
-            function () {
+            static function () {
             },
             /**
-             * @param null $arguments
+             * @param array $arguments
              * @param int $value
              * @param int $limes
              * @param int $comma
              */
-            function ($arguments, $value, $limes = 6, $comma = 0) {
+            static function ($arguments, $value, $limes = 6, $comma = 0) {
                 return self::formatByteDown($value, $limes, $comma);
             }
         );
         $this->expression->register(
             'fired',
-            function () {
+            static function () {
             },
             /**
-             * @param null $arguments
+             * @param array $arguments
              * @param int $value
              */
             function ($arguments, $value) {
@@ -484,20 +485,18 @@ class Advisor
                 // linking to /server/variables
                 $rule['recommendation'] = preg_replace_callback(
                     '/\{([a-z_0-9]+)\}/Ui',
-                    [
-                        $this,
-                        'replaceVariable',
-                    ],
+                    function (array $matches) {
+                        return $this->replaceVariable($matches);
+                    },
                     $this->translate($rule['recommendation'])
                 );
 
                 // Replaces external Links with Core::linkURL() generated links
                 $rule['recommendation'] = preg_replace_callback(
                     '#href=("|\')(https?://[^\1]+)\1#i',
-                    [
-                        $this,
-                        'replaceLinkURL',
-                    ],
+                    function (array $matches) {
+                        return $this->replaceLinkURL($matches);
+                    },
                     $rule['recommendation']
                 );
                 break;
@@ -562,12 +561,10 @@ class Advisor
     {
         // Actually evaluate the code
         // This can throw exception
-        $value = $this->expression->evaluate(
+        return $this->expression->evaluate(
             $expr,
             array_merge($this->variables, $this->globals)
         );
-
-        return $value;
     }
 
     /**
@@ -647,7 +644,9 @@ class Advisor
                     );
                 }
                 continue;
-            } elseif ($ruleLine == -1) {
+            }
+
+            if ($ruleLine == -1) {
                 $errors[] = sprintf(
                     __('Unexpected characters on line %s.'),
                     $i + 1
@@ -679,9 +678,11 @@ class Advisor
             }
 
             // Rule complete
-            if ($ruleLine == $numRules) {
-                $ruleLine = -1;
+            if ($ruleLine != $numRules) {
+                continue;
             }
+
+            $ruleLine = -1;
         }
 
         return [

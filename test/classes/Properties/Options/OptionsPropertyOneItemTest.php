@@ -2,16 +2,18 @@
 /**
  * tests for PhpMyAdmin\Properties\Options\OptionsPropertyOneItem class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Properties\Options;
 
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Properties\Options\OptionsPropertyOneItem;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Properties\Options\OptionsPropertyOneItem class
  */
-class OptionsPropertyOneItemTest extends TestCase
+class OptionsPropertyOneItemTest extends AbstractTestCase
 {
     protected $stub;
 
@@ -20,7 +22,8 @@ class OptionsPropertyOneItemTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->stub = $this->getMockForAbstractClass('PhpMyAdmin\Properties\Options\OptionsPropertyOneItem');
+        parent::setUp();
+        $this->stub = $this->getMockForAbstractClass(OptionsPropertyOneItem::class);
     }
 
     /**
@@ -28,6 +31,7 @@ class OptionsPropertyOneItemTest extends TestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->stub);
     }
 

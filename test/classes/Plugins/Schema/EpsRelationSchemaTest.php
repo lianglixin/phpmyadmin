@@ -2,18 +2,20 @@
 /**
  * Tests for EpsRelationSchema class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Schema;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Schema\Eps\EpsRelationSchema;
 use PhpMyAdmin\Relation;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for EpsRelationSchema class
  */
-class EpsRelationSchemaTest extends PmaTestCase
+class EpsRelationSchemaTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -26,6 +28,8 @@ class EpsRelationSchemaTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         $_REQUEST['page_number'] = 33;
         $_REQUEST['eps_show_color'] = true;
         $_REQUEST['eps_show_keys'] = true;
@@ -55,7 +59,7 @@ class EpsRelationSchemaTest extends PmaTestCase
         $relation = new Relation($GLOBALS['dbi']);
         $relation->getRelationsParam();
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -71,15 +75,11 @@ class EpsRelationSchemaTest extends PmaTestCase
             ->method('tryQuery')
             ->will($this->returnValue('executed_1'));
 
-        $fetchArrayReturn = [
-            //table name in information_schema_relations
-            'table_name' => 'CHARACTER_SETS',
-        ];
+        //table name in information_schema_relations
+        $fetchArrayReturn = ['table_name' => 'CHARACTER_SETS'];
 
-        $fetchArrayReturn2 = [
-            //table name in information_schema_relations
-            'table_name' => 'COLLATIONS',
-        ];
+        //table name in information_schema_relations
+        $fetchArrayReturn2 = ['table_name' => 'COLLATIONS'];
 
         $dbi->expects($this->at(2))
             ->method('fetchAssoc')
@@ -130,6 +130,7 @@ class EpsRelationSchemaTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -146,20 +147,16 @@ class EpsRelationSchemaTest extends PmaTestCase
             33,
             $this->object->getPageNumber()
         );
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isShowColor()
         );
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isShowKeys()
         );
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isTableDimension()
         );
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isAllTableSameWidth()
         );
         $this->assertEquals(

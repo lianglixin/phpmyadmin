@@ -2,6 +2,7 @@
 /**
  * phpMyAdmin theme manager
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -95,14 +96,16 @@ class ThemeManager
 
         // check if user have a theme cookie
         $cookie_theme = $this->getThemeCookie();
-        if (! $cookie_theme || ! $this->setActiveTheme($cookie_theme)) {
-            if ($config_theme_exists) {
-                // otherwise use default theme
-                $this->setActiveTheme($this->theme_default);
-            } else {
-                // or fallback theme
-                $this->setActiveTheme(self::FALLBACK_THEME);
-            }
+        if ($cookie_theme && $this->setActiveTheme($cookie_theme)) {
+            return;
+        }
+
+        if ($config_theme_exists) {
+            // otherwise use default theme
+            $this->setActiveTheme($this->theme_default);
+        } else {
+            // or fallback theme
+            $this->setActiveTheme(self::FALLBACK_THEME);
         }
     }
 
@@ -131,7 +134,7 @@ class ThemeManager
      */
     public function setThemesPath($path)
     {
-        if (! $this->_checkThemeFolder($path)) {
+        if (! $this->checkThemeFolder($path)) {
             return false;
         }
 
@@ -252,7 +255,7 @@ class ThemeManager
      *
      * @access private
      */
-    private function _checkThemeFolder($folder)
+    private function checkThemeFolder($folder)
     {
         if (! is_dir($folder)) {
             trigger_error(
@@ -279,8 +282,9 @@ class ThemeManager
     public function loadThemes()
     {
         $this->themes = [];
+        $handleThemes = opendir($this->_themes_path);
 
-        if (($handleThemes = opendir($this->_themes_path)) === false) {
+        if ($handleThemes === false) {
             trigger_error(
                 'phpMyAdmin-ERROR: cannot open themes folder: '
                 . $this->_themes_path,
@@ -305,10 +309,12 @@ class ThemeManager
             $new_theme = Theme::load(
                 $this->_themes_path . $PMA_Theme
             );
-            if ($new_theme) {
-                $new_theme->setId($PMA_Theme);
-                $this->themes[$PMA_Theme] = $new_theme;
+            if (! $new_theme) {
+                continue;
             }
+
+            $new_theme->setId($PMA_Theme);
+            $this->themes[$PMA_Theme] = $new_theme;
         } // end get themes
         closedir($handleThemes);
 

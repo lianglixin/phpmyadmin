@@ -2,12 +2,14 @@
 /**
  * Holds the PhpMyAdmin\Database\Designer\Common class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Database\Designer;
 
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Index;
+use PhpMyAdmin\Query\Generator as QueryGenerator;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Table;
 use PhpMyAdmin\Util;
@@ -51,13 +53,13 @@ class Common
      *
      * @return DesignerTable[] with table info
      */
-    public function getTablesInfo(string $db = null, string $table = null): array
+    public function getTablesInfo(?string $db = null, ?string $table = null): array
     {
         $designerTables = [];
         $db = $db ?? $GLOBALS['db'];
         // seems to be needed later
         $this->dbi->selectDb($db);
-        if ($db === null && $table === null) {
+        if ($table === null) {
             $tables = $this->dbi->getTablesFull($db);
         } else {
             $tables = $this->dbi->getTablesFull($db, $table);
@@ -92,11 +94,9 @@ class Common
 
         foreach ($designerTables as $designerTable) {
             $fieldsRs = $this->dbi->query(
-                $this->dbi->getColumnsSql(
+                QueryGenerator::getColumnsSql(
                     $designerTable->getDatabaseName(),
-                    $designerTable->getTableName(),
-                    null,
-                    true
+                    $designerTable->getTableName()
                 ),
                 DatabaseInterface::CONNECT_USER,
                 DatabaseInterface::QUERY_STORE
@@ -138,41 +138,42 @@ class Common
         while ($val = @$this->dbi->fetchRow($alltab_rs)) {
             $row = $this->relation->getForeigners($GLOBALS['db'], $val[0], '', 'internal');
 
-            if ($row !== false) {
-                foreach ($row as $field => $value) {
-                    $con['C_NAME'][$i] = '';
-                    $con['DTN'][$i]    = rawurlencode($GLOBALS['db'] . '.' . $val[0]);
-                    $con['DCN'][$i]    = rawurlencode($field);
-                    $con['STN'][$i]    = rawurlencode(
-                        $value['foreign_db'] . '.' . $value['foreign_table']
-                    );
-                    $con['SCN'][$i]    = rawurlencode($value['foreign_field']);
-                    $i++;
-                }
+            foreach ($row as $field => $value) {
+                $con['C_NAME'][$i] = '';
+                $con['DTN'][$i]    = rawurlencode($GLOBALS['db'] . '.' . $val[0]);
+                $con['DCN'][$i]    = rawurlencode($field);
+                $con['STN'][$i]    = rawurlencode(
+                    $value['foreign_db'] . '.' . $value['foreign_table']
+                );
+                $con['SCN'][$i]    = rawurlencode($value['foreign_field']);
+                $i++;
             }
+
             $row = $this->relation->getForeigners($GLOBALS['db'], $val[0], '', 'foreign');
 
             // We do not have access to the foreign keys if the user has partial access to the columns
-            if ($row !== false && isset($row['foreign_keys_data'])) {
-                foreach ($row['foreign_keys_data'] as $one_key) {
-                    foreach ($one_key['index_list'] as $index => $one_field) {
-                        $con['C_NAME'][$i] = rawurlencode($one_key['constraint']);
-                        $con['DTN'][$i]    = rawurlencode($GLOBALS['db'] . '.' . $val[0]);
-                        $con['DCN'][$i]    = rawurlencode($one_field);
-                        $con['STN'][$i]    = rawurlencode(
-                            ($one_key['ref_db_name'] ?? $GLOBALS['db'])
-                            . '.' . $one_key['ref_table_name']
-                        );
-                        $con['SCN'][$i] = rawurlencode($one_key['ref_index_list'][$index]);
-                        $i++;
-                    }
+            if (! isset($row['foreign_keys_data'])) {
+                continue;
+            }
+
+            foreach ($row['foreign_keys_data'] as $one_key) {
+                foreach ($one_key['index_list'] as $index => $one_field) {
+                    $con['C_NAME'][$i] = rawurlencode($one_key['constraint']);
+                    $con['DTN'][$i]    = rawurlencode($GLOBALS['db'] . '.' . $val[0]);
+                    $con['DCN'][$i]    = rawurlencode($one_field);
+                    $con['STN'][$i]    = rawurlencode(
+                        ($one_key['ref_db_name'] ?? $GLOBALS['db'])
+                        . '.' . $one_key['ref_table_name']
+                    );
+                    $con['SCN'][$i] = rawurlencode($one_key['ref_index_list'][$index]);
+                    $i++;
                 }
             }
         }
 
         $tableDbNames = [];
         foreach ($designerTables as $designerTable) {
-            $tableDbNames[] = $designerTable->getDbTableString();
+            $tableDbNames[] = rawurlencode($designerTable->getDbTableString());
         }
 
         $ti = 0;
@@ -556,7 +557,7 @@ class Common
      * @param string $table table name
      * @param string $field display field name
      *
-     * @return array<int,string|null|bool>
+     * @return array<int, (string|bool|null)>
      */
     public function saveDisplayField($db, $table, $field): array
     {
@@ -565,7 +566,8 @@ class Common
             return [
                 false,
                 _pgettext(
-                    'phpMyAdmin configuration storage is not configured for "Display Features" on designer when user tries to set a display field.',
+                    'phpMyAdmin configuration storage is not configured for'
+                        . ' "Display Features" on designer when user tries to set a display field.',
                     'phpMyAdmin configuration storage is not configured for "Display Features".'
                 ),
             ];
@@ -737,8 +739,8 @@ class Common
      */
     public function removeRelation($T1, $F1, $T2, $F2)
     {
-        list($DB1, $T1) = explode('.', $T1);
-        list($DB2, $T2) = explode('.', $T2);
+        [$DB1, $T1] = explode('.', $T1);
+        [$DB2, $T2] = explode('.', $T2);
 
         $tables = $this->dbi->getTablesFull($DB1, $T1);
         $type_T1 = mb_strtoupper($tables[$T1]['ENGINE']);

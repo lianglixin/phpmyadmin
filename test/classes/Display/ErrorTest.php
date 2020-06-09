@@ -2,13 +2,14 @@
 /**
  * tests for PhpMyAdmin\Display\Error
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Display;
 
 use PhpMyAdmin\Display\Error;
 use PhpMyAdmin\Template;
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use Throwable;
 use Twig_Error_Loader;
 use Twig_Error_Runtime;
@@ -19,7 +20,7 @@ use Twig_Error_Syntax;
  *
  * this class is for testing PhpMyAdmin\Display\Error functions
  */
-class ErrorTest extends TestCase
+class ErrorTest extends AbstractTestCase
 {
     /**
      * Test for Error::display

@@ -2,17 +2,18 @@
 /**
  * Tests for PMA_StorageEngine_binlog
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Engines\Binlog;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Binlog
  */
-class BinlogTest extends PmaTestCase
+class BinlogTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -25,6 +26,7 @@ class BinlogTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['server'] = 0;
         $this->object = new Binlog('binlog');
     }
@@ -37,6 +39,7 @@ class BinlogTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 

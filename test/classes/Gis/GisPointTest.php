@@ -2,6 +2,7 @@
 /**
  * Test for PhpMyAdmin\Gis\GisPoint
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Gis;
@@ -30,6 +31,7 @@ class GisPointTest extends GisGeomTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = GisPoint::singleton();
     }
 
@@ -41,6 +43,7 @@ class GisPointTest extends GisGeomTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -300,11 +303,11 @@ class GisPointTest extends GisGeomTestCase
     /**
      * test case for prepareRowAsSvg() method
      *
-     * @param string $spatial     GIS POINT object
-     * @param string $label       label for the GIS POINT object
-     * @param string $point_color color for the GIS POINT object
-     * @param array  $scale_data  array containing data related to scaling
-     * @param string $output      expected output
+     * @param string $spatial    GIS POINT object
+     * @param string $label      label for the GIS POINT object
+     * @param string $pointColor color for the GIS POINT object
+     * @param array  $scaleData  array containing data related to scaling
+     * @param string $output     expected output
      *
      * @return void
      *
@@ -313,8 +316,8 @@ class GisPointTest extends GisGeomTestCase
     public function testPrepareRowAsSvg(
         $spatial,
         $label,
-        $point_color,
-        $scale_data,
+        $pointColor,
+        $scaleData,
         $output
     ) {
         $this->assertEquals(
@@ -322,8 +325,8 @@ class GisPointTest extends GisGeomTestCase
             $this->object->prepareRowAsSvg(
                 $spatial,
                 $label,
-                $point_color,
-                $scale_data
+                $pointColor,
+                $scaleData
             )
         );
     }

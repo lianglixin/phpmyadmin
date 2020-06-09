@@ -2,15 +2,17 @@
 /**
  * tests for PhpMyAdmin\Display\Export
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Display;
 
 use PhpMyAdmin\Config;
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Display\Export;
 use PhpMyAdmin\Plugins;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Util;
-use PHPUnit\Framework\TestCase;
 use function htmlspecialchars;
 
 /**
@@ -18,7 +20,7 @@ use function htmlspecialchars;
  *
  * @group large
  */
-class ExportTest extends TestCase
+class ExportTest extends AbstractTestCase
 {
     private $export;
 
@@ -27,7 +29,9 @@ class ExportTest extends TestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setLanguage();
+        parent::setGlobalConfig();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['cfg']['Server']['host'] = 'localhost';
         $GLOBALS['cfg']['Server']['user'] = 'pma_user';
@@ -39,7 +43,7 @@ class ExportTest extends TestCase
         //$_SESSION
         $_SESSION['relation'][$GLOBALS['server']] = '';
 
-        $pmaconfig = $this->getMockBuilder('PhpMyAdmin\Config')
+        $pmaconfig = $this->getMockBuilder(Config::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -109,17 +113,13 @@ class ExportTest extends TestCase
         $num_tables_str = '10';
         $unlim_num_rows_str = 'unlim_num_rows_str';
         //$single_table = "single_table";
-        $GLOBALS['dbi']->cacheTableContent([$db, $table, 'ENGINE'], 'MERGE');
+        $GLOBALS['dbi']->getCache()->cacheTableContent([$db, $table, 'ENGINE'], 'MERGE');
 
         $columns_info = [
-            'test_column1' => [
-                'COLUMN_NAME' => 'test_column1',
-            ],
-            'test_column2' => [
-                'COLUMN_NAME' => 'test_column2',
-            ],
+            'test_column1' => ['COLUMN_NAME' => 'test_column1'],
+            'test_column2' => ['COLUMN_NAME' => 'test_column2'],
         ];
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -248,17 +248,13 @@ class ExportTest extends TestCase
         $columns_info = [
             'test\'_db' => [
                 'test_<b>table' => [
-                    'co"l1' => [
-                        'COLUMN_NAME' => 'co"l1',
-                    ],
-                    'col<2' => [
-                        'COLUMN_NAME' => 'col<2',
-                    ],
+                    'co"l1' => ['COLUMN_NAME' => 'co"l1'],
+                    'col<2' => ['COLUMN_NAME' => 'col<2'],
                 ],
             ],
         ];
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 

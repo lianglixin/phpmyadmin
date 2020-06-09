@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server;
@@ -55,14 +56,15 @@ class PrivilegesController extends AbstractController
         global $itemType, $tables, $num_tables, $total_num_tables, $sub_part, $is_show_stats, $db_is_system_schema;
         global $tooltip_truename, $tooltip_aliasname, $pos, $title, $export, $grants, $one_grant, $url_dbname;
         global $strPrivDescAllPrivileges, $strPrivDescAlter, $strPrivDescAlterRoutine, $strPrivDescCreateDb,
-               $strPrivDescCreateRoutine, $strPrivDescCreateTbl, $strPrivDescCreateTmpTable, $strPrivDescCreateUser,
+               $strPrivDescCreateRoutine, $strPrivDescCreateTbl, $strPrivDescCreateTmpTable,
                $strPrivDescCreateView, $strPrivDescDelete, $strPrivDescDeleteHistoricalRows, $strPrivDescDropDb,
                $strPrivDescDropTbl, $strPrivDescEvent, $strPrivDescExecute, $strPrivDescFile,
                $strPrivDescGrantTbl, $strPrivDescIndex, $strPrivDescInsert, $strPrivDescLockTables,
-               $strPrivDescMaxConnections, $strPrivDescMaxQuestions, $strPrivDescMaxUpdates, $strPrivDescMaxUserConnections,
+               $strPrivDescMaxConnections, $strPrivDescMaxQuestions, $strPrivDescMaxUpdates,
                $strPrivDescProcess, $strPrivDescReferences, $strPrivDescReload, $strPrivDescReplClient,
                $strPrivDescReplSlave, $strPrivDescSelect, $strPrivDescShowDb, $strPrivDescShowView,
-               $strPrivDescShutdown, $strPrivDescSuper, $strPrivDescTrigger, $strPrivDescUpdate, $strPrivDescUsage;
+               $strPrivDescShutdown, $strPrivDescSuper, $strPrivDescTrigger, $strPrivDescUpdate,
+               $strPrivDescMaxUserConnections, $strPrivDescUsage, $strPrivDescCreateUser;
 
         $checkUserPrivileges = new CheckUserPrivileges($this->dbi);
         $checkUserPrivileges->getPrivileges();
@@ -249,8 +251,13 @@ class PrivilegesController extends AbstractController
          * Adds a user
          *   (Changes / copies a user, part II)
          */
-        [$ret_message, $ret_queries, $queries_for_display, $sql_query, $_add_user_error]
-            = $serverPrivileges->addUser(
+        [
+            $ret_message,
+            $ret_queries,
+            $queries_for_display,
+            $sql_query,
+            $_add_user_error,
+        ] = $serverPrivileges->addUser(
             $dbname ?? null,
             $username ?? null,
             $hostname ?? null,
@@ -464,9 +471,9 @@ class PrivilegesController extends AbstractController
                 $this->response->addJSON('title', $title);
 
                 return;
-            } else {
-                $this->response->addHTML('<h2>' . $title . '</h2>' . $export);
             }
+
+            $this->response->addHTML('<h2>' . $title . '</h2>' . $export);
         }
 
         if (isset($_GET['adduser'])) {
@@ -542,10 +549,12 @@ class PrivilegesController extends AbstractController
             }
         }
 
-        if ((isset($_GET['viewing_mode']) && $_GET['viewing_mode'] == 'server')
-            && $cfgRelation['menuswork']
+        if ((! isset($_GET['viewing_mode']) || $_GET['viewing_mode'] != 'server')
+            || ! $cfgRelation['menuswork']
         ) {
-            $this->response->addHTML('</div>');
+            return;
         }
+
+        $this->response->addHTML('</div>');
     }
 }

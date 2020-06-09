@@ -2,18 +2,18 @@
 /**
  * tests for Advisor class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Advisor;
-use PhpMyAdmin\Config;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 /**
  * Tests behaviour of PMA_Advisor class
  */
-class AdvisorTest extends PmaTestCase
+class AdvisorTest extends AbstractTestCase
 {
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -21,7 +21,8 @@ class AdvisorTest extends PmaTestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setGlobalConfig();
         $GLOBALS['server'] = 1;
     }
 
@@ -146,6 +147,8 @@ class AdvisorTest extends PmaTestCase
      */
     public function testAddRule($rule, $expected, $error): void
     {
+        parent::loadDefaultConfig();
+        parent::setLanguage();
         $advisor = new Advisor($GLOBALS['dbi'], new ExpressionLanguage());
         $parseResult = $advisor->parseRulesFile(Advisor::GENERIC_RULES_FILE);
         $this->assertEquals($parseResult['errors'], []);
@@ -155,9 +158,11 @@ class AdvisorTest extends PmaTestCase
         if (isset($runResult['errors']) || $error !== null) {
             $this->assertEquals([$error], $runResult['errors']);
         }
-        if (isset($runResult['fired']) || $expected != []) {
-            $this->assertEquals([$expected], $runResult['fired']);
+        if (! isset($runResult['fired']) && $expected == []) {
+            return;
         }
+
+        $this->assertEquals([$expected], $runResult['fired']);
     }
 
     /**

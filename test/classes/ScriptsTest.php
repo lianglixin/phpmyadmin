@@ -2,6 +2,7 @@
 /**
  * Tests for Script.php
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -14,7 +15,7 @@ use function defined;
 /**
  * Tests for Script.php
  */
-class ScriptsTest extends PmaTestCase
+class ScriptsTest extends AbstractTestCase
 {
     /** @var Scripts */
     protected $object;
@@ -27,10 +28,13 @@ class ScriptsTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = new Scripts();
-        if (! defined('PMA_USR_BROWSER_AGENT')) {
-            define('PMA_USR_BROWSER_AGENT', 'MOZILLA');
+        if (defined('PMA_USR_BROWSER_AGENT')) {
+            return;
         }
+
+        define('PMA_USR_BROWSER_AGENT', 'MOZILLA');
     }
 
     /**
@@ -41,6 +45,7 @@ class ScriptsTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 

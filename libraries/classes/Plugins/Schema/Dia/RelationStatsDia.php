@@ -2,6 +2,7 @@
 /**
  * Contains PhpMyAdmin\Plugins\Schema\Dia\RelationStatsDia class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema\Dia;
@@ -38,7 +39,7 @@ class RelationStatsDia
     public $referenceColor;
 
     /**
-     * @see Relation_Stats_Dia::_getXy
+     * @see Relation_Stats_Dia::getXy
      *
      * @param Dia           $diagram       The DIA diagram
      * @param TableStatsDia $master_table  The master table name
@@ -54,8 +55,8 @@ class RelationStatsDia
         $foreign_field
     ) {
         $this->diagram = $diagram;
-        $src_pos  = $this->_getXy($master_table, $master_field);
-        $dest_pos = $this->_getXy($foreign_table, $foreign_field);
+        $src_pos  = $this->getXy($master_table, $master_field);
+        $dest_pos = $this->getXy($foreign_table, $foreign_field);
         $this->srcConnPointsLeft = $src_pos[0];
         $this->srcConnPointsRight = $src_pos[1];
         $this->destConnPointsLeft = $dest_pos[0];
@@ -80,7 +81,7 @@ class RelationStatsDia
      *
      * @access private
      */
-    private function _getXy($table, $column)
+    private function getXy($table, $column)
     {
         $pos = array_search($column, $table->fields);
         // left, right, position
@@ -224,7 +225,5 @@ class RelationStatsDia
             </dia:connections>
             </dia:object>'
         );
-
-        return;
     }
 }

@@ -2,6 +2,7 @@
 /**
  * Replication helpers
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -27,9 +28,9 @@ class Replication
         $list = explode('.', $string);
         if ($what == 'db') {
             return $list[0];
-        } else {
-            return $list[1];
         }
+
+        return $list[1];
     }
 
     /**

@@ -2,6 +2,7 @@
 /**
  * Holds class PhpMyAdmin\Error
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -183,16 +184,20 @@ class Error extends Message
 
             /* Store members we want */
             foreach ($members as $name) {
-                if (isset($step[$name])) {
-                    $result[$idx][$name] = $step[$name];
+                if (! isset($step[$name])) {
+                    continue;
                 }
+
+                $result[$idx][$name] = $step[$name];
             }
 
             /* Store simplified args */
-            if (isset($step['args'])) {
-                foreach ($step['args'] as $key => $arg) {
-                    $result[$idx]['args'][$key] = self::getArg($arg, $step['function']);
-                }
+            if (! isset($step['args'])) {
+                continue;
+            }
+
+            foreach ($step['args'] as $key => $arg) {
+                $result[$idx]['args'][$key] = self::getArg($arg, $step['function']);
             }
         }
 
@@ -410,9 +415,8 @@ class Error extends Message
                 }
             }
         }
-        $retval .= ')';
 
-        return $retval;
+        return $retval . ')';
     }
 
     /**

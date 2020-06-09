@@ -2,6 +2,7 @@
 /**
  * Handles the IPv4/IPv6 to long transformation for text plain
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Transformations\Input;
@@ -73,23 +74,24 @@ class Text_Plain_Iptolong extends IOTransformationsPlugin
         $idindex
     ) {
         $html = '';
-        if (! empty($value) && $value !== ($val = FormatConverter::longToIp($value))) {
-            $val = htmlspecialchars($val);
-            $html = '<input type="hidden" name="fields_prev' . $column_name_appendix
-                . '" value="' . $val . '"/>';
-        } else {
-            $val = '';
+        $val = '';
+
+        if (! empty($value)) {
+            $val = FormatConverter::longToIp($value);
+
+            if ($value !== $val) {
+                $html = '<input type="hidden" name="fields_prev' . $column_name_appendix
+                    . '" value="' . htmlspecialchars($val) . '"/>';
+            }
         }
-        $class = 'transform_IPToLong';
-        $html .= '<input type="text" name="fields' . $column_name_appendix . '"'
-            . ' value="' . $val . '"'
+
+        return $html . '<input type="text" name="fields' . $column_name_appendix . '"'
+            . ' value="' . htmlspecialchars($val) . '"'
             . ' size="40"'
             . ' dir="' . $text_dir . '"'
-            . ' class="' . $class . '"'
-            . ' id="field_' . ($idindex) . '_3"'
+            . ' class="transform_IPToLong"'
+            . ' id="field_' . $idindex . '_3"'
             . ' tabindex="' . ($tabindex + $tabindex_for_value) . '" />';
-
-        return $html;
     }
 
     /* ~~~~~~~~~~~~~~~~~~~~ Getters and Setters ~~~~~~~~~~~~~~~~~~~~ */

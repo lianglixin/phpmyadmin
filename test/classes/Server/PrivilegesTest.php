@@ -2,6 +2,7 @@
 /**
  * tests for PhpMyAdmin\Server\Privileges
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Server;
@@ -14,10 +15,10 @@ use PhpMyAdmin\Relation;
 use PhpMyAdmin\RelationCleanup;
 use PhpMyAdmin\Server\Privileges;
 use PhpMyAdmin\Template;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Tests\Stubs\DbiDummy;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
-use PHPUnit\Framework\TestCase;
 use stdClass;
 use function htmlspecialchars;
 use function implode;
@@ -27,7 +28,7 @@ use function implode;
  *
  * this class is for testing PhpMyAdmin\Server\Privileges methods
  */
-class PrivilegesTest extends TestCase
+class PrivilegesTest extends AbstractTestCase
 {
     /** @var Privileges $serverPrivileges */
     private $serverPrivileges;
@@ -37,7 +38,9 @@ class PrivilegesTest extends TestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setLanguage();
+        parent::setGlobalConfig();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfgRelation'] = [];
@@ -66,16 +69,18 @@ class PrivilegesTest extends TestCase
             'users' => 'users',
             'usergroups' => 'usergroups',
             'menuswork' => true,
+            'trackingwork' => true,
+            'tracking' => 'tracking',
         ];
 
-        $pmaconfig = $this->getMockBuilder('PhpMyAdmin\Config')
+        $pmaconfig = $this->getMockBuilder(Config::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $GLOBALS['PMA_Config'] = $pmaconfig;
 
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -158,22 +163,20 @@ class PrivilegesTest extends TestCase
             '`PMA_dbname`.`PMA_tablename`',
             $db_and_table
         );
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $dbname_is_wildcard
         );
 
         //pre variable have been defined
         $_POST['pred_tablename'] = 'PMA_pred__tablename';
         $_POST['pred_dbname'] = ['PMA_pred_dbname'];
-        list(
-            ,,
+        [,,
             $dbname,
             $tablename,
             $routinename,
             $db_and_table,
             $dbname_is_wildcard,
-        ) = $this->serverPrivileges->getDataForDBInfo();
+        ] = $this->serverPrivileges->getDataForDBInfo();
         $this->assertEquals(
             'PMA_pred_dbname',
             $dbname
@@ -186,8 +189,7 @@ class PrivilegesTest extends TestCase
             '`PMA_pred_dbname`.`PMA_pred__tablename`',
             $db_and_table
         );
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $dbname_is_wildcard
         );
     }
@@ -338,7 +340,7 @@ class PrivilegesTest extends TestCase
         /* Assertion 2 */
         $oldDbi = $GLOBALS['dbi'];
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -618,8 +620,7 @@ class PrivilegesTest extends TestCase
             . "GRANT ALL PRIVILEGES ON `pma_dbname`.* TO ''@'localhost';",
             $sql_query
         );
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $_add_user_error
         );
     }
@@ -669,8 +670,7 @@ class PrivilegesTest extends TestCase
             . "GRANT ALL PRIVILEGES ON `pma_dbname`.* TO ''@'localhost';",
             $sql_query
         );
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $_add_user_error
         );
     }
@@ -771,7 +771,114 @@ class PrivilegesTest extends TestCase
         );
         $this->assertEquals(
             'REVOKE ALL PRIVILEGES ON  `pma_dbname`.`pma_tablename` '
-            . "FROM 'pma_username'@'pma_hostname';  ",
+            . "FROM 'pma_username'@'pma_hostname';   ",
+            $sql_query
+        );
+    }
+
+    /**
+     * Test for updatePrivileges
+     *
+     * @return void
+     */
+    public function testUpdatePrivilegesBeforeMySql8Dot11()
+    {
+        $dbname = '';
+        $username = 'pma_username';
+        $hostname = 'pma_hostname';
+        $tablename = '';
+        $_POST['adduser_submit'] = true;
+        $_POST['pred_username'] = 'any';
+        $_POST['pred_hostname'] = 'localhost';
+        $_POST['Grant_priv'] = 'Y';
+        $_POST['max_questions'] = 1000;
+        $_POST['max_connections'] = 20;
+        $_POST['max_updates'] = 30;
+        $_POST['max_user_connections'] = 40;
+
+        //Mock DBI
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dbi->expects($this->any())->method('getVersion')
+            ->will($this->returnValue(8003));
+        $dbi->expects($this->any())
+            ->method('escapeString')
+            ->will($this->returnArgument(0));
+
+        $this->serverPrivileges->dbi = $dbi;
+
+        [$sql_query, $message] = $this->serverPrivileges->updatePrivileges(
+            $username,
+            $hostname,
+            $tablename,
+            $dbname,
+            ''
+        );
+
+        $this->assertEquals(
+            "You have updated the privileges for 'pma_username'@'pma_hostname'.",
+            $message->getMessage()
+        );
+        $this->assertEquals(
+            '  GRANT USAGE ON  *.* TO \'pma_username\'@\'pma_hostname\' REQUIRE NONE'
+            . ' WITH GRANT OPTION MAX_QUERIES_PER_HOUR 1000 MAX_CONNECTIONS_PER_HOUR 20'
+            . ' MAX_UPDATES_PER_HOUR 30 MAX_USER_CONNECTIONS 40; ',
+            $sql_query
+        );
+    }
+
+    /**
+     * Test for updatePrivileges
+     *
+     * @return void
+     */
+    public function testUpdatePrivilegesAfterMySql8Dot11()
+    {
+        $dbname = '';
+        $username = 'pma_username';
+        $hostname = 'pma_hostname';
+        $tablename = '';
+        $_POST['adduser_submit'] = true;
+        $_POST['pred_username'] = 'any';
+        $_POST['pred_hostname'] = 'localhost';
+        $_POST['Grant_priv'] = 'Y';
+        $_POST['max_questions'] = 1000;
+        $_POST['max_connections'] = 20;
+        $_POST['max_updates'] = 30;
+        $_POST['max_user_connections'] = 40;
+
+        //Mock DBI
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $dbi->expects($this->any())->method('getVersion')
+            ->will($this->returnValue(80011));
+        $dbi->expects($this->any())
+            ->method('escapeString')
+            ->will($this->returnArgument(0));
+
+        $this->serverPrivileges->dbi = $dbi;
+
+        [$sql_query, $message] = $this->serverPrivileges->updatePrivileges(
+            $username,
+            $hostname,
+            $tablename,
+            $dbname,
+            ''
+        );
+
+        $this->assertEquals(
+            "You have updated the privileges for 'pma_username'@'pma_hostname'.",
+            $message->getMessage()
+        );
+        $this->assertEquals(
+            '  GRANT USAGE ON  *.* TO \'pma_username\'@\'pma_hostname\';'
+            . ' ALTER USER \'pma_username\'@\'pma_hostname\'  REQUIRE NONE'
+            . ' WITH MAX_QUERIES_PER_HOUR 1000 MAX_CONNECTIONS_PER_HOUR'
+            . ' 20 MAX_UPDATES_PER_HOUR 30 MAX_USER_CONNECTIONS 40;',
             $sql_query
         );
     }
@@ -790,7 +897,7 @@ class PrivilegesTest extends TestCase
         $GLOBALS['username'] = 'username';
 
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -1221,7 +1328,7 @@ class PrivilegesTest extends TestCase
         $GLOBALS['username'] = 'pma_username';
 
         $dbi_old = $GLOBALS['dbi'];
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $fields_info = [
@@ -1311,7 +1418,7 @@ class PrivilegesTest extends TestCase
     public function testGetHtmlForAddUser()
     {
         $dbi_old = $GLOBALS['dbi'];
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $fields_info = [
@@ -1491,20 +1598,17 @@ class PrivilegesTest extends TestCase
         );
 
         //user_exists
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $extra_data['user_exists']
         );
 
         //db_wildcard_privs
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $extra_data['db_wildcard_privs']
         );
 
         //user_exists
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $extra_data['db_specific_privs']
         );
 
@@ -1548,7 +1652,7 @@ class PrivilegesTest extends TestCase
         $GLOBALS['cfgRelation']['menuswork'] = true;
 
         $dbi_old = $GLOBALS['dbi'];
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $expected_userGroup = 'pma_usergroup';
@@ -2038,7 +2142,7 @@ class PrivilegesTest extends TestCase
     public function testGetDbRightsForUserOverview()
     {
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->any())
@@ -2085,7 +2189,7 @@ class PrivilegesTest extends TestCase
     public function testDeleteUser()
     {
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->any())

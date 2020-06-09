@@ -2,6 +2,7 @@
 /**
  * Tests for PhpMyAdmin\Tracking
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -12,14 +13,13 @@ use PhpMyAdmin\SqlQueryForm;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Tracking;
 use PhpMyAdmin\Url;
-use PHPUnit\Framework\TestCase;
 use function htmlspecialchars;
 use function sprintf;
 
 /**
  * Tests for PhpMyAdmin\Tracking
  */
-class TrackingTest extends TestCase
+class TrackingTest extends AbstractTestCase
 {
     /** @var Tracking $tracking */
     private $tracking;
@@ -31,6 +31,8 @@ class TrackingTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         /**
          * SET these to avoid undefined index error
          */
@@ -128,16 +130,10 @@ class TrackingTest extends TestCase
                 'is_group' => 1,
                 'lovely_' => [
                     'is_group' => 1,
-                    'hello_lovely_world' => [
-                        'Name' => 'hello_lovely_world',
-                    ],
-                    'hello_lovely_world2' => [
-                        'Name' => 'hello_lovely_world2',
-                    ],
+                    'hello_lovely_world' => ['Name' => 'hello_lovely_world'],
+                    'hello_lovely_world2' => ['Name' => 'hello_lovely_world2'],
                 ],
-                'hello_world' => [
-                    'Name' => 'hello_world',
-                ],
+                'hello_world' => ['Name' => 'hello_world'],
             ],
         ];
         $untracked_tables = $this->tracking->extractTableNames($table_list, 'db', true);
@@ -169,7 +165,7 @@ class TrackingTest extends TestCase
 
         // Mock dbi
         $dbi_old = $GLOBALS['dbi'];
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -328,8 +324,7 @@ class TrackingTest extends TestCase
     {
         $ret = $this->tracking->getSqlResultForSelectableTables();
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $ret
         );
     }
@@ -445,8 +440,7 @@ class TrackingTest extends TestCase
     {
         $ret = $this->tracking->getListOfVersionsOfTable();
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $ret
         );
     }
@@ -642,7 +636,7 @@ class TrackingTest extends TestCase
         $url_params = [];
         $drop_image_or_text = 'text';
 
-        list($html, $count) = $this->tracking->getHtmlForDataDefinitionStatements(
+        [$html, $count] = $this->tracking->getHtmlForDataDefinitionStatements(
             $data,
             $filter_users,
             $filter_ts_from,

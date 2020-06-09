@@ -2,18 +2,19 @@
 /**
  * tests for FormDisplayTemplate
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Config;
 
 use PhpMyAdmin\Config;
 use PhpMyAdmin\Config\FormDisplayTemplate;
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for FormDisplayTemplate
  */
-class FormDisplayTemplateTest extends TestCase
+class FormDisplayTemplateTest extends AbstractTestCase
 {
     /** @var FormDisplayTemplate */
     protected $formDisplayTemplate;
@@ -26,6 +27,8 @@ class FormDisplayTemplateTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::setLanguage();
         $this->config = new Config();
         $this->formDisplayTemplate = new FormDisplayTemplate($this->config);
     }

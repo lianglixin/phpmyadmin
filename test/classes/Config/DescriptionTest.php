@@ -2,26 +2,27 @@
 /**
  * tests for FormDisplay class in config folder
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Config;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Config\Descriptions;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use function in_array;
 
 /**
  * Tests for PMA_FormDisplay class
  */
-class DescriptionTest extends PmaTestCase
+class DescriptionTest extends AbstractTestCase
 {
     /**
      * Setup tests
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setGlobalConfig();
     }
 
     /**
@@ -97,10 +98,13 @@ class DescriptionTest extends PmaTestCase
             if ($key == 'Servers') {
                 foreach ($value[1] as $item => $val) {
                     $this->assertGet($key . '/1/' . $item);
-                    if ($item == 'AllowDeny') {
-                        foreach ($val as $second => $val2) {
-                            $this->assertGet($key . '/1/' . $item . '/' . $second);
-                        }
+                    if ($item != 'AllowDeny') {
+                        continue;
+                    }
+
+                    foreach ($val as $second => $val2) {
+                        $this->assertNotNull($val2);
+                        $this->assertGet($key . '/1/' . $item . '/' . $second);
                     }
                 }
             } elseif (in_array($key, $nested)) {

@@ -2,6 +2,7 @@
 /**
  * Test for PhpMyAdmin\Template class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -12,7 +13,7 @@ use Twig\Error\LoaderError;
 /**
  * Test for PhpMyAdmin\Template class
  */
-class TemplateTest extends PmaTestCase
+class TemplateTest extends AbstractTestCase
 {
     /** @var Template */
     protected $template;
@@ -22,6 +23,7 @@ class TemplateTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->template = new Template();
     }
 

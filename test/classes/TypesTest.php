@@ -2,6 +2,7 @@
 /**
  * Tests for Types.php
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -11,7 +12,7 @@ use PhpMyAdmin\Types;
 /**
  * Testcase for MySQL types handling.
  */
-class TypesTest extends PmaTestCase
+class TypesTest extends AbstractTestCase
 {
     /** @var Types */
     protected $object;
@@ -22,6 +23,7 @@ class TypesTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = new Types($GLOBALS['dbi']);
     }
 
@@ -745,9 +747,7 @@ class TypesTest extends PmaTestCase
                     'MULTIPOLYGON',
                     'GEOMETRYCOLLECTION',
                 ],
-                'JSON' => [
-                    'JSON',
-                ],
+                'JSON' => ['JSON'],
             ],
             $this->object->getColumns()
         );

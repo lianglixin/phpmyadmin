@@ -2,17 +2,18 @@
 /**
  * Tests for PMA_StorageEngine_ndbcluster
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Engines\Ndbcluster;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Ndbcluster
  */
-class NdbclusterTest extends PmaTestCase
+class NdbclusterTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -25,6 +26,7 @@ class NdbclusterTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['server'] = 0;
         $this->object = new Ndbcluster('nbdcluster');
     }
@@ -37,6 +39,7 @@ class NdbclusterTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 

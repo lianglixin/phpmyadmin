@@ -2,21 +2,31 @@
 /**
  * tests for methods under Config file generator
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Setup;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Config\ConfigFile;
 use PhpMyAdmin\Setup\ConfigGenerator;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionClass;
 
 /**
  * Tests for PhpMyAdmin\Setup\ConfigGenerator
  */
-class ConfigGeneratorTest extends PmaTestCase
+class ConfigGeneratorTest extends AbstractTestCase
 {
+    /**
+     * Sets up the fixture, for example, opens a network connection.
+     * This method is called before a test is executed.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        parent::loadDefaultConfig();
+    }
+
     /**
      * Test for ConfigGenerator::getConfigFile
      *
@@ -28,7 +38,7 @@ class ConfigGeneratorTest extends PmaTestCase
     {
         unset($_SESSION['eol']);
 
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setGlobalConfig();
 
         $GLOBALS['server'] = 0;
         $cf = new ConfigFile();
@@ -77,14 +87,14 @@ class ConfigGeneratorTest extends PmaTestCase
     }
 
     /**
-     * Test for ConfigGenerator::_getVarExport
+     * Test for ConfigGenerator::getVarExport
      *
      * @return void
      */
     public function testGetVarExport()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Setup\ConfigGenerator');
-        $method = $reflection->getMethod('_getVarExport');
+        $reflection = new ReflectionClass(ConfigGenerator::class);
+        $method = $reflection->getMethod('getVarExport');
         $method->setAccessible(true);
 
         $this->assertEquals(
@@ -128,14 +138,14 @@ class ConfigGeneratorTest extends PmaTestCase
     }
 
     /**
-     * Test for ConfigGenerator::_isZeroBasedArray
+     * Test for ConfigGenerator::isZeroBasedArray
      *
      * @return void
      */
     public function testIsZeroBasedArray()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Setup\ConfigGenerator');
-        $method = $reflection->getMethod('_isZeroBasedArray');
+        $reflection = new ReflectionClass(ConfigGenerator::class);
+        $method = $reflection->getMethod('isZeroBasedArray');
         $method->setAccessible(true);
 
         $this->assertFalse(
@@ -179,14 +189,14 @@ class ConfigGeneratorTest extends PmaTestCase
     }
 
     /**
-     * Test for ConfigGenerator::_exportZeroBasedArray
+     * Test for ConfigGenerator::exportZeroBasedArray
      *
      * @return void
      */
     public function testExportZeroBasedArray()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Setup\ConfigGenerator');
-        $method = $reflection->getMethod('_exportZeroBasedArray');
+        $reflection = new ReflectionClass(ConfigGenerator::class);
+        $method = $reflection->getMethod('exportZeroBasedArray');
         $method->setAccessible(true);
 
         $arr = [

@@ -2,16 +2,18 @@
 /**
  * tests for PhpMyAdmin\Properties\PropertyItem class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Properties;
 
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Properties\PropertyItem;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Properties\PropertyItem class
  */
-class PropertyItemTest extends TestCase
+class PropertyItemTest extends AbstractTestCase
 {
     protected $stub;
 
@@ -20,7 +22,8 @@ class PropertyItemTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->stub = $this->getMockForAbstractClass('PhpMyAdmin\Properties\PropertyItem');
+        parent::setUp();
+        $this->stub = $this->getMockForAbstractClass(PropertyItem::class);
     }
 
     /**
@@ -28,6 +31,7 @@ class PropertyItemTest extends TestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->stub);
     }
 

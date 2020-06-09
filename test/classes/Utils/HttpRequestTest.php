@@ -2,13 +2,13 @@
 /**
  * tests for PhpMyAdmin\Utils\HttpRequest class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Utils;
 
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Utils\HttpRequest;
-use ReflectionClass;
 use const CURLOPT_CAINFO;
 use const CURLOPT_CAPATH;
 use function curl_version;
@@ -16,35 +16,16 @@ use function function_exists;
 use function ini_get;
 use function stripos;
 
-class HttpRequestTest extends PmaTestCase
+class HttpRequestTest extends AbstractTestCase
 {
     /** @var HttpRequest */
     private $httpRequest;
 
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::setProxySettings();
         $this->httpRequest = new HttpRequest();
-    }
-
-    /**
-     * Call protected functions by setting visibility to public.
-     *
-     * @param string      $name   method name
-     * @param array       $params parameters for the invocation
-     * @param HttpRequest $object HttpRequest instance object
-     *
-     * @return mixed the output from the protected method.
-     */
-    private function callProtectedMethod($name, $params, HttpRequest $object = null)
-    {
-        $class = new ReflectionClass(HttpRequest::class);
-        $method = $class->getMethod($name);
-        $method->setAccessible(true);
-
-        return $method->invokeArgs(
-            $object ?? $this->httpRequest,
-            $params
-        );
     }
 
     /**
@@ -59,19 +40,23 @@ class HttpRequestTest extends PmaTestCase
         if (! function_exists('curl_init')) {
             $this->markTestSkipped('curl not supported');
         }
-        if ($ssl_flags) {
-            $curl = curl_version();
-            /*
-             * Some SSL engines in CURL do not support CURLOPT_CAPATH
-             * and CURLOPT_CAINFO flags, see
-             * https://curl.haxx.se/docs/ssl-compared.html
-             */
-            if (stripos($curl['ssl_version'], 'WinSSL') !== false
-                || stripos($curl['ssl_version'], 'SecureTransport') !== false
-            ) {
-                $this->markTestSkipped('Not supported in CURL SSL backend: ' . $curl['ssl_version']);
-            }
+        if (! $ssl_flags) {
+            return;
         }
+
+        $curl = curl_version();
+        /*
+         * Some SSL engines in CURL do not support CURLOPT_CAPATH
+         * and CURLOPT_CAINFO flags, see
+         * https://curl.haxx.se/docs/ssl-compared.html
+         */
+        if (stripos($curl['ssl_version'], 'WinSSL') === false
+            && stripos($curl['ssl_version'], 'SecureTransport') === false
+        ) {
+            return;
+        }
+
+        $this->markTestSkipped('Not supported in CURL SSL backend: ' . $curl['ssl_version']);
     }
 
     /**
@@ -89,7 +74,12 @@ class HttpRequestTest extends PmaTestCase
     public function testCurl($url, $method, $return_only_status, $expected): void
     {
         $this->checkCurl();
-        $result = $this->callProtectedMethod('curl', [$url, $method, $return_only_status]);
+        $result = $this->callFunction(
+            $this->httpRequest,
+            HttpRequest::class,
+            'curl',
+            [$url, $method, $return_only_status]
+        );
         $this->validateHttp($result, $expected);
     }
 
@@ -108,7 +98,7 @@ class HttpRequestTest extends PmaTestCase
     public function testCurlCAPath($url, $method, $return_only_status, $expected): void
     {
         $this->checkCurl(true);
-        $result = $this->callProtectedMethod('curl', [
+        $result = $this->callFunction($this->httpRequest, HttpRequest::class, 'curl', [
             $url,
             $method,
             $return_only_status,
@@ -134,7 +124,7 @@ class HttpRequestTest extends PmaTestCase
     public function testCurlCAInfo($url, $method, $return_only_status, $expected): void
     {
         $this->checkCurl(true);
-        $result = $this->callProtectedMethod('curl', [
+        $result = $this->callFunction($this->httpRequest, HttpRequest::class, 'curl', [
             $url,
             $method,
             $return_only_status,
@@ -162,7 +152,12 @@ class HttpRequestTest extends PmaTestCase
         if (! ini_get('allow_url_fopen')) {
             $this->markTestSkipped('allow_url_fopen not supported');
         }
-        $result = $this->callProtectedMethod('fopen', [$url, $method, $return_only_status]);
+        $result = $this->callFunction(
+            $this->httpRequest,
+            HttpRequest::class,
+            'fopen',
+            [$url, $method, $return_only_status]
+        );
         $this->validateHttp($result, $expected);
     }
 

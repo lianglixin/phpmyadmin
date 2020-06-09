@@ -2,13 +2,14 @@
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationSignon class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Auth;
 
-use PhpMyAdmin\Config;
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Auth\AuthenticationSignon;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractNetworkTestCase;
 use function ob_get_clean;
 use function ob_start;
 use function phpversion;
@@ -20,7 +21,7 @@ use function version_compare;
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationSignon class
  */
-class AuthenticationSignonTest extends PmaTestCase
+class AuthenticationSignonTest extends AbstractNetworkTestCase
 {
     protected $object;
 
@@ -29,7 +30,10 @@ class AuthenticationSignonTest extends PmaTestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::setLanguage();
+        parent::setGlobalConfig();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['server'] = 0;
         $GLOBALS['db'] = 'db';
@@ -155,6 +159,7 @@ class AuthenticationSignonTest extends PmaTestCase
      */
     public function testAuthCheckToken()
     {
+        $_SESSION = [' PMA_token ' => 'eefefef'];
         $this->mockResponse('Location: https://example.com/SignonURL');
 
         $GLOBALS['cfg']['Server']['SignonURL'] = 'https://example.com/SignonURL';
@@ -344,7 +349,9 @@ class AuthenticationSignonTest extends PmaTestCase
         $this->object->showFailure('no-activity');
 
         $this->assertEquals(
-            'You have been automatically logged out due to inactivity of 1440 seconds. Once you log in again, you should be able to resume the work where you left off.',
+            'You have been automatically logged out due to inactivity of'
+            . ' 1440 seconds. Once you log in again, you should be able to'
+            . ' resume the work where you left off.',
             $_SESSION['PMA_single_signon_error_message']
         );
     }
@@ -367,7 +374,7 @@ class AuthenticationSignonTest extends PmaTestCase
         $this->object->expects($this->exactly(1))
             ->method('showLoginForm');
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -394,6 +401,7 @@ class AuthenticationSignonTest extends PmaTestCase
     {
         $GLOBALS['cfg']['Server']['SignonSession'] = 'newSession';
         $_COOKIE['newSession'] = '42';
+        unset($GLOBALS['errno']);
 
         $this->object = $this->getMockBuilder(AuthenticationSignon::class)
             ->disableOriginalConstructor()
@@ -403,7 +411,7 @@ class AuthenticationSignonTest extends PmaTestCase
         $this->object->expects($this->exactly(1))
             ->method('showLoginForm');
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 

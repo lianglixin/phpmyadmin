@@ -2,13 +2,19 @@
 /**
  * tests for PhpMyAdmin\Plugins\Export\ExportPdf class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Export;
 
 use PhpMyAdmin\Plugins\Export\ExportPdf;
 use PhpMyAdmin\Plugins\Export\Helpers\Pdf;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup;
+use PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup;
+use PhpMyAdmin\Properties\Options\Items\RadioPropertyItem;
+use PhpMyAdmin\Properties\Options\Items\TextPropertyItem;
+use PhpMyAdmin\Properties\Plugins\ExportPluginProperties;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionMethod;
 use ReflectionProperty;
 use function array_shift;
@@ -18,7 +24,7 @@ use function array_shift;
  *
  * @group medium
  */
-class ExportPdfTest extends PmaTestCase
+class ExportPdfTest extends AbstractTestCase
 {
     protected $object;
 
@@ -27,6 +33,8 @@ class ExportPdfTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         $GLOBALS['server'] = 0;
         $GLOBALS['output_kanji_conversion'] = false;
         $GLOBALS['output_charset_conversion'] = false;
@@ -41,6 +49,7 @@ class ExportPdfTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -51,16 +60,16 @@ class ExportPdfTest extends PmaTestCase
      */
     public function testSetProperties()
     {
-        $method = new ReflectionMethod('PhpMyAdmin\Plugins\Export\ExportPdf', 'setProperties');
+        $method = new ReflectionMethod(ExportPdf::class, 'setProperties');
         $method->setAccessible(true);
         $method->invoke($this->object, null);
 
-        $attrProperties = new ReflectionProperty('PhpMyAdmin\Plugins\Export\ExportPdf', 'properties');
+        $attrProperties = new ReflectionProperty(ExportPdf::class, 'properties');
         $attrProperties->setAccessible(true);
         $properties = $attrProperties->getValue($this->object);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Plugins\ExportPluginProperties',
+            ExportPluginProperties::class,
             $properties
         );
 
@@ -91,7 +100,7 @@ class ExportPdfTest extends PmaTestCase
         $options = $properties->getOptions();
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Groups\OptionsPropertyRootGroup',
+            OptionsPropertyRootGroup::class,
             $options
         );
 
@@ -105,7 +114,7 @@ class ExportPdfTest extends PmaTestCase
         $generalOptions = array_shift($generalOptionsArray);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup',
+            OptionsPropertyMainGroup::class,
             $generalOptions
         );
 
@@ -119,7 +128,7 @@ class ExportPdfTest extends PmaTestCase
         $property = array_shift($generalProperties);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Items\TextPropertyItem',
+            TextPropertyItem::class,
             $property
         );
 
@@ -131,7 +140,7 @@ class ExportPdfTest extends PmaTestCase
         $generalOptions = array_shift($generalOptionsArray);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Groups\OptionsPropertyMainGroup',
+            OptionsPropertyMainGroup::class,
             $generalOptions
         );
 
@@ -150,7 +159,7 @@ class ExportPdfTest extends PmaTestCase
         $property = array_shift($generalProperties);
 
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\Items\RadioPropertyItem',
+            RadioPropertyItem::class,
             $property
         );
 
@@ -176,7 +185,7 @@ class ExportPdfTest extends PmaTestCase
      */
     public function testExportHeader()
     {
-        $pdf = $this->getMockBuilder('PhpMyAdmin\Plugins\Export\Helpers\Pdf')
+        $pdf = $this->getMockBuilder(Pdf::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -189,7 +198,7 @@ class ExportPdfTest extends PmaTestCase
         $pdf->expects($this->once())
             ->method('setTopMargin');
 
-        $attrPdf = new ReflectionProperty('PhpMyAdmin\Plugins\Export\ExportPdf', '_pdf');
+        $attrPdf = new ReflectionProperty(ExportPdf::class, '_pdf');
         $attrPdf->setAccessible(true);
         $attrPdf->setValue($this->object, $pdf);
 
@@ -205,14 +214,14 @@ class ExportPdfTest extends PmaTestCase
      */
     public function testExportFooter()
     {
-        $pdf = $this->getMockBuilder('PhpMyAdmin\Plugins\Export\Helpers\Pdf')
+        $pdf = $this->getMockBuilder(Pdf::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $pdf->expects($this->once())
             ->method('getPDFData');
 
-        $attrPdf = new ReflectionProperty('PhpMyAdmin\Plugins\Export\ExportPdf', '_pdf');
+        $attrPdf = new ReflectionProperty(ExportPdf::class, '_pdf');
         $attrPdf->setAccessible(true);
         $attrPdf->setValue($this->object, $pdf);
 
@@ -264,7 +273,7 @@ class ExportPdfTest extends PmaTestCase
      */
     public function testExportData()
     {
-        $pdf = $this->getMockBuilder('PhpMyAdmin\Plugins\Export\Helpers\Pdf')
+        $pdf = $this->getMockBuilder(Pdf::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -285,7 +294,7 @@ class ExportPdfTest extends PmaTestCase
             ->method('mysqlReport')
             ->with('SELECT');
 
-        $attrPdf = new ReflectionProperty('PhpMyAdmin\Plugins\Export\ExportPdf', '_pdf');
+        $attrPdf = new ReflectionProperty(ExportPdf::class, '_pdf');
         $attrPdf->setAccessible(true);
         $attrPdf->setValue($this->object, $pdf);
 
@@ -302,39 +311,39 @@ class ExportPdfTest extends PmaTestCase
 
     /**
      * Test for
-     *     - PhpMyAdmin\Plugins\Export\ExportPdf::_setPdf
-     *     - PhpMyAdmin\Plugins\Export\ExportPdf::_getPdf
+     *     - PhpMyAdmin\Plugins\Export\ExportPdf::setPdf
+     *     - PhpMyAdmin\Plugins\Export\ExportPdf::getPdf
      *
      * @return void
      */
     public function testSetGetPdf()
     {
-        $setter = new ReflectionMethod('PhpMyAdmin\Plugins\Export\ExportPdf', '_setPdf');
+        $setter = new ReflectionMethod(ExportPdf::class, 'setPdf');
         $setter->setAccessible(true);
         $setter->invoke($this->object, new Pdf());
 
-        $getter = new ReflectionMethod('PhpMyAdmin\Plugins\Export\ExportPdf', '_getPdf');
+        $getter = new ReflectionMethod(ExportPdf::class, 'getPdf');
         $getter->setAccessible(true);
         $this->assertInstanceOf(
-            'PhpMyAdmin\Plugins\Export\Helpers\Pdf',
+            Pdf::class,
             $getter->invoke($this->object)
         );
     }
 
     /**
      * Test for
-     *     - PhpMyAdmin\Plugins\Export\ExportPdf::_setPdfReportTitle
-     *     - PhpMyAdmin\Plugins\Export\ExportPdf::_getPdfReportTitle
+     *     - PhpMyAdmin\Plugins\Export\ExportPdf::setPdfReportTitle
+     *     - PhpMyAdmin\Plugins\Export\ExportPdf::getPdfReportTitle
      *
      * @return void
      */
     public function testSetGetPdfTitle()
     {
-        $setter = new ReflectionMethod('PhpMyAdmin\Plugins\Export\ExportPdf', '_setPdfReportTitle');
+        $setter = new ReflectionMethod(ExportPdf::class, 'setPdfReportTitle');
         $setter->setAccessible(true);
         $setter->invoke($this->object, 'title');
 
-        $getter = new ReflectionMethod('PhpMyAdmin\Plugins\Export\ExportPdf', '_getPdfReportTitle');
+        $getter = new ReflectionMethod(ExportPdf::class, 'getPdfReportTitle');
         $getter->setAccessible(true);
         $this->assertEquals(
             'title',

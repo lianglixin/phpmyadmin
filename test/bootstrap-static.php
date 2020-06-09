@@ -1,7 +1,8 @@
 <?php
 /**
- * Bootstrap file for phpstan and psalm
+ * Bootstrap file for psalm
  */
+
 declare(strict_types=1);
 
 use PhpMyAdmin\Config;
@@ -40,7 +41,8 @@ define('PROXY_PASS', '');
 define('PMA_PATH_TO_BASEDIR', '');
 // phpcs:enable
 
-$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36';
+$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
+    . ' (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36';
 $GLOBALS['PMA_Config']->checkClient();
 $GLOBALS['PMA_Config']->checkWebServerOs();
 $GLOBALS['PMA_Config']->enableBc();// Defines constants, phpstan:level=1

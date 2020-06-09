@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\Controllers\Server\Status\MonitorController
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server\Status;
@@ -63,9 +64,11 @@ class MonitorController extends AbstractController
 
         $javascriptVariableNames = [];
         foreach ($this->data->status as $name => $value) {
-            if (is_numeric($value)) {
-                $javascriptVariableNames[] = $name;
+            if (! is_numeric($value)) {
+                continue;
             }
+
+            $javascriptVariableNames[] = $name;
         }
 
         $this->render('server/status/monitor/index', [

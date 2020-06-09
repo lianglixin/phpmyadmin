@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\Controllers\Server\DatabasesController
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server;
@@ -15,6 +16,7 @@ use PhpMyAdmin\Controllers\AbstractController;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Message;
+use PhpMyAdmin\Query\Utilities;
 use PhpMyAdmin\RelationCleanup;
 use PhpMyAdmin\ReplicationInfo;
 use PhpMyAdmin\Response;
@@ -87,7 +89,7 @@ class DatabasesController extends AbstractController
     public function index(): void
     {
         global $cfg, $server, $dblist, $is_create_db_priv;
-        global $replication_info, $db_to_create, $pmaThemeImage, $text_dir;
+        global $replication_info, $replication_types, $db_to_create, $pmaThemeImage, $text_dir;
 
         $params = [
             'statistics' => $_REQUEST['statistics'] ?? null,
@@ -269,6 +271,8 @@ class DatabasesController extends AbstractController
             'drop_selected_dbs' => $_POST['drop_selected_dbs'] ?? null,
             'selected_dbs' => $_POST['selected_dbs'] ?? null,
         ];
+        /** @var Message|int $message */
+        $message = -1;
 
         if (! isset($params['drop_selected_dbs'])
             || ! $this->response->isAjax()
@@ -295,7 +299,6 @@ class DatabasesController extends AbstractController
         $selected = $_POST['selected_dbs'];
         $rebuildDatabaseList = false;
         $sqlQuery = '';
-        $result = null;
         $numberOfDatabases = count($selected);
 
         for ($i = 0; $i < $numberOfDatabases; $i++) {
@@ -305,7 +308,7 @@ class DatabasesController extends AbstractController
             $rebuildDatabaseList = true;
 
             $sqlQuery .= $aQuery . ';' . "\n";
-            $result = $this->dbi->query($aQuery);
+            $this->dbi->query($aQuery);
             $this->transformations->clear($selected[$i]);
         }
 
@@ -313,7 +316,7 @@ class DatabasesController extends AbstractController
             $dblist->databases->build();
         }
 
-        if (empty($message)) { // no error message
+        if ($message === -1) { // no error message
             $message = Message::success(
                 _ngettext(
                     '%1$d database has been dropped successfully.',
@@ -361,11 +364,13 @@ class DatabasesController extends AbstractController
         }
 
         $this->sortOrder = 'asc';
-        if (isset($sortOrder)
-            && mb_strtolower($sortOrder) === 'desc'
+        if (! isset($sortOrder)
+            || mb_strtolower($sortOrder) !== 'desc'
         ) {
-            $this->sortOrder = 'desc';
+            return;
         }
+
+        $this->sortOrder = 'desc';
     }
 
     /**
@@ -391,25 +396,27 @@ class DatabasesController extends AbstractController
                 ],
             ];
             foreach ($replicationTypes as $type) {
-                if ($replication_info[$type]['status']) {
+                if (! $replication_info[$type]['status']) {
+                    continue;
+                }
+
+                $key = array_search(
+                    $database['SCHEMA_NAME'],
+                    $replication_info[$type]['Ignore_DB']
+                );
+                if (strlen((string) $key) > 0) {
+                    $replication[$type]['is_replicated'] = false;
+                } else {
                     $key = array_search(
                         $database['SCHEMA_NAME'],
-                        $replication_info[$type]['Ignore_DB']
+                        $replication_info[$type]['Do_DB']
                     );
-                    if (strlen((string) $key) > 0) {
-                        $replication[$type]['is_replicated'] = false;
-                    } else {
-                        $key = array_search(
-                            $database['SCHEMA_NAME'],
-                            $replication_info[$type]['Do_DB']
-                        );
 
-                        if (strlen((string) $key) > 0
-                            || count($replication_info[$type]['Do_DB']) === 0
-                        ) {
-                            // if ($key != null) did not work for index "0"
-                            $replication[$type]['is_replicated'] = true;
-                        }
+                    if (strlen((string) $key) > 0
+                        || count($replication_info[$type]['Do_DB']) === 0
+                    ) {
+                        // if ($key != null) did not work for index "0"
+                        $replication[$type]['is_replicated'] = true;
                     }
                 }
             }
@@ -432,7 +439,7 @@ class DatabasesController extends AbstractController
                 'collation' => [],
                 'statistics' => $statistics,
                 'replication' => $replication,
-                'is_system_schema' => $this->dbi->isSystemSchema(
+                'is_system_schema' => Utilities::isSystemSchema(
                     $database['SCHEMA_NAME'],
                     true
                 ),
@@ -444,12 +451,14 @@ class DatabasesController extends AbstractController
                 $cfg['Server']['DisableIS'],
                 $database['DEFAULT_COLLATION_NAME']
             );
-            if ($collation !== null) {
-                $databases[$database['SCHEMA_NAME']]['collation'] = [
-                    'name' => $collation->getName(),
-                    'description' => $collation->getDescription(),
-                ];
+            if ($collation === null) {
+                continue;
             }
+
+            $databases[$database['SCHEMA_NAME']]['collation'] = [
+                'name' => $collation->getName(),
+                'description' => $collation->getDescription(),
+            ];
         }
 
         return [

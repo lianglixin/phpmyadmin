@@ -2,6 +2,7 @@
 /**
  * holds the database index columns class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -82,9 +83,11 @@ class IndexColumn
         if (isset($params['Sub_part'])) {
             $this->_sub_part = $params['Sub_part'];
         }
-        if (isset($params['Null'])) {
-            $this->_null = $params['Null'];
+        if (! isset($params['Null'])) {
+            return;
         }
+
+        $this->_null = $params['Null'];
     }
 
     /**

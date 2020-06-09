@@ -2,25 +2,29 @@
 /**
  * Tests for Node class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Navigation\Nodes;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Navigation\Nodes\Node;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionMethod;
 
 /**
  * Tests for Node class
  */
-class NodeTest extends PmaTestCase
+class NodeTest extends AbstractTestCase
 {
     /**
      * SetUp for test cases
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
         $GLOBALS['server'] = 0;
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
     }
@@ -53,13 +57,11 @@ class NodeTest extends PmaTestCase
     public function testGetChildError()
     {
         $parent = NodeFactory::getInstance('Node', 'parent');
-        $this->assertEquals(
-            $parent->getChild('foo'),
-            false
+        $this->assertNull(
+            $parent->getChild('foo')
         );
-        $this->assertEquals(
-            $parent->getChild('foo', true),
-            false
+        $this->assertNull(
+            $parent->getChild('foo', true)
         );
     }
 
@@ -78,9 +80,8 @@ class NodeTest extends PmaTestCase
             $child
         );
         $parent->removeChild($child->name);
-        $this->assertEquals(
-            $parent->getChild($child->name),
-            false
+        $this->assertNull(
+            $parent->getChild($child->name)
         );
     }
 
@@ -215,7 +216,7 @@ class NodeTest extends PmaTestCase
         $parent = NodeFactory::getInstance();
         $child = NodeFactory::getInstance();
         $parent->addChild($child);
-        $this->assertEquals(false, $child->hasSiblings());
+        $this->assertFalse($child->hasSiblings());
     }
 
     /**
@@ -234,7 +235,7 @@ class NodeTest extends PmaTestCase
         $secondChild = NodeFactory::getInstance();
         $parent->addChild($secondChild);
         // Normal case; two Node:NODE type siblings
-        $this->assertEquals(true, $firstChild->hasSiblings());
+        $this->assertTrue($firstChild->hasSiblings());
 
         $parent = NodeFactory::getInstance();
         $firstChild = NodeFactory::getInstance();
@@ -246,12 +247,12 @@ class NodeTest extends PmaTestCase
         );
         $parent->addChild($secondChild);
         // Empty Node::CONTAINER type node should not be considered in hasSiblings()
-        $this->assertEquals(false, $firstChild->hasSiblings());
+        $this->assertFalse($firstChild->hasSiblings());
 
         $grandChild = NodeFactory::getInstance();
         $secondChild->addChild($grandChild);
         // Node::CONTAINER type nodes with children are counted for hasSiblings()
-        $this->assertEquals(true, $firstChild->hasSiblings());
+        $this->assertTrue($firstChild->hasSiblings());
     }
 
     /**
@@ -273,9 +274,9 @@ class NodeTest extends PmaTestCase
         $grandChild->addChild($greatGrandChild);
 
         // Should return false for node that are two levels deeps
-        $this->assertEquals(false, $grandChild->hasSiblings());
+        $this->assertFalse($grandChild->hasSiblings());
         // Should return true for node that are three levels deeps
-        $this->assertEquals(true, $greatGrandChild->hasSiblings());
+        $this->assertTrue($greatGrandChild->hasSiblings());
     }
 
     /**
@@ -288,7 +289,7 @@ class NodeTest extends PmaTestCase
     public function testGetWhereClause()
     {
         $method = new ReflectionMethod(
-            'PhpMyAdmin\Navigation\Nodes\Node',
+            Node::class,
             'getWhereClause'
         );
         $method->setAccessible(true);
@@ -378,7 +379,7 @@ class NodeTest extends PmaTestCase
         // but strangely, mocking private methods is not supported in PHPUnit
         $node = NodeFactory::getInstance();
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -416,7 +417,7 @@ class NodeTest extends PmaTestCase
         // but strangely, mocking private methods is not supported in PHPUnit
         $node = NodeFactory::getInstance();
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -449,7 +450,7 @@ class NodeTest extends PmaTestCase
 
         $node = NodeFactory::getInstance();
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -459,12 +460,8 @@ class NodeTest extends PmaTestCase
         $dbi->expects($this->exactly(3))
             ->method('fetchArray')
             ->willReturnOnConsecutiveCalls(
-                [
-                    '0' => 'db',
-                ],
-                [
-                    '0' => 'aa_db',
-                ],
+                ['0' => 'db'],
+                ['0' => 'aa_db'],
                 false
             );
 
@@ -508,7 +505,7 @@ class NodeTest extends PmaTestCase
         // but strangely, mocking private methods is not supported in PHPUnit
         $node = NodeFactory::getInstance();
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -536,7 +533,7 @@ class NodeTest extends PmaTestCase
         $query .= 'WHERE TRUE ';
 
         $node = NodeFactory::getInstance();
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -562,7 +559,7 @@ class NodeTest extends PmaTestCase
         $node = NodeFactory::getInstance();
 
         // test with no search clause
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())
@@ -575,7 +572,7 @@ class NodeTest extends PmaTestCase
         $node->getPresence();
 
         // test with a search clause
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->once())

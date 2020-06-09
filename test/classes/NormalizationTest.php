@@ -2,26 +2,26 @@
 /**
  * tests for PhpMyAdmin\Normalization
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Message;
 use PhpMyAdmin\Normalization;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Transformations;
 use PhpMyAdmin\Types;
 use PhpMyAdmin\Url;
-use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use stdClass;
 use function json_encode;
 
 /**
  * tests for PhpMyAdmin\Normalization
  */
-class NormalizationTest extends TestCase
+class NormalizationTest extends AbstractTestCase
 {
     private $normalization;
 
@@ -30,6 +30,8 @@ class NormalizationTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         $GLOBALS['cfg']['LimitChars'] = 50;
         $GLOBALS['cfg']['ServerDefault'] = 'PMA_server';
         $GLOBALS['cfg']['ShowHint'] = true;
@@ -44,7 +46,7 @@ class NormalizationTest extends TestCase
         //$_SESSION
 
         //mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->types = new Types($dbi);
@@ -457,7 +459,7 @@ class NormalizationTest extends TestCase
         );
         $this->assertArrayHasKey('queryError', $result1);
         $this->assertEquals(__('End of step'), $result1['legendText']);
-        $this->assertEquals(false, $result1['queryError']);
+        $this->assertFalse($result1['queryError']);
     }
 
     /**
@@ -485,7 +487,7 @@ class NormalizationTest extends TestCase
         $this->assertArrayHasKey('queryError', $result);
         $this->assertArrayHasKey('message', $result);
         $this->assertInstanceOf(
-            'PhpMyAdmin\Message',
+            Message::class,
             $result['message']
         );
     }
@@ -569,16 +571,18 @@ class NormalizationTest extends TestCase
      */
     public function testGetAllCombinationPartialKeys()
     {
-        $class = new ReflectionClass(Normalization::class);
-        $method = $class->getMethod('getAllCombinationPartialKeys');
-        $method->setAccessible(true);
-
         $primaryKey = [
             'id',
             'col1',
             'col2',
         ];
-        $result = $method->invokeArgs($this->normalization, [$primaryKey]);
+        $result = $this->callFunction(
+            $this->normalization,
+            Normalization::class,
+            'getAllCombinationPartialKeys',
+            [$primaryKey]
+        );
+
         $this->assertEquals(
             [
                 '',

@@ -2,6 +2,7 @@
 /**
  * Tests for Linter.php.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -12,8 +13,20 @@ use function str_repeat;
 /**
  * Tests for PhpMyAdmin\Linter
  */
-class LinterTest extends PmaTestCase
+class LinterTest extends AbstractTestCase
 {
+    /**
+     * Sets up the fixture, for example, opens a network connection.
+     * This method is called before a test is executed.
+     *
+     * @access protected
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        parent::setLanguage();
+    }
+
     /**
      * Test for Linter::getLines
      *

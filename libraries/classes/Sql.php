@@ -2,6 +2,7 @@
 /**
  * Set of functions for the SQL executor
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -9,6 +10,8 @@ namespace PhpMyAdmin;
 use PhpMyAdmin\Display\Results as DisplayResults;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Html\MySQLDocumentation;
+use PhpMyAdmin\Query\Generator as QueryGenerator;
+use PhpMyAdmin\Query\Utilities;
 use PhpMyAdmin\SqlParser\Statements\AlterStatement;
 use PhpMyAdmin\SqlParser\Statements\DropStatement;
 use PhpMyAdmin\SqlParser\Statements\SelectStatement;
@@ -176,9 +179,11 @@ class Sql
             ) {
                 $just_one_table = false;
             }
-            if ($one_field_meta->table != '') {
-                $prev_table = $one_field_meta->table;
+            if ($one_field_meta->table == '') {
+                continue;
             }
+
+            $prev_table = $one_field_meta->table;
         }
 
         return $just_one_table && $prev_table != '';
@@ -202,21 +207,23 @@ class Sql
             $resultSetColumnNames[] = $oneMeta->name;
         }
         foreach (Index::getFromTable($table, $db) as $index) {
-            if ($index->isUnique()) {
-                $indexColumns = $index->getColumns();
-                $numberFound = 0;
-                foreach ($indexColumns as $indexColumnName => $dummy) {
-                    if (in_array($indexColumnName, $resultSetColumnNames)) {
-                        $numberFound++;
-                    } elseif (! in_array($indexColumnName, $columns)) {
-                        $numberFound++;
-                    } elseif (strpos($columns[$indexColumnName]['Extra'], 'INVISIBLE') !== false) {
-                        $numberFound++;
-                    }
+            if (! $index->isUnique()) {
+                continue;
+            }
+
+            $indexColumns = $index->getColumns();
+            $numberFound = 0;
+            foreach ($indexColumns as $indexColumnName => $dummy) {
+                if (in_array($indexColumnName, $resultSetColumnNames)) {
+                    $numberFound++;
+                } elseif (! in_array($indexColumnName, $columns)) {
+                    $numberFound++;
+                } elseif (strpos($columns[$indexColumnName]['Extra'], 'INVISIBLE') !== false) {
+                    $numberFound++;
                 }
-                if ($numberFound == count($indexColumns)) {
-                    return true;
-                }
+            }
+            if ($numberFound == count($indexColumns)) {
+                return true;
             }
         }
 
@@ -433,7 +440,7 @@ class Sql
      */
     public function getValuesForColumn($db, $table, $column)
     {
-        $field_info_query = $GLOBALS['dbi']->getColumnsSql($db, $table, $column);
+        $field_info_query = QueryGenerator::getColumnsSql($db, $table, $GLOBALS['dbi']->escapeString($column));
 
         $field_info_result = $GLOBALS['dbi']->fetchResult(
             $field_info_query,
@@ -653,16 +660,16 @@ class Sql
                 $response->addJSON('message', $msg);
             }
             exit;
-        } else {
-            // go back to /sql to redisplay query; do not use &amp; in this case:
-            /**
-             * @todo In which scenario does this happen?
-             */
-            Core::sendHeaderLocation(
-                './' . $goto
-                . '&label=' . $_POST['bkm_fields']['bkm_label']
-            );
         }
+
+        // go back to /sql to redisplay query; do not use &amp; in this case:
+        /**
+         * @todo In which scenario does this happen?
+         */
+        Core::sendHeaderLocation(
+            './' . $goto
+            . '&label=' . $_POST['bkm_fields']['bkm_label']
+        );
     }
 
     /**
@@ -798,9 +805,11 @@ class Sql
                 $db
             );
             foreach ($bookmarks as $bookmark) {
-                if ($bookmark->getLabel() == $bkm_label) {
-                    $bookmark->delete();
+                if ($bookmark->getLabel() != $bkm_label) {
+                    continue;
                 }
+
+                $bookmark->delete();
             }
         }
 
@@ -895,16 +904,18 @@ class Sql
      */
     private function cleanupRelations($db, $table, ?string $column, $purge)
     {
-        if (! empty($purge) && strlen($db) > 0) {
-            if (strlen($table) > 0) {
-                if (isset($column) && strlen($column) > 0) {
-                    $this->relationCleanup->column($db, $table, $column);
-                } else {
-                    $this->relationCleanup->table($db, $table);
-                }
+        if (empty($purge) || strlen($db) <= 0) {
+            return;
+        }
+
+        if (strlen($table) > 0) {
+            if (isset($column) && strlen($column) > 0) {
+                $this->relationCleanup->column($db, $table, $column);
             } else {
-                $this->relationCleanup->database($db);
+                $this->relationCleanup->table($db, $table);
             }
+        } else {
+            $this->relationCleanup->database($db);
         }
     }
 
@@ -1351,7 +1362,7 @@ class Sql
                     true
                 );
 
-                if (is_array($profiling_results)) {
+                if ($profiling_results !== null) {
                     $header   = $response->getHeader();
                     $scripts  = $header->getScripts();
                     $scripts->addFile('sql.js');
@@ -1424,18 +1435,18 @@ class Sql
     /**
      * Function to get html for the sql query results table
      *
-     * @param DisplayResults $displayResultsObject instance of DisplayResult
-     * @param string         $pmaThemeImage        theme image uri
-     * @param string         $url_query            url query
-     * @param array          $displayParts         the parts to display
-     * @param bool           $editable             whether the result table is
-     *                                             editable or not
-     * @param int            $unlim_num_rows       unlimited number of rows
-     * @param int            $num_rows             number of rows
-     * @param bool           $showtable            whether to show table or not
-     * @param object|null    $result               result of the executed query
-     * @param array          $analyzed_sql_results analyzed sql results
-     * @param bool           $is_limited_display   Show only limited operations or not
+     * @param DisplayResults   $displayResultsObject instance of DisplayResult
+     * @param string           $pmaThemeImage        theme image uri
+     * @param string           $url_query            url query
+     * @param array            $displayParts         the parts to display
+     * @param bool             $editable             whether the result table is
+     *                                               editable or not
+     * @param int              $unlim_num_rows       unlimited number of rows
+     * @param int              $num_rows             number of rows
+     * @param bool             $showtable            whether to show table or not
+     * @param object|bool|null $result               result of the executed query
+     * @param array            $analyzed_sql_results analyzed sql results
+     * @param bool             $is_limited_display   Show only limited operations or not
      *
      * @return string
      */
@@ -1596,7 +1607,7 @@ class Sql
     private function getMessageIfMissingColumnIndex($table, $database, $editable, $hasUniqueKey): string
     {
         $output = '';
-        if (! empty($table) && ($GLOBALS['dbi']->isSystemSchema($database) || ! $editable)) {
+        if (! empty($table) && (Utilities::isSystemSchema($database) || ! $editable)) {
             $output = Message::notice(
                 sprintf(
                     __(
@@ -1646,13 +1657,15 @@ class Sql
         if (isset($queryType, $selectedTables) && $queryType == 'check_tbl' && is_array($selectedTables)) {
             foreach ($selectedTables as $table) {
                 $check = Index::findDuplicates($table, $database);
-                if (! empty($check)) {
-                    $output .= sprintf(
-                        __('Problems with indexes of table `%s`'),
-                        $table
-                    );
-                    $output .= $check;
+                if (empty($check)) {
+                    continue;
                 }
+
+                $output .= sprintf(
+                    __('Problems with indexes of table `%s`'),
+                    $table
+                );
+                $output .= $check;
             }
         }
 
@@ -1778,7 +1791,7 @@ class Sql
             'pview_lnk' => '1',
         ];
 
-        if ($GLOBALS['dbi']->isSystemSchema($db) || ! $editable) {
+        if (Utilities::isSystemSchema($db) || ! $editable) {
             $displayParts = [
                 'edit_lnk' => $displayResultsObject::NO_EDIT_OR_DELETE,
                 'del_lnk' => $displayResultsObject::NO_EDIT_OR_DELETE,
@@ -1825,7 +1838,7 @@ class Sql
                 $result,
                 $analyzed_sql_results
             );
-            if (empty($sql_data) || ($sql_data['valid_queries'] = 1)) {
+            if (empty($sql_data) || ($sql_data['valid_queries'] <= 1)) {
                 $response->addHTML($tableMaintenanceHtml);
                 exit;
             }

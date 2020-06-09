@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\Controllers\Server\VariablesController
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Server;
@@ -66,9 +67,7 @@ class VariablesController extends AbstractController
 
                 [$formattedValue, $isEscaped] = $this->formatVariable($name, $value);
                 if ($hasSessionValue) {
-                    [
-                        $sessionFormattedValue,
-                    ] = $this->formatVariable(
+                    [$sessionFormattedValue] = $this->formatVariable(
                         $name,
                         $serverVarsSession[$name]
                     );
@@ -118,14 +117,14 @@ class VariablesController extends AbstractController
         $json = [];
         try {
             $type = KBSearch::getVariableType($params['name']);
-            if ($type === 'byte') {
-                $json['message'] = implode(
-                    ' ',
-                    Util::formatByteDown($varValue[1], 3, 3)
-                );
-            } else {
+            if ($type !== 'byte') {
                 throw new KBException('Not a type=byte');
             }
+
+            $json['message'] = implode(
+                ' ',
+                Util::formatByteDown($varValue[1], 3, 3)
+            );
         } catch (KBException $e) {
             $json['message'] = $varValue[1];
         }
@@ -153,26 +152,26 @@ class VariablesController extends AbstractController
         $matches = [];
         try {
             $type = KBSearch::getVariableType($params['varName']);
-            if ($type === 'byte' && preg_match(
+            if ($type !== 'byte' || ! preg_match(
                 '/^\s*(\d+(\.\d+)?)\s*(mb|kb|mib|kib|gb|gib)\s*$/i',
                 $value,
                 $matches
             )) {
-                $exp = [
-                    'kb' => 1,
-                    'kib' => 1,
-                    'mb' => 2,
-                    'mib' => 2,
-                    'gb' => 3,
-                    'gib' => 3,
-                ];
-                $value = (float) $matches[1] * pow(
-                    1024,
-                    $exp[mb_strtolower($matches[3])]
-                );
-            } else {
                 throw new KBException('Not a type=byte or regex not matching');
             }
+
+            $exp = [
+                'kb' => 1,
+                'kib' => 1,
+                'mb' => 2,
+                'mib' => 2,
+                'gb' => 3,
+                'gib' => 3,
+            ];
+            $value = (float) $matches[1] * pow(
+                1024,
+                $exp[mb_strtolower($matches[3])]
+            );
         } catch (KBException $e) {
             $value = $this->dbi->escapeString($value);
         }
@@ -215,12 +214,12 @@ class VariablesController extends AbstractController
     /**
      * Format Variable
      *
-     * @param string $name  variable name
-     * @param int    $value variable value
+     * @param string     $name  variable name
+     * @param int|string $value variable value
      *
      * @return array formatted string and bool if string is HTML formatted
      */
-    private function formatVariable($name, $value)
+    private function formatVariable($name, $value): array
     {
         $isHtmlFormatted = false;
         $formattedValue = $value;
@@ -228,20 +227,20 @@ class VariablesController extends AbstractController
         if (is_numeric($value)) {
             try {
                 $type = KBSearch::getVariableType($name);
-                if ($type === 'byte') {
-                    $isHtmlFormatted = true;
-                    $formattedValue = trim(
-                        $this->template->render(
-                            'server/variables/format_variable',
-                            [
-                                'valueTitle' => Util::formatNumber($value, 0),
-                                'value' => implode(' ', Util::formatByteDown($value, 3, 3)),
-                            ]
-                        )
-                    );
-                } else {
+                if ($type !== 'byte') {
                     throw new KBException('Not a type=byte or regex not matching');
                 }
+
+                $isHtmlFormatted = true;
+                $formattedValue = trim(
+                    $this->template->render(
+                        'server/variables/format_variable',
+                        [
+                            'valueTitle' => Util::formatNumber($value, 0),
+                            'value' => implode(' ', Util::formatByteDown($value, 3, 3)),
+                        ]
+                    )
+                );
             } catch (KBException $e) {
                 $formattedValue = Util::formatNumber($value, 0);
             }

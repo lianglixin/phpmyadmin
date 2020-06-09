@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\CreateAddField class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -182,9 +183,11 @@ class CreateAddField
             $indexFields[$key] = Util::backquote(
                 $_POST['field_name'][$column['col_index']]
             );
-            if ($column['size']) {
-                $indexFields[$key] .= '(' . $column['size'] . ')';
+            if (! $column['size']) {
+                continue;
             }
+
+            $indexFields[$key] .= '(' . $column['size'] . ')';
         }
 
         $sqlQuery .= ' (' . implode(', ', $indexFields) . ')';
@@ -462,7 +465,7 @@ class CreateAddField
             $sqlQuery .= ' ENGINE = ' . $this->dbi->escapeString($_POST['tbl_storage_engine']);
         }
         if (! empty($_POST['tbl_collation'])) {
-            $sqlQuery .= Util::getCharsetQueryPart($_POST['tbl_collation']);
+            $sqlQuery .= Util::getCharsetQueryPart($_POST['tbl_collation'] ?? '');
         }
         if (! empty($_POST['connection'])
             && ! empty($_POST['tbl_storage_engine'])

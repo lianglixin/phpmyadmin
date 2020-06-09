@@ -2,6 +2,7 @@
 /**
  * Handles bookmarking SQL queries
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -192,9 +193,11 @@ class Bookmark
             }
             $query = str_replace('[VARIABLE' . $i . ']', $var, $query);
             // backward compatibility
-            if ($i == 1) {
-                $query = str_replace('[VARIABLE]', $var, $query);
+            if ($i != 1) {
+                continue;
             }
+
+            $query = str_replace('[VARIABLE]', $var, $query);
         }
 
         return $query;

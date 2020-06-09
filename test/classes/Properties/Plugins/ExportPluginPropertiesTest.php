@@ -2,6 +2,7 @@
 /**
  * tests for PhpMyAdmin\Properties\Plugins\ExportPluginProperties class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Properties\Plugins;
@@ -21,6 +22,7 @@ class ExportPluginPropertiesTest extends ImportPluginPropertiesTest
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = new ExportPluginProperties();
     }
 
@@ -29,6 +31,7 @@ class ExportPluginPropertiesTest extends ImportPluginPropertiesTest
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 

@@ -4,6 +4,7 @@
  * This script is distinct from libraries/common.inc.php because this
  * script is called from /test.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -633,9 +634,11 @@ class Core
             header('Content-Encoding: gzip');
         }
         header('Content-Transfer-Encoding: binary');
-        if ($length > 0) {
-            header('Content-Length: ' . $length);
+        if ($length <= 0) {
+            return;
         }
+
+        header('Content-Length: ' . $length);
     }
 
     /**
@@ -647,7 +650,7 @@ class Core
      * @param array  $array   the array
      * @param mixed  $default default value
      *
-     * @return array|null|mixed    array element or $default
+     * @return array|mixed|null array element or $default
      */
     public static function arrayRead(string $path, array $array, $default = null)
     {
@@ -716,11 +719,11 @@ class Core
 
         // remove empty nested arrays
         for (; $depth >= 0; $depth--) {
-            if (! isset($path[$depth + 1]) || count($path[$depth + 1]) === 0) {
-                unset($path[$depth][$keys[$depth]]);
-            } else {
+            if (isset($path[$depth + 1]) && count($path[$depth + 1]) !== 0) {
                 break;
             }
+
+            unset($path[$depth][$keys[$depth]]);
         }
     }
 
@@ -867,7 +870,7 @@ class Core
                 /**
                  * @param mixed $item
                  */
-                function ($item) use (&$empty) {
+                static function ($item) use (&$empty) {
                     $empty = $empty && empty($item);
                 }
             );
@@ -887,9 +890,11 @@ class Core
     {
         foreach (array_keys($_POST) as $post_key) {
             foreach ($post_patterns as $one_post_pattern) {
-                if (preg_match($one_post_pattern, $post_key)) {
-                    Migration::getInstance()->setGlobal($post_key, $_POST[$post_key]);
+                if (! preg_match($one_post_pattern, $post_key)) {
+                    continue;
                 }
+
+                Migration::getInstance()->setGlobal($post_key, $_POST[$post_key]);
             }
         }
     }
@@ -993,9 +998,11 @@ class Core
         /**
          * hash is required for cookie authentication.
          */
-        if (! function_exists('hash_hmac')) {
-            self::warnMissingExtension('hash', true);
+        if (function_exists('hash_hmac')) {
+            return;
         }
+
+        self::warnMissingExtension('hash', true);
     }
 
     /**
@@ -1213,14 +1220,16 @@ class Core
          * The ini_set and ini_get functions can be disabled using
          * disable_functions but we're relying quite a lot of them.
          */
-        if (! function_exists('ini_get') || ! function_exists('ini_set')) {
-            self::fatalError(
-                __(
-                    'The ini_get and/or ini_set functions are disabled in php.ini. '
-                    . 'phpMyAdmin requires these functions!'
-                )
-            );
+        if (function_exists('ini_get') && function_exists('ini_set')) {
+            return;
         }
+
+        self::fatalError(
+            __(
+                'The ini_get and/or ini_set functions are disabled in php.ini. '
+                . 'phpMyAdmin requires these functions!'
+            )
+        );
     }
 
     /**
@@ -1235,9 +1244,11 @@ class Core
         /**
          * protect against possible exploits - there is no need to have so much variables
          */
-        if (count($_REQUEST) > 1000) {
-            self::fatalError(__('possible exploit'));
+        if (count($_REQUEST) <= 1000) {
+            return;
         }
+
+        self::fatalError(__('possible exploit'));
     }
 
     /**

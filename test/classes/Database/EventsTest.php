@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Database;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Database\Events;
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
-class EventsTest extends TestCase
+class EventsTest extends AbstractTestCase
 {
     /** @var Events */
     private $events;
@@ -20,31 +20,22 @@ class EventsTest extends TestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setGlobalConfig();
+        parent::setLanguage();
+        $GLOBALS['text_dir'] = 'ltr';
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['server'] = 0;
         $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = 'table';
         $GLOBALS['PMA_PHP_SELF'] = 'index.php';
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
-        $GLOBALS['tear_down']['server'] = true;
 
         $this->events = new Events(
             $GLOBALS['dbi'],
             new Template(),
             Response::getInstance()
         );
-    }
-
-    /**
-     * Tear down
-     */
-    protected function tearDown(): void
-    {
-        if ($GLOBALS['tear_down']['server']) {
-            unset($GLOBALS['cfg']['ServerDefault']);
-        }
-        unset($GLOBALS['tear_down']);
     }
 
     /**
@@ -59,9 +50,11 @@ class EventsTest extends TestCase
     {
         unset($_POST);
         foreach ($in as $key => $value) {
-            if ($value !== '') {
-                $_POST[$key] = $value;
+            if ($value === '') {
+                continue;
             }
+
+            $_POST[$key] = $value;
         }
         $this->assertEquals($out, $this->events->getDataFromRequest());
     }
@@ -146,12 +139,12 @@ class EventsTest extends TestCase
     /**
      * Test for getEditorForm
      *
-     * @param array $data    Data for routine
-     * @param array $matcher Matcher
+     * @param array  $data    Data for routine
+     * @param string $matcher Matcher
      *
      * @dataProvider providerGetEditorFormAdd
      */
-    public function testGetEditorFormAdd($data, $matcher): void
+    public function testGetEditorFormAdd(array $data, string $matcher): void
     {
         $this->assertStringContainsString(
             $matcher,
@@ -235,7 +228,7 @@ class EventsTest extends TestCase
      *
      * @dataProvider providerGetEditorFormEdit
      */
-    public function testGetEditorFormEdit($data, $matcher): void
+    public function testGetEditorFormEdit(array $data, string $matcher): void
     {
         $this->assertStringContainsString(
             $matcher,
@@ -314,12 +307,12 @@ class EventsTest extends TestCase
     /**
      * Test for getEditorForm
      *
-     * @param array $data    Data for routine
-     * @param array $matcher Matcher
+     * @param array  $data    Data for routine
+     * @param string $matcher Matcher
      *
      * @dataProvider providerGetEditorFormAjax
      */
-    public function testGetEditorFormAjax($data, $matcher): void
+    public function testGetEditorFormAjax(array $data, string $matcher): void
     {
         Response::getInstance()->setAjax(true);
         $this->assertStringContainsString(
@@ -387,7 +380,7 @@ class EventsTest extends TestCase
         unset($_POST);
         $_POST = $request;
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->any())
@@ -466,8 +459,7 @@ class EventsTest extends TestCase
             ],
             // Testing failures
             [
-                [ // empty request
-                ],
+                [], // empty request
                 'CREATE EVENT ON SCHEDULE ON COMPLETION NOT PRESERVE DO ',
                 3,
             ],

@@ -2,11 +2,15 @@
 /**
  * Test for faked database access
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
+use PhpMyAdmin\Database\DatabaseList;
 use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Query\Utilities;
+use PhpMyAdmin\SystemDatabase;
 use PhpMyAdmin\Tests\Stubs\DbiDummy;
 use PhpMyAdmin\Util;
 use stdClass;
@@ -14,7 +18,7 @@ use stdClass;
 /**
  * Tests basic functionality of dummy dbi driver
  */
-class DatabaseInterfaceTest extends PmaTestCase
+class DatabaseInterfaceTest extends AbstractTestCase
 {
     /** @var DatabaseInterface */
     private $_dbi;
@@ -24,6 +28,9 @@ class DatabaseInterfaceTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
+        parent::defineVersionConstants();
         $GLOBALS['server'] = 0;
         $extension = new DbiDummy();
         $this->_dbi = new DatabaseInterface($extension);
@@ -171,7 +178,7 @@ class DatabaseInterfaceTest extends PmaTestCase
     public function testGetSystemDatabase()
     {
         $sd = $this->_dbi->getSystemDatabase();
-        $this->assertInstanceOf('PhpMyAdmin\SystemDatabase', $sd);
+        $this->assertInstanceOf(SystemDatabase::class, $sd);
     }
 
     /**
@@ -186,7 +193,7 @@ class DatabaseInterfaceTest extends PmaTestCase
         $GLOBALS['db'] = '';
         $GLOBALS['cfg']['Server']['only_db'] = [];
         $this->_dbi->postConnectControl();
-        $this->assertInstanceOf('PhpMyAdmin\Database\DatabaseList', $GLOBALS['dblist']);
+        $this->assertInstanceOf(DatabaseList::class, $GLOBALS['dblist']);
     }
 
     /**
@@ -229,167 +236,6 @@ class DatabaseInterfaceTest extends PmaTestCase
     }
 
     /**
-     * Test for getConnectionParams
-     *
-     * @param array      $server_cfg Server configuration
-     * @param int        $mode       Mode to test
-     * @param array|null $server     Server array to test
-     * @param array      $expected   Expected result
-     *
-     * @dataProvider connectionParams
-     */
-    public function testGetConnectionParams($server_cfg, $mode, $server, $expected): void
-    {
-        $GLOBALS['cfg']['Server'] = $server_cfg;
-        $result = $this->_dbi->getConnectionParams($mode, $server);
-        $this->assertEquals($expected, $result);
-    }
-
-    /**
-     * Data provider for getConnectionParams test
-     *
-     * @return array
-     */
-    public function connectionParams()
-    {
-        $cfg_basic = [
-            'user' => 'u',
-            'password' => 'pass',
-            'host' => '',
-            'controluser' => 'u2',
-            'controlpass' => 'p2',
-        ];
-        $cfg_ssl = [
-            'user' => 'u',
-            'password' => 'pass',
-            'host' => '',
-            'ssl' => true,
-            'controluser' => 'u2',
-            'controlpass' => 'p2',
-        ];
-        $cfg_control_ssl = [
-            'user' => 'u',
-            'password' => 'pass',
-            'host' => '',
-            'control_ssl' => true,
-            'controluser' => 'u2',
-            'controlpass' => 'p2',
-        ];
-
-        return [
-            [
-                $cfg_basic,
-                DatabaseInterface::CONNECT_USER,
-                null,
-                [
-                    'u',
-                    'pass',
-                    [
-                        'user' => 'u',
-                        'password' => 'pass',
-                        'host' => 'localhost',
-                        'socket' => null,
-                        'port' => 0,
-                        'ssl' => false,
-                        'compress' => false,
-                        'controluser' => 'u2',
-                        'controlpass' => 'p2',
-                    ],
-                ],
-            ],
-            [
-                $cfg_basic,
-                DatabaseInterface::CONNECT_CONTROL,
-                null,
-                [
-                    'u2',
-                    'p2',
-                    [
-                        'host' => 'localhost',
-                        'socket' => null,
-                        'port' => 0,
-                        'ssl' => false,
-                        'compress' => false,
-                    ],
-                ],
-            ],
-            [
-                $cfg_ssl,
-                DatabaseInterface::CONNECT_USER,
-                null,
-                [
-                    'u',
-                    'pass',
-                    [
-                        'user' => 'u',
-                        'password' => 'pass',
-                        'host' => 'localhost',
-                        'socket' => null,
-                        'port' => 0,
-                        'ssl' => true,
-                        'compress' => false,
-                        'controluser' => 'u2',
-                        'controlpass' => 'p2',
-                    ],
-                ],
-            ],
-            [
-                $cfg_ssl,
-                DatabaseInterface::CONNECT_CONTROL,
-                null,
-                [
-                    'u2',
-                    'p2',
-                    [
-                        'host' => 'localhost',
-                        'socket' => null,
-                        'port' => 0,
-                        'ssl' => true,
-                        'compress' => false,
-                    ],
-                ],
-            ],
-            [
-                $cfg_control_ssl,
-                DatabaseInterface::CONNECT_USER,
-                null,
-                [
-                    'u',
-                    'pass',
-                    [
-                        'user' => 'u',
-                        'password' => 'pass',
-                        'host' => 'localhost',
-                        'socket' => null,
-                        'port' => 0,
-                        'ssl' => false,
-                        'compress' => false,
-                        'controluser' => 'u2',
-                        'controlpass' => 'p2',
-                        'control_ssl' => true,
-                    ],
-                ],
-            ],
-            [
-                $cfg_control_ssl,
-                DatabaseInterface::CONNECT_CONTROL,
-                null,
-                [
-                    'u2',
-                    'p2',
-                    [
-                        'host' => 'localhost',
-                        'socket' => null,
-                        'port' => 0,
-                        'ssl' => true,
-                        'compress' => false,
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    /**
      * Test error formatting
      *
      * @param int    $error_number  Error code
@@ -402,7 +248,7 @@ class DatabaseInterfaceTest extends PmaTestCase
     {
         $this->assertStringContainsString(
             $match,
-            DatabaseInterface::formatError($error_number, $error_message)
+            Utilities::formatError($error_number, $error_message)
         );
     }
 
@@ -510,7 +356,7 @@ class DatabaseInterfaceTest extends PmaTestCase
      */
     public function testVersion($version, $expected, $major, $upgrade): void
     {
-        $ver_int = DatabaseInterface::versionToInt($version);
+        $ver_int = Utilities::versionToInt($version);
         $this->assertEquals($expected, $ver_int);
         $this->assertEquals($major, (int) ($ver_int / 10000));
         $this->assertEquals($upgrade, $ver_int < $GLOBALS['cfg']['MysqlMinVersion']['internal']);

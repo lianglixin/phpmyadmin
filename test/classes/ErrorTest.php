@@ -2,6 +2,7 @@
 /**
  * Tests for Error.php
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -13,7 +14,7 @@ use function preg_match;
 /**
  * Error class testing.
  */
-class ErrorTest extends PmaTestCase
+class ErrorTest extends AbstractTestCase
 {
     /**
      * @var Error
@@ -29,6 +30,7 @@ class ErrorTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = new Error(2, 'Compile Error', 'error.txt', 15);
     }
 
@@ -40,6 +42,7 @@ class ErrorTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -102,7 +105,8 @@ class ErrorTest extends PmaTestCase
             ],
             [
                 __FILE__,
-                '.' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'ErrorTest.php',
+                '.' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR
+                    . 'classes' . DIRECTORY_SEPARATOR . 'ErrorTest.php',
             ],
             [
                 './NONEXISTING',

@@ -2,6 +2,7 @@
 /**
  * Editor for Geometry data types.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers;
@@ -72,6 +73,10 @@ class GisDataEditorController extends AbstractController
 
         // Generate parameters from value passed.
         $gis_obj = GisFactory::factory($geom_type);
+        if ($gis_obj === false) {
+            return;
+        }
+
         if (isset($_POST['value'])) {
             $gis_data = array_merge(
                 $gis_data,

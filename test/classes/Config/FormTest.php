@@ -2,14 +2,14 @@
 /**
  * tests for Form class in config folder
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Config;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Config\ConfigFile;
 use PhpMyAdmin\Config\Form;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionClass;
 use ReflectionProperty;
 use function array_keys;
@@ -18,7 +18,7 @@ use function preg_match;
 /**
  * Tests for PMA_Form class
  */
-class FormTest extends PmaTestCase
+class FormTest extends AbstractTestCase
 {
     /** @var Form */
     protected $object;
@@ -28,8 +28,12 @@ class FormTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::setTheme();
+        parent::loadDefaultConfig();
         $GLOBALS['pmaThemePath'] = $GLOBALS['PMA_Theme']->getPath();
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setGlobalConfig();
         $GLOBALS['server'] = 0;
         $this->object = new Form(
             'pma_form_name',
@@ -47,6 +51,7 @@ class FormTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -80,7 +85,7 @@ class FormTest extends PmaTestCase
      */
     public function testGetOptionType()
     {
-        $attrFieldsTypes = new ReflectionProperty('PhpMyAdmin\Config\Form', '_fieldsTypes');
+        $attrFieldsTypes = new ReflectionProperty(Form::class, '_fieldsTypes');
         $attrFieldsTypes->setAccessible(true);
         $attrFieldsTypes->setValue(
             $this->object,
@@ -133,14 +138,14 @@ class FormTest extends PmaTestCase
     }
 
     /**
-     * Test for Form::_readFormPathsCallback
+     * Test for Form::readFormPathsCallback
      *
      * @return void
      */
     public function testReadFormPathsCallBack()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Config\Form');
-        $method = $reflection->getMethod('_readFormPathsCallback');
+        $reflection = new ReflectionClass(Form::class);
+        $method = $reflection->getMethod('readFormPathsCallback');
         $method->setAccessible(true);
 
         $array = [
@@ -192,7 +197,7 @@ class FormTest extends PmaTestCase
      */
     public function testReadFormPaths()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Config\Form');
+        $reflection = new ReflectionClass(Form::class);
         $method = $reflection->getMethod('readFormPaths');
         $method->setAccessible(true);
 
@@ -248,7 +253,7 @@ class FormTest extends PmaTestCase
      */
     public function testReadTypes()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Config\Form');
+        $reflection = new ReflectionClass(Form::class);
         $method = $reflection->getMethod('readTypes');
         $method->setAccessible(true);
 
@@ -282,7 +287,7 @@ class FormTest extends PmaTestCase
      */
     public function testLoadForm()
     {
-        $this->object = $this->getMockBuilder('PhpMyAdmin\Config\Form')
+        $this->object = $this->getMockBuilder(Form::class)
             ->disableOriginalConstructor()
             ->setMethods(['readFormPaths', 'readTypes'])
             ->getMock();

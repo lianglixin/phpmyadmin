@@ -2,13 +2,13 @@
 /**
  * Base class for phpMyAdmin tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Response;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 use function array_slice;
 use function call_user_func_array;
@@ -20,14 +20,8 @@ use function is_int;
 /**
  * Base class for phpMyAdmin tests
  */
-class PmaTestCase extends TestCase
+abstract class AbstractNetworkTestCase extends AbstractTestCase
 {
-    /** @var Response|null */
-    protected $restoreInstance = null;
-
-    /** @var ReflectionProperty|null */
-    protected $attrInstance = null;
-
     /**
      * This method is called before the first test of this test class is run.
      */
@@ -47,8 +41,6 @@ class PmaTestCase extends TestCase
      */
     public function mockResponse(...$param)
     {
-        $this->restoreInstance = Response::getInstance();
-
         $mockResponse = $this->getMockBuilder(Response::class)
             ->disableOriginalConstructor()
             ->setMethods([
@@ -94,9 +86,9 @@ class PmaTestCase extends TestCase
             }
         }
 
-        $this->attrInstance = new ReflectionProperty('PhpMyAdmin\Response', '_instance');
-        $this->attrInstance->setAccessible(true);
-        $this->attrInstance->setValue($mockResponse);
+        $attrInstance = new ReflectionProperty(Response::class, '_instance');
+        $attrInstance->setAccessible(true);
+        $attrInstance->setValue($mockResponse);
 
         return $mockResponse;
     }
@@ -106,10 +98,10 @@ class PmaTestCase extends TestCase
      */
     protected function tearDown(): void
     {
-        if ($this->attrInstance !== null && $this->restoreInstance !== null) {
-            $this->attrInstance->setValue($this->restoreInstance);
-            $this->restoreInstance = null;
-            $this->attrInstance = null;
-        }
+        parent::tearDown();
+        $response = new ReflectionProperty(Response::class, '_instance');
+        $response->setAccessible(true);
+        $response->setValue(null);
+        $response->setAccessible(false);
     }
 }

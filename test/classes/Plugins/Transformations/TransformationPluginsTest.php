@@ -2,11 +2,11 @@
 /**
  * Tests for all input/output transformation plugins
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Transformations;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Plugins\Transformations\Input\Image_JPEG_Upload;
 use PhpMyAdmin\Plugins\Transformations\Input\Text_Plain_FileUpload;
 use PhpMyAdmin\Plugins\Transformations\Input\Text_Plain_Iptolong;
@@ -25,7 +25,7 @@ use PhpMyAdmin\Plugins\Transformations\Text_Plain_Link;
 use PhpMyAdmin\Plugins\Transformations\Text_Plain_Longtoipv4;
 use PhpMyAdmin\Plugins\Transformations\Text_Plain_PreApPend;
 use PhpMyAdmin\Plugins\Transformations\Text_Plain_Substring;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionMethod;
 use function date_default_timezone_set;
 use function function_exists;
@@ -34,7 +34,7 @@ use function method_exists;
 /**
  * Tests for different input/output transformation plugins
  */
-class TransformationPluginsTest extends PmaTestCase
+class TransformationPluginsTest extends AbstractTestCase
 {
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -44,6 +44,8 @@ class TransformationPluginsTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::setLanguage();
         // For Application Octetstream Download plugin
         global $row, $fields_meta;
         $fields_meta = [];
@@ -53,21 +55,12 @@ class TransformationPluginsTest extends PmaTestCase
         ];
 
         // For Image_*_Inline plugin
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setGlobalConfig();
         $GLOBALS['PMA_Config']->enableBc();
+        $GLOBALS['Server'] = 1;
 
         // For Date Format plugin
         date_default_timezone_set('UTC');
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     *
-     * @access protected
-     */
-    protected function tearDown(): void
-    {
     }
 
     /**
@@ -719,13 +712,15 @@ class TransformationPluginsTest extends PmaTestCase
      */
     public function testGetMulti($object, $method, $expected, $args = []): void
     {
-        if (method_exists($object, $method)) {
-            $reflectionMethod = new ReflectionMethod($object, $method);
-            $this->assertEquals(
-                $expected,
-                $reflectionMethod->invokeArgs($object, $args)
-            );
+        if (! method_exists($object, $method)) {
+            return;
         }
+
+        $reflectionMethod = new ReflectionMethod($object, $method);
+        $this->assertEquals(
+            $expected,
+            $reflectionMethod->invokeArgs($object, $args)
+        );
     }
 
     /**
@@ -848,9 +843,7 @@ class TransformationPluginsTest extends PmaTestCase
                 [
                     12345,
                     [0],
-                    ((object) [
-                        'type' => 'int',
-                    ]),
+                    ((object) ['type' => 'int']),
                 ],
                 '<dfn onclick="alert(\'12345\');" title="12345">'
                 . 'Jan 01, 1970 at 03:25 AM</dfn>',
@@ -860,9 +853,7 @@ class TransformationPluginsTest extends PmaTestCase
                 [
                     12345678,
                     [0],
-                    ((object) [
-                        'type' => 'string',
-                    ]),
+                    ((object) ['type' => 'string']),
                 ],
                 '<dfn onclick="alert(\'12345678\');" title="12345678">'
                 . 'May 23, 1970 at 09:21 PM</dfn>',
@@ -872,9 +863,7 @@ class TransformationPluginsTest extends PmaTestCase
                 [
                     123456789,
                     [0],
-                    ((object) [
-                        'type' => null,
-                    ]),
+                    ((object) ['type' => null]),
                 ],
                 '<dfn onclick="alert(\'123456789\');" title="123456789">'
                 . 'Nov 29, 1973 at 09:33 PM</dfn>',
@@ -884,9 +873,7 @@ class TransformationPluginsTest extends PmaTestCase
                 [
                     '20100201',
                     [0],
-                    ((object) [
-                        'type' => null,
-                    ]),
+                    ((object) ['type' => null]),
                 ],
                 '<dfn onclick="alert(\'20100201\');" title="20100201">'
                 . 'Feb 01, 2010 at 12:00 AM</dfn>',
@@ -1162,11 +1149,13 @@ class TransformationPluginsTest extends PmaTestCase
         }
 
         // For output transformation plugins, this method may not exist
-        if (method_exists($object, 'getError')) {
-            $this->assertEquals(
-                $error,
-                $object->getError()
-            );
+        if (! method_exists($object, 'getError')) {
+            return;
         }
+
+        $this->assertEquals(
+            $error,
+            $object->getError()
+        );
     }
 }

@@ -2,6 +2,7 @@
 /**
  * SignOn Authentication plugin for phpMyAdmin
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Auth;
@@ -43,9 +44,9 @@ class AuthenticationSignon extends AuthenticationPlugin
 
         if (! defined('TESTSUITE')) {
             exit;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -53,7 +54,7 @@ class AuthenticationSignon extends AuthenticationPlugin
      *
      * @param array $sessionCookieParams The cookie params
      */
-    public function setCookieParams(array $sessionCookieParams = null): void
+    public function setCookieParams(?array $sessionCookieParams = null): void
     {
         /* Session cookie params from config */
         if ($sessionCookieParams === null) {
@@ -61,7 +62,7 @@ class AuthenticationSignon extends AuthenticationPlugin
         }
 
         /* Sanitize cookie params */
-        $defaultCookieParams = function (string $key) {
+        $defaultCookieParams = static function (string $key) {
             switch ($key) {
                 case 'lifetime':
                     return 0;
@@ -79,9 +80,11 @@ class AuthenticationSignon extends AuthenticationPlugin
         };
 
         foreach (['lifetime', 'path', 'domain', 'secure', 'httponly'] as $key) {
-            if (! isset($sessionCookieParams[$key])) {
-                $sessionCookieParams[$key] = $defaultCookieParams($key);
+            if (isset($sessionCookieParams[$key])) {
+                continue;
             }
+
+            $sessionCookieParams[$key] = $defaultCookieParams($key);
         }
 
         if (isset($sessionCookieParams['samesite'])
@@ -146,7 +149,7 @@ class AuthenticationSignon extends AuthenticationPlugin
             }
             include $script_name;
 
-            list ($this->user, $this->password)
+            [$this->user, $this->password]
                 = get_login_credentials($GLOBALS['cfg']['Server']['user']);
         } elseif (isset($_COOKIE[$session_name])) { /* Does session exist? */
             /* End current session */

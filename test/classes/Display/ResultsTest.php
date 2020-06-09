@@ -2,19 +2,19 @@
 /**
  * Tests for displaying results
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Display;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Core;
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Display\Results as DisplayResults;
 use PhpMyAdmin\Plugins\Transformations\Text_Plain_Link;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Utils\Query;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Transformations;
-use ReflectionClass;
 use stdClass;
 use function count;
 use function hex2bin;
@@ -22,7 +22,7 @@ use function hex2bin;
 /**
  * Test cases for displaying results.
  */
-class ResultsTest extends PmaTestCase
+class ResultsTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -35,18 +35,21 @@ class ResultsTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::setLanguage();
+        parent::setGlobalConfig();
         $GLOBALS['server'] = 0;
         $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = 'table';
         $GLOBALS['PMA_PHP_SELF'] = 'index.php';
         $this->object = new DisplayResults('as', '', 0, '', '');
-        $GLOBALS['PMA_Config'] = new Config();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['text_dir'] = 'ltr';
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $_SESSION[' HMAC_secret '] = 'test';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -64,28 +67,12 @@ class ResultsTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
     /**
-     * Call private functions by setting visibility to public.
-     *
-     * @param string $name   method name
-     * @param array  $params parameters for the invocation
-     *
-     * @return mixed the output from the private method.
-     */
-    private function _callPrivateFunction($name, array $params)
-    {
-        $class = new ReflectionClass(DisplayResults::class);
-        $method = $class->getMethod($name);
-        $method->setAccessible(true);
-
-        return $method->invokeArgs($this->object, $params);
-    }
-
-    /**
-     * Test for _isSelect function
+     * Test for isSelect function
      *
      * @return void
      */
@@ -93,8 +80,10 @@ class ResultsTest extends PmaTestCase
     {
         $parser = new Parser('SELECT * FROM pma');
         $this->assertTrue(
-            $this->_callPrivateFunction(
-                '_isSelect',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'isSelect',
                 [
                     [
                         'statement' => $parser->statements[0],
@@ -126,8 +115,10 @@ class ResultsTest extends PmaTestCase
         $GLOBALS['cfg']['TableNavigationLinksMode'] = 'icons';
         $_SESSION[' PMA_token '] = 'token';
 
-        $actual = $this->_callPrivateFunction(
-            '_getTableNavigationButton',
+        $actual = $this->callFunction(
+            $this->object,
+            DisplayResults::class,
+            'getTableNavigationButton',
             [
                 &$caption,
                 $title,
@@ -142,7 +133,7 @@ class ResultsTest extends PmaTestCase
             $actual
         );
         $this->assertStringContainsString(
-            '" method="post">',
+            '" method="post" >',
             $actual
         );
         $this->assertStringContainsString(
@@ -213,7 +204,7 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Test for _getClassesForColumn
+     * Test for getClassesForColumn
      *
      * @param string $grid_edit_class  the class for all editable columns
      * @param string $not_null_class   the class for not null columns
@@ -239,8 +230,10 @@ class ResultsTest extends PmaTestCase
 
         $this->assertEquals(
             $output,
-            $this->_callPrivateFunction(
-                '_getClassesForColumn',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getClassesForColumn',
                 [
                     $grid_edit_class,
                     $not_null_class,
@@ -253,7 +246,7 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Test for _getClassForDateTimeRelatedFields - case 1
+     * Test for getClassForDateTimeRelatedFields - case 1
      *
      * @return void
      */
@@ -261,15 +254,17 @@ class ResultsTest extends PmaTestCase
     {
         $this->assertEquals(
             'datetimefield',
-            $this->_callPrivateFunction(
-                '_getClassForDateTimeRelatedFields',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getClassForDateTimeRelatedFields',
                 [DisplayResults::DATETIME_FIELD]
             )
         );
     }
 
     /**
-     * Test for _getClassForDateTimeRelatedFields - case 2
+     * Test for getClassForDateTimeRelatedFields - case 2
      *
      * @return void
      */
@@ -277,15 +272,17 @@ class ResultsTest extends PmaTestCase
     {
         $this->assertEquals(
             'datefield',
-            $this->_callPrivateFunction(
-                '_getClassForDateTimeRelatedFields',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getClassForDateTimeRelatedFields',
                 [DisplayResults::DATE_FIELD]
             )
         );
     }
 
     /**
-     * Test for _getClassForDateTimeRelatedFields - case 3
+     * Test for getClassForDateTimeRelatedFields - case 3
      *
      * @return void
      */
@@ -293,15 +290,17 @@ class ResultsTest extends PmaTestCase
     {
         $this->assertEquals(
             'text',
-            $this->_callPrivateFunction(
-                '_getClassForDateTimeRelatedFields',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getClassForDateTimeRelatedFields',
                 [DisplayResults::STRING_FIELD]
             )
         );
     }
 
     /**
-     * Test for _getOffsets - case 1
+     * Test for getOffsets - case 1
      *
      * @return void
      */
@@ -313,12 +312,17 @@ class ResultsTest extends PmaTestCase
                 0,
                 0,
             ],
-            $this->_callPrivateFunction('_getOffsets', [])
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getOffsets',
+                []
+            )
         );
     }
 
     /**
-     * Test for _getOffsets - case 2
+     * Test for getOffsets - case 2
      *
      * @return void
      */
@@ -331,7 +335,12 @@ class ResultsTest extends PmaTestCase
                 9,
                 0,
             ],
-            $this->_callPrivateFunction('_getOffsets', [])
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getOffsets',
+                []
+            )
         );
     }
 
@@ -386,14 +395,14 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Test _getSpecialLinkUrl
+     * Test getSpecialLinkUrl
      *
      * @param string $db           the database name
      * @param string $table        the table name
      * @param string $column_value column value
      * @param array  $row_info     information about row
      * @param string $field_name   column name
-     * @param bool   $output       output of _getSpecialLinkUrl
+     * @param bool   $output       output of getSpecialLinkUrl
      *
      * @return void
      *
@@ -455,8 +464,10 @@ class ResultsTest extends PmaTestCase
 
         $this->assertEquals(
             $output,
-            $this->_callPrivateFunction(
-                '_getSpecialLinkUrl',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getSpecialLinkUrl',
                 [
                     $specialSchemaLinks,
                     $column_value,
@@ -515,13 +526,13 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Test _getRowInfoForSpecialLinks
+     * Test getRowInfoForSpecialLinks
      *
      * @param array $fields_meta  meta information about fields
      * @param int   $fields_count number of fields
      * @param array $row          current row data
      * @param array $col_order    the column order
-     * @param bool  $output       output of _getRowInfoForSpecialLinks
+     * @param bool  $output       output of getRowInfoForSpecialLinks
      *
      * @return void
      *
@@ -539,8 +550,10 @@ class ResultsTest extends PmaTestCase
 
         $this->assertEquals(
             $output,
-            $this->_callPrivateFunction(
-                '_getRowInfoForSpecialLinks',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getRowInfoForSpecialLinks',
                 [
                     $row,
                     $col_order,
@@ -573,17 +586,19 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Test _setHighlightedColumnGlobalField
+     * Test setHighlightedColumnGlobalField
      *
      * @param array $analyzed_sql the analyzed query
-     * @param array $output       setting value of _setHighlightedColumnGlobalField
+     * @param array $output       setting value of setHighlightedColumnGlobalField
      *
      * @dataProvider dataProviderForTestSetHighlightedColumnGlobalField
      */
     public function testSetHighlightedColumnGlobalField($analyzed_sql, $output): void
     {
-        $this->_callPrivateFunction(
-            '_setHighlightedColumnGlobalField',
+        $this->callFunction(
+            $this->object,
+            DisplayResults::class,
+            'setHighlightedColumnGlobalField',
             [$analyzed_sql]
         );
 
@@ -645,12 +660,12 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Test _getPartialText
+     * Test getPartialText
      *
      * @param string $pftext     Partial or Full text
      * @param int    $limitChars Partial or Full text
      * @param string $str        the string to be tested
-     * @param bool   $output     return value of _getPartialText
+     * @param bool   $output     return value of getPartialText
      *
      * @dataProvider dataProviderForTestGetPartialText
      */
@@ -660,8 +675,10 @@ class ResultsTest extends PmaTestCase
         $GLOBALS['cfg']['LimitChars'] = $limitChars;
         $this->assertEquals(
             $output,
-            $this->_callPrivateFunction(
-                '_getPartialText',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getPartialText',
                 [$str]
             )
         );
@@ -778,7 +795,7 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Test _handleNonPrintableContents
+     * Test handleNonPrintableContents
      *
      * @param bool   $display_binary        show binary contents?
      * @param bool   $display_blob          show blob contents?
@@ -817,8 +834,10 @@ class ResultsTest extends PmaTestCase
         $GLOBALS['cfg']['LimitChars'] = 50;
         $this->assertStringContainsString(
             $output,
-            $this->_callPrivateFunction(
-                '_handleNonPrintableContents',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'handleNonPrintableContents',
                 [
                     $category,
                     $content,
@@ -966,7 +985,7 @@ class ResultsTest extends PmaTestCase
     }
 
     /**
-     * Test _getDataCellForNonNumericColumns
+     * Test getDataCellForNonNumericColumns
      *
      * @param bool   $protectBinary         all|blob|noblob|no
      * @param string $column                the relevant column in data row
@@ -1014,8 +1033,10 @@ class ResultsTest extends PmaTestCase
         $GLOBALS['cfg']['ProtectBinary'] = $protectBinary;
         $this->assertStringContainsString(
             $output,
-            $this->_callPrivateFunction(
-                '_getDataCellForNonNumericColumns',
+            $this->callFunction(
+                $this->object,
+                DisplayResults::class,
+                'getDataCellForNonNumericColumns',
                 [
                     $column,
                     $class,
@@ -1089,7 +1110,7 @@ class ResultsTest extends PmaTestCase
         ];
         $this->object->__set('fields_meta', $fields_meta);
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -1121,8 +1142,10 @@ class ResultsTest extends PmaTestCase
         );
 
         // Actually invoke tested method
-        $output = $this->_callPrivateFunction(
-            '_getRowValues',
+        $output = $this->callFunction(
+            $this->object,
+            DisplayResults::class,
+            'getRowValues',
             [
                 &$result,
                 [

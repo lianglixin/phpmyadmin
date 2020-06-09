@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers;
@@ -94,7 +95,9 @@ class ViewCreateController extends AbstractController
                 }
             }
 
-            if (isset($_POST['view']['sql_security']) && in_array($_POST['view']['sql_security'], $view_security_options)) {
+            if (isset($_POST['view']['sql_security'])
+                && in_array($_POST['view']['sql_security'], $view_security_options)
+            ) {
                 $sql_query .= $sep . ' SQL SECURITY '
                     . $_POST['view']['sql_security'];
             }

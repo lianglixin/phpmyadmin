@@ -2,17 +2,18 @@
 /**
  * Tests for PMA_StorageEngine_memory
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Engines\Memory;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Engines\Memory
  */
-class MemoryTest extends PmaTestCase
+class MemoryTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -25,6 +26,7 @@ class MemoryTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['server'] = 0;
         $this->object = new Memory('memory');
     }
@@ -37,6 +39,7 @@ class MemoryTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -50,9 +53,7 @@ class MemoryTest extends PmaTestCase
         $this->assertEquals(
             $this->object->getVariables(),
             [
-                'max_heap_table_size' => [
-                    'type'  => 1,
-                ],
+                'max_heap_table_size' => ['type' => 1],
             ]
         );
     }

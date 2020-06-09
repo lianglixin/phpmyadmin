@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for SQL query window related tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium;
@@ -34,7 +35,7 @@ class XssTest extends TestBase
         $this->waitForElement('partialLinkText', 'SQL')->click();
         $this->waitAjax();
 
-        $this->waitForElement('id', 'queryboxf');
+        $this->waitForElement('id', 'querybox');
         $this->byId('button_submit_query')->click();
         $this->assertEquals('Missing value in the form!', $this->alertText());
     }

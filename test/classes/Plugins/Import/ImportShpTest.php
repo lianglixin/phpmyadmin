@@ -2,21 +2,25 @@
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportShp class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Import;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\File;
 use PhpMyAdmin\Plugins\Import\ImportShp;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use function define;
 use function defined;
 use function extension_loaded;
 
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportShp class
+ *
+ * @requires extension zip
  */
-class ImportShpTest extends PmaTestCase
+class ImportShpTest extends AbstractTestCase
 {
     /**
      * @var ImportShp
@@ -32,6 +36,8 @@ class ImportShpTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
         if (! defined('PMA_IS_WINDOWS')) {
             define('PMA_IS_WINDOWS', false);
         }
@@ -44,7 +50,7 @@ class ImportShpTest extends PmaTestCase
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
 
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $GLOBALS['dbi'] = $dbi;
@@ -86,6 +92,7 @@ class ImportShpTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -242,8 +249,7 @@ class ImportShpTest extends PmaTestCase
         );
 
         //asset that the import process is finished
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $GLOBALS['finished']
         );
     }

@@ -3,6 +3,7 @@
  * This class is responsible for instantiating
  * the various components of the navigation panel
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Navigation;
@@ -269,7 +270,9 @@ class Navigation
 
         if (isset($pmaThemeImage) && @file_exists($pmaThemeImage . 'logo_left.png')) {
             return $pmaThemeImage . 'logo_left.png';
-        } elseif (isset($pmaThemeImage) && @file_exists($pmaThemeImage . 'pma_logo2.png')) {
+        }
+
+        if (isset($pmaThemeImage) && @file_exists($pmaThemeImage . 'pma_logo2.png')) {
             return $pmaThemeImage . 'pma_logo2.png';
         }
 

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Controllers\Table;
@@ -114,7 +115,7 @@ class SearchController extends AbstractController
         $this->_columnCollations = [];
         $this->_geomColumnFlag = false;
         $this->_foreigners = [];
-        $this->_loadTableInfo();
+        $this->loadTableInfo();
     }
 
     /**
@@ -123,7 +124,7 @@ class SearchController extends AbstractController
      *
      * @return void
      */
-    private function _loadTableInfo()
+    private function loadTableInfo()
     {
         // Gets the list and number of columns
         $columns = $this->dbi->getColumns(

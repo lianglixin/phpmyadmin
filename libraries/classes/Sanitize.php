@@ -2,6 +2,7 @@
 /**
  * This class includes various sanitization methods that can be called statically
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -49,13 +50,15 @@ class Sanitize
             './doc/html/',
             './index.php?',
         ];
-        $is_setup = $GLOBALS['PMA_Config'] !== null && $GLOBALS['PMA_Config']->get('is_setup');
+        $is_setup = self::isSetup();
         // Adjust path to setup script location
         if ($is_setup) {
             foreach ($valid_starts as $key => $value) {
-                if (substr($value, 0, 2) === './') {
-                    $valid_starts[$key] = '.' . $value;
+                if (substr($value, 0, 2) !== './') {
+                    continue;
                 }
+
+                $valid_starts[$key] = '.' . $value;
             }
         }
         if ($other) {
@@ -76,6 +79,16 @@ class Sanitize
         }
 
         return false;
+    }
+
+    /**
+     * Check if we are currently on a setup folder page
+     *
+     * @return bool
+     */
+    public static function isSetup(): bool
+    {
+        return $GLOBALS['PMA_Config'] !== null && $GLOBALS['PMA_Config']->get('is_setup');
     }
 
     /**
@@ -125,9 +138,11 @@ class Sanitize
     public static function replaceDocLink(array $found)
     {
         if (count($found) >= 4) {
+            /* doc@page@anchor pattern */
             $page = $found[1];
             $anchor = $found[3];
         } else {
+            /* doc@anchor pattern */
             $anchor = $found[1];
             if (strncmp('faq', $anchor, 3) == 0) {
                 $page = 'faq';
@@ -138,7 +153,7 @@ class Sanitize
                 $page = 'setup';
             }
         }
-        $link = MySQLDocumentation::getDocumentationLink($page, $anchor);
+        $link = MySQLDocumentation::getDocumentationLink($page, $anchor, self::isSetup() ? '../' : './');
 
         return '<a href="' . $link . '" target="documentation">';
     }
@@ -183,7 +198,8 @@ class Sanitize
             '[sup]'     => '<sup>',
             '[/sup]'    => '</sup>',
             // used in common.inc.php:
-            '[conferr]' => '<iframe src="show_config_errors.php"><a href="show_config_errors.php">show_config_errors.php</a></iframe>',
+            '[conferr]' => '<iframe src="show_config_errors.php"><a href='
+                . '"show_config_errors.php">show_config_errors.php</a></iframe>',
             // used in libraries/Util.php
             '[dochelpicon]' => Html\Generator::getImage('b_help', __('Documentation')),
         ];
@@ -194,14 +210,14 @@ class Sanitize
         $pattern = '/\[a@([^]"@]*)(@([^]"]*))?\]/';
 
         /* Find and replace all links */
-        $message = preg_replace_callback($pattern, function (array $match) {
+        $message = preg_replace_callback($pattern, static function (array $match) {
             return self::replaceBBLink($match);
         }, $message);
 
         /* Replace documentation links */
         $message = preg_replace_callback(
             '/\[doc@([a-zA-Z0-9_-]+)(@([a-zA-Z0-9_-]*))?\]/',
-            function (array $match) {
+            static function (array $match) {
                 return self::replaceDocLink($match);
             },
             $message
@@ -386,9 +402,11 @@ class Sanitize
             if (isset($_COOKIE[$key]) && ! is_string($_COOKIE[$key])) {
                 unset($_COOKIE[$key]);
             }
-            if (isset($_GET[$key]) && ! is_string($_GET[$key])) {
-                unset($_GET[$key]);
+            if (! isset($_GET[$key]) || is_string($_GET[$key])) {
+                continue;
             }
+
+            unset($_GET[$key]);
         }
     }
 }

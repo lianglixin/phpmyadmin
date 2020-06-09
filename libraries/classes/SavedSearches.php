@@ -2,6 +2,7 @@
 /**
  * Saved searches managing
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -183,9 +184,11 @@ class SavedSearches
         $data['criteriaColumnCount'] = count($criterias['criteriaColumn']);
 
         foreach ($aListFieldsToGet as $field) {
-            if (isset($criterias[$field])) {
-                $data[$field] = $criterias[$field];
+            if (! isset($criterias[$field])) {
+                continue;
             }
+
+            $data[$field] = $criterias[$field];
         }
 
         /* Limit amount of rows */
@@ -421,8 +424,9 @@ class SavedSearches
             . "WHERE id = '" . $GLOBALS['dbi']->escapeString($this->getId()) . "' ";
 
         $resList = $this->relation->queryAsControlUser($sqlQuery);
+        $oneResult = $GLOBALS['dbi']->fetchArray($resList);
 
-        if (($oneResult = $GLOBALS['dbi']->fetchArray($resList)) === false) {
+        if ($oneResult === false) {
             $message = Message::error(__('Error while loading the search.'));
             $response = Response::getInstance();
             $response->setRequestStatus($message->isSuccess());

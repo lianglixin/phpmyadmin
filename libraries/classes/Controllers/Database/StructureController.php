@@ -503,7 +503,7 @@ class StructureController extends AbstractController
             } elseif (strlen($db) > 0) {
                 Common::database();
 
-                list(
+                [
                     $tables,
                     $num_tables,
                     $total_num_tables,
@@ -512,8 +512,8 @@ class StructureController extends AbstractController
                     $db_is_system_schema,
                     $tooltip_truename,
                     $tooltip_aliasname,
-                    $pos
-                ) = Util::getDbInfo($db, $sub_part ?? '');
+                    $pos,
+                ] = Util::getDbInfo($db, $sub_part ?? '');
             } else {
                 Common::server();
             }
@@ -556,8 +556,6 @@ class StructureController extends AbstractController
                 unset($full_query_views);
             }
 
-            $full_query_views = $full_query_views ?? null;
-
             $_url_params = [
                 'query_type' => $what,
                 'db' => $db,
@@ -593,7 +591,9 @@ class StructureController extends AbstractController
                 ]);
             }
             exit;
-        } elseif (! empty($mult_btn) && $mult_btn == __('Yes')) {
+        }
+
+        if (! empty($mult_btn) && $mult_btn == __('Yes')) {
             $default_fk_check_value = false;
             if ($query_type == 'drop_tbl' || $query_type == 'empty_tbl') {
                 $default_fk_check_value = Util::handleDisableFKCheckInit();
@@ -606,7 +606,6 @@ class StructureController extends AbstractController
             $run_parts = false;
             // whether to execute the query at the end (to display results)
             $execute_query_later = false;
-            $result = null;
 
             if ($query_type == 'drop_tbl') {
                 $sql_query_views = '';
@@ -747,15 +746,19 @@ class StructureController extends AbstractController
 
                 // All "DROP TABLE", "DROP FIELD", "OPTIMIZE TABLE" and "REPAIR TABLE"
                 // statements will be run at once below
-                if ($run_parts && ! $copyTable) {
-                    $sql_query .= $aQuery . ';' . "\n";
-                    $this->dbi->selectDb($db);
-                    $result = $this->dbi->query($aQuery);
-
-                    if ($query_type == 'drop_tbl') {
-                        $this->transformations->clear($db, $selected[$i]);
-                    }
+                if (! $run_parts || $copyTable) {
+                    continue;
                 }
+
+                $sql_query .= $aQuery . ';' . "\n";
+                $this->dbi->selectDb($db);
+                $this->dbi->query($aQuery);
+
+                if ($query_type != 'drop_tbl') {
+                    continue;
+                }
+
+                $this->transformations->clear($db, $selected[$i]);
             }
 
             if ($deletes && ! empty($_REQUEST['pos'])) {
@@ -841,9 +844,11 @@ class StructureController extends AbstractController
             $message = Message::success(__('No change'));
         }
 
-        if (empty($_POST['message'])) {
-            $_POST['message'] = Message::success();
+        if (! empty($_POST['message'])) {
+            return;
         }
+
+        $_POST['message'] = Message::success();
     }
 
     /**
@@ -898,10 +903,10 @@ class StructureController extends AbstractController
                 $table_is_view,
                 $sum_size,
             ] = $this->getStuffForEngineTypeTable(
-                    $current_table,
-                    $sum_size,
-                    $overhead_size
-                );
+                $current_table,
+                $sum_size,
+                $overhead_size
+            );
 
             $curTable = $this->dbi
                 ->getTable($this->db, $current_table['TABLE_NAME']);
@@ -1126,8 +1131,7 @@ class StructureController extends AbstractController
             $databaseCharset = $collation->getCharset();
         }
 
-        // table form
-        $html .= $this->template->render('database/structure/table_header', [
+        return $html . $this->template->render('database/structure/table_header', [
             'db' => $this->db,
             'db_is_system_schema' => $this->dbIsSystemSchema,
             'replication' => $GLOBALS['replication_info']['slave']['status'],
@@ -1174,8 +1178,6 @@ class StructureController extends AbstractController
                 'central_columns_work' => $GLOBALS['cfgRelation']['centralcolumnswork'] ?? null,
             ],
         ]);
-
-        return $html;
     }
 
     /**
@@ -1434,14 +1436,14 @@ class StructureController extends AbstractController
                     $overhead_size,
                     $sum_size,
                 ] = $this->getValuesForAriaTable(
-                        $current_table,
-                        $sum_size,
-                        $overhead_size,
-                        $formatted_size,
-                        $unit,
-                        $formatted_overhead,
-                        $overhead_unit
-                    );
+                    $current_table,
+                    $sum_size,
+                    $overhead_size,
+                    $formatted_size,
+                    $unit,
+                    $formatted_overhead,
+                    $overhead_unit
+                );
                 break;
             case 'InnoDB':
             case 'PBMS':

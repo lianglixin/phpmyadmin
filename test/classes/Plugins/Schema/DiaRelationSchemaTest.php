@@ -2,18 +2,22 @@
 /**
  * Tests for PhpMyAdmin\Plugins\Schema\Dia\DiaRelationSchema class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Schema;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Plugins\Schema\Dia\DiaRelationSchema;
 use PhpMyAdmin\Relation;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Plugins\Schema\Dia\DiaRelationSchema class
+ *
+ * @requires extension xmlwriter
  */
-class DiaRelationSchemaTest extends PmaTestCase
+class DiaRelationSchemaTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -26,6 +30,8 @@ class DiaRelationSchemaTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         $_REQUEST['page_number'] = 33;
         $_REQUEST['dia_show_color'] = true;
         $_REQUEST['dia_show_keys'] = true;
@@ -54,7 +60,7 @@ class DiaRelationSchemaTest extends PmaTestCase
         $relation = new Relation($GLOBALS['dbi']);
         $relation->getRelationsParam();
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -70,15 +76,11 @@ class DiaRelationSchemaTest extends PmaTestCase
             ->method('tryQuery')
             ->will($this->returnValue('executed_1'));
 
-        $fetchArrayReturn = [
-            //table name in information_schema_relations
-            'table_name' => 'CHARACTER_SETS',
-        ];
+        //table name in information_schema_relations
+        $fetchArrayReturn = ['table_name' => 'CHARACTER_SETS'];
 
-        $fetchArrayReturn2 = [
-            //table name in information_schema_relations
-            'table_name' => 'COLLATIONS',
-        ];
+        //table name in information_schema_relations
+        $fetchArrayReturn2 = ['table_name' => 'COLLATIONS'];
 
         $dbi->expects($this->at(2))
             ->method('fetchAssoc')
@@ -129,6 +131,7 @@ class DiaRelationSchemaTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -145,12 +148,10 @@ class DiaRelationSchemaTest extends PmaTestCase
             33,
             $this->object->getPageNumber()
         );
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isShowColor()
         );
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->object->isShowKeys()
         );
         $this->assertEquals(

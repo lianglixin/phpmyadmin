@@ -2,6 +2,7 @@
 /**
  * Tests for PhpMyAdmin\Tracker
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -9,14 +10,13 @@ namespace PhpMyAdmin\Tests;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Tracker;
 use PhpMyAdmin\Util;
-use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 
 /**
  * Tests for PhpMyAdmin\Tracker
  */
-class TrackerTest extends PmaTestCase
+class TrackerTest extends AbstractTestCase
 {
     /**
      * Setup function for test cases
@@ -25,6 +25,8 @@ class TrackerTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         /**
          * SET these to avoid undefined index error
          */
@@ -42,13 +44,11 @@ class TrackerTest extends PmaTestCase
             'tracking' => 'tracking',
         ];
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->any())->method('escapeString')
             ->will($this->returnArgument(0));
-
-        $cfg['dbi'] = $dbi;
     }
 
     /**
@@ -78,7 +78,7 @@ class TrackerTest extends PmaTestCase
      */
     public function testIsActive()
     {
-        $attr = new ReflectionProperty('PhpMyAdmin\Tracker', 'enabled');
+        $attr = new ReflectionProperty(Tracker::class, 'enabled');
         $attr->setAccessible(true);
         $attr->setValue(false);
 
@@ -120,13 +120,9 @@ class TrackerTest extends PmaTestCase
      */
     public function testGetTableName($string, $expected): void
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Tracker');
-        $method = $reflection->getMethod('getTableName');
-        $method->setAccessible(true);
-
         $this->assertEquals(
             $expected,
-            $method->invokeArgs(null, [$string])
+            $this->callFunction(null, Tracker::class, 'getTableName', [$string])
         );
     }
 
@@ -162,7 +158,7 @@ class TrackerTest extends PmaTestCase
      */
     public function testIsTracked()
     {
-        $attr = new ReflectionProperty('PhpMyAdmin\Tracker', 'enabled');
+        $attr = new ReflectionProperty(Tracker::class, 'enabled');
         $attr->setAccessible(true);
         $attr->setValue(false);
 
@@ -221,7 +217,7 @@ class TrackerTest extends PmaTestCase
         $GLOBALS['cfg']['Server']['tracking_add_drop_view'] = true;
         $GLOBALS['cfg']['Server']['user'] = 'pma_test_user';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -332,7 +328,7 @@ class TrackerTest extends PmaTestCase
      */
     public function testDeleteTracking()
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -368,7 +364,7 @@ class TrackerTest extends PmaTestCase
         $GLOBALS['cfg']['Server']['tracking_add_drop_view'] = true;
         $GLOBALS['cfg']['Server']['user'] = 'pma_test_user';
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -425,7 +421,7 @@ class TrackerTest extends PmaTestCase
         $new_state = '1',
         $type = null
     ) {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -448,7 +444,7 @@ class TrackerTest extends PmaTestCase
         $result = null;
 
         if ($type === null) {
-            $method = new ReflectionMethod('PhpMyAdmin\Tracker', '_changeTracking');
+            $method = new ReflectionMethod(Tracker::class, 'changeTracking');
             $method->setAccessible(true);
             $result = $method->invoke(
                 null,
@@ -482,7 +478,7 @@ class TrackerTest extends PmaTestCase
             Tracker::changeTrackingData('', '', '', '', '')
         );
 
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -539,8 +535,7 @@ class TrackerTest extends PmaTestCase
 
         $GLOBALS['dbi'] = $dbi;
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             Tracker::changeTrackingData(
                 'pma_db',
                 'pma_table',
@@ -550,8 +545,7 @@ class TrackerTest extends PmaTestCase
             )
         );
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             Tracker::changeTrackingData(
                 'pma_db',
                 'pma_table',
@@ -597,7 +591,7 @@ class TrackerTest extends PmaTestCase
      */
     public function testGetTrackedData($fetchArrayReturn, $expectedArray): void
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -778,12 +772,14 @@ class TrackerTest extends PmaTestCase
             );
         }
 
-        if ($tablename_after_rename) {
-            $this->assertEquals(
-                $result['tablename_after_rename'],
-                $tablename_after_rename
-            );
+        if (! $tablename_after_rename) {
+            return;
         }
+
+        $this->assertEquals(
+            $result['tablename_after_rename'],
+            $tablename_after_rename
+        );
     }
 
     /**

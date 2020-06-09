@@ -100,7 +100,7 @@
             <td class="nowrap">{{ row['Extra']|upper }}</td>
             {% if not tbl_is_view and not db_is_system_schema %}
                 <td class="edit text-center print_ignore">
-                    <a class="change_column_anchor ajax" href="{{ url('/table/structure', url_params|merge({
+                    <a class="change_column_anchor ajax" href="{{ url('/table/structure/change', url_params|merge({
                       'db': db,
                       'table': table,
                       'field': row['Field'],
@@ -220,8 +220,8 @@
                                 or tbl_storage_engine == 'MARIA'
                                 or (tbl_storage_engine == 'INNODB' and mysql_int_version >= 50604)
                             ) and ('text' in type or 'char' in type) %}
-                            <a rel="samepage" class="ajax add_key add_fulltext_anchor" href="{{ url('/table/structure') }}"
-                                data-post="{{- url_query|raw }}&amp;add_key=1&amp;sql_query=
+                            <a rel="samepage" class="ajax add_key add_fulltext_anchor" href="{{ url('/table/structure/add-key') }}"
+                                data-post="{{- url_query|raw }}&amp;sql_query=
                                 {{- ('ALTER TABLE ' ~ backquote(table)
                                     ~ ' ADD FULLTEXT(' ~ backquote(row['Field'])
                                     ~ ');')|url_encode }}&amp;message_to_show=
@@ -367,7 +367,7 @@
 <hr class="print_ignore">
 <div id="move_columns_dialog" class="hide" title="{% trans 'Move columns' %}">
     <p>{% trans 'Move the columns by dragging them up and down.' %}</p>
-    <form action="{{ url('/table/structure') }}" name="move_column_form" id="move_column_form">
+    <form action="{{ url('/table/structure/move-columns') }}" name="move_column_form" id="move_column_form">
         <div>
             {{ get_hidden_inputs(db, table) }}
             <ul></ul>

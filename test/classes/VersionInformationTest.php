@@ -2,6 +2,7 @@
 /**
  * Tests for methods in PhpMyAdmin\VersionInformation class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -12,7 +13,7 @@ use stdClass;
 /**
  * Tests for methods in PhpMyAdmin\VersionInformation class
  */
-class VersionInformationTest extends PmaTestCase
+class VersionInformationTest extends AbstractTestCase
 {
     /** @var stdClass[] */
     private $_releases;
@@ -23,6 +24,8 @@ class VersionInformationTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::setProxySettings();
         $this->_releases = [];
 
         $release = new stdClass();
@@ -182,7 +185,7 @@ class VersionInformationTest extends PmaTestCase
             [],
         ];
 
-        $mockVersionInfo = $this->getMockBuilder('PhpMyAdmin\VersionInformation')
+        $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
             ->setMethods(['evaluateVersionCondition'])
             ->getMock();
 
@@ -218,7 +221,7 @@ class VersionInformationTest extends PmaTestCase
             [],
         ];
 
-        $mockVersionInfo = $this->getMockBuilder('PhpMyAdmin\VersionInformation')
+        $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
             ->setMethods(['evaluateVersionCondition'])
             ->getMock();
 
@@ -249,7 +252,7 @@ class VersionInformationTest extends PmaTestCase
             [],
         ];
 
-        $mockVersionInfo = $this->getMockBuilder('PhpMyAdmin\VersionInformation')
+        $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
             ->setMethods(['evaluateVersionCondition'])
             ->getMock();
 
@@ -289,8 +292,11 @@ class VersionInformationTest extends PmaTestCase
      *
      * @dataProvider dataProviderVersionConditions
      */
-    public function testGetLatestCompatibleVersionWithNewPHPVersion(array $versions, array $conditions, ?string $matchedLastVersion): void
-    {
+    public function testGetLatestCompatibleVersionWithNewPHPVersion(
+        array $versions,
+        array $conditions,
+        ?string $matchedLastVersion
+    ): void {
         $GLOBALS['cfg']['Servers'] = [];
 
         $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
@@ -562,7 +568,7 @@ class VersionInformationTest extends PmaTestCase
      */
     public function testEvaluateVersionCondition()
     {
-        $mockVersionInfo = $this->getMockBuilder('PhpMyAdmin\VersionInformation')
+        $mockVersionInfo = $this->getMockBuilder(VersionInformation::class)
             ->setMethods(['getPHPVersion'])
             ->getMock();
 

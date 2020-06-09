@@ -2,18 +2,18 @@
 /**
  * Tests for methods in URL class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Url;
-use PHPUnit\Framework\TestCase;
 use function htmlentities;
 
 /**
  * Tests for methods in URL class
  */
-class UrlTest extends TestCase
+class UrlTest extends AbstractTestCase
 {
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -23,6 +23,8 @@ class UrlTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::setLanguage();
         unset($_COOKIE['pma_lang']);
     }
 
@@ -117,12 +119,17 @@ class UrlTest extends TestCase
      */
     public function testGetFromRoute(): void
     {
+        unset($GLOBALS['server']);
         $generatedUrl = Url::getFromRoute('/test', [
             'db' => '%3\$s',
             'table' => '%2\$s',
             'field' => '%1\$s',
             'change_column' => 1,
         ]);
-        $this->assertEquals('index.php?route=/test&amp;db=%253%5C%24s&amp;table=%252%5C%24s&amp;field=%251%5C%24s&amp;change_column=1&amp;lang=en', $generatedUrl);
+        $this->assertEquals(
+            'index.php?route=/test&amp;db=%253%5C%24s&amp;table=%252%'
+            . '5C%24s&amp;field=%251%5C%24s&amp;change_column=1&amp;lang=en',
+            $generatedUrl
+        );
     }
 }

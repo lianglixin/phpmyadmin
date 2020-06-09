@@ -2,14 +2,15 @@
 /**
  * tests for FormDisplay class in config folder
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Config;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Config\ConfigFile;
+use PhpMyAdmin\Config\Form;
 use PhpMyAdmin\Config\FormDisplay;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -19,7 +20,7 @@ use function gettype;
 /**
  * Tests for PMA_FormDisplay class
  */
-class FormDisplayTest extends PmaTestCase
+class FormDisplayTest extends AbstractTestCase
 {
     /** @var FormDisplay */
     protected $object;
@@ -29,10 +30,15 @@ class FormDisplayTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::setTheme();
+        parent::loadDefaultConfig();
         $GLOBALS['pmaThemePath'] = $GLOBALS['PMA_Theme']->getPath();
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setGlobalConfig();
         $GLOBALS['server'] = 0;
         $this->object = new FormDisplay(new ConfigFile());
+        Form::resetGroupCounter();
     }
 
     /**
@@ -40,6 +46,7 @@ class FormDisplayTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -70,7 +77,7 @@ class FormDisplayTest extends PmaTestCase
      */
     public function testRegisterForm()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Config\FormDisplay');
+        $reflection = new ReflectionClass(FormDisplay::class);
 
         $attrForms = $reflection->getProperty('_forms');
         $attrForms->setAccessible(true);
@@ -87,7 +94,7 @@ class FormDisplayTest extends PmaTestCase
         $this->object->registerForm('pma_testform', $array, 2);
         $_forms = $attrForms->getValue($this->object);
         $this->assertInstanceOf(
-            'PhpMyAdmin\Config\Form',
+            Form::class,
             $_forms['pma_testform']
         );
 
@@ -127,12 +134,12 @@ class FormDisplayTest extends PmaTestCase
             $this->object->process(true, true)
         );
 
-        $this->object = $this->getMockBuilder('PhpMyAdmin\Config\FormDisplay')
+        $this->object = $this->getMockBuilder(FormDisplay::class)
             ->disableOriginalConstructor()
             ->setMethods(['save'])
             ->getMock();
 
-        $attrForms = new ReflectionProperty('PhpMyAdmin\Config\FormDisplay', '_forms');
+        $attrForms = new ReflectionProperty(FormDisplay::class, '_forms');
         $attrForms->setAccessible(true);
         $attrForms->setValue($this->object, [1, 2, 3]);
 
@@ -159,7 +166,7 @@ class FormDisplayTest extends PmaTestCase
      */
     public function testDisplayErrors()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Config\FormDisplay');
+        $reflection = new ReflectionClass(FormDisplay::class);
 
         $attrIsValidated = $reflection->getProperty('_isValidated');
         $attrIsValidated->setAccessible(true);
@@ -181,9 +188,7 @@ class FormDisplayTest extends PmaTestCase
             ],
         ];
 
-        $sysArr = [
-            'Servers/1/test' => 'Servers/1/test2',
-        ];
+        $sysArr = ['Servers/1/test' => 'Servers/1/test2'];
 
         $attrSystemPaths = $reflection->getProperty('_systemPaths');
         $attrSystemPaths->setAccessible(true);
@@ -207,7 +212,7 @@ class FormDisplayTest extends PmaTestCase
      */
     public function testFixErrors()
     {
-        $reflection = new ReflectionClass('PhpMyAdmin\Config\FormDisplay');
+        $reflection = new ReflectionClass(FormDisplay::class);
 
         $attrIsValidated = $reflection->getProperty('_isValidated');
         $attrIsValidated->setAccessible(true);
@@ -228,9 +233,7 @@ class FormDisplayTest extends PmaTestCase
             'Servers/3/test' => [],
         ];
 
-        $sysArr = [
-            'Servers/1/test' => 'Servers/1/host',
-        ];
+        $sysArr = ['Servers/1/test' => 'Servers/1/host'];
 
         $attrSystemPaths = $reflection->getProperty('_systemPaths');
         $attrSystemPaths->setAccessible(true);
@@ -243,9 +246,7 @@ class FormDisplayTest extends PmaTestCase
         $this->assertEquals(
             [
                 'Servers' => [
-                    '1' => [
-                        'test' => 'localhost',
-                    ],
+                    '1' => ['test' => 'localhost'],
                 ],
             ],
             $_SESSION['ConfigFile0']
@@ -253,15 +254,15 @@ class FormDisplayTest extends PmaTestCase
     }
 
     /**
-     * Test for FormDisplay::_validateSelect
+     * Test for FormDisplay::validateSelect
      *
      * @return void
      */
     public function testValidateSelect()
     {
         $attrValidateSelect = new ReflectionMethod(
-            'PhpMyAdmin\Config\FormDisplay',
-            '_validateSelect'
+            FormDisplay::class,
+            'validateSelect'
         );
         $attrValidateSelect->setAccessible(true);
 
@@ -325,7 +326,7 @@ class FormDisplayTest extends PmaTestCase
      */
     public function testHasErrors()
     {
-        $attrErrors = new ReflectionProperty('PhpMyAdmin\Config\FormDisplay', '_errors');
+        $attrErrors = new ReflectionProperty(FormDisplay::class, '_errors');
         $attrErrors->setAccessible(true);
 
         $this->assertFalse(
@@ -370,13 +371,13 @@ class FormDisplayTest extends PmaTestCase
     }
 
     /**
-     * Test for FormDisplay::_getOptName
+     * Test for FormDisplay::getOptName
      *
      * @return void
      */
     public function testGetOptName()
     {
-        $method = new ReflectionMethod('PhpMyAdmin\Config\FormDisplay', '_getOptName');
+        $method = new ReflectionMethod(FormDisplay::class, 'getOptName');
         $method->setAccessible(true);
 
         $this->assertEquals(
@@ -391,17 +392,17 @@ class FormDisplayTest extends PmaTestCase
     }
 
     /**
-     * Test for FormDisplay::_loadUserprefsInfo
+     * Test for FormDisplay::loadUserprefsInfo
      *
      * @return void
      */
     public function testLoadUserprefsInfo()
     {
-        $method = new ReflectionMethod('PhpMyAdmin\Config\FormDisplay', '_loadUserprefsInfo');
+        $method = new ReflectionMethod(FormDisplay::class, 'loadUserprefsInfo');
         $method->setAccessible(true);
 
         $attrUserprefs = new ReflectionProperty(
-            'PhpMyAdmin\Config\FormDisplay',
+            FormDisplay::class,
             '_userprefsDisallow'
         );
 
@@ -414,13 +415,13 @@ class FormDisplayTest extends PmaTestCase
     }
 
     /**
-     * Test for FormDisplay::_setComments
+     * Test for FormDisplay::setComments
      *
      * @return void
      */
     public function testSetComments()
     {
-        $method = new ReflectionMethod('PhpMyAdmin\Config\FormDisplay', '_setComments');
+        $method = new ReflectionMethod(FormDisplay::class, 'setComments');
         $method->setAccessible(true);
 
         // recoding

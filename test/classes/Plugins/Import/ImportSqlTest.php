@@ -2,18 +2,20 @@
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportSql class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Import;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\File;
 use PhpMyAdmin\Plugins\Import\ImportSql;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportSql class
  */
-class ImportSqlTest extends PmaTestCase
+class ImportSqlTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -26,6 +28,7 @@ class ImportSqlTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['server'] = 0;
 
         $this->object = new ImportSql();
@@ -53,6 +56,7 @@ class ImportSqlTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -70,7 +74,7 @@ class ImportSqlTest extends PmaTestCase
         $sql_query_disabled = false;
 
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $GLOBALS['dbi'] = $dbi;
@@ -93,8 +97,7 @@ class ImportSqlTest extends PmaTestCase
             $sql_query
         );
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $GLOBALS['finished']
         );
     }

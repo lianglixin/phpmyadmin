@@ -2,6 +2,7 @@
 /**
  * Test for Menu class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
@@ -14,13 +15,18 @@ use function defined;
 /**
  * Test for Menu class
  */
-class MenuTest extends PmaTestCase
+class MenuTest extends AbstractTestCase
 {
     /**
      * Configures global environment.
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::setTheme();
+        parent::loadDefaultConfig();
+
         if (! defined('PMA_IS_WINDOWS')) {
             define('PMA_IS_WINDOWS', false);
         }

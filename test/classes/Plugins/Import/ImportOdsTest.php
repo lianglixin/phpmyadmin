@@ -2,18 +2,22 @@
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportOds class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Import;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\File;
 use PhpMyAdmin\Plugins\Import\ImportOds;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportOds class
+ *
+ * @requires extension zip
  */
-class ImportOdsTest extends PmaTestCase
+class ImportOdsTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -26,6 +30,8 @@ class ImportOdsTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
         $GLOBALS['server'] = 0;
         $GLOBALS['plugin_param'] = 'csv';
         $this->object = new ImportOds();
@@ -61,6 +67,7 @@ class ImportOdsTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -103,7 +110,7 @@ class ImportOdsTest extends PmaTestCase
         $sql_query_disabled = false;
 
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->any())->method('escapeString')
@@ -151,8 +158,7 @@ class ImportOdsTest extends PmaTestCase
         );
 
         //asset that the import process is finished
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $GLOBALS['finished']
         );
     }

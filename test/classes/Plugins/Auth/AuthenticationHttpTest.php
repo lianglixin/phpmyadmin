@@ -2,13 +2,16 @@
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationHttp class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Auth;
 
-use PhpMyAdmin\Config;
+use PhpMyAdmin\DatabaseInterface;
+use PhpMyAdmin\Footer;
+use PhpMyAdmin\Header;
 use PhpMyAdmin\Plugins\Auth\AuthenticationHttp;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractNetworkTestCase;
 use function base64_encode;
 use function ob_get_clean;
 use function ob_start;
@@ -16,7 +19,7 @@ use function ob_start;
 /**
  * tests for PhpMyAdmin\Plugins\Auth\AuthenticationHttp class
  */
-class AuthenticationHttpTest extends PmaTestCase
+class AuthenticationHttpTest extends AbstractNetworkTestCase
 {
     /** @var AuthenticationHttp */
     protected $object;
@@ -26,7 +29,8 @@ class AuthenticationHttpTest extends PmaTestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setGlobalConfig();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['cfg']['Servers'] = [];
         $GLOBALS['server'] = 0;
@@ -60,7 +64,7 @@ class AuthenticationHttpTest extends PmaTestCase
     public function doMockResponse($set_minimal, $body_id, $set_title, ...$headers)
     {
         // mock footer
-        $mockFooter = $this->getMockBuilder('PhpMyAdmin\Footer')
+        $mockFooter = $this->getMockBuilder(Footer::class)
             ->disableOriginalConstructor()
             ->setMethods(['setMinimal'])
             ->getMock();
@@ -71,7 +75,7 @@ class AuthenticationHttpTest extends PmaTestCase
 
         // mock header
 
-        $mockHeader = $this->getMockBuilder('PhpMyAdmin\Header')
+        $mockHeader = $this->getMockBuilder(Header::class)
             ->disableOriginalConstructor()
             ->setMethods(
                 [
@@ -413,7 +417,7 @@ class AuthenticationHttpTest extends PmaTestCase
      */
     public function testAuthFails()
     {
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -441,7 +445,7 @@ class AuthenticationHttpTest extends PmaTestCase
             $result
         );
 
-        $this->object = $this->getMockBuilder('PhpMyAdmin\Plugins\Auth\AuthenticationHttp')
+        $this->object = $this->getMockBuilder(AuthenticationHttp::class)
             ->disableOriginalConstructor()
             ->setMethods(['authForm'])
             ->getMock();

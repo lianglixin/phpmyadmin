@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for 'query by example' tests
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium\Database;
@@ -127,7 +128,7 @@ class QueryByExampleTest extends TestBase
         $this->scrollToBottom();
 
         /* Submit the query */
-        $this->waitForElement('cssSelector', 'input[value="Submit Query"]')->click();
+        $this->waitForElement('cssSelector', 'input[value="Submit query"]')->click();
         $this->waitAjax();
 
         $this->waitForElement('cssSelector', 'table.table_results');

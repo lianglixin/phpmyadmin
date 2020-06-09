@@ -2,6 +2,7 @@
 /**
  * PhpMyAdmin\Plugins\Export\Helpers\Pdf class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Export\Helpers;
@@ -349,7 +350,14 @@ class Pdf extends PdfLib
             return; //prevents printing blank trigger list for any table
         }
 
-        unset($this->tablewidths, $this->colTitles, $this->titleWidth, $this->colFits, $this->display_column, $this->colAlign);
+        unset(
+            $this->tablewidths,
+            $this->colTitles,
+            $this->titleWidth,
+            $this->colFits,
+            $this->display_column,
+            $this->colAlign
+        );
 
         /**
          * Making table heading
@@ -419,9 +427,11 @@ class Pdf extends PdfLib
                 if ($tmpheight[$row . '-' . $this->page] < $this->GetY()) {
                     $tmpheight[$row . '-' . $this->page] = $this->GetY();
                 }
-                if ($this->page > $maxpage) {
-                    $maxpage = $this->page;
+                if ($this->page <= $maxpage) {
+                    continue;
                 }
+
+                $maxpage = $this->page;
             }
             // get the height we were in the last used page
             $h = $tmpheight[$row . '-' . $maxpage];
@@ -483,7 +493,14 @@ class Pdf extends PdfLib
         // since the class initialization
         global $cfgRelation;
 
-        unset($this->tablewidths, $this->colTitles, $this->titleWidth, $this->colFits, $this->display_column, $this->colAlign);
+        unset(
+            $this->tablewidths,
+            $this->colTitles,
+            $this->titleWidth,
+            $this->colFits,
+            $this->display_column,
+            $this->colAlign
+        );
 
         /**
          * Gets fields properties
@@ -640,9 +657,11 @@ class Pdf extends PdfLib
                 if ($tmpheight[$row . '-' . $this->page] < $this->GetY()) {
                     $tmpheight[$row . '-' . $this->page] = $this->GetY();
                 }
-                if ($this->page > $maxpage) {
-                    $maxpage = $this->page;
+                if ($this->page <= $maxpage) {
+                    continue;
                 }
+
+                $maxpage = $this->page;
             }
 
             // get the height we were in the last used page
@@ -683,7 +702,14 @@ class Pdf extends PdfLib
      */
     public function mysqlReport($query)
     {
-        unset($this->tablewidths, $this->colTitles, $this->titleWidth, $this->colFits, $this->display_column, $this->colAlign);
+        unset(
+            $this->tablewidths,
+            $this->colTitles,
+            $this->titleWidth,
+            $this->colFits,
+            $this->display_column,
+            $this->colAlign
+        );
 
         /**
          * Pass 1 for column widths
@@ -806,9 +832,11 @@ class Pdf extends PdfLib
             if (! array_key_exists($i, $colFits)) {
                 $this->tablewidths[$i] = $this->sColWidth + $surplusToAdd;
             }
-            if ($this->display_column[$i] == false) {
-                $this->tablewidths[$i] = 0;
+            if ($this->display_column[$i] != false) {
+                continue;
             }
+
+            $this->tablewidths[$i] = 0;
         }
 
         ksort($this->tablewidths);

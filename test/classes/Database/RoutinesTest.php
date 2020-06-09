@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Database;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Database\Routines;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Types;
-use PHPUnit\Framework\TestCase;
 
-class RoutinesTest extends TestCase
+class RoutinesTest extends AbstractTestCase
 {
     /** @var Routines */
     private $routines;
@@ -22,7 +21,9 @@ class RoutinesTest extends TestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setGlobalConfig();
+        parent::setLanguage();
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['cfg']['ActionLinksMode'] = 'icons';
@@ -30,6 +31,7 @@ class RoutinesTest extends TestCase
         $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = 'table';
         $GLOBALS['PMA_PHP_SELF'] = 'index.php';
+        $GLOBALS['text_dir'] = 'ltr';
 
         $this->routines = new Routines(
             $GLOBALS['dbi'],
@@ -51,10 +53,12 @@ class RoutinesTest extends TestCase
         unset($_POST);
         unset($_REQUEST);
         foreach ($in as $key => $value) {
-            if ($value !== '') {
-                $_POST[$key] = $value;
-                $_REQUEST[$key] = $value;
+            if ($value === '') {
+                continue;
             }
+
+            $_POST[$key] = $value;
+            $_REQUEST[$key] = $value;
         }
         $this->assertEquals($out, $this->routines->getDataFromRequest());
     }
@@ -1155,7 +1159,7 @@ class RoutinesTest extends TestCase
         $errors = [];
 
         $old_dbi = $GLOBALS['dbi'] ?? null;
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->types = new Types($dbi);
@@ -1219,7 +1223,7 @@ class RoutinesTest extends TestCase
                     'item_definer'              => 'me@home',
                     'item_type'                 => 'PROCEDURE',
                     'item_num_params'           => '0',
-                    'item_param_dir'            => '',
+                    'item_param_dir'            => [],
                     'item_param_name'           => '',
                     'item_param_type'           => '',
                     'item_param_length'         => '',
@@ -1290,7 +1294,7 @@ class RoutinesTest extends TestCase
                     'item_definer'              => '',
                     'item_type'                 => 'FUNCTION',
                     'item_num_params'           => '1',
-                    'item_param_dir'            => '',
+                    'item_param_dir'            => [],
                     'item_param_name'           => ['pa`ram'],
                     'item_param_type'           => ['VARCHAR'],
                     'item_param_length'         => ['45'],

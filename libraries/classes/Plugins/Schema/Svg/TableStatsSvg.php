@@ -2,6 +2,7 @@
 /**
  * Contains PhpMyAdmin\Plugins\Schema\Svg\TableStatsSvg class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema\Svg;
@@ -69,13 +70,15 @@ class TableStatsSvg extends TableStats
         );
 
         // height and width
-        $this->_setHeightTable($fontSize);
+        $this->setHeightTable($fontSize);
         // setWidth must me after setHeight, because title
         // can include table height which changes table width
-        $this->_setWidthTable($font, $fontSize);
-        if ($same_wide_width < $this->width) {
-            $same_wide_width = $this->width;
+        $this->setWidthTable($font, $fontSize);
+        if ($same_wide_width >= $this->width) {
+            return;
         }
+
+        $same_wide_width = $this->width;
     }
 
     /**
@@ -104,7 +107,7 @@ class TableStatsSvg extends TableStats
      *
      * @access private
      */
-    private function _setWidthTable($font, $fontSize): void
+    private function setWidthTable($font, $fontSize): void
     {
         foreach ($this->fields as $field) {
             $this->width = max(
@@ -132,7 +135,7 @@ class TableStatsSvg extends TableStats
      *
      * @return void
      */
-    private function _setHeightTable($fontSize): void
+    private function setHeightTable($fontSize): void
     {
         $this->heightCell = $fontSize + 4;
         $this->height = (count($this->fields) + 1) * $this->heightCell;

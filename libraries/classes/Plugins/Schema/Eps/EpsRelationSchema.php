@@ -2,6 +2,7 @@
 /**
  * Classes to create relation schema in EPS format.
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Schema\Eps;
@@ -85,9 +86,11 @@ class EpsRelationSchema extends ExportRelationSchema
                 );
             }
 
-            if ($this->sameWide) {
-                $this->_tables[$table]->width = $this->_tablewidth;
+            if (! $this->sameWide) {
+                continue;
             }
+
+            $this->_tables[$table]->width = $this->_tablewidth;
         }
 
         $seen_a_relation = false;
@@ -106,7 +109,7 @@ class EpsRelationSchema extends ExportRelationSchema
                 */
                 if ($master_field != 'foreign_keys_data') {
                     if (in_array($rel['foreign_table'], $alltables)) {
-                        $this->_addRelation(
+                        $this->addRelation(
                             $one_table,
                             $this->diagram->getFont(),
                             $this->diagram->getFontSize(),
@@ -125,7 +128,7 @@ class EpsRelationSchema extends ExportRelationSchema
                     }
 
                     foreach ($one_key['index_list'] as $index => $one_field) {
-                        $this->_addRelation(
+                        $this->addRelation(
                             $one_table,
                             $this->diagram->getFont(),
                             $this->diagram->getFontSize(),
@@ -139,10 +142,10 @@ class EpsRelationSchema extends ExportRelationSchema
             }
         }
         if ($seen_a_relation) {
-            $this->_drawRelations();
+            $this->drawRelations();
         }
 
-        $this->_drawTables();
+        $this->drawTables();
         $this->diagram->endEpsDoc();
     }
 
@@ -172,7 +175,7 @@ class EpsRelationSchema extends ExportRelationSchema
      *
      * @return void
      */
-    private function _addRelation(
+    private function addRelation(
         $masterTable,
         $font,
         $fontSize,
@@ -224,7 +227,7 @@ class EpsRelationSchema extends ExportRelationSchema
      *
      * @return void
      */
-    private function _drawRelations()
+    private function drawRelations()
     {
         foreach ($this->_relations as $relation) {
             $relation->relationDraw();
@@ -238,7 +241,7 @@ class EpsRelationSchema extends ExportRelationSchema
      *
      * @return void
      */
-    private function _drawTables()
+    private function drawTables()
     {
         foreach ($this->_tables as $table) {
             $table->tableDraw($this->showColor);

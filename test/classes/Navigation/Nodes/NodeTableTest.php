@@ -2,23 +2,27 @@
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeTable class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Navigation\Nodes;
 
 use PhpMyAdmin\Navigation\NodeFactory;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
 /**
  * Tests for PhpMyAdmin\Navigation\Nodes\NodeTable class
  */
-class NodeTableTest extends PmaTestCase
+class NodeTableTest extends AbstractTestCase
 {
     /**
      * SetUp for test cases
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
+
         $GLOBALS['server'] = 0;
         $GLOBALS['cfg']['NavigationTreeDefaultTabTable'] = 'b_browse';
         $GLOBALS['cfg']['NavigationTreeDefaultTabTable2'] = '';

@@ -2,6 +2,7 @@
 /**
  * Selenium TestCase for creating and deleting databases
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium;
@@ -33,9 +34,8 @@ class CreateDropDatabaseTest extends TestBase
      */
     public function testCreateDropDatabase()
     {
-        // Drop database if it exists
         $this->dbQuery(
-            'DROP DATABASE IF EXISTS ' . $this->database_name . ';'
+            'DROP DATABASE IF EXISTS `' . $this->database_name . '`;'
         );
 
         $this->waitForElement('partialLinkText', 'Databases')->click();
@@ -47,14 +47,14 @@ class CreateDropDatabaseTest extends TestBase
 
         $this->byId('buttonGo')->click();
 
-        $element = $this->waitForElement('linkText', 'Database: ' . $this->database_name);
+        $this->waitForElement('linkText', 'Database: ' . $this->database_name);
 
         $result = $this->dbQuery(
             'SHOW DATABASES LIKE \'' . $this->database_name . '\';'
         );
         $this->assertEquals(1, $result->num_rows);
 
-        $this->_dropDatabase();
+        $this->dropDatabase();
     }
 
     /**
@@ -62,7 +62,7 @@ class CreateDropDatabaseTest extends TestBase
      *
      * @return void
      */
-    private function _dropDatabase()
+    private function dropDatabase()
     {
         $this->gotoHomepage();
 

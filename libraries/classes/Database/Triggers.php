@@ -201,9 +201,11 @@ class Triggers
                     $items = $this->dbi->getTriggers($db, $table, '');
                     $trigger = false;
                     foreach ($items as $value) {
-                        if ($value['name'] == $_POST['item_name']) {
-                            $trigger = $value;
+                        if ($value['name'] != $_POST['item_name']) {
+                            continue;
                         }
+
+                        $trigger = $value;
                     }
                     $insert = false;
                     if (empty($table)
@@ -243,36 +245,38 @@ class Triggers
         /**
          * Display a form used to add/edit a trigger, if necessary
          */
-        if (count($errors)
-            || (empty($_POST['editor_process_add'])
-            && empty($_POST['editor_process_edit'])
-            && (! empty($_REQUEST['add_item'])
-            || ! empty($_REQUEST['edit_item']))) // FIXME: this must be simpler than that
+        if (! count($errors)
+            && (! empty($_POST['editor_process_add'])
+            || ! empty($_POST['editor_process_edit'])
+            || (empty($_REQUEST['add_item'])
+            && empty($_REQUEST['edit_item']))) // FIXME: this must be simpler than that
         ) {
-            $mode = '';
-            $item = null;
-            $title = '';
-            // Get the data for the form (if any)
-            if (! empty($_REQUEST['add_item'])) {
-                $title = __('Add trigger');
-                $item = $this->getDataFromRequest();
-                $mode = 'add';
-            } elseif (! empty($_REQUEST['edit_item'])) {
-                $title = __('Edit trigger');
-                if (! empty($_REQUEST['item_name'])
-                    && empty($_POST['editor_process_edit'])
-                ) {
-                    $item = $this->getDataFromName($_REQUEST['item_name']);
-                    if ($item !== false) {
-                        $item['item_original_name'] = $item['item_name'];
-                    }
-                } else {
-                    $item = $this->getDataFromRequest();
-                }
-                $mode = 'edit';
-            }
-            $this->sendEditor($mode, $item, $title, $db);
+            return;
         }
+
+        $mode = '';
+        $item = null;
+        $title = '';
+        // Get the data for the form (if any)
+        if (! empty($_REQUEST['add_item'])) {
+            $title = __('Add trigger');
+            $item = $this->getDataFromRequest();
+            $mode = 'add';
+        } elseif (! empty($_REQUEST['edit_item'])) {
+            $title = __('Edit trigger');
+            if (! empty($_REQUEST['item_name'])
+                && empty($_POST['editor_process_edit'])
+            ) {
+                $item = $this->getDataFromName($_REQUEST['item_name']);
+                if ($item !== null) {
+                    $item['item_original_name'] = $item['item_name'];
+                }
+            } else {
+                $item = $this->getDataFromRequest();
+            }
+            $mode = 'edit';
+        }
+        $this->sendEditor($mode, $item, $title, $db);
     }
 
     /**
@@ -305,34 +309,36 @@ class Triggers
      *
      * @param string $name The name of the trigger.
      *
-     * @return array|bool Data necessary to create the editor.
+     * @return array|null Data necessary to create the editor.
      */
-    public function getDataFromName($name)
+    public function getDataFromName($name): ?array
     {
         global $db, $table;
 
         $temp = [];
         $items = $this->dbi->getTriggers($db, $table, '');
         foreach ($items as $value) {
-            if ($value['name'] == $name) {
-                $temp = $value;
+            if ($value['name'] != $name) {
+                continue;
             }
+
+            $temp = $value;
         }
         if (empty($temp)) {
-            return false;
-        } else {
-            $retval = [];
-            $retval['create']                  = $temp['create'];
-            $retval['drop']                    = $temp['drop'];
-            $retval['item_name']               = $temp['name'];
-            $retval['item_table']              = $temp['table'];
-            $retval['item_action_timing']      = $temp['action_timing'];
-            $retval['item_event_manipulation'] = $temp['event_manipulation'];
-            $retval['item_definition']         = $temp['definition'];
-            $retval['item_definer']            = $temp['definer'];
-
-            return $retval;
+            return null;
         }
+
+        $retval = [];
+        $retval['create']                  = $temp['create'];
+        $retval['drop']                    = $temp['drop'];
+        $retval['item_name']               = $temp['name'];
+        $retval['item_table']              = $temp['table'];
+        $retval['item_action_timing']      = $temp['action_timing'];
+        $retval['item_event_manipulation'] = $temp['event_manipulation'];
+        $retval['item_definition']         = $temp['definition'];
+        $retval['item_definer']            = $temp['definer'];
+
+        return $retval;
     }
 
     /**
@@ -374,7 +380,8 @@ class Triggers
         // Create the output
         $retval  = '';
         $retval .= '<!-- START ' . $modeToUpper . " TRIGGER FORM -->\n\n";
-        $retval .= '<form class="rte_form" action="' . Url::getFromRoute('/database/triggers') . '" method="post">' . "\n";
+        $retval .= '<form class="rte_form" action="' . Url::getFromRoute('/database/triggers')
+            . '" method="post">' . "\n";
         $retval .= "<input name='" . $mode . "_item' type='hidden' value='1'>\n";
         $retval .= $original_data;
         $retval .= Url::getHiddenInputs($db, $table) . "\n";
@@ -548,16 +555,16 @@ class Triggers
     /**
      * Send editor via ajax or by echoing.
      *
-     * @param string      $mode  Editor mode 'add' or 'edit'
-     * @param array|false $item  Data necessary to create the editor
-     * @param string      $title Title of the editor
-     * @param string      $db    Database
+     * @param string     $mode  Editor mode 'add' or 'edit'
+     * @param array|null $item  Data necessary to create the editor
+     * @param string     $title Title of the editor
+     * @param string     $db    Database
      *
      * @return void
      */
-    private function sendEditor($mode, $item, $title, $db)
+    private function sendEditor($mode, ?array $item, $title, $db)
     {
-        if ($item !== false) {
+        if ($item !== null) {
             $editor = $this->getEditorForm($mode, $item);
             if ($this->response->isAjax()) {
                 $this->response->addJSON('message', $editor);
@@ -567,22 +574,22 @@ class Triggers
                 unset($_POST);
             }
             exit;
-        } else {
-            $message  = __('Error in processing request:') . ' ';
-            $message .= sprintf(
-                __('No trigger with name %1$s found in database %2$s.'),
-                htmlspecialchars(Util::backquote($_REQUEST['item_name'])),
-                htmlspecialchars(Util::backquote($db))
-            );
-            $message = Message::error($message);
-            if ($this->response->isAjax()) {
-                $this->response->setRequestStatus(false);
-                $this->response->addJSON('message', $message);
-                exit;
-            } else {
-                $message->display();
-            }
         }
+
+        $message  = __('Error in processing request:') . ' ';
+        $message .= sprintf(
+            __('No trigger with name %1$s found in database %2$s.'),
+            htmlspecialchars(Util::backquote($_REQUEST['item_name'])),
+            htmlspecialchars(Util::backquote($db))
+        );
+        $message = Message::error($message);
+        if ($this->response->isAjax()) {
+            $this->response->setRequestStatus(false);
+            $this->response->addJSON('message', $message);
+            exit;
+        }
+
+        $message->display();
     }
 
     private function export(): void

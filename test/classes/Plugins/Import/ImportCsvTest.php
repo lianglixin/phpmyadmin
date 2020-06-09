@@ -2,19 +2,21 @@
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportCsv class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Plugins\Import;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\File;
 use PhpMyAdmin\Plugins\Import\ImportCsv;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use function basename;
 
 /**
  * Tests for PhpMyAdmin\Plugins\Import\ImportCsv class
  */
-class ImportCsvTest extends PmaTestCase
+class ImportCsvTest extends AbstractTestCase
 {
     /**
      * @var ImportCsv
@@ -30,6 +32,8 @@ class ImportCsvTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
         $GLOBALS['server'] = 0;
         $GLOBALS['plugin_param'] = 'csv';
         $this->object = new ImportCsv();
@@ -60,7 +64,7 @@ class ImportCsvTest extends PmaTestCase
         //$_SESSION
 
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $GLOBALS['dbi'] = $dbi;
@@ -74,6 +78,7 @@ class ImportCsvTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -123,8 +128,7 @@ class ImportCsvTest extends PmaTestCase
             $sql_query
         );
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $GLOBALS['finished']
         );
     }
@@ -160,10 +164,13 @@ class ImportCsvTest extends PmaTestCase
             $sql_query
         );
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $GLOBALS['finished']
         );
+
+        unset($_REQUEST['csv_new_tbl_name']);
+        unset($_REQUEST['csv_new_db_name']);
+        unset($_REQUEST['csv_partial_import']);
     }
 
     /**
@@ -215,8 +222,7 @@ class ImportCsvTest extends PmaTestCase
             $sql_query
         );
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $GLOBALS['finished']
         );
     }

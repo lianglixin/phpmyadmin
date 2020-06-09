@@ -2,6 +2,7 @@
 /**
  * Static methods for URL/hidden inputs generating
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -70,9 +71,11 @@ class Url
             }
         } else {
             foreach ($skip as $skipping) {
-                if (isset($params[$skipping])) {
-                    unset($params[$skipping]);
+                if (! isset($params[$skipping])) {
+                    continue;
                 }
+
+                unset($params[$skipping]);
             }
         }
 

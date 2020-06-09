@@ -2,18 +2,28 @@
 /**
  * Tests for methods in Sanitize class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Sanitize;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for methods in Sanitize class
  */
-class SanitizeTest extends TestCase
+class SanitizeTest extends AbstractTestCase
 {
+    /**
+     * Sets up the fixture, for example, opens a network connection.
+     * This method is called before a test is executed.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        parent::setLanguage();
+    }
+
     /**
      * Tests for proper escaping of XSS.
      *
@@ -57,7 +67,8 @@ class SanitizeTest extends TestCase
     public function testDoc($link, $expected): void
     {
         $this->assertEquals(
-            '<a href="./url.php?url=https%3A%2F%2Fdocs.phpmyadmin.net%2Fen%2Flatest%2F' . $expected . '" target="documentation">doclink</a>',
+            '<a href="./url.php?url=https%3A%2F%2Fdocs.phpmyadmin.net%2Fen%2Flatest%2F'
+                . $expected . '" target="documentation">doclink</a>',
             Sanitize::sanitizeMessage('[doc@' . $link . ']doclink[/doc]')
         );
     }
@@ -123,8 +134,11 @@ class SanitizeTest extends TestCase
     public function testLinkAndXssInHref()
     {
         $this->assertEquals(
-            '<a href="./url.php?url=https%3A%2F%2Fdocs.phpmyadmin.net%2F">doc</a>[a@javascript:alert(\'XSS\');@target]link</a>',
-            Sanitize::sanitizeMessage('[a@https://docs.phpmyadmin.net/]doc[/a][a@javascript:alert(\'XSS\');@target]link[/a]')
+            '<a href="./url.php?url=https%3A%2F%2Fdocs.phpmyadmin.net%2F">doc</a>'
+                . '[a@javascript:alert(\'XSS\');@target]link</a>',
+            Sanitize::sanitizeMessage(
+                '[a@https://docs.phpmyadmin.net/]doc[/a][a@javascript:alert(\'XSS\');@target]link[/a]'
+            )
         );
     }
 
@@ -319,6 +333,7 @@ class SanitizeTest extends TestCase
      */
     public function testRemoveRequestVars()
     {
+        $GLOBALS['_POST'] = [];
         $_REQUEST['foo'] = 'bar';
         $_REQUEST['allow'] = 'all';
         $_REQUEST['second'] = 1;

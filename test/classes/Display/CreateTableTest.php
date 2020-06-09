@@ -2,27 +2,29 @@
 /**
  * tests for PhpMyAdmin\Display\CreateTable
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Display;
 
 use PhpMyAdmin\Display\CreateTable;
 use PhpMyAdmin\Html\Generator;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Url;
-use PHPUnit\Framework\TestCase;
 
 /**
  * PhpMyAdmin\Tests\Display\CreateTableTest class
  *
  * this class is for testing PhpMyAdmin\Display\CreateTable methods
  */
-class CreateTableTest extends TestCase
+class CreateTableTest extends AbstractTestCase
 {
     /**
      * Test for setUp
      */
     protected function setUp(): void
     {
+        parent::setUp();
         //$GLOBALS
         $GLOBALS['server'] = 0;
         $GLOBALS['cfg']['Server']['DisableIS'] = false;

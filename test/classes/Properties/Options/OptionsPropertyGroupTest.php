@@ -2,17 +2,19 @@
 /**
  * tests for PhpMyAdmin\Properties\Options\OptionsPropertyGroup class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Properties\Options;
 
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Properties\Options\OptionsPropertyGroup;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionProperty;
 
 /**
  * Tests for PhpMyAdmin\Properties\Options\OptionsPropertyGroup class
  */
-class OptionsPropertyGroupTest extends TestCase
+class OptionsPropertyGroupTest extends AbstractTestCase
 {
     protected $stub;
 
@@ -21,7 +23,8 @@ class OptionsPropertyGroupTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->stub = $this->getMockForAbstractClass('PhpMyAdmin\Properties\Options\OptionsPropertyGroup');
+        parent::setUp();
+        $this->stub = $this->getMockForAbstractClass(OptionsPropertyGroup::class);
     }
 
     /**
@@ -29,6 +32,7 @@ class OptionsPropertyGroupTest extends TestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->stub);
     }
 
@@ -39,7 +43,7 @@ class OptionsPropertyGroupTest extends TestCase
      */
     public function testAddProperty()
     {
-        $properties = new ReflectionProperty('PhpMyAdmin\Properties\Options\OptionsPropertyGroup', '_properties');
+        $properties = new ReflectionProperty(OptionsPropertyGroup::class, '_properties');
         $properties->setAccessible(true);
 
         $properties->setValue($this->stub, [1, 2, 3]);
@@ -68,7 +72,7 @@ class OptionsPropertyGroupTest extends TestCase
      */
     public function testRemoveProperty()
     {
-        $properties = new ReflectionProperty('PhpMyAdmin\Properties\Options\OptionsPropertyGroup', '_properties');
+        $properties = new ReflectionProperty(OptionsPropertyGroup::class, '_properties');
         $properties->setAccessible(true);
 
         $properties->setValue($this->stub, [1, 2, 'test', 3]);
@@ -92,7 +96,7 @@ class OptionsPropertyGroupTest extends TestCase
     public function testGetGroup()
     {
         $this->assertInstanceOf(
-            'PhpMyAdmin\Properties\Options\OptionsPropertyGroup',
+            OptionsPropertyGroup::class,
             $this->stub->getGroup()
         );
     }
@@ -104,7 +108,7 @@ class OptionsPropertyGroupTest extends TestCase
      */
     public function testGetProperties()
     {
-        $properties = new ReflectionProperty('PhpMyAdmin\Properties\Options\OptionsPropertyGroup', '_properties');
+        $properties = new ReflectionProperty(OptionsPropertyGroup::class, '_properties');
         $properties->setAccessible(true);
         $properties->setValue($this->stub, [1, 2, 3]);
 
@@ -125,7 +129,7 @@ class OptionsPropertyGroupTest extends TestCase
      */
     public function testGetNrOfProperties()
     {
-        $properties = new ReflectionProperty('PhpMyAdmin\Properties\Options\OptionsPropertyGroup', '_properties');
+        $properties = new ReflectionProperty(OptionsPropertyGroup::class, '_properties');
         $properties->setAccessible(true);
         $properties->setValue($this->stub, [1, 2, 3]);
 

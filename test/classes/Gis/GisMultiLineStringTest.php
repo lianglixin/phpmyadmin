@@ -2,6 +2,7 @@
 /**
  * Test for PhpMyAdmin\Gis\GisMultiLineString
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Gis;
@@ -31,6 +32,7 @@ class GisMultiLineStringTest extends GisGeomTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $this->object = GisMultiLineString::singleton();
     }
 
@@ -42,6 +44,7 @@ class GisMultiLineStringTest extends GisGeomTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -229,9 +232,7 @@ class GisMultiLineStringTest extends GisGeomTestCase
             [
                 'MULTILINESTRING((5.02 8.45,6.14 0.15),(1.23 4.25,9.15 0.47))',
                 2,
-                [
-                    2 => $temp1,
-                ],
+                [2 => $temp1],
             ],
         ];
     }
@@ -370,11 +371,11 @@ class GisMultiLineStringTest extends GisGeomTestCase
     /**
      * test case for prepareRowAsSvg() method
      *
-     * @param string $spatial    GIS MULTILINESTRING object
-     * @param string $label      label for the GIS MULTILINESTRING object
-     * @param string $line_color color for the GIS MULTILINESTRING object
-     * @param array  $scale_data array containing data related to scaling
-     * @param string $output     expected output
+     * @param string $spatial   GIS MULTILINESTRING object
+     * @param string $label     label for the GIS MULTILINESTRING object
+     * @param string $lineColor color for the GIS MULTILINESTRING object
+     * @param array  $scaleData array containing data related to scaling
+     * @param string $output    expected output
      *
      * @return void
      *
@@ -383,15 +384,15 @@ class GisMultiLineStringTest extends GisGeomTestCase
     public function testPrepareRowAsSvg(
         $spatial,
         $label,
-        $line_color,
-        $scale_data,
+        $lineColor,
+        $scaleData,
         $output
     ) {
         $string = $this->object->prepareRowAsSvg(
             $spatial,
             $label,
-            $line_color,
-            $scale_data
+            $lineColor,
+            $scaleData
         );
         $this->assertEquals(1, preg_match($output, $string));
     }

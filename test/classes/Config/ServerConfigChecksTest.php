@@ -2,14 +2,14 @@
 /**
  * tests for FormDisplay class in config folder
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Config;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Config\ConfigFile;
 use PhpMyAdmin\Config\ServerConfigChecks;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use ReflectionException;
 use ReflectionProperty;
 use function array_keys;
@@ -17,7 +17,7 @@ use function array_keys;
 /**
  * Tests for ServeConfigChecks class
  */
-class ServerConfigChecksTest extends PmaTestCase
+class ServerConfigChecksTest extends AbstractTestCase
 {
     /** @var string */
     private $sessionID;
@@ -27,7 +27,8 @@ class ServerConfigChecksTest extends PmaTestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setGlobalConfig();
         $GLOBALS['cfg']['AvailableCharsets'] = [];
         $GLOBALS['cfg']['ServerDefault'] = 0;
         $GLOBALS['server'] = 0;
@@ -35,7 +36,7 @@ class ServerConfigChecksTest extends PmaTestCase
         $cf = new ConfigFile();
         $GLOBALS['ConfigFile'] = $cf;
 
-        $reflection = new ReflectionProperty('PhpMyAdmin\Config\ConfigFile', '_id');
+        $reflection = new ReflectionProperty(ConfigFile::class, '_id');
         $reflection->setAccessible(true);
         $this->sessionID = $reflection->getValue($cf);
 
@@ -69,7 +70,7 @@ class ServerConfigChecksTest extends PmaTestCase
         $_SESSION[$this->sessionID]['BZipDump'] = true;
         $_SESSION[$this->sessionID]['ZipDump'] = true;
 
-        $configChecker = $this->getMockBuilder('PhpMyAdmin\Config\ServerConfigChecks')
+        $configChecker = $this->getMockBuilder(ServerConfigChecks::class)
             ->setMethods(['functionExists'])
             ->setConstructorArgs([$GLOBALS['ConfigFile']])
             ->getMock();

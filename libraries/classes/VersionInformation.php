@@ -2,6 +2,7 @@
 /**
  * Responsible for retrieving version information and notifiying about latest version
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -172,12 +173,14 @@ class VersionInformation
                 }
             }
             // To compare the current release with the previous latest release or no release is set
-            if ($latestRelease === null || version_compare($latestRelease['version'], $release->version, '<')) {
-                $latestRelease = [
-                    'version' => $release->version,
-                    'date' => $release->date,
-                ];
+            if ($latestRelease !== null && ! version_compare($latestRelease['version'], $release->version, '<')) {
+                continue;
             }
+
+            $latestRelease = [
+                'version' => $release->version,
+                'date' => $release->date,
+            ];
         }
 
         // no compatible version

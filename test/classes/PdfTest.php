@@ -2,24 +2,25 @@
 /**
  * tests for Pdf class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Pdf;
 
 /**
  * tests for Pdf class
  */
-class PdfTest extends PmaTestCase
+class PdfTest extends AbstractTestCase
 {
     /**
      * SetUp for test cases
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setGlobalConfig();
         $GLOBALS['PMA_Config']->enableBc();
     }
 

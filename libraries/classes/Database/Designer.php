@@ -2,6 +2,7 @@
 /**
  * Holds the PhpMyAdmin\Database\Designer class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Database;
@@ -158,6 +159,9 @@ class Designer
      */
     private function getSideMenuParamsArray()
     {
+        /** @var DatabaseInterface $dbi */
+        global $dbi;
+
         $params = [];
 
         $cfgRelation = $this->relation->getRelationsParam();
@@ -167,7 +171,7 @@ class Designer
                 . Util::backquote($cfgRelation['db']) . '.'
                 . Util::backquote($cfgRelation['designer_settings'])
                 . ' WHERE ' . Util::backquote('username') . ' = "'
-                . $GLOBALS['dbi']->escapeString($GLOBALS['cfg']['Server']['user'])
+                . $dbi->escapeString($GLOBALS['cfg']['Server']['user'])
                 . '";';
 
             $result = $this->dbi->fetchSingleRow($query);
@@ -370,9 +374,11 @@ class Designer
 
         $displayedFields = [];
         foreach ($scriptDisplayField as $designerTable) {
-            if ($designerTable->getDisplayField() !== null) {
-                $displayedFields[$designerTable->getTableName()] = $designerTable->getDisplayField();
+            if ($designerTable->getDisplayField() === null) {
+                continue;
             }
+
+            $displayedFields[$designerTable->getTableName()] = $designerTable->getDisplayField();
         }
 
         $designerConfig = new stdClass();

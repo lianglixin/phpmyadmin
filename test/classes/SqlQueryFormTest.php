@@ -2,17 +2,18 @@
 /**
  * tests for PhpMyAdmin\SqlQueryForm
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\Core;
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Encoding;
 use PhpMyAdmin\Html\MySQLDocumentation;
 use PhpMyAdmin\SqlQueryForm;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
-use PHPUnit\Framework\TestCase;
 use function htmlspecialchars;
 
 /**
@@ -20,7 +21,7 @@ use function htmlspecialchars;
  *
  * this class is for testing PhpMyAdmin\SqlQueryForm methods
  */
-class SqlQueryFormTest extends TestCase
+class SqlQueryFormTest extends AbstractTestCase
 {
     /** @var SqlQueryForm */
     private $sqlQueryForm;
@@ -30,6 +31,9 @@ class SqlQueryFormTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
+        parent::setLanguage();
         $this->sqlQueryForm = new SqlQueryForm(new Template());
 
         //$GLOBALS
@@ -73,7 +77,7 @@ class SqlQueryFormTest extends TestCase
         //$_SESSION
 
         //Mock DBI
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -105,6 +109,7 @@ class SqlQueryFormTest extends TestCase
      */
     public function testPMAGetHtmlForSqlQueryFormInsert()
     {
+        $GLOBALS['is_upload'] = true;
         //Call the test function
         $query = 'select * from PMA';
         $html = $this->sqlQueryForm->getHtml($query);

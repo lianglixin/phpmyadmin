@@ -2,6 +2,7 @@
 /**
  * Hold the PhpMyAdmin\Encoding class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin;
@@ -30,29 +31,21 @@ class Encoding
 {
     /**
      * None encoding conversion engine
-     *
-     * @var int
      */
     public const ENGINE_NONE = 0;
 
     /**
      * iconv encoding conversion engine
-     *
-     * @var int
      */
     public const ENGINE_ICONV = 1;
 
     /**
      * recode encoding conversion engine
-     *
-     * @var int
      */
     public const ENGINE_RECODE = 2;
 
     /**
      * mbstring encoding conversion engine
-     *
-     * @var int
      */
     public const ENGINE_MB = 3;
 
@@ -131,9 +124,9 @@ class Encoding
                 self::$_engine = self::$_enginemap[$engine][1];
 
                 return;
-            } else {
-                Core::warnMissingExtension(self::$_enginemap[$engine][2]);
             }
+
+            Core::warnMissingExtension(self::$_enginemap[$engine][2]);
         }
 
         /* Autodetection */

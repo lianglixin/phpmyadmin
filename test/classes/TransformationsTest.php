@@ -2,17 +2,18 @@
 /**
  * tests for transformation wrappers
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
+use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Transformations;
-use PHPUnit\Framework\TestCase;
 
 /**
  * tests for transformation wrappers
  */
-class TransformationsTest extends TestCase
+class TransformationsTest extends AbstractTestCase
 {
     /** @var Transformations */
     private $transformations;
@@ -22,6 +23,8 @@ class TransformationsTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::defineVersionConstants();
         $GLOBALS['table'] = 'table';
         $GLOBALS['db'] = 'db';
         $GLOBALS['cfg'] = [
@@ -237,7 +240,7 @@ class TransformationsTest extends TestCase
     public function testClear()
     {
         // Mock dbi
-        $dbi = $this->getMockBuilder('PhpMyAdmin\DatabaseInterface')
+        $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
         $dbi->expects($this->any())
@@ -247,8 +250,7 @@ class TransformationsTest extends TestCase
 
         // Case 1 : no configuration storage
         $actual = $this->transformations->clear('db');
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $actual
         );
 
@@ -258,22 +260,19 @@ class TransformationsTest extends TestCase
 
         // Case 2 : database delete
         $actual = $this->transformations->clear('db');
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $actual
         );
 
         // Case 3 : table delete
         $actual = $this->transformations->clear('db', 'table');
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $actual
         );
 
         // Case 4 : column delete
         $actual = $this->transformations->clear('db', 'table', 'col');
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $actual
         );
     }

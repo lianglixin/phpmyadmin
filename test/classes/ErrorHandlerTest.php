@@ -2,12 +2,12 @@
 /**
  * Tests for ErrorHandler
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
 use PhpMyAdmin\ErrorHandler;
-use ReflectionClass;
 use const E_RECOVERABLE_ERROR;
 use const E_USER_NOTICE;
 use const E_USER_WARNING;
@@ -16,7 +16,7 @@ use const E_WARNING;
 /**
  * Test for PhpMyAdmin\ErrorHandler class.
  */
-class ErrorHandlerTest extends PmaTestCase
+class ErrorHandlerTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -29,7 +29,12 @@ class ErrorHandlerTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
         $this->object = new ErrorHandler();
+        $_SESSION['errors'] = [];
+        $GLOBALS['server'] = 0;
+        $GLOBALS['cfg']['SendErrorReports'] = 'always';
     }
 
     /**
@@ -40,24 +45,8 @@ class ErrorHandlerTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
-    }
-
-    /**
-     * Call protected functions by setting visibility to public.
-     *
-     * @param string $name   method name
-     * @param array  $params parameters for the invocation
-     *
-     * @return mixed the output from the protected method.
-     */
-    private function _callProtectedFunction($name, $params)
-    {
-        $class = new ReflectionClass(ErrorHandler::class);
-        $method = $class->getMethod($name);
-        $method->setAccessible(true);
-
-        return $method->invokeArgs($this->object, $params);
     }
 
     /**
@@ -164,9 +153,9 @@ class ErrorHandlerTest extends PmaTestCase
      */
     public function testCheckSavedErrors()
     {
-        $_SESSION['errors'] = [];
-
-        $this->_callProtectedFunction(
+        $this->callFunction(
+            $this->object,
+            ErrorHandler::class,
             'checkSavedErrors',
             []
         );

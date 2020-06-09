@@ -2,19 +2,20 @@
 /**
  * Tests for PMA_StorageEngine_pbxt
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Engines;
 
 use PhpMyAdmin\Core;
 use PhpMyAdmin\Engines\Pbxt;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use function sprintf;
 
 /**
  * Tests for PhpMyAdmin\Engines\Pbxt;
  */
-class PbxtTest extends PmaTestCase
+class PbxtTest extends AbstractTestCase
 {
     /** @access protected */
     protected $object;
@@ -27,6 +28,9 @@ class PbxtTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
+
         $GLOBALS['server'] = 0;
         $this->object = new Pbxt('pbxt');
     }
@@ -39,6 +43,7 @@ class PbxtTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($this->object);
     }
 
@@ -218,9 +223,7 @@ class PbxtTest extends PmaTestCase
     {
         $this->assertEquals(
             $this->object->getInfoPages(),
-            [
-                'Documentation' => 'Documentation',
-            ]
+            ['Documentation' => 'Documentation']
         );
     }
 

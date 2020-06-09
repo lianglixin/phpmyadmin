@@ -214,42 +214,44 @@ class Events
         /**
          * Display a form used to add/edit a trigger, if necessary
          */
-        if (count($errors)
-            || (empty($_POST['editor_process_add'])
-            && empty($_POST['editor_process_edit'])
-            && (! empty($_REQUEST['add_item'])
-            || ! empty($_REQUEST['edit_item'])
-            || ! empty($_POST['item_changetype'])))
-        ) { // FIXME: this must be simpler than that
-            $operation = '';
-            $title = '';
-            $item = null;
-            $mode = '';
-            if (! empty($_POST['item_changetype'])) {
-                $operation = 'change';
-            }
-            // Get the data for the form (if any)
-            if (! empty($_REQUEST['add_item'])) {
-                $title = __('Add event');
-                $item = $this->getDataFromRequest();
-                $mode = 'add';
-            } elseif (! empty($_REQUEST['edit_item'])) {
-                $title = __('Edit event');
-                if (! empty($_REQUEST['item_name'])
-                    && empty($_POST['editor_process_edit'])
-                    && empty($_POST['item_changetype'])
-                ) {
-                    $item = $this->getDataFromName($_REQUEST['item_name']);
-                    if ($item !== false) {
-                        $item['item_original_name'] = $item['item_name'];
-                    }
-                } else {
-                    $item = $this->getDataFromRequest();
-                }
-                $mode = 'edit';
-            }
-            $this->sendEditor($mode, $item, $title, $db, $operation);
+        if (! count($errors)
+            && (! empty($_POST['editor_process_add'])
+            || ! empty($_POST['editor_process_edit'])
+            || (empty($_REQUEST['add_item'])
+            && empty($_REQUEST['edit_item'])
+            && empty($_POST['item_changetype'])))
+        ) {
+            return;
         }
+        // FIXME: this must be simpler than that
+        $operation = '';
+        $title = '';
+        $item = null;
+        $mode = '';
+        if (! empty($_POST['item_changetype'])) {
+            $operation = 'change';
+        }
+        // Get the data for the form (if any)
+        if (! empty($_REQUEST['add_item'])) {
+            $title = __('Add event');
+            $item = $this->getDataFromRequest();
+            $mode = 'add';
+        } elseif (! empty($_REQUEST['edit_item'])) {
+            $title = __('Edit event');
+            if (! empty($_REQUEST['item_name'])
+                && empty($_POST['editor_process_edit'])
+                && empty($_POST['item_changetype'])
+            ) {
+                $item = $this->getDataFromName($_REQUEST['item_name']);
+                if ($item !== null) {
+                    $item['item_original_name'] = $item['item_name'];
+                }
+            } else {
+                $item = $this->getDataFromRequest();
+            }
+            $mode = 'edit';
+        }
+        $this->sendEditor($mode, $item, $title, $db, $operation);
     }
 
     /**
@@ -293,9 +295,9 @@ class Events
      *
      * @param string $name The name of the event.
      *
-     * @return array|bool Data necessary to create the editor.
+     * @return array|null Data necessary to create the editor.
      */
-    public function getDataFromName($name)
+    public function getDataFromName($name): ?array
     {
         global $db;
 
@@ -309,7 +311,7 @@ class Events
         $query   = 'SELECT ' . $columns . ' FROM `INFORMATION_SCHEMA`.`EVENTS` WHERE ' . $where . ';';
         $item    = $this->dbi->fetchSingleRow($query);
         if (! $item) {
-            return false;
+            return null;
         }
         $retval['item_name']   = $item['EVENT_NAME'];
         $retval['item_status'] = $item['STATUS'];
@@ -539,17 +541,17 @@ class Events
     /**
      * Send editor via ajax or by echoing.
      *
-     * @param string      $mode      Editor mode 'add' or 'edit'
-     * @param array|false $item      Data necessary to create the editor
-     * @param string      $title     Title of the editor
-     * @param string      $db        Database
-     * @param string      $operation Operation 'change' or ''
+     * @param string     $mode      Editor mode 'add' or 'edit'
+     * @param array|null $item      Data necessary to create the editor
+     * @param string     $title     Title of the editor
+     * @param string     $db        Database
+     * @param string     $operation Operation 'change' or ''
      *
      * @return void
      */
-    private function sendEditor($mode, $item, $title, $db, $operation)
+    private function sendEditor($mode, ?array $item, $title, $db, $operation)
     {
-        if ($item !== false) {
+        if ($item !== null) {
             $editor = $this->getEditorForm($mode, $operation, $item);
             if ($this->response->isAjax()) {
                 $this->response->addJSON('message', $editor);
@@ -559,22 +561,22 @@ class Events
                 unset($_POST);
             }
             exit;
-        } else {
-            $message  = __('Error in processing request:') . ' ';
-            $message .= sprintf(
-                __('No event with name %1$s found in database %2$s.'),
-                htmlspecialchars(Util::backquote($_REQUEST['item_name'])),
-                htmlspecialchars(Util::backquote($db))
-            );
-            $message = Message::error($message);
-            if ($this->response->isAjax()) {
-                $this->response->setRequestStatus(false);
-                $this->response->addJSON('message', $message);
-                exit;
-            } else {
-                $message->display();
-            }
         }
+
+        $message  = __('Error in processing request:') . ' ';
+        $message .= sprintf(
+            __('No event with name %1$s found in database %2$s.'),
+            htmlspecialchars(Util::backquote($_REQUEST['item_name'])),
+            htmlspecialchars(Util::backquote($db))
+        );
+        $message = Message::error($message);
+        if ($this->response->isAjax()) {
+            $this->response->setRequestStatus(false);
+            $this->response->addJSON('message', $message);
+            exit;
+        }
+
+        $message->display();
     }
 
     public function export(): void

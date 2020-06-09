@@ -2,12 +2,13 @@
 /**
  * Tests for Config File Management
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Config;
 
 use PhpMyAdmin\Config\ConfigFile;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use stdClass;
 use function array_keys;
 use function count;
@@ -15,12 +16,10 @@ use function count;
 /**
  * Tests for Config File Management
  */
-class ConfigFileTest extends PmaTestCase
+class ConfigFileTest extends AbstractTestCase
 {
     /**
      * Any valid key that exists in config.default.php and isn't empty
-     *
-     * @var string
      */
     public const SIMPLE_KEY_WITH_DEFAULT_VALUE = 'DefaultQueryTable';
 
@@ -38,6 +37,8 @@ class ConfigFileTest extends PmaTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+        parent::loadDefaultConfig();
         $GLOBALS['server'] = 1;
         $this->object = new ConfigFile();
     }
@@ -47,6 +48,7 @@ class ConfigFileTest extends PmaTestCase
      */
     protected function tearDown(): void
     {
+        parent::tearDown();
         $this->object->setConfigData([]);
         unset($this->object);
     }

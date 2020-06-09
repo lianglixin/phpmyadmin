@@ -2,6 +2,7 @@
 /**
  * Cookie Authentication plugin for phpMyAdmin
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Auth;
@@ -95,17 +96,25 @@ class AuthenticationCookie extends AuthenticationPlugin
 
         $response = Response::getInstance();
 
-        // When sending login modal after session has expired, send the new token explicitly with the response to update the token in all the forms having a hidden token.
+        /**
+         * When sending login modal after session has expired, send the
+         * new token explicitly with the response to update the token
+         * in all the forms having a hidden token.
+         */
         $session_expired = isset($_REQUEST['check_timeout']) || isset($_REQUEST['session_timedout']);
         if (! $session_expired && $response->loginPage()) {
             if (defined('TESTSUITE')) {
                 return true;
-            } else {
-                exit;
             }
+
+            exit;
         }
 
-        // When sending login modal after session has expired, send the new token explicitly with the response to update the token in all the forms having a hidden token.
+        /**
+         * When sending login modal after session has expired, send the
+         * new token explicitly with the response to update the token
+         * in all the forms having a hidden token.
+         */
         if ($session_expired) {
             $response->setRequestStatus(false);
             $response->addJSON(
@@ -114,7 +123,10 @@ class AuthenticationCookie extends AuthenticationPlugin
             );
         }
 
-        // logged_in response parameter is used to check if the login, using the modal was successful after session expiration
+        /**
+         * logged_in response parameter is used to check if the login,
+         * using the modal was successful after session expiration.
+         */
         if (isset($_REQUEST['session_timedout'])) {
             $response->addJSON(
                 'logged_in',
@@ -217,7 +229,8 @@ class AuthenticationCookie extends AuthenticationPlugin
             'server_options' => $serversOptions,
             'server' => $GLOBALS['server'],
             'lang' => $GLOBALS['lang'],
-            'has_captcha' => ! empty($GLOBALS['cfg']['CaptchaLoginPrivateKey']) && ! empty($GLOBALS['cfg']['CaptchaLoginPublicKey']),
+            'has_captcha' => ! empty($GLOBALS['cfg']['CaptchaLoginPrivateKey'])
+                && ! empty($GLOBALS['cfg']['CaptchaLoginPublicKey']),
             'captcha_key' => $GLOBALS['cfg']['CaptchaLoginPublicKey'],
             'form_params' => $_form_params,
             'errors' => $errors,
@@ -227,9 +240,9 @@ class AuthenticationCookie extends AuthenticationPlugin
 
         if (! defined('TESTSUITE')) {
             exit;
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     /**
@@ -267,46 +280,46 @@ class AuthenticationCookie extends AuthenticationPlugin
             if (! empty($GLOBALS['cfg']['CaptchaLoginPrivateKey'])
                 && ! empty($GLOBALS['cfg']['CaptchaLoginPublicKey'])
             ) {
-                if (! empty($_POST['g-recaptcha-response'])) {
-                    $captchaSiteVerifyURL = $GLOBALS['cfg']['CaptchaSiteVerifyURL'] ?? '';
-                    $captchaSiteVerifyURL = empty($captchaSiteVerifyURL) ? null : $captchaSiteVerifyURL;
-                    if (function_exists('curl_init')) {
-                        $reCaptcha = new ReCaptcha\ReCaptcha(
-                            $GLOBALS['cfg']['CaptchaLoginPrivateKey'],
-                            new ReCaptcha\RequestMethod\CurlPost(null, $captchaSiteVerifyURL)
-                        );
-                    } elseif (ini_get('allow_url_fopen')) {
-                        $reCaptcha = new ReCaptcha\ReCaptcha(
-                            $GLOBALS['cfg']['CaptchaLoginPrivateKey'],
-                            new ReCaptcha\RequestMethod\Post($captchaSiteVerifyURL)
-                        );
-                    } else {
-                        $reCaptcha = new ReCaptcha\ReCaptcha(
-                            $GLOBALS['cfg']['CaptchaLoginPrivateKey'],
-                            new ReCaptcha\RequestMethod\SocketPost(null, $captchaSiteVerifyURL)
-                        );
-                    }
-
-                    // verify captcha status.
-                    $resp = $reCaptcha->verify(
-                        $_POST['g-recaptcha-response'],
-                        Core::getIp()
-                    );
-
-                    // Check if the captcha entered is valid, if not stop the login.
-                    if ($resp == null || ! $resp->isSuccess()) {
-                        $codes = $resp->getErrorCodes();
-
-                        if (in_array('invalid-json', $codes)) {
-                            $conn_error = __('Failed to connect to the reCAPTCHA service!');
-                        } else {
-                            $conn_error = __('Entered captcha is wrong, try again!');
-                        }
-
-                        return false;
-                    }
-                } else {
+                if (empty($_POST['g-recaptcha-response'])) {
                     $conn_error = __('Missing reCAPTCHA verification, maybe it has been blocked by adblock?');
+
+                    return false;
+                }
+
+                $captchaSiteVerifyURL = $GLOBALS['cfg']['CaptchaSiteVerifyURL'] ?? '';
+                $captchaSiteVerifyURL = empty($captchaSiteVerifyURL) ? null : $captchaSiteVerifyURL;
+                if (function_exists('curl_init')) {
+                    $reCaptcha = new ReCaptcha\ReCaptcha(
+                        $GLOBALS['cfg']['CaptchaLoginPrivateKey'],
+                        new ReCaptcha\RequestMethod\CurlPost(null, $captchaSiteVerifyURL)
+                    );
+                } elseif (ini_get('allow_url_fopen')) {
+                    $reCaptcha = new ReCaptcha\ReCaptcha(
+                        $GLOBALS['cfg']['CaptchaLoginPrivateKey'],
+                        new ReCaptcha\RequestMethod\Post($captchaSiteVerifyURL)
+                    );
+                } else {
+                    $reCaptcha = new ReCaptcha\ReCaptcha(
+                        $GLOBALS['cfg']['CaptchaLoginPrivateKey'],
+                        new ReCaptcha\RequestMethod\SocketPost(null, $captchaSiteVerifyURL)
+                    );
+                }
+
+                // verify captcha status.
+                $resp = $reCaptcha->verify(
+                    $_POST['g-recaptcha-response'],
+                    Core::getIp()
+                );
+
+                // Check if the captcha entered is valid, if not stop the login.
+                if ($resp == null || ! $resp->isSuccess()) {
+                    $codes = $resp->getErrorCodes();
+
+                    if (in_array('invalid-json', $codes)) {
+                        $conn_error = __('Failed to connect to the reCAPTCHA service!');
+                    } else {
+                        $conn_error = __('Entered captcha is wrong, try again!');
+                    }
 
                     return false;
                 }
@@ -357,7 +370,7 @@ class AuthenticationCookie extends AuthenticationPlugin
 
         $value = $this->cookieDecrypt(
             $serverCookie,
-            $this->_getEncryptionSecret()
+            $this->getEncryptionSecret()
         );
 
         if ($value === false) {
@@ -373,9 +386,11 @@ class AuthenticationCookie extends AuthenticationPlugin
         // User inactive too long
         $last_access_time = time() - $GLOBALS['cfg']['LoginCookieValidity'];
         foreach ($_SESSION['browser_access_time'] as $key => $value) {
-            if ($value < $last_access_time) {
-                unset($_SESSION['browser_access_time'][$key]);
+            if ($value >= $last_access_time) {
+                continue;
             }
+
+            unset($_SESSION['browser_access_time'][$key]);
         }
         // All sessions expired
         if (empty($_SESSION['browser_access_time'])) {
@@ -392,9 +407,9 @@ class AuthenticationCookie extends AuthenticationPlugin
             $this->showFailure('no-activity');
             if (! defined('TESTSUITE')) {
                 exit;
-            } else {
-                return false;
             }
+
+            return false;
         }
 
         // check password cookie
@@ -405,7 +420,7 @@ class AuthenticationCookie extends AuthenticationPlugin
         }
         $value = $this->cookieDecrypt(
             $serverCookie,
-            $this->_getSessionEncryptionSecret()
+            $this->getSessionEncryptionSecret()
         );
         if ($value === false) {
             return false;
@@ -509,9 +524,9 @@ class AuthenticationCookie extends AuthenticationPlugin
 
             if (! defined('TESTSUITE')) {
                 exit;
-            } else {
-                return false;
             }
+
+            return false;
         }
         // Set server cookies if required (once per session) and, in this case,
         // force reload to ensure the client accepts cookies
@@ -531,9 +546,9 @@ class AuthenticationCookie extends AuthenticationPlugin
             );
             if (! defined('TESTSUITE')) {
                 exit;
-            } else {
-                return false;
             }
+
+            return false;
         } // end if
 
         return true;
@@ -554,7 +569,7 @@ class AuthenticationCookie extends AuthenticationPlugin
             'pmaUser-' . $GLOBALS['server'],
             $this->cookieEncrypt(
                 $username,
-                $this->_getEncryptionSecret()
+                $this->getEncryptionSecret()
             )
         );
     }
@@ -577,7 +592,7 @@ class AuthenticationCookie extends AuthenticationPlugin
             'pmaAuth-' . $GLOBALS['server'],
             $this->cookieEncrypt(
                 json_encode($payload),
-                $this->_getSessionEncryptionSecret()
+                $this->getSessionEncryptionSecret()
             ),
             null,
             (int) $GLOBALS['cfg']['LoginCookieStore']
@@ -622,10 +637,10 @@ class AuthenticationCookie extends AuthenticationPlugin
      *
      * @return string
      */
-    private function _getEncryptionSecret()
+    private function getEncryptionSecret()
     {
         if (empty($GLOBALS['cfg']['blowfish_secret'])) {
-            return $this->_getSessionEncryptionSecret();
+            return $this->getSessionEncryptionSecret();
         }
 
         return $GLOBALS['cfg']['blowfish_secret'];
@@ -636,7 +651,7 @@ class AuthenticationCookie extends AuthenticationPlugin
      *
      * @return string
      */
-    private function _getSessionEncryptionSecret()
+    private function getSessionEncryptionSecret()
     {
         if (empty($_SESSION['encryption_key'])) {
             if ($this->_use_openssl) {
@@ -725,11 +740,13 @@ class AuthenticationCookie extends AuthenticationPlugin
      */
     public function cleanSSLErrors()
     {
-        if (function_exists('openssl_error_string')) {
-            do {
-                $hasSslErrors = openssl_error_string();
-            } while ($hasSslErrors !== false);
+        if (! function_exists('openssl_error_string')) {
+            return;
         }
+
+        do {
+            $hasSslErrors = openssl_error_string();
+        } while ($hasSslErrors !== false);
     }
 
     /**
@@ -899,9 +916,11 @@ class AuthenticationCookie extends AuthenticationPlugin
         if ($GLOBALS['cfg']['LoginCookieDeleteAll']) {
             foreach ($GLOBALS['cfg']['Servers'] as $key => $val) {
                 $PMA_Config->removeCookie('pmaAuth-' . $key);
-                if ($PMA_Config->issetCookie('pmaAuth-' . $key)) {
-                    $PMA_Config->removeCookie('pmaAuth-' . $key);
+                if (! $PMA_Config->issetCookie('pmaAuth-' . $key)) {
+                    continue;
                 }
+
+                $PMA_Config->removeCookie('pmaAuth-' . $key);
             }
         } else {
             $cookieName = 'pmaAuth-' . $GLOBALS['server'];

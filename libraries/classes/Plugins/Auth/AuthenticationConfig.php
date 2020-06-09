@@ -2,6 +2,7 @@
 /**
  * Config Authentication plugin for phpMyAdmin
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Auth;
@@ -37,9 +38,9 @@ class AuthenticationConfig extends AuthenticationPlugin
             $response->addJSON('reload_flag', '1');
             if (defined('TESTSUITE')) {
                 return true;
-            } else {
-                exit;
             }
+
+            exit;
         }
 
         return true;
@@ -151,7 +152,7 @@ class AuthenticationConfig extends AuthenticationPlugin
                 $GLOBALS['cfg']['DefaultTabServer'],
                 'server'
             )
-            , '" class="button disableAjax">'
+            , '" class="btn button mt-1 disableAjax">'
             , __('Retry to connect')
             , '</a>' , "\n";
         echo '</td>

@@ -2,6 +2,7 @@
 /**
  * ESRI Shape file import plugin for phpMyAdmin
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Plugins\Import;
@@ -43,9 +44,11 @@ class ImportShp extends ImportPlugin
     {
         parent::__construct();
         $this->setProperties();
-        if (extension_loaded('zip')) {
-            $this->zipExtension = new ZipExtension();
+        if (! extension_loaded('zip')) {
+            return;
         }
+
+        $this->zipExtension = new ZipExtension();
     }
 
     /**

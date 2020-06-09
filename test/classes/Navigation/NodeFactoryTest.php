@@ -2,25 +2,27 @@
 /**
  * Tests for NodeFactory class
  */
+
 declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Navigation;
 
 use PhpMyAdmin\Navigation\NodeFactory;
 use PhpMyAdmin\Navigation\Nodes\Node;
-use PhpMyAdmin\Tests\PmaTestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 use PHPUnit\Framework\Exception;
 
 /**
  * Tests for NodeFactory class
  */
-class NodeFactoryTest extends PmaTestCase
+class NodeFactoryTest extends AbstractTestCase
 {
     /**
      * SetUp for test cases
      */
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['server'] = 0;
     }
 
@@ -34,7 +36,7 @@ class NodeFactoryTest extends PmaTestCase
         $node = NodeFactory::getInstance();
         $this->assertEquals('default', $node->name);
         $this->assertEquals(Node::OBJECT, $node->type);
-        $this->assertEquals(false, $node->isGroup);
+        $this->assertFalse($node->isGroup);
     }
 
     /**
@@ -51,7 +53,7 @@ class NodeFactoryTest extends PmaTestCase
         );
         $this->assertEquals('default', $node->name);
         $this->assertEquals(Node::CONTAINER, $node->type);
-        $this->assertEquals(false, $node->isGroup);
+        $this->assertFalse($node->isGroup);
     }
 
     /**
@@ -69,7 +71,7 @@ class NodeFactoryTest extends PmaTestCase
         );
         $this->assertEquals('default', $node->name);
         $this->assertEquals(Node::CONTAINER, $node->type);
-        $this->assertEquals(true, $node->isGroup);
+        $this->assertTrue($node->isGroup);
     }
 
     /**

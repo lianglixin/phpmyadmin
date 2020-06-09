@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Database;
 
-use PhpMyAdmin\Config;
 use PhpMyAdmin\Database\Triggers;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
-use PHPUnit\Framework\TestCase;
+use PhpMyAdmin\Tests\AbstractTestCase;
 
-class TriggersTest extends TestCase
+class TriggersTest extends AbstractTestCase
 {
     /** @var Triggers */
     private $triggers;
@@ -20,7 +19,11 @@ class TriggersTest extends TestCase
      */
     protected function setUp(): void
     {
-        $GLOBALS['PMA_Config'] = new Config();
+        parent::setUp();
+        parent::setGlobalConfig();
+        parent::defineVersionConstants();
+        parent::setLanguage();
+        $GLOBALS['server'] = 0;
         $GLOBALS['PMA_Config']->enableBc();
         $GLOBALS['cfg']['Server']['DisableIS'] = false;
         $GLOBALS['db'] = 'pma_test';
@@ -46,9 +49,11 @@ class TriggersTest extends TestCase
     {
         unset($_POST);
         foreach ($in as $key => $value) {
-            if ($value !== '') {
-                $_POST[$key] = $value;
+            if ($value === '') {
+                continue;
             }
+
+            $_POST[$key] = $value;
         }
         $this->assertEquals($out, $this->triggers->getDataFromRequest());
     }
@@ -371,7 +376,8 @@ class TriggersTest extends TestCase
                 'foo',
                 'table3',
                 'BEGIN SET @A=1; SET @B=2; END',
-                'CREATE DEFINER=`foo``s`@`host` TRIGGER `trigger``s test` AFTER ON  FOR EACH ROW BEGIN SET @A=1; SET @B=2; END',
+                'CREATE DEFINER=`foo``s`@`host` TRIGGER `trigger``s test`'
+                    . ' AFTER ON  FOR EACH ROW BEGIN SET @A=1; SET @B=2; END',
                 2,
             ],
             [
@@ -381,7 +387,8 @@ class TriggersTest extends TestCase
                 'INSERT',
                 'table1',
                 'SET @A=NULL',
-                'CREATE DEFINER=`root`@`localhost` TRIGGER `trigger` BEFORE INSERT ON `table1` FOR EACH ROW SET @A=NULL',
+                'CREATE DEFINER=`root`@`localhost` TRIGGER `trigger`'
+                    . ' BEFORE INSERT ON `table1` FOR EACH ROW SET @A=NULL',
                 0,
             ],
         ];
