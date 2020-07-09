@@ -14,6 +14,13 @@ namespace PhpMyAdmin\Tests\Selenium;
  */
 class XssTest extends TestBase
 {
+    /**
+     * Create a test database for this test class
+     *
+     * @var bool
+     */
+    protected static $createDatabase = false;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -23,11 +30,9 @@ class XssTest extends TestBase
     /**
      * Tests the SQL query tab with a null query
      *
-     * @return void
-     *
      * @group large
      */
-    public function testQueryTabWithNullValue()
+    public function testQueryTabWithNullValue(): void
     {
         if ($this->isSafari()) {
             $this->markTestSkipped('Alerts not supported on Safari browser.');

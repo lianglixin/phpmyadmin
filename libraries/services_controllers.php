@@ -240,7 +240,6 @@ return [
                 'db' => '%db%',
                 'relation' => '@relation',
                 'replication' => '@replication',
-                'transformations' => '@transformations',
                 'relationCleanup' => '@relation_cleanup',
                 'operations' => '@operations',
             ],
@@ -331,6 +330,10 @@ return [
             'class' => PhpMyAdmin\Controllers\ImportStatusController::class,
             'arguments' =>
             ['template' => '@template'],
+        ],
+        PhpMyAdmin\Controllers\JavaScriptMessagesController::class =>
+        [
+            'class' => PhpMyAdmin\Controllers\JavaScriptMessagesController::class,
         ],
         PhpMyAdmin\Controllers\LicenseController::class =>
         [

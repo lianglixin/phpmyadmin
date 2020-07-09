@@ -758,8 +758,10 @@ class InsertEdit
                 $foreignData,
                 $readOnly
             );
-        } elseif ($GLOBALS['cfg']['LongtextDoubleTextarea']
-            && mb_strstr($column['pma_type'], 'longtext')
+        } elseif ((
+                $GLOBALS['cfg']['LongtextDoubleTextarea']
+                && mb_strstr($column['pma_type'], 'longtext'))
+            || mb_strstr($column['pma_type'], 'json')
         ) {
             $html_output .= $this->getTextarea(
                 $column,
@@ -1718,7 +1720,7 @@ class InsertEdit
             );
 
             if (preg_match('/(VIRTUAL|PERSISTENT|GENERATED)/', $column['Extra'])
-                && $column['Extra'] !== 'DEFAULT_GENERATED'
+                && strpos($column['Extra'], 'DEFAULT_GENERATED') === false
             ) {
                 $html_output .= '<input type="hidden" name="virtual'
                     . $column_name_appendix . '" value="1">';
@@ -2279,7 +2281,7 @@ class InsertEdit
             $res,
             count($meta),
             $meta,
-            $row,
+            $row ?? [],
             true
         );
         if (! empty($unique_condition)) {
@@ -2483,6 +2485,11 @@ class InsertEdit
         $relation_field
     ) {
         $foreigner = $this->relation->searchColumnInForeigners($map, $relation_field);
+
+        if (! is_array($foreigner)) {
+            return '';
+        }
+
         $display_field = $this->relation->getDisplayField(
             $foreigner['foreign_db'],
             $foreigner['foreign_table']
@@ -2534,6 +2541,11 @@ class InsertEdit
         $relation_field_value
     ) {
         $foreigner = $this->relation->searchColumnInForeigners($map, $relation_field);
+
+        if (! is_array($foreigner)) {
+            return '';
+        }
+
         if ($_SESSION['tmpval']['relational_display'] == 'K') {
             // user chose "relational key" in the display options, so
             // the title contains the display field
@@ -2543,15 +2555,17 @@ class InsertEdit
         } else {
             $title = ' title="' . htmlspecialchars($relation_field_value) . '"';
         }
+        $sqlQuery = 'SELECT * FROM '
+            . Util::backquote($foreigner['foreign_db'])
+            . '.' . Util::backquote($foreigner['foreign_table'])
+            . ' WHERE ' . Util::backquote($foreigner['foreign_field'])
+            . $where_comparison;
         $_url_params = [
             'db'    => $foreigner['foreign_db'],
             'table' => $foreigner['foreign_table'],
             'pos'   => '0',
-            'sql_query' => 'SELECT * FROM '
-                . Util::backquote($foreigner['foreign_db'])
-                . '.' . Util::backquote($foreigner['foreign_table'])
-                . ' WHERE ' . Util::backquote($foreigner['foreign_field'])
-                . $where_comparison,
+            'sql_signature' => Core::signSqlQuery($sqlQuery),
+            'sql_query' => $sqlQuery,
         ];
         $output = '<a href="' . Url::getFromRoute('/sql', $_url_params) . '"' . $title . '>';
 
@@ -2658,6 +2672,11 @@ class InsertEdit
         }
 
         if ($multi_edit_funcs[$key] === 'PHP_PASSWORD_HASH') {
+            /**
+             * @see https://github.com/vimeo/psalm/issues/3350
+             *
+             * @psalm-suppress InvalidArgument
+             */
             $hash = password_hash($current_value, PASSWORD_DEFAULT);
 
             return "'" . $hash . "'";

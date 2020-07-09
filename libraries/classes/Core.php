@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin;
 
-use PhpMyAdmin\Di\Migration;
 use PhpMyAdmin\Display\Error as DisplayError;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use const DATE_RFC1123;
 use const E_USER_ERROR;
 use const E_USER_WARNING;
@@ -54,6 +54,7 @@ use function parse_str;
 use function parse_url;
 use function preg_match;
 use function preg_replace;
+use function session_id;
 use function session_write_close;
 use function sprintf;
 use function str_replace;
@@ -439,25 +440,25 @@ class Core
     } // end getRealSize()
 
     /**
-     * Checks given $page against given $whitelist and returns true if valid
+     * Checks given $page against given $allowList and returns true if valid
      * it optionally ignores query parameters in $page (script.php?ignored)
      *
      * @param string $page      page to check
-     * @param array  $whitelist whitelist to check page against
+     * @param array  $allowList allow list to check page against
      * @param bool   $include   whether the page is going to be included
      *
-     * @return bool whether $page is valid or not (in $whitelist or not)
+     * @return bool whether $page is valid or not (in $allowList or not)
      */
-    public static function checkPageValidity(&$page, array $whitelist = [], $include = false): bool
+    public static function checkPageValidity(&$page, array $allowList = [], $include = false): bool
     {
-        if (empty($whitelist)) {
-            $whitelist = ['index.php'];
+        if (empty($allowList)) {
+            $allowList = ['index.php'];
         }
         if (empty($page)) {
             return false;
         }
 
-        if (in_array($page, $whitelist)) {
+        if (in_array($page, $allowList)) {
             return true;
         }
         if ($include) {
@@ -469,7 +470,7 @@ class Core
             0,
             mb_strpos($page . '?', '?')
         );
-        if (in_array($_page, $whitelist)) {
+        if (in_array($_page, $allowList)) {
             return true;
         }
 
@@ -480,7 +481,7 @@ class Core
             mb_strpos($_page . '?', '?')
         );
 
-        return in_array($_page, $whitelist);
+        return in_array($_page, $allowList);
     }
 
     /**
@@ -746,7 +747,12 @@ class Core
         $url = Url::getCommon($params);
         //strip off token and such sensitive information. Just keep url.
         $arr = parse_url($url);
-        parse_str($arr['query'], $vars);
+
+        if (! is_array($arr)) {
+            $arr = [];
+        }
+
+        parse_str($arr['query'] ?? '', $vars);
         $query = http_build_query(['url' => $vars['url']]);
 
         if ($GLOBALS['PMA_Config'] !== null && $GLOBALS['PMA_Config']->get('is_setup')) {
@@ -759,7 +765,7 @@ class Core
     }
 
     /**
-     * Checks whether domain of URL is whitelisted domain or not.
+     * Checks whether domain of URL is an allowed domain or not.
      * Use only for URLs of external sites.
      *
      * @param string $url URL of external site.
@@ -770,6 +776,11 @@ class Core
     public static function isAllowedDomain(string $url): bool
     {
         $arr = parse_url($url);
+
+        if (! is_array($arr)) {
+            $arr = [];
+        }
+
         // We need host to be set
         if (! isset($arr['host']) || strlen($arr['host']) == 0) {
             return false;
@@ -786,7 +797,7 @@ class Core
             }
         }
         $domain = $arr['host'];
-        $domainWhiteList = [
+        $domainAllowList = [
             /* Include current domain */
             $_SERVER['SERVER_NAME'],
             /* phpMyAdmin domains */
@@ -813,7 +824,7 @@ class Core
             'mysqldatabaseadministration.blogspot.com',
         ];
 
-        return in_array($domain, $domainWhiteList);
+        return in_array($domain, $domainAllowList);
     }
 
     /**
@@ -888,30 +899,35 @@ class Core
      */
     public static function setPostAsGlobal(array $post_patterns): void
     {
+        global $containerBuilder;
+
         foreach (array_keys($_POST) as $post_key) {
             foreach ($post_patterns as $one_post_pattern) {
                 if (! preg_match($one_post_pattern, $post_key)) {
                     continue;
                 }
 
-                Migration::getInstance()->setGlobal($post_key, $_POST[$post_key]);
+                $GLOBALS[$post_key] = $_POST[$post_key];
+                $containerBuilder->setParameter($post_key, $GLOBALS[$post_key]);
             }
         }
     }
 
-    /**
-     * Creates some globals from $_REQUEST
-     *
-     * @param string $param db|table
-     */
-    public static function setGlobalDbOrTable(string $param): void
+    public static function setDatabaseAndTableFromRequest(ContainerInterface $containerBuilder): void
     {
-        $value = '';
-        if (self::isValid($_REQUEST[$param])) {
-            $value = $_REQUEST[$param];
-        }
-        Migration::getInstance()->setGlobal($param, $value);
-        Migration::getInstance()->setGlobal('url_params', [$param => $value] + $GLOBALS['url_params']);
+        global $db, $table, $url_params;
+
+        $databaseFromRequest = $_POST['db'] ?? $_GET['db'] ?? $_REQUEST['db'] ?? null;
+        $tableFromRequest = $_POST['table'] ?? $_GET['table'] ?? $_REQUEST['table'] ?? null;
+
+        $db = self::isValid($databaseFromRequest) ? $databaseFromRequest : '';
+        $table = self::isValid($tableFromRequest) ? $tableFromRequest : '';
+
+        $url_params['db'] = $db;
+        $url_params['table'] = $table;
+        $containerBuilder->setParameter('db', $db);
+        $containerBuilder->setParameter('table', $table);
+        $containerBuilder->setParameter('url_params', $url_params);
     }
 
     /**
@@ -1283,5 +1299,80 @@ class Core
         $hmac = hash_hmac('sha256', $sqlQuery, $secret . $cfg['blowfish_secret']);
 
         return hash_equals($hmac, $signature);
+    }
+
+    /**
+     * Check whether user supplied token is valid, if not remove any possibly
+     * dangerous stuff from request.
+     *
+     * Check for token mismatch only if the Request method is POST.
+     * GET Requests would never have token and therefore checking
+     * mis-match does not make sense.
+     */
+    public static function checkTokenRequestParam(): void
+    {
+        global $token_mismatch, $token_provided;
+
+        $token_mismatch = true;
+        $token_provided = false;
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return;
+        }
+
+        if (self::isValid($_POST['token'])) {
+            $token_provided = true;
+            $token_mismatch = ! @hash_equals($_SESSION[' PMA_token '], $_POST['token']);
+        }
+
+        if (! $token_mismatch) {
+            return;
+        }
+
+        // Warn in case the mismatch is result of failed setting of session cookie
+        if (isset($_POST['set_session']) && $_POST['set_session'] !== session_id()) {
+            trigger_error(
+                __(
+                    'Failed to set session cookie. Maybe you are using '
+                    . 'HTTP instead of HTTPS to access phpMyAdmin.'
+                ),
+                E_USER_ERROR
+            );
+        }
+
+        /**
+         * We don't allow any POST operation parameters if the token is mismatched
+         * or is not provided.
+         */
+        $allowList = ['ajax_request'];
+        Sanitize::removeRequestVars($allowList);
+    }
+
+    public static function setGotoAndBackGlobals(ContainerInterface $container, Config $config): void
+    {
+        global $goto, $back, $url_params;
+
+        // Holds page that should be displayed.
+        $goto = '';
+        $container->setParameter('goto', $goto);
+
+        if (isset($_REQUEST['goto']) && self::checkPageValidity($_REQUEST['goto'])) {
+            $goto = $_REQUEST['goto'];
+            $url_params['goto'] = $goto;
+            $container->setParameter('goto', $goto);
+            $container->setParameter('url_params', $url_params);
+        } else {
+            $config->removeCookie('goto');
+            unset($_REQUEST['goto'], $_GET['goto'], $_POST['goto']);
+        }
+
+        if (isset($_REQUEST['back']) && self::checkPageValidity($_REQUEST['back'])) {
+            // Returning page.
+            $back = $_REQUEST['back'];
+            $container->setParameter('back', $back);
+        } else {
+            $config->removeCookie('back');
+            unset($_REQUEST['back'], $_GET['back'], $_POST['back']);
+        }
     }
 }

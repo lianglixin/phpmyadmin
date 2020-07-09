@@ -15,6 +15,13 @@ namespace PhpMyAdmin\Tests\Selenium;
 class CreateRemoveUserTest extends TestBase
 {
     /**
+     * Create a test database for this test class
+     *
+     * @var bool
+     */
+    protected static $createDatabase = false;
+
+    /**
      * Username for the user
      *
      * @access private
@@ -45,11 +52,9 @@ class CreateRemoveUserTest extends TestBase
     /**
      * Creates and removes a user
      *
-     * @return void
-     *
      * @group large
      */
-    public function testCreateRemoveUser()
+    public function testCreateRemoveUser(): void
     {
         $this->waitForElement('partialLinkText', 'User accounts')->click();
 

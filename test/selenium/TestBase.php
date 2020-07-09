@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests\Selenium;
 
+use Closure;
 use Exception;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Exception\InvalidSelectorException;
@@ -20,8 +21,6 @@ use Facebook\WebDriver\WebDriverElement;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverSelect;
 use InvalidArgumentException;
-use mysqli;
-use mysqli_result;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 use const CURLOPT_CUSTOMREQUEST;
@@ -37,6 +36,8 @@ use function curl_error;
 use function curl_exec;
 use function curl_init;
 use function curl_setopt;
+use function current;
+use function end;
 use function getenv;
 use function is_bool;
 use function is_string;
@@ -46,6 +47,7 @@ use function mb_strtolower;
 use function mb_substr;
 use function preg_match;
 use function rand;
+use function reset;
 use function sha1;
 use function sprintf;
 use function strlen;
@@ -64,14 +66,6 @@ abstract class TestBase extends TestCase
     protected $webDriver;
 
     /**
-     * mysqli object
-     *
-     * @access private
-     * @var mysqli
-     */
-    protected $_mysqli;
-
-    /**
      * Name of database for the test
      *
      * @access public
@@ -86,7 +80,21 @@ abstract class TestBase extends TestCase
      */
     protected $sessionId;
 
+    /**
+     * The window handle for the SQL tab
+     *
+     * @var string|null
+     */
+    private $sqlWindowHandle = null;
+
     private const SESSION_REST_URL = 'https://api.browserstack.com/automate/sessions/';
+
+    /**
+     * Create a test database for this test class
+     *
+     * @var bool
+     */
+    protected static $createDatabase = true;
 
     /**
      * Configures the selenium and database link.
@@ -103,15 +111,20 @@ abstract class TestBase extends TestCase
          */
         parent::setUp();
 
-        if (! $this->hasTestSuiteDatabaseServer()) {
-            $this->markTestSkipped('Database server is not configured.');
-        }
-
-        if ($this->getHubUrl() === null) {
+        if ($this->getHubUrl() === '') {
             $this->markTestSkipped('Selenium testing is not configured.');
         }
 
-        $this->connectMySQL();
+        if ($this->getTestSuiteUrl() === '') {
+            $this->markTestSkipped('The ENV "TESTSUITE_URL" is not defined.');
+        }
+
+        if ($this->getTestSuiteUserLogin() === '') {
+            //TODO: handle config mode
+            $this->markTestSkipped(
+                'The ENV "TESTSUITE_USER" is not defined, you may also want to define "TESTSUITE_PASSWORD".'
+            );
+        }
 
         $capabilities = $this->getCapabilities();
         $this->addCapabilities($capabilities);
@@ -122,42 +135,42 @@ abstract class TestBase extends TestCase
             $capabilities
         );
 
-        $this->sessionId = $this->webDriver->getSessionId();
-
-        $this->database_name = getenv('TESTSUITE_DATABASE')
-            . mb_substr(sha1((string) rand()), 0, 7);
-        $this->dbQuery(
-            'CREATE DATABASE IF NOT EXISTS ' . $this->database_name
-        );
-        $this->dbQuery(
-            'USE ' . $this->database_name
-        );
+        // The session Id is only used by BrowserStack
+        if ($this->hasBrowserstackConfig()) {
+            $this->sessionId = $this->webDriver->getSessionId();
+        }
 
         $this->navigateTo('');
         $this->webDriver->manage()->window()->maximize();
-    }
 
-    private function connectMySQL(): void
-    {
-        $mysqlPort = getenv('TESTSUITE_PORT');
-        try {
-            $this->_mysqli = new mysqli(
-                (string) getenv('TESTSUITE_SERVER'),
-                (string) getenv('TESTSUITE_USER'),
-                (string) getenv('TESTSUITE_PASSWORD'),
-                'mysql',
-                $mysqlPort === false ? 3306 : (int) $mysqlPort
-            );
-        } catch (Throwable $e) {
-            // when localhost is used, it tries to connect to a socket and throws and error
-            $this->markTestSkipped('Failed to connect to MySQL (' . $e->getMessage() . ')');
-        }
-
-        if (! $this->_mysqli->connect_errno) {
+        if (! static::$createDatabase) {
+            // Stop here, we where not asked to create a database
             return;
         }
 
-        $this->markTestSkipped('Failed to connect to MySQL (' . $this->_mysqli->error . ')');
+        $this->createDatabase();
+    }
+
+    /**
+     * Create a test database
+     */
+    protected function createDatabase(): void
+    {
+        $this->database_name = $this->getDbPrefix() . mb_substr(sha1((string) rand()), 0, 7);
+        $this->dbQuery(
+            'CREATE DATABASE IF NOT EXISTS `' . $this->database_name . '`; USE `' . $this->database_name . '`;'
+        );
+        static::$createDatabase = true;
+    }
+
+    public function getDbPrefix(): string
+    {
+        $envVar = getenv('TESTSUITE_DATABASE_PREFIX');
+        if ($envVar) {
+            return $envVar;
+        }
+
+        return '';
     }
 
     private function getBrowserStackCredentials(): string
@@ -175,6 +188,13 @@ abstract class TestBase extends TestCase
     protected function getTestSuiteUserPassword(): string
     {
         $user = getenv('TESTSUITE_PASSWORD');
+
+        return $user === false ? '' : $user;
+    }
+
+    protected function getTestSuiteUrl(): string
+    {
+        $user = getenv('TESTSUITE_URL');
 
         return $user === false ? '' : $user;
     }
@@ -211,9 +231,9 @@ abstract class TestBase extends TestCase
     }
 
     /**
-     * Get hub url
+     * Get the selenium hub url
      */
-    public function getHubUrl(): ?string
+    private function getHubUrl(): string
     {
         if ($this->hasBrowserstackConfig()) {
             return 'https://'
@@ -227,17 +247,7 @@ abstract class TestBase extends TestCase
             . getenv('TESTSUITE_SELENIUM_PORT') . '/wd/hub';
         }
 
-        return null;
-    }
-
-    /**
-     * Has TESTSUITE_SERVER, TESTSUITE_USER and TESTSUITE_DATABASE variables set
-     */
-    public function hasTestSuiteDatabaseServer(): bool
-    {
-        return ! empty(getenv('TESTSUITE_SERVER'))
-            && ! empty(getenv('TESTSUITE_USER'))
-            && ! empty(getenv('TESTSUITE_DATABASE'));
+        return '';
     }
 
     /**
@@ -391,28 +401,17 @@ abstract class TestBase extends TestCase
     }
 
     /**
-     * Checks whether user is a superuser.
-     *
-     * @return bool
+     * Checks whether the user is a superuser.
      */
-    protected function isSuperUser()
+    protected function isSuperUser(): bool
     {
-        $result = $this->dbQuery('SELECT COUNT(*) FROM mysql.user');
-        if ($result !== false) {
-            $result->free();
-
-            return true;
-        }
-
-        return false;
+        return $this->dbQuery('SELECT COUNT(*) FROM mysql.user');
     }
 
     /**
      * Skips test if test user is not a superuser.
-     *
-     * @return void
      */
-    protected function skipIfNotSuperUser()
+    protected function skipIfNotSuperUser(): void
     {
         if ($this->isSuperUser()) {
             return;
@@ -423,10 +422,8 @@ abstract class TestBase extends TestCase
 
     /**
      * Skips test if pmadb is not configured.
-     *
-     * @return void
      */
-    protected function skipIfNotPMADB()
+    protected function skipIfNotPMADB(): void
     {
         $this->navigateTo('index.php?route=/check-relations');
         $pageContent = $this->waitForElement('id', 'page_content');
@@ -450,6 +447,7 @@ abstract class TestBase extends TestCase
      */
     public function login(string $username = '', string $password = ''): void
     {
+        $this->logOutIfLoggedIn();
         if ($username === '') {
             $username = $this->getTestSuiteUserLogin();
         }
@@ -566,30 +564,24 @@ abstract class TestBase extends TestCase
 
     /**
      * Checks whether the login is successful
-     *
-     * @return bool
      */
-    public function isSuccessLogin()
+    public function isSuccessLogin(): bool
     {
         return $this->isElementPresent('xpath', '//*[@id="server-breadcrumb"]');
     }
 
     /**
      * Checks whether the login is unsuccessful
-     *
-     * @return bool
      */
-    public function isUnsuccessLogin()
+    public function isUnsuccessLogin(): bool
     {
         return $this->isElementPresent('cssSelector', 'div #pma_errors');
     }
 
     /**
      * Used to go to the homepage
-     *
-     * @return void
      */
-    public function gotoHomepage()
+    public function gotoHomepage(): void
     {
         $e = $this->byPartialLinkText('Server: ');
         $e->click();
@@ -599,19 +591,59 @@ abstract class TestBase extends TestCase
     /**
      * Execute a database query
      *
-     * @param string $query SQL Query to be executed
-     *
-     * @return void|bool|mysqli_result
+     * @param string       $query       SQL Query to be executed
+     * @param Closure|null $onResults   The function to call when the results are displayed
+     * @param Closure|null $afterSubmit The function to call after the submit button is clicked
      *
      * @throws Exception
      */
-    public function dbQuery($query)
+    public function dbQuery($query, ?Closure $onResults = null, ?Closure $afterSubmit = null): bool
     {
-        if ($this->_mysqli === null) {
-            $this->connectMySQL();
+        $didSucceed = false;
+        $handles = null;
+
+        if (! $this->sqlWindowHandle) {
+            $this->webDriver->executeScript("window.open('about:blank','_blank');", []);
+            $this->webDriver->wait()->until(
+                WebDriverExpectedCondition::numberOfWindowsToBe(2)
+            );
+            $handles = $this->webDriver->getWindowHandles();
+
+            $lastWindow = end($handles);
+            $this->webDriver->switchTo()->window($lastWindow);
+            $this->login();
+            $this->sqlWindowHandle = $lastWindow;
         }
 
-        return $this->_mysqli->query($query);
+        if ($handles === null) {
+            $handles = $this->webDriver->getWindowHandles();
+        }
+
+        if ($this->sqlWindowHandle) {
+            $this->webDriver->switchTo()->window($this->sqlWindowHandle);
+            $this->byXPath('//*[contains(@class,"nav-item") and contains(., "SQL")]')->click();
+            $this->waitAjax();
+            $this->typeInTextArea($query);
+            $this->byId('button_submit_query')->click();
+            if ($afterSubmit !== null) {
+                $afterSubmit->call($this);
+            }
+            $this->waitAjax();
+            $this->waitForElement('className', 'result_query');
+            // If present then
+            $didSucceed = $this->isElementPresent('xpath', '//*[@class="result_query"]//*[contains(., "success")]');
+            if ($onResults !== null) {
+                $onResults->call($this);
+            }
+        }
+
+        // echo PHP_EOL . 'Query: ' . $query . ', out: ' . (($didSucceed) ? 'yes' : 'no') . PHP_EOL;
+
+        reset($handles);
+        $lastWindow = current($handles);
+        $this->webDriver->switchTo()->window($lastWindow);
+
+        return $didSucceed;
     }
 
     /**
@@ -629,10 +661,8 @@ abstract class TestBase extends TestCase
 
     /**
      * Perform a logout, if logged in
-     *
-     * @return void
      */
-    public function logOutIfLoggedIn()
+    public function logOutIfLoggedIn(): void
     {
         if (! $this->isLoggedIn()) {
             return;
@@ -692,7 +722,7 @@ abstract class TestBase extends TestCase
      *
      * @return bool Whether or not the element disappeared
      */
-    public function waitForElementNotPresent($func, $arg)
+    public function waitForElementNotPresent($func, $arg): bool
     {
         while (true) {
             if (! $this->isElementPresent($func, $arg)) {
@@ -738,7 +768,7 @@ abstract class TestBase extends TestCase
      *
      * @return string text Data from the particular table cell
      */
-    public function getCellByTableId($tableID, $row, $column)
+    public function getCellByTableId($tableID, $row, $column): string
     {
         $sel = sprintf(
             'table#%s tbody tr:nth-child(%d) td:nth-child(%d)',
@@ -763,7 +793,7 @@ abstract class TestBase extends TestCase
      *
      * @return string text Data from the particular table cell
      */
-    public function getCellByTableClass($tableClass, $row, $column)
+    public function getCellByTableClass($tableClass, $row, $column): string
     {
         $sel = sprintf(
             'table.%s tbody tr:nth-child(%d) td:nth-child(%d)',
@@ -841,14 +871,12 @@ abstract class TestBase extends TestCase
      *
      * @param string $text  Text to type
      * @param int    $index Index of CodeMirror instance to write to
-     *
-     * @return void
      */
-    public function typeInTextArea($text, $index = 0)
+    public function typeInTextArea($text, $index = 0): void
     {
         $this->waitForElement('cssSelector', 'div.cm-s-default');
         $this->webDriver->executeScript(
-            "$('.cm-s-default')[" . $index . "].CodeMirror.setValue('" . $text . "');"
+            "$('.cm-s-default')[" . $index . '].CodeMirror.setValue(' . json_encode($text) . ');'
         );
     }
 
@@ -889,13 +917,12 @@ abstract class TestBase extends TestCase
     /**
      * Navigates browser to a table page.
      *
-     * @param string $table Name of table
-     *
-     * @return void
+     * @param string $table                Name of table
+     * @param bool   $gotoHomepageRequired Go to homepage required
      */
-    public function navigateTable($table)
+    public function navigateTable(string $table, bool $gotoHomepageRequired = false): void
     {
-        $this->navigateDatabase($this->database_name);
+        $this->navigateDatabase($this->database_name, $gotoHomepageRequired);
 
         // go to table page
         $this->waitForElement(
@@ -915,10 +942,8 @@ abstract class TestBase extends TestCase
      *
      * @param string $database             Name of database
      * @param bool   $gotoHomepageRequired Go to homepage required
-     *
-     * @return void
      */
-    public function navigateDatabase($database, $gotoHomepageRequired = false)
+    public function navigateDatabase(string $database, bool $gotoHomepageRequired = false): void
     {
         if ($gotoHomepageRequired) {
             $this->gotoHomepage();
@@ -931,7 +956,7 @@ abstract class TestBase extends TestCase
         // go to specific database page
         $this->waitForElement(
             'xpath',
-            '//tr[(contains(@class, "db-row"))]//a[contains(., "' . $this->database_name . '")]'
+            '//tr[(contains(@class, "db-row"))]//a[contains(., "' . $database . '")]'
         )->click();
         $this->waitAjax();
 
@@ -971,10 +996,8 @@ abstract class TestBase extends TestCase
      *
      * @param string $element_id Id of the element
      * @param int    $y_offset   Offset from Y-coordinate of element
-     *
-     * @return void
      */
-    public function scrollIntoView($element_id, $y_offset = 70)
+    public function scrollIntoView($element_id, $y_offset = 70): void
     {
         // 70pt offset by-default so that the topmenu does not cover the element
         $this->webDriver->executeScript(
@@ -990,8 +1013,6 @@ abstract class TestBase extends TestCase
      * @param WebDriverElement $element The element
      * @param int              $xOffset The x offset to apply (defaults to 0)
      * @param int              $yOffset The y offset to apply (defaults to 0)
-     *
-     * @return void
      */
     public function scrollToElement(WebDriverElement $element, int $xOffset = 0, int $yOffset = 0): void
     {
@@ -1003,8 +1024,6 @@ abstract class TestBase extends TestCase
 
     /**
      * Scroll to the bottom of page
-     *
-     * @return void
      */
     public function scrollToBottom(): void
     {
@@ -1015,8 +1034,6 @@ abstract class TestBase extends TestCase
 
     /**
      * Reload the page
-     *
-     * @return void
      */
     public function reloadPage(): void
     {
@@ -1046,10 +1063,8 @@ abstract class TestBase extends TestCase
 
     /**
      * Wait for AJAX message disappear
-     *
-     * @return void
      */
-    public function waitAjaxMessage()
+    public function waitAjaxMessage(): void
     {
         /* Get current message count */
         $ajax_message_count = $this->webDriver->executeScript(
@@ -1067,14 +1082,13 @@ abstract class TestBase extends TestCase
      */
     protected function tearDown(): void
     {
-        if ($this->_mysqli != null) {
+        if (static::$createDatabase) {
             $this->dbQuery('DROP DATABASE IF EXISTS `' . $this->database_name . '`;');
-            $this->_mysqli->close();
-            $this->_mysqli = null;
         }
         if (! $this->hasFailed()) {
             $this->markTestAs('passed', '');
         }
+        $this->sqlWindowHandle = null;
         $this->webDriver->quit();
     }
 
@@ -1083,8 +1097,6 @@ abstract class TestBase extends TestCase
      *
      * @param string $status  passed or failed
      * @param string $message a message
-     *
-     * @return void
      */
     private function markTestAs(string $status, string $message): void
     {
@@ -1166,8 +1178,6 @@ abstract class TestBase extends TestCase
      * Mark unsuccessful tests as 'Failures' on Browerstack
      *
      * @param Throwable $t Throwable
-     *
-     * @return void
      */
     public function onNotSuccessfulTest(Throwable $t): void
     {
@@ -1177,6 +1187,7 @@ abstract class TestBase extends TestCase
         if ($this->webDriver !== null) {
             $this->webDriver->quit();
         }
+        $this->sqlWindowHandle = null;
 
         $this->getErrorVideoUrl();
 

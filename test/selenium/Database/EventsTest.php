@@ -26,17 +26,14 @@ class EventsTest extends TestBase
     {
         parent::setUp();
         $this->dbQuery(
-            'CREATE TABLE `test_table` ('
+            'USE `' . $this->database_name . '`;'
+            . 'CREATE TABLE `test_table` ('
             . ' `id` int(11) NOT NULL AUTO_INCREMENT,'
             . ' `val` int(11) NOT NULL,'
             . ' PRIMARY KEY (`id`)'
-            . ')'
-        );
-        $this->dbQuery(
-            'INSERT INTO `test_table` (val) VALUES (2);'
-        );
-        $this->dbQuery(
-            'SET GLOBAL event_scheduler="ON"'
+            . ');'
+            . 'INSERT INTO `test_table` (val) VALUES (2);'
+            . 'SET GLOBAL event_scheduler="ON";'
         );
         $this->login();
         $this->navigateDatabase($this->database_name);
@@ -51,39 +48,38 @@ class EventsTest extends TestBase
      */
     protected function tearDown(): void
     {
-        parent::tearDown();
-        if (isset($this->_mysqli)) {
-            $this->dbQuery('SET GLOBAL event_scheduler="OFF"');
-        }
+        $this->dbQuery('SET GLOBAL event_scheduler="OFF"');
         parent::tearDown();
     }
 
     /**
      * Creates procedure for tests
-     *
-     * @return void
      */
-    private function eventSQL()
+    private function eventSQL(): void
     {
         $start = date('Y-m-d H:i:s', strtotime('-1 day'));
         $end = date('Y-m-d H:i:s', strtotime('+1 day'));
 
         $this->dbQuery(
-            'CREATE EVENT `test_event` ON SCHEDULE EVERY 1 MINUTE_SECOND STARTS '
+            'USE `' . $this->database_name . '`;'
+            . 'CREATE EVENT `test_event` ON SCHEDULE EVERY 1 MINUTE_SECOND STARTS '
             . "'" . $start . "' ENDS '" . $end . "' ON COMPLETION NOT PRESERVE ENABLE "
             . 'DO UPDATE `' . $this->database_name
-            . '`.`test_table` SET val = val + 1'
+            . '`.`test_table` SET val = val + 1',
+            null,
+            function (): void {
+                // Do you really want to execute [..]
+                $this->acceptAlert();
+            }
         );
     }
 
     /**
      * Create an event
      *
-     * @return void
-     *
      * @group large
      */
-    public function testAddEvent()
+    public function testAddEvent(): void
     {
         $this->waitForElement('partialLinkText', 'Events')->click();
         $this->waitAjax();
@@ -115,10 +111,13 @@ class EventsTest extends TestBase
         $element = $this->byXPath('//*[@class="ui-resizable-handle ui-resizable-s"]');
         $action->moveToElement($element)
                 ->clickAndHold()
-                ->moveByOffset(0, -100)
+                ->moveByOffset(0, -120)// Resize
+                ->click()// Click to free the mouse
                 ->perform();
 
         $this->byXPath("//button[contains(., 'Go')]")->click();
+
+        sleep(1);
 
         $this->waitForElement(
             'xpath',
@@ -140,29 +139,35 @@ class EventsTest extends TestBase
             )
         );
 
-        $result = $this->dbQuery(
-            "SHOW EVENTS WHERE Db='" . $this->database_name
-            . "' AND Name='test_event'"
+        $this->dbQuery(
+            'USE `' . $this->database_name . '`;'
+            . 'SHOW EVENTS WHERE Db=\'' . $this->database_name . '\' AND Name=\'test_event\';',
+            function (): void {
+                $this->assertTrue($this->isElementPresent('className', 'table_results'));
+                $this->assertEquals($this->database_name, $this->getCellByTableClass('table_results', 1, 1));
+                $this->assertEquals('test_event', $this->getCellByTableClass('table_results', 1, 2));
+                $this->assertEquals('RECURRING', $this->getCellByTableClass('table_results', 1, 5));
+            }
         );
-        $this->assertEquals(1, $result->num_rows);
 
         sleep(2);
-        $result = $this->dbQuery(
-            'SELECT val FROM `' . $this->database_name . '`.`test_table`'
+        $this->dbQuery(
+            'SELECT val FROM `' . $this->database_name . '`.`test_table`',
+            function (): void {
+                $this->assertTrue($this->isElementPresent('className', 'table_results'));
+                // [ ] | Edit | Copy | Delete | 1 | <number>
+                $this->assertGreaterThan(2, (int) $this->getCellByTableClass('table_results', 1, 5));
+            }
         );
-        $row = $result->fetch_assoc();
-        $this->assertGreaterThan(2, $row['val']);
     }
 
     /**
      * Test for editing events
      *
-     * @return void
-     *
      * @depends testAddEvent
      * @group large
      */
-    public function testEditEvents()
+    public function testEditEvents(): void
     {
         $this->eventSQL();
         $this->waitForElement('partialLinkText', 'Events')->click();
@@ -188,22 +193,23 @@ class EventsTest extends TestBase
         );
 
         sleep(2);
-        $result = $this->dbQuery(
-            'SELECT val FROM `' . $this->database_name . '`.`test_table`'
+        $this->dbQuery(
+            'SELECT val FROM `' . $this->database_name . '`.`test_table`',
+            function (): void {
+                $this->assertTrue($this->isElementPresent('className', 'table_results'));
+                // [ ] | Edit | Copy | Delete | 4
+                $this->assertGreaterThan(3, (int) $this->getCellByTableClass('table_results', 1, 5));
+            }
         );
-        $row = $result->fetch_assoc();
-        $this->assertGreaterThan(2, $row['val']);
     }
 
     /**
      * Test for dropping event
      *
-     * @return void
-     *
      * @depends testAddEvent
      * @group large
      */
-    public function testDropEvent()
+    public function testDropEvent(): void
     {
         $this->eventSQL();
         $this->waitForElement('partialLinkText', 'Events')->click();
@@ -211,7 +217,7 @@ class EventsTest extends TestBase
 
         $this->waitForElement(
             'xpath',
-            "//legend[contains(., 'Events')]"
+            '//legend[contains(., "Events")]'
         );
 
         $this->byPartialLinkText('Drop')->click();
@@ -222,10 +228,12 @@ class EventsTest extends TestBase
 
         $this->waitAjaxMessage();
 
-        $result = $this->dbQuery(
-            "SHOW EVENTS WHERE Db='" . $this->database_name
-            . "' AND Name='test_event'"
+        $this->dbQuery(
+            'USE `' . $this->database_name . '`;'
+            . 'SHOW EVENTS WHERE Db=\'' . $this->database_name . '\' AND Name=\'test_event\';',
+            function (): void {
+                $this->assertFalse($this->isElementPresent('className', 'table_results'));
+            }
         );
-        $this->assertEquals(0, $result->num_rows);
     }
 }

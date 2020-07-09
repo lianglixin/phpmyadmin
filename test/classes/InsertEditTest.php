@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace PhpMyAdmin\Tests;
 
+use PhpMyAdmin\Core;
 use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Header;
 use PhpMyAdmin\InsertEdit;
@@ -83,10 +84,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getFormParametersForInsertForm
-     *
-     * @return void
      */
-    public function testGetFormParametersForInsertForm()
+    public function testGetFormParametersForInsertForm(): void
     {
         $where_clause = [
             'foo' => 'bar ',
@@ -121,10 +120,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getWhereClauseArray
-     *
-     * @return void
      */
-    public function testGetWhereClauseArray()
+    public function testGetWhereClauseArray(): void
     {
         $this->assertEquals(
             [],
@@ -163,10 +160,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for analyzeWhereClauses
-     *
-     * @return void
      */
-    public function testAnalyzeWhereClause()
+    public function testAnalyzeWhereClause(): void
     {
         $clauses = [
             'a=1',
@@ -233,10 +228,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for showEmptyResultMessageOrSetUniqueCondition
-     *
-     * @return void
      */
-    public function testShowEmptyResultMessageOrSetUniqueCondition()
+    public function testShowEmptyResultMessageOrSetUniqueCondition(): void
     {
         $temp = new stdClass();
         $temp->orgname = 'orgname';
@@ -305,10 +298,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for loadFirstRow
-     *
-     * @return void
      */
-    public function testLoadFirstRow()
+    public function testLoadFirstRow(): void
     {
         $GLOBALS['cfg']['InsertRows'] = 2;
 
@@ -349,10 +340,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for urlParamsInEditMode
-     *
-     * @return void
      */
-    public function testUrlParamsInEditMode()
+    public function testUrlParamsInEditMode(): void
     {
         $where_clause_array = [
             'foo=1',
@@ -374,10 +363,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for showTypeOrFunction
-     *
-     * @return void
      */
-    public function testShowTypeOrFunction()
+    public function testShowTypeOrFunction(): void
     {
         $GLOBALS['cfg']['ShowFieldTypesInDataEditView'] = true;
         $GLOBALS['cfg']['ServerDefault'] = 1;
@@ -449,10 +436,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for analyzeTableColumnsArray
-     *
-     * @return void
      */
-    public function testAnalyzeTableColumnsArray()
+    public function testAnalyzeTableColumnsArray(): void
     {
         $column = [
             'Field' => '1<2',
@@ -529,10 +514,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getColumnTitle
-     *
-     * @return void
      */
-    public function testGetColumnTitle()
+    public function testGetColumnTitle(): void
     {
         $column = [];
         $column['Field'] = 'f1<';
@@ -577,10 +560,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for isColumn
-     *
-     * @return void
      */
-    public function testIsColumn()
+    public function testIsColumn(): void
     {
         $column = [];
         $types = [
@@ -642,10 +623,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getEnumSetAndTimestampColumns
-     *
-     * @return void
      */
-    public function testGetEnumAndTimestampColumns()
+    public function testGetEnumAndTimestampColumns(): void
     {
         $column = [];
         $column['True_Type'] = 'set';
@@ -763,10 +742,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getFunctionColumn
-     *
-     * @return void
      */
-    public function testGetFunctionColumn()
+    public function testGetFunctionColumn(): void
     {
         $GLOBALS['cfg']['ProtectBinary'] = 'blob';
         $column = [];
@@ -938,10 +915,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getNullColumn
-     *
-     * @return void
      */
-    public function testGetNullColumn()
+    public function testGetNullColumn(): void
     {
         $column = ['Field' => ''];
         $column['Null'] = 'YES';
@@ -1053,10 +1028,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getNullifyCodeForNullColumn
-     *
-     * @return void
      */
-    public function testGetNullifyCodeForNullColumn()
+    public function testGetNullifyCodeForNullColumn(): void
     {
         $column = $foreignData = [];
         $foreigners = [
@@ -1130,10 +1103,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getForeignLink
-     *
-     * @return void
      */
-    public function testGetForeignLink()
+    public function testGetForeignLink(): void
     {
         $column = $titles = [];
         $column['Field'] = 'f';
@@ -1186,10 +1157,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for dispRowForeignData
-     *
-     * @return void
      */
-    public function testDispRowForeignData()
+    public function testDispRowForeignData(): void
     {
         $column = [];
         $column['is_binary'] = false;
@@ -1236,10 +1205,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for dispRowForeignData
-     *
-     * @return void
      */
-    public function testDispRowForeignDataWithHex()
+    public function testDispRowForeignDataWithHex(): void
     {
         $column = [];
         $column['is_binary'] = true;
@@ -1286,10 +1253,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getTextarea
-     *
-     * @return void
      */
-    public function testGetTextarea()
+    public function testGetTextarea(): void
     {
         $GLOBALS['cfg']['TextareaRows'] = 20;
         $GLOBALS['cfg']['TextareaCols'] = 10;
@@ -1330,10 +1295,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getPmaTypeEnum
-     *
-     * @return void
      */
-    public function testGetPmaTypeEnum()
+    public function testGetPmaTypeEnum(): void
     {
         $extracted_columnspec = $column = [];
         $extracted_columnspec['enum_set_values'] = [];
@@ -1405,10 +1368,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getColumnEnumValues
-     *
-     * @return void
      */
-    public function testGetColumnEnumValues()
+    public function testGetColumnEnumValues(): void
     {
         $extracted_columnspec = $column = [];
         $extracted_columnspec['enum_set_values'] = [
@@ -1444,10 +1405,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getDropDownDependingOnLength
-     *
-     * @return void
      */
-    public function testGetDropDownDependingOnLength()
+    public function testGetDropDownDependingOnLength(): void
     {
         $column_enum_values = [
             [
@@ -1529,10 +1488,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getRadioButtonDependingOnLength
-     *
-     * @return void
      */
-    public function testGetRadioButtonDependingOnLength()
+    public function testGetRadioButtonDependingOnLength(): void
     {
         $column_enum_values = [
             [
@@ -1621,10 +1578,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getPmaTypeSet
-     *
-     * @return void
      */
-    public function testGetPmaTypeSet()
+    public function testGetPmaTypeSet(): void
     {
         $column = [];
         $column['values']  = [
@@ -1675,10 +1630,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getColumnSetValueAndSelectSize
-     *
-     * @return void
      */
-    public function testGetColumnSetValueAndSelectSize()
+    public function testGetColumnSetValueAndSelectSize(): void
     {
         $extracted_columnspec = $column = [];
         $extracted_columnspec['enum_set_values'] = [
@@ -1741,10 +1694,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getBinaryAndBlobColumn
-     *
-     * @return void
      */
-    public function testGetBinaryAndBlobColumn()
+    public function testGetBinaryAndBlobColumn(): void
     {
         $GLOBALS['cfg']['ProtectBinary'] = 'blob';
         $GLOBALS['cfg']['ShowFunctionFields'] = true;
@@ -1986,10 +1937,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getHtmlInput
-     *
-     * @return void
      */
-    public function testGetHTMLinput()
+    public function testGetHTMLinput(): void
     {
         $GLOBALS['cfg']['ShowFunctionFields'] = true;
         $column = [];
@@ -2074,10 +2023,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getMaxUploadSize
-     *
-     * @return void
      */
-    public function testGetMaxUploadSize()
+    public function testGetMaxUploadSize(): void
     {
         $GLOBALS['max_upload_size'] = 257;
         $column = [];
@@ -2124,10 +2071,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getValueColumnForOtherDatatypes
-     *
-     * @return void
      */
-    public function testGetValueColumnForOtherDatatypes()
+    public function testGetValueColumnForOtherDatatypes(): void
     {
         $column = [];
         $column['len'] = 20;
@@ -2245,10 +2190,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getColumnSize
-     *
-     * @return void
      */
-    public function testGetColumnSize()
+    public function testGetColumnSize(): void
     {
         $column = $extracted_columnspec = [];
         $column['is_char'] = true;
@@ -2293,10 +2236,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getHtmlForGisDataTypes
-     *
-     * @return void
      */
-    public function testGetHTMLforGisDataTypes()
+    public function testGetHTMLforGisDataTypes(): void
     {
         $GLOBALS['cfg']['ActionLinksMode'] = 'icons';
         $GLOBALS['cfg']['LinkLengthLimit'] = 2;
@@ -2315,10 +2256,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getContinueInsertionForm
-     *
-     * @return void
      */
-    public function testGetContinueInsertionForm()
+    public function testGetContinueInsertionForm(): void
     {
         $where_clause_array = ['a<b'];
         $GLOBALS['cfg']['InsertRows'] = 1;
@@ -2373,10 +2312,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getActionsPanel
-     *
-     * @return void
      */
-    public function testGetActionsPanel()
+    public function testGetActionsPanel(): void
     {
         $GLOBALS['cfg']['ShowHint'] = false;
         $result = $this->insertEdit->getActionsPanel(null, 'back', 2, 1, false);
@@ -2400,10 +2337,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getSubmitTypeDropDown
-     *
-     * @return void
      */
-    public function testGetSubmitTypeDropDown()
+    public function testGetSubmitTypeDropDown(): void
     {
         $result = $this->callFunction(
             $this->insertEdit,
@@ -2429,10 +2364,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getAfterInsertDropDown
-     *
-     * @return void
      */
-    public function testGetAfterInsertDropDown()
+    public function testGetAfterInsertDropDown(): void
     {
         $result = $this->callFunction(
             $this->insertEdit,
@@ -2463,10 +2396,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getSubmitAndResetButtonForActionsPanel
-     *
-     * @return void
      */
-    public function testGetSubmitAndResetButtonForActionsPanel()
+    public function testGetSubmitAndResetButtonForActionsPanel(): void
     {
         $GLOBALS['cfg']['ShowHint'] = false;
         $result = $this->callFunction(
@@ -2500,10 +2431,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getHeadAndFootOfInsertRowTable
-     *
-     * @return void
      */
-    public function testGetHeadAndFootOfInsertRowTable()
+    public function testGetHeadAndFootOfInsertRowTable(): void
     {
         $GLOBALS['cfg']['ShowFieldTypesInDataEditView'] = true;
         $GLOBALS['cfg']['ShowFunctionFields'] = true;
@@ -2535,10 +2464,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getSpecialCharsAndBackupFieldForExistingRow
-     *
-     * @return void
      */
-    public function testGetSpecialCharsAndBackupFieldForExistingRow()
+    public function testGetSpecialCharsAndBackupFieldForExistingRow(): void
     {
         $column = $current_row = $extracted_columnspec = [];
         $column['Field'] = 'f';
@@ -2738,10 +2665,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getSpecialCharsAndBackupFieldForInsertingMode
-     *
-     * @return void
      */
-    public function testGetSpecialCharsAndBackupFieldForInsertingMode()
+    public function testGetSpecialCharsAndBackupFieldForInsertingMode(): void
     {
         $column = [];
         $column['True_Type'] = 'bit';
@@ -2799,10 +2724,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getParamsForUpdateOrInsert
-     *
-     * @return void
      */
-    public function testGetParamsForUpdateOrInsert()
+    public function testGetParamsForUpdateOrInsert(): void
     {
         $_POST['where_clause'] = 'LIMIT 1';
         $_POST['submit_type'] = 'showinsert';
@@ -2843,10 +2766,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for isInsertRow
-     *
-     * @return void
      */
-    public function testIsInsertRow()
+    public function testIsInsertRow(): void
     {
         $_POST['insert_rows'] = 5;
         $GLOBALS['cfg']['InsertRows'] = 2;
@@ -2891,10 +2812,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for setSessionForEditNext
-     *
-     * @return void
      */
-    public function testSetSessionForEditNext()
+    public function testSetSessionForEditNext(): void
     {
         $temp = new stdClass();
         $temp->orgname = 'orgname';
@@ -2939,10 +2858,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getGotoInclude
-     *
-     * @return void
      */
-    public function testGetGotoInclude()
+    public function testGetGotoInclude(): void
     {
         $GLOBALS['goto'] = '123.php';
         $GLOBALS['table'] = '';
@@ -2979,10 +2896,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getErrorUrl
-     *
-     * @return void
      */
-    public function testGetErrorUrl()
+    public function testGetErrorUrl(): void
     {
         $GLOBALS['cfg']['ServerDefault'] = 1;
         $this->assertEquals(
@@ -2999,10 +2914,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for buildSqlQuery
-     *
-     * @return void
      */
-    public function testBuildSqlQuery()
+    public function testBuildSqlQuery(): void
     {
         $GLOBALS['db'] = 'db';
         $GLOBALS['table'] = 'table';
@@ -3028,10 +2941,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for executeSqlQuery
-     *
-     * @return void
      */
-    public function testExecuteSqlQuery()
+    public function testExecuteSqlQuery(): void
     {
         $query = [
             'SELECT 1',
@@ -3118,10 +3029,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for executeSqlQuery
-     *
-     * @return void
      */
-    public function testExecuteSqlQueryWithTryQuery()
+    public function testExecuteSqlQueryWithTryQuery(): void
     {
         $query = [
             'SELECT 1',
@@ -3208,10 +3117,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getWarningMessages
-     *
-     * @return void
      */
-    public function testGetWarningMessages()
+    public function testGetWarningMessages(): void
     {
         $warnings = [
             [
@@ -3255,10 +3162,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getDisplayValueForForeignTableColumn
-     *
-     * @return void
      */
-    public function testGetDisplayValueForForeignTableColumn()
+    public function testGetDisplayValueForForeignTableColumn(): void
     {
         $map = [];
         $map['f']['foreign_db'] = 'information_schema';
@@ -3299,10 +3204,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getLinkForRelationalDisplayField
-     *
-     * @return void
      */
-    public function testGetLinkForRelationalDisplayField()
+    public function testGetLinkForRelationalDisplayField(): void
     {
         $GLOBALS['cfg']['ServerDefault'] = 1;
         $_SESSION['tmpval']['relational_display'] = 'K';
@@ -3313,8 +3216,13 @@ class InsertEditTest extends AbstractTestCase
 
         $result = $this->insertEdit->getLinkForRelationalDisplayField($map, 'f', '=1', 'a>', 'b<');
 
+        $sqlSignature = Core::signSqlQuery(
+            'SELECT * FROM `information_schema`.`TABLES` WHERE `f`=1'
+        );
+
         $this->assertEquals(
             '<a href="index.php?route=/sql&amp;db=information_schema&amp;table=TABLES&amp;pos=0&amp;'
+            . 'sql_signature=' . $sqlSignature . '&amp;'
             . 'sql_query=SELECT+%2A+FROM+%60information_schema%60.%60TABLES%60+WHERE'
             . '+%60f%60%3D1&amp;lang=en" title="a&gt;">b&lt;</a>',
             $result
@@ -3325,6 +3233,7 @@ class InsertEditTest extends AbstractTestCase
 
         $this->assertEquals(
             '<a href="index.php?route=/sql&amp;db=information_schema&amp;table=TABLES&amp;pos=0&amp;'
+            . 'sql_signature=' . $sqlSignature . '&amp;'
             . 'sql_query=SELECT+%2A+FROM+%60information_schema%60.%60TABLES%60+WHERE'
             . '+%60f%60%3D1&amp;lang=en" title="b&lt;">a&gt;</a>',
             $result
@@ -3333,10 +3242,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for transformEditedValues
-     *
-     * @return void
      */
-    public function testTransformEditedValues()
+    public function testTransformEditedValues(): void
     {
         $edited_values = [
             ['c' => 'cname'],
@@ -3370,10 +3277,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getQueryValuesForInsertAndUpdateInMultipleEdit
-     *
-     * @return void
      */
-    public function testGetQueryValuesForInsertAndUpdateInMultipleEdit()
+    public function testGetQueryValuesForInsertAndUpdateInMultipleEdit(): void
     {
         $multi_edit_columns_name = ['0' => 'fld'];
 
@@ -3484,10 +3389,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getCurrentValueAsAnArrayForMultipleEdit
-     *
-     * @return void
      */
-    public function testGetCurrentValueAsAnArrayForMultipleEdit()
+    public function testGetCurrentValueAsAnArrayForMultipleEdit(): void
     {
         $result = $this->insertEdit->getCurrentValueAsAnArrayForMultipleEdit(
             [],
@@ -3576,10 +3479,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getCurrentValueForDifferentTypes
-     *
-     * @return void
      */
-    public function testGetCurrentValueForDifferentTypes()
+    public function testGetCurrentValueForDifferentTypes(): void
     {
         $prow = [];
         $prow['a'] = '101';
@@ -3836,10 +3737,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for verifyWhetherValueCanBeTruncatedAndAppendExtraData
-     *
-     * @return void
      */
-    public function testVerifyWhetherValueCanBeTruncatedAndAppendExtraData()
+    public function testVerifyWhetherValueCanBeTruncatedAndAppendExtraData(): void
     {
         $extra_data = ['isNeedToRecheck' => true];
 
@@ -3862,7 +3761,7 @@ class InsertEditTest extends AbstractTestCase
 
         $dbi->expects($this->at(2))
             ->method('fetchRow')
-            ->will($this->returnValue(false));
+            ->will($this->returnValue(null));
 
         $dbi->expects($this->at(3))
             ->method('freeResult');
@@ -3941,10 +3840,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getTableColumns
-     *
-     * @return void
      */
-    public function testGetTableColumns()
+    public function testGetTableColumns(): void
     {
         $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
@@ -3975,10 +3872,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for determineInsertOrEdit
-     *
-     * @return void
      */
-    public function testDetermineInsertOrEdit()
+    public function testDetermineInsertOrEdit(): void
     {
         $dbi = $this->getMockBuilder(DatabaseInterface::class)
             ->disableOriginalConstructor()
@@ -4051,10 +3946,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getCommentsMap
-     *
-     * @return void
      */
-    public function testGetCommentsMap()
+    public function testGetCommentsMap(): void
     {
         $GLOBALS['cfg']['ShowPropertyComments'] = false;
 
@@ -4102,10 +3995,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getUrlParameters
-     *
-     * @return void
      */
-    public function testGetUrlParameters()
+    public function testGetUrlParameters(): void
     {
         global $goto;
 
@@ -4124,10 +4015,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getHtmlForIgnoreOption
-     *
-     * @return void
      */
-    public function testGetHtmlForIgnoreOption()
+    public function testGetHtmlForIgnoreOption(): void
     {
         $expected = '<input type="checkbox" %sname="insert_ignore_1"'
             . ' id="insert_ignore_1"><label for="insert_ignore_1">'
@@ -4146,10 +4035,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getHtmlForInsertEditFormColumn
-     *
-     * @return void
      */
-    public function testGetHtmlForInsertEditFormColumn()
+    public function testGetHtmlForInsertEditFormColumn(): void
     {
         $o_rows = 0;
         $tabindex = 0;
@@ -4309,10 +4196,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getHtmlForInsertEditRow
-     *
-     * @return void
      */
-    public function testGetHtmlForInsertEditRow()
+    public function testGetHtmlForInsertEditRow(): void
     {
         $o_rows = 0;
         $tabindex = 0;
@@ -4386,10 +4271,8 @@ class InsertEditTest extends AbstractTestCase
 
     /**
      * Test for getHtmlForInsertEditRow based on the column privilges
-     *
-     * @return void
      */
-    public function testGetHtmlForInsertEditRowBasedOnColumnPrivileges()
+    public function testGetHtmlForInsertEditRowBasedOnColumnPrivileges(): void
     {
         $o_rows = 0;
         $tabindex = 0;

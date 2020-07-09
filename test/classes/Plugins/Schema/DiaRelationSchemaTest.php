@@ -90,7 +90,7 @@ class DiaRelationSchemaTest extends AbstractTestCase
             ->will($this->returnValue($fetchArrayReturn2));
         $dbi->expects($this->at(4))
             ->method('fetchAssoc')
-            ->will($this->returnValue(false));
+            ->will($this->returnValue(null));
 
         $getIndexesResult = [
             [
@@ -138,11 +138,9 @@ class DiaRelationSchemaTest extends AbstractTestCase
     /**
      * Test for construct, the Property is set correctly
      *
-     * @return void
-     *
      * @group medium
      */
-    public function testSetProperty()
+    public function testSetProperty(): void
     {
         $this->assertEquals(
             33,

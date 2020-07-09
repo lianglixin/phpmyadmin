@@ -27,9 +27,7 @@ use Twig\Error\SyntaxError;
 use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader;
 use Twig\TemplateWrapper;
-use Twig_Error_Loader;
-use Twig_Error_Runtime;
-use Twig_Error_Syntax;
+use const DIRECTORY_SEPARATOR;
 use const E_USER_WARNING;
 use function sprintf;
 use function trigger_error;
@@ -46,7 +44,7 @@ class Template
      */
     protected static $twig;
 
-    public const BASE_PATH = 'templates/';
+    public const BASE_PATH = ROOT_PATH . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
 
     public function __construct()
     {
@@ -125,9 +123,9 @@ class Template
      * @param array  $data     Associative array of template variables
      *
      * @throws Throwable
-     * @throws Twig_Error_Loader
-     * @throws Twig_Error_Runtime
-     * @throws Twig_Error_Syntax
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function render(string $template, array $data = []): string
     {

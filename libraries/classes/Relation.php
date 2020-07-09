@@ -1692,8 +1692,6 @@ class Relation
      * @param string $target_table Target table name
      * @param string $db_field     Name of database field
      * @param string $table_field  Name of table field
-     *
-     * @return void
      */
     public function renameSingleTable(
         string $table,
@@ -1991,7 +1989,7 @@ class Relation
      * @param array  $foreigners Table Foreign data
      * @param string $column     Column name
      *
-     * @return bool|array
+     * @return array|false
      */
     public function searchColumnInForeigners(array $foreigners, $column)
     {

@@ -101,7 +101,7 @@ class PdfRelationSchemaTest extends AbstractTestCase
             ->will($this->returnValue($fetchArrayReturn2));
         $dbi->expects($this->at(4))
             ->method('fetchAssoc')
-            ->will($this->returnValue(false));
+            ->will($this->returnValue(null));
 
         $fetchRowReturn = [
             'table_name',
@@ -189,11 +189,9 @@ class PdfRelationSchemaTest extends AbstractTestCase
     /**
      * Test for construct
      *
-     * @return void
-     *
      * @group large
      */
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $this->assertEquals(
             33,

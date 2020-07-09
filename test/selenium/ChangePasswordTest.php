@@ -19,6 +19,13 @@ use function trim;
 class ChangePasswordTest extends TestBase
 {
     /**
+     * Create a test database for this test class
+     *
+     * @var bool
+     */
+    protected static $createDatabase = false;
+
+    /**
      * Array of AssertionFailedError->toString
      *
      * @var string[]
@@ -28,11 +35,9 @@ class ChangePasswordTest extends TestBase
     /**
      * Tests the changing of the password
      *
-     * @return void
-     *
      * @group large
      */
-    public function testChangePassword()
+    public function testChangePassword(): void
     {
         $this->login();
 

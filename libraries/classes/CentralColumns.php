@@ -17,6 +17,7 @@ use function explode;
 use function htmlspecialchars;
 use function implode;
 use function in_array;
+use function is_array;
 use function is_bool;
 use function mb_strtoupper;
 use function sprintf;
@@ -128,7 +129,7 @@ class CentralColumns
     public function getColumnsList(string $db, int $from = 0, int $num = 25): array
     {
         $cfgCentralColumns = $this->getParams();
-        if (empty($cfgCentralColumns)) {
+        if (! is_array($cfgCentralColumns)) {
             return [];
         }
         $pmadb = $cfgCentralColumns['db'];
@@ -164,7 +165,7 @@ class CentralColumns
     public function getCount(string $db): int
     {
         $cfgCentralColumns = $this->getParams();
-        if (empty($cfgCentralColumns)) {
+        if (! is_array($cfgCentralColumns)) {
             return 0;
         }
         $pmadb = $cfgCentralColumns['db'];
@@ -202,7 +203,7 @@ class CentralColumns
         bool $allFields = false
     ): array {
         $cfgCentralColumns = $this->getParams();
-        if (empty($cfgCentralColumns)) {
+        if (! is_array($cfgCentralColumns)) {
             return [];
         }
         $pmadb = $cfgCentralColumns['db'];
@@ -313,7 +314,7 @@ class CentralColumns
         ?string $table = null
     ) {
         $cfgCentralColumns = $this->getParams();
-        if (empty($cfgCentralColumns)) {
+        if (! is_array($cfgCentralColumns)) {
             return $this->configErrorMessage();
         }
         $db = $_POST['db'];
@@ -435,7 +436,7 @@ class CentralColumns
         bool $isTable = true
     ) {
         $cfgCentralColumns = $this->getParams();
-        if (empty($cfgCentralColumns)) {
+        if (! is_array($cfgCentralColumns)) {
             return $this->configErrorMessage();
         }
         $pmadb = $cfgCentralColumns['db'];
@@ -656,7 +657,7 @@ class CentralColumns
         string $col_default
     ) {
         $cfgCentralColumns = $this->getParams();
-        if (empty($cfgCentralColumns)) {
+        if (! is_array($cfgCentralColumns)) {
             return $this->configErrorMessage();
         }
         $centralTable = $cfgCentralColumns['table'];
@@ -897,7 +898,7 @@ class CentralColumns
     public function getListRaw(string $db, string $table): array
     {
         $cfgCentralColumns = $this->getParams();
-        if (empty($cfgCentralColumns)) {
+        if (! is_array($cfgCentralColumns)) {
             return [];
         }
         $centralTable = $cfgCentralColumns['table'];
@@ -947,20 +948,18 @@ class CentralColumns
             'text_dir' => $text_dir,
             'form_name' => 'tableslistcontainer',
         ]);
-        $html_output .= Generator::getButtonOrImage(
-            'edit_central_columns',
-            'mult_submit change_central_columns',
-            __('Edit'),
-            'b_edit',
-            'edit central columns'
-        );
-        $html_output .= Generator::getButtonOrImage(
-            'delete_central_columns',
-            'mult_submit',
-            __('Delete'),
-            'b_drop',
-            'remove_from_central_columns'
-        );
+
+        $html_output .= '<button class="btn btn-link mult_submit change_central_columns" type="submit"'
+            . ' name="edit_central_columns" value="edit central columns"'
+            . ' title="' . __('Edit') . '">' . "\n"
+            . Generator::getIcon('b_edit', __('Edit'))
+            . '</button>' . "\n";
+
+        $html_output .= '<button class="btn btn-link mult_submit" type="submit"'
+            . ' name="delete_central_columns" value="remove_from_central_columns"'
+            . ' title="' . __('Delete') . '">' . "\n"
+            . Generator::getIcon('b_drop', __('Delete'))
+            . '</button>' . "\n";
 
         return $html_output;
     }
@@ -1069,7 +1068,7 @@ class CentralColumns
     public function getColumnsCount(string $db, int $from = 0, int $num = 25): int
     {
         $cfgCentralColumns = $this->getParams();
-        if (empty($cfgCentralColumns)) {
+        if (! is_array($cfgCentralColumns)) {
             return 0;
         }
         $pmadb = $cfgCentralColumns['db'];
@@ -1147,7 +1146,7 @@ class CentralColumns
         $attribute_types = $this->dbi->types->getAttributes();
 
         $tn_pageNow = ($pos / $this->maxRows) + 1;
-        $tn_nbTotalPage = ceil($total_rows / $this->maxRows);
+        $tn_nbTotalPage = (int) ceil($total_rows / $this->maxRows);
         $tn_page_selector = $tn_nbTotalPage > 1 ? Util::pageselector(
             'pos',
             $this->maxRows,

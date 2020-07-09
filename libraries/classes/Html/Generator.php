@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace PhpMyAdmin\Html;
 
 use PhpMyAdmin\Core;
-use PhpMyAdmin\Html\ActionLinksModes\Factory;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Sanitize;
@@ -19,9 +18,9 @@ use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 use Throwable;
-use Twig_Error_Loader;
-use Twig_Error_Runtime;
-use Twig_Error_Syntax;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Williamdes\MariaDBMySQLKBS\KBException;
 use Williamdes\MariaDBMySQLKBS\Search as KBSearch;
 use function addslashes;
@@ -127,30 +126,6 @@ class Generator
     }
 
     /**
-     * Generate a button or image tag
-     *
-     * @param string $button_name  name of button element
-     * @param string $button_class class of button or image element
-     * @param string $text         text to display
-     * @param string $image        image to display
-     * @param string $value        value
-     *
-     * @return string              html content
-     *
-     * @access public
-     */
-    public static function getButtonOrImage(
-        $button_name,
-        $button_class,
-        $text,
-        $image,
-        $value = ''
-    ): string {
-        return Factory::build($GLOBALS['cfg']['ActionLinksMode'])
-            ->generate($button_name, $button_class, $text, $image, $value);
-    }
-
-    /**
      * returns html code for db link to default db page
      *
      * @param string $database database
@@ -228,9 +203,9 @@ class Generator
      * @return string   HTML code for the toggle button
      *
      * @throws Throwable
-     * @throws Twig_Error_Loader
-     * @throws Twig_Error_Runtime
-     * @throws Twig_Error_Syntax
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public static function toggleButton($action, $select_name, array $options, $callback): string
     {
@@ -523,9 +498,9 @@ class Generator
      * @return string html
      *
      * @throws Throwable
-     * @throws Twig_Error_Loader
-     * @throws Twig_Error_Runtime
-     * @throws Twig_Error_Syntax
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public static function getStartAndNumberOfRowsPanel($sql_query): string
     {
@@ -611,9 +586,9 @@ class Generator
      * @param string         $type      the type (level) of the message
      *
      * @throws Throwable
-     * @throws Twig_Error_Loader
-     * @throws Twig_Error_Runtime
-     * @throws Twig_Error_Syntax
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @access public
      */
@@ -1342,7 +1317,7 @@ class Generator
                 $name,
                 $max_count,
                 Util::getPageFromPosition($pos, $max_count),
-                ceil($count / $max_count)
+                (int) ceil($count / $max_count)
             );
             $list_navigator_html .= '</form>';
 

@@ -38,10 +38,8 @@ class PluginsControllerTest extends AbstractTestCase
 
     /**
      * Test for index method
-     *
-     * @return void
      */
-    public function testIndex()
+    public function testIndex(): void
     {
         /**
          * Prepare plugin list
@@ -67,7 +65,7 @@ class PluginsControllerTest extends AbstractTestCase
             ->will($this->returnValue($row));
         $dbi->expects($this->at(2))
             ->method('fetchAssoc')
-            ->will($this->returnValue(false));
+            ->will($this->returnValue(null));
         $dbi->expects($this->once())
             ->method('freeResult')
             ->will($this->returnValue(true));

@@ -55,6 +55,7 @@ class SystemDatabaseTest extends AbstractTestCase
             'relwork' => 'relwork',
             'commwork' => 'commwork',
             'pdfwork' => 'pdfwork',
+            'mimework' => 'mimework',
             'column_info' => 'column_info',
             'relation' => 'relation',
         ];
@@ -80,11 +81,9 @@ class SystemDatabaseTest extends AbstractTestCase
     /**
      * Tests for PMA_getExistingTransformationData() method.
      *
-     * @return void
-     *
      * @test
      */
-    public function testPMAGetExistingTransformationData()
+    public function testPMAGetExistingTransformationData(): void
     {
         $db = 'PMA_db';
         $ret = $this->sysDb->getExistingTransformationData($db);
@@ -99,11 +98,9 @@ class SystemDatabaseTest extends AbstractTestCase
     /**
      * Tests for PMA_getNewTransformationDataSql() method.
      *
-     * @return void
-     *
      * @test
      */
-    public function testPMAGetNewTransformationDataSql()
+    public function testPMAGetNewTransformationDataSql(): void
     {
         $db = 'PMA_db';
         $pma_transformation_data = [];

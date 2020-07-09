@@ -138,6 +138,7 @@ Functions.addDatepicker = function ($thisElement, type, options) {
         showMicrosec: true,
         showTimepicker: showTimepicker,
         showButtonPanel: false,
+        changeYear: true,
         dateFormat: 'yy-mm-dd', // yy means year with four digits
         timeFormat: 'HH:mm:ss.lc',
         constrainInput: false,
@@ -527,6 +528,7 @@ Functions.suggestPassword = function (passwordForm) {
     var pwchars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWYXZ@!_.*/()[]-';
     var passwordlength = 16;    // do we want that to be dynamic?  no, keep it simple :)
     var passwd = passwordForm.generated_pw;
+    // eslint-disable-next-line compat/compat
     var randomWords = new Int32Array(passwordlength);
 
     passwd.value = '';
@@ -534,7 +536,9 @@ Functions.suggestPassword = function (passwordForm) {
     var i;
 
     // First we're going to try to use a built-in CSPRNG
+    // eslint-disable-next-line compat/compat
     if (window.crypto && window.crypto.getRandomValues) {
+        // eslint-disable-next-line compat/compat
         window.crypto.getRandomValues(randomWords);
     } else if (window.msCrypto && window.msCrypto.getRandomValues) {
         // Because of course IE calls it msCrypto instead of being standard
@@ -4498,12 +4502,14 @@ AJAX.registerOnload('functions.js', function () {
      */
     $('a.take_theme').on('click', function () {
         var what = this.name;
+        /* eslint-disable compat/compat */
         if (window.opener && window.opener.document.forms.setTheme.elements.set_theme) {
             window.opener.document.forms.setTheme.elements.set_theme.value = what;
             window.opener.document.forms.setTheme.submit();
             window.close();
             return false;
         }
+        /* eslint-enable compat/compat */
         return true;
     });
 });

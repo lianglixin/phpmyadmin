@@ -32,7 +32,7 @@ abstract class AbstractTestCase extends TestCase
      *
      * @var string[]
      */
-    private $globalsWhiteList = [
+    private $globalsAllowList = [
         '__composer_autoload_files',
         'GLOBALS',
         '_SERVER',
@@ -48,7 +48,7 @@ abstract class AbstractTestCase extends TestCase
     protected function setUp(): void
     {
         foreach ($GLOBALS as $key => $val) {
-            if (in_array($key, $this->globalsWhiteList)) {
+            if (in_array($key, $this->globalsAllowList)) {
                 continue;
             }
             unset($GLOBALS[$key]);
@@ -95,7 +95,7 @@ abstract class AbstractTestCase extends TestCase
     protected function setTheme(): void
     {
         global $PMA_Theme;
-        $PMA_Theme = Theme::load(ROOT_PATH . 'themes/pmahomme');
+        $PMA_Theme = Theme::load('./themes/pmahomme', ROOT_PATH . 'themes/pmahomme/');
     }
 
     protected function setLanguage(string $code = 'en'): void
@@ -153,7 +153,7 @@ abstract class AbstractTestCase extends TestCase
     protected function tearDown(): void
     {
         foreach ($GLOBALS as $key => $val) {
-            if (in_array($key, $this->globalsWhiteList)) {
+            if (in_array($key, $this->globalsAllowList)) {
                 continue;
             }
             unset($GLOBALS[$key]);

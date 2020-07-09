@@ -90,7 +90,7 @@ class SvgRelationSchemaTest extends AbstractTestCase
             ->will($this->returnValue($fetchArrayReturn2));
         $dbi->expects($this->at(4))
             ->method('fetchAssoc')
-            ->will($this->returnValue(false));
+            ->will($this->returnValue(null));
 
         $getIndexesResult = [
             [
@@ -138,11 +138,9 @@ class SvgRelationSchemaTest extends AbstractTestCase
     /**
      * Test for construct
      *
-     * @return void
-     *
      * @group medium
      */
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $this->assertEquals(
             33,

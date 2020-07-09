@@ -150,7 +150,7 @@ class NavigationTree
             $this->pos2Value[0] = (int) ($_REQUEST['pos2_value'] ?? 0);
             if (isset($_REQUEST['pos3_name'])) {
                 $this->pos3Name[0] = $_REQUEST['pos3_name'] ?? '';
-                $this->pos3Value[0] = (int) ($_REQUEST['pos3_value'] ?? 0);
+                $this->pos3Value[0] = (int) $_REQUEST['pos3_value'];
             }
         } else {
             if (isset($_POST['n0_aPath'])) {
@@ -205,8 +205,6 @@ class NavigationTree
 
     /**
      * Returns the database position for the page selector
-     *
-     * @return int
      */
     private function getNavigationDbPos(): int
     {
@@ -358,28 +356,21 @@ class NavigationTree
     /**
      * Builds a branch of the tree
      *
-     * @param array    $path  A paths pointing to the branch
-     *                        of the tree that needs to be built
-     * @param string   $type2 The type of item being paginated on
-     *                        the second level of the tree
-     * @param int|null $pos2  The position for the pagination of
-     *                        the branch at the second level of the tree
-     * @param string   $type3 The type of item being paginated on
-     *                        the third level of the tree
-     * @param int|null $pos3  The position for the pagination of
-     *                        the branch at the third level of the tree
+     * @param array  $path  A paths pointing to the branch
+     *                      of the tree that needs to be built
+     * @param string $type2 The type of item being paginated on
+     *                      the second level of the tree
+     * @param int    $pos2  The position for the pagination of
+     *                      the branch at the second level of the tree
+     * @param string $type3 The type of item being paginated on
+     *                      the third level of the tree
+     * @param int    $pos3  The position for the pagination of
+     *                      the branch at the third level of the tree
      *
      * @return Node|bool    The active node or false in case of failure, true if the path contains <= 1 items
      */
-    private function buildPathPart(array $path, string $type2, ?int $pos2, string $type3, ?int $pos3)
+    private function buildPathPart(array $path, string $type2, int $pos2, string $type3, int $pos3)
     {
-        if (empty($pos2)) {
-            $pos2 = 0;
-        }
-        if (empty($pos3)) {
-            $pos3 = 0;
-        }
-
         if (count($path) <= 1) {
             return true;
         }
@@ -718,8 +709,6 @@ class NavigationTree
      * Recursively groups tree nodes given a separator
      *
      * @param Node $node The node to group
-     *
-     * @return void
      */
     public function groupNode($node): void
     {
@@ -1020,8 +1009,6 @@ class NavigationTree
      * side to know which page(s) we will be requesting data from
      *
      * @param Node $node The node to create the pagination parameters for
-     *
-     * @return string
      */
     private function getPaginationParamsHtml(Node $node): string
     {
@@ -1048,8 +1035,6 @@ class NavigationTree
      *
      * @param array $tree  Tree to check
      * @param array $paths Paths to check
-     *
-     * @return bool
      */
     private function findTreeMatch(array $tree, array $paths): bool
     {
@@ -1376,8 +1361,6 @@ class NavigationTree
 
     /**
      * Makes some nodes visible based on the which node is active
-     *
-     * @return void
      */
     private function setVisibility(): void
     {
@@ -1512,8 +1495,6 @@ class NavigationTree
      *
      * @param Node $node The node for whose children the page
      *                   selector will be created
-     *
-     * @return string
      */
     private function getPageSelector(Node $node): string
     {

@@ -20,7 +20,6 @@ use PhpMyAdmin\Table;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Tests\AbstractTestCase;
 use PhpMyAdmin\Tests\Stubs\Response as ResponseStub;
-use PhpMyAdmin\Transformations;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 use ReflectionException;
@@ -46,9 +45,6 @@ class StructureControllerTest extends AbstractTestCase
 
     /** @var Template */
     private $template;
-
-    /** @var Transformations */
-    private $transformations;
 
     /** @var RelationCleanup */
     private $relationCleanup;
@@ -98,7 +94,6 @@ class StructureControllerTest extends AbstractTestCase
         $this->response = new ResponseStub();
         $this->relation = new Relation($dbi);
         $this->replication = new Replication();
-        $this->transformations = new Transformations();
         $this->relationCleanup = new RelationCleanup($dbi, $this->relation);
         $this->operations = new Operations($dbi, $this->relation);
     }
@@ -106,11 +101,9 @@ class StructureControllerTest extends AbstractTestCase
     /**
      * Tests for getValuesForInnodbTable()
      *
-     * @return void
-     *
      * @test
      */
-    public function testGetValuesForInnodbTable()
+    public function testGetValuesForInnodbTable(): void
     {
         $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('getValuesForInnodbTable');
@@ -122,7 +115,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -184,7 +176,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -215,11 +206,9 @@ class StructureControllerTest extends AbstractTestCase
     /**
      * Tests for the getValuesForAriaTable()
      *
-     * @return void
-     *
      * @test
      */
-    public function testGetValuesForAriaTable()
+    public function testGetValuesForAriaTable(): void
     {
         $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('getValuesForAriaTable');
@@ -232,7 +221,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -297,7 +285,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -322,7 +309,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -344,11 +330,9 @@ class StructureControllerTest extends AbstractTestCase
     /**
      * Tests for hasTable()
      *
-     * @return void
-     *
      * @test
      */
-    public function testHasTable()
+    public function testHasTable(): void
     {
         $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('hasTable');
@@ -361,7 +345,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -387,11 +370,9 @@ class StructureControllerTest extends AbstractTestCase
     /**
      * Tests for checkFavoriteTable()
      *
-     * @return void
-     *
      * @test
      */
-    public function testCheckFavoriteTable()
+    public function testCheckFavoriteTable(): void
     {
         $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('checkFavoriteTable');
@@ -404,7 +385,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -428,11 +408,9 @@ class StructureControllerTest extends AbstractTestCase
     /**
      * Tests for synchronizeFavoriteTables()
      *
-     * @return void
-     *
      * @test
      */
-    public function testSynchronizeFavoriteTables()
+    public function testSynchronizeFavoriteTables(): void
     {
         $favoriteInstance = $this->getFavoriteTablesMock();
 
@@ -447,7 +425,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -494,11 +471,9 @@ class StructureControllerTest extends AbstractTestCase
     /**
      * Tests for handleRealRowCountRequestAction()
      *
-     * @return void
-     *
      * @test
      */
-    public function testHandleRealRowCountRequestAction()
+    public function testHandleRealRowCountRequestAction(): void
     {
         global $is_db;
 
@@ -512,7 +487,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );
@@ -548,11 +522,9 @@ class StructureControllerTest extends AbstractTestCase
     }
 
     /**
-     * @return void
-     *
      * @throws ReflectionException
      */
-    public function testDisplayTableList()
+    public function testDisplayTableList(): void
     {
         $class = new ReflectionClass(StructureController::class);
         $method = $class->getMethod('displayTableList');
@@ -565,7 +537,6 @@ class StructureControllerTest extends AbstractTestCase
             $GLOBALS['db'],
             $this->relation,
             $this->replication,
-            $this->transformations,
             $this->relationCleanup,
             $this->operations
         );

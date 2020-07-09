@@ -568,7 +568,7 @@ class Table
         );
         if (! empty($collation) && $collation != 'NULL' && $matches) {
             $query .= Util::getCharsetQueryPart(
-                $isVirtualColMariaDB ? preg_replace('~_.+~s', '', $collation) : $collation,
+                $isVirtualColMariaDB ? (string) preg_replace('~_.+~s', '', $collation) : $collation,
                 true
             );
         }
@@ -1844,10 +1844,11 @@ class Table
                     $value = Util::backquote($value);
                 }
 
+                // If contains GENERATED or VIRTUAL and does not contain DEFAULT_GENERATED
                 if ((
                     strpos($column['Extra'], 'GENERATED') !== false
                     || strpos($column['Extra'], 'VIRTUAL') !== false
-                    ) && $column['Extra'] !== 'DEFAULT_GENERATED') {
+                    ) && strpos($column['Extra'], 'DEFAULT_GENERATED') === false) {
                     continue;
                 }
 
@@ -2793,10 +2794,8 @@ class Table
 
     /**
      * Returns the real row count for a table
-     *
-     * @return int
      */
-    public function getRealRowCountTable()
+    public function getRealRowCountTable(): ?int
     {
         // SQL query to get row count for a table.
         $result = $this->_dbi->fetchSingleRow(
@@ -2808,7 +2807,11 @@ class Table
             )
         );
 
-        return $result['row_count'];
+        if (! is_array($result)) {
+            return null;
+        }
+
+        return (int) $result['row_count'];
     }
 
     /**
