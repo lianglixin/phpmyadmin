@@ -69,7 +69,7 @@ class IndexesController extends AbstractController
         if (isset($_POST['create_edit_table'])) {
             $fields = json_decode($_POST['columns'], true);
             $index_params = [
-                'Non_unique' => $_POST['index']['Index_choice'] == 'UNIQUE'
+                'Non_unique' => $_POST['index']['Index_choice'] === 'UNIQUE'
                     ? '0' : '1',
             ];
             $index->set($index_params);
@@ -92,7 +92,7 @@ class IndexesController extends AbstractController
             $form_params['old_index'] = $_POST['index'];
         }
 
-        $this->response->getHeader()->getScripts()->addFile('indexes.js');
+        $this->addScriptFiles(['indexes.js']);
 
         $this->render('table/index_form', [
             'fields' => $fields,

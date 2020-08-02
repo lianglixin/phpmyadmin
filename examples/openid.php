@@ -91,14 +91,14 @@ session_name($session_name);
 
 // Determine realm and return_to
 $base = 'http';
-if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
     $base .= 's';
 }
 $base .= '://' . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'];
 
 $realm = $base . '/';
 $returnTo = $base . dirname($_SERVER['PHP_SELF']);
-if ($returnTo[strlen($returnTo) - 1] != '/') {
+if ($returnTo[strlen($returnTo) - 1] !== '/') {
     $returnTo .= '/';
 }
 $returnTo .= 'openid.php';
@@ -168,6 +168,7 @@ if (empty($id) || ! isset($AUTH_MAP[$id])) {
 
 $_SESSION['PMA_single_signon_user'] = $AUTH_MAP[$id]['user'];
 $_SESSION['PMA_single_signon_password'] = $AUTH_MAP[$id]['password'];
+$_SESSION['PMA_single_signon_HMAC_secret'] = hash('sha1', uniqid(strval(rand()), true));
 session_write_close();
 /* Redirect to phpMyAdmin (should use absolute URL here!) */
 header('Location: ../index.php');

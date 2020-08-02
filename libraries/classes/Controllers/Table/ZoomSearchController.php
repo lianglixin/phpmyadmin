@@ -26,6 +26,7 @@ use function preg_replace;
 use function str_ireplace;
 use function str_replace;
 use function strncasecmp;
+use function strtoupper;
 
 /**
  * Handles table zoom search tab.
@@ -91,9 +92,7 @@ class ZoomSearchController extends AbstractController
 
         Common::table();
 
-        $header = $this->response->getHeader();
-        $scripts = $header->getScripts();
-        $scripts->addFiles([
+        $this->addScriptFiles([
             'makegrid.js',
             'sql.js',
             'vendor/jqplot/jquery.jqplot.js',
@@ -144,8 +143,8 @@ class ZoomSearchController extends AbstractController
          * Form for displaying query results
          */
         if (! isset($_POST['zoom_submit'])
-            || $_POST['criteriaColumnNames'][0] == 'pma_null'
-            || $_POST['criteriaColumnNames'][1] == 'pma_null'
+            || $_POST['criteriaColumnNames'][0] === 'pma_null'
+            || $_POST['criteriaColumnNames'][1] === 'pma_null'
             || $_POST['criteriaColumnNames'][0] == $_POST['criteriaColumnNames'][1]
         ) {
             return;
@@ -208,7 +207,7 @@ class ZoomSearchController extends AbstractController
             $this->_columnTypes[] = $type;
             $this->_columnNullFlags[] = $row['Null'];
             $this->_columnCollations[]
-                = ! empty($row['Collation']) && $row['Collation'] != 'NULL'
+                = ! empty($row['Collation']) && $row['Collation'] !== 'NULL'
                 ? $row['Collation']
                 : '';
         } // end for
@@ -243,7 +242,7 @@ class ZoomSearchController extends AbstractController
                 continue;
             }
 
-            if ($criteria_column_names[$i] == 'pma_null') {
+            if ($criteria_column_names[$i] === 'pma_null') {
                 continue;
             }
 
@@ -287,7 +286,7 @@ class ZoomSearchController extends AbstractController
             // for bit fields we need to convert them to printable form
             $i = 0;
             foreach ($row as $col => $val) {
-                if ($fields_meta[$i]->type == 'bit') {
+                if ($fields_meta[$i]->type === 'bit') {
                     $row[$col] = Util::printableBitValue(
                         (int) $val,
                         (int) $fields_meta[$i]->length
@@ -308,7 +307,7 @@ class ZoomSearchController extends AbstractController
     public function changeTableInfoAction()
     {
         $field = $_POST['field'];
-        if ($field == 'pma_null') {
+        if ($field === 'pma_null') {
             $this->response->addJSON('field_type', '');
             $this->response->addJSON('field_collation', '');
             $this->response->addJSON('field_operators', '');
@@ -466,7 +465,6 @@ class ZoomSearchController extends AbstractController
             );
             $htmlAttributes = 'data-min="' . $minMaxValues[0] . '" '
                             . 'data-max="' . $minMaxValues[1] . '"';
-            $type = 'INT';
         }
 
         $htmlAttributes .= ' onchange="return '
@@ -475,6 +473,7 @@ class ZoomSearchController extends AbstractController
         $value = $this->template->render('table/search/input_box', [
             'str' => '',
             'column_type' => (string) $type,
+            'column_data_type' => strtoupper($cleanType),
             'html_attributes' => $htmlAttributes,
             'column_id' => 'fieldID_',
             'in_zoom_search_edit' => false,

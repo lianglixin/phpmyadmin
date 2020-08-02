@@ -107,12 +107,7 @@ final class RelationController extends AbstractController
             return;
         }
 
-        $this->response->getHeader()->getScripts()->addFiles(
-            [
-                'table/relation.js',
-                'indexes.js',
-            ]
-        );
+        $this->addScriptFiles(['table/relation.js', 'indexes.js']);
 
         // Set the database
         $this->dbi->selectDb($this->db);
@@ -162,7 +157,7 @@ final class RelationController extends AbstractController
         $column_hash_array = [];
         $column_array[''] = '';
         foreach ($columns as $column) {
-            if (strtoupper($storageEngine) != 'INNODB'
+            if (strtoupper($storageEngine) !== 'INNODB'
                 && empty($column['Key'])
             ) {
                 continue;
@@ -266,6 +261,8 @@ final class RelationController extends AbstractController
         // If there is a request for SQL previewing.
         if (isset($_POST['preview_sql'])) {
             Core::previewSQL($preview_sql_data);
+
+            exit;
         }
 
         if (empty($display_query) || $seen_error) {

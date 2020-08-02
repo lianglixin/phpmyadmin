@@ -55,25 +55,49 @@ if (getcwd() == __DIR__) {
  */
 class PdfRelationSchema extends ExportRelationSchema
 {
-    /**
-     * Defines properties
-     */
+    /** @var bool */
     private $_showGrid;
+
+    /** @var bool */
     private $_withDoc;
+
+    /** @var string */
     private $_tableOrder;
 
     /** @var TableStatsPdf[] */
     private $_tables = [];
+
+    /** @var string */
     private $_ff = PdfLib::PMA_PDF_FONT;
+
+    /** @var int */
     private $_xMax = 0;
+
+    /** @var int */
     private $_yMax = 0;
+
+    /** @var float|int */
     private $_scale;
+
+    /** @var int */
     private $_xMin = 100000;
+
+    /** @var int */
     private $_yMin = 100000;
+
+    /** @var int */
     private $_topMargin = 10;
+
+    /** @var int */
     private $_bottomMargin = 10;
+
+    /** @var int */
     private $_leftMargin = 10;
+
+    /** @var int */
     private $_rightMargin = 10;
+
+    /** @var int */
     private $_tablewidth;
 
     /** @var RelationStatsPdf[] */
@@ -125,9 +149,9 @@ class PdfRelationSchema extends ExportRelationSchema
         $this->diagram->setOffline($this->offline);
 
         $alltables = $this->getTablesFromRequest();
-        if ($this->getTableOrder() == 'name_asc') {
+        if ($this->getTableOrder() === 'name_asc') {
             sort($alltables);
-        } elseif ($this->getTableOrder() == 'name_desc') {
+        } elseif ($this->getTableOrder() === 'name_desc') {
             rsort($alltables);
         }
 
@@ -213,7 +237,7 @@ class PdfRelationSchema extends ExportRelationSchema
                 // by the user
                 // (do not use array_search() because we would have to
                 // to do a === false and this is not PHP3 compatible)
-                if ($master_field != 'foreign_keys_data') {
+                if ($master_field !== 'foreign_keys_data') {
                     if (in_array($rel['foreign_table'], $alltables)) {
                         $this->addRelation(
                             $one_table,
@@ -682,7 +706,7 @@ class PdfRelationSchema extends ExportRelationSchema
             }
 
             $this->diagram->SetFont($this->_ff, 'B');
-            if (isset($this->orientation) && $this->orientation == 'L') {
+            if (isset($this->orientation) && $this->orientation === 'L') {
                 $this->diagram->Cell(25, 8, __('Column'), 1, 0, 'C');
                 $this->diagram->Cell(20, 8, __('Type'), 1, 0, 'C');
                 $this->diagram->Cell(20, 8, __('Attributes'), 1, 0, 'C');
@@ -691,7 +715,7 @@ class PdfRelationSchema extends ExportRelationSchema
                 $this->diagram->Cell(25, 8, __('Extra'), 1, 0, 'C');
                 $this->diagram->Cell(45, 8, __('Links to'), 1, 0, 'C');
 
-                if ($this->paper == 'A4') {
+                if ($this->paper === 'A4') {
                     $comments_width = 67;
                 } else {
                     // this is really intended for 'letter'
@@ -735,7 +759,7 @@ class PdfRelationSchema extends ExportRelationSchema
                 $type                = $extracted_columnspec['print_type'];
                 $attribute           = $extracted_columnspec['attribute'];
                 if (! isset($row['Default'])) {
-                    if ($row['Null'] != '' && $row['Null'] != 'NO') {
+                    if ($row['Null'] != '' && $row['Null'] !== 'NO') {
                         $row['Default'] = 'NULL';
                     }
                 }
@@ -769,7 +793,7 @@ class PdfRelationSchema extends ExportRelationSchema
                     $field_name,
                     $type,
                     $attribute,
-                    $row['Null'] == '' || $row['Null'] == 'NO'
+                    $row['Null'] == '' || $row['Null'] === 'NO'
                         ? __('No')
                         : __('Yes'),
                     $row['Default'] ?? '',

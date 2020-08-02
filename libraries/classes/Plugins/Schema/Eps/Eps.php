@@ -21,8 +21,13 @@ use function strlen;
  */
 class Eps
 {
+    /** @var string */
     public $font;
+
+    /** @var int */
     public $fontSize;
+
+    /** @var string */
     public $stringCommands;
 
     /**
@@ -84,7 +89,7 @@ class Eps
     public function setOrientation($orientation)
     {
         $this->stringCommands .= "%%PageOrder: Ascend \n";
-        if ($orientation == 'L') {
+        if ($orientation === 'L') {
             $orientation = 'Landscape';
             $this->stringCommands .= '%%Orientation: ' . $orientation . "\n";
         } else {

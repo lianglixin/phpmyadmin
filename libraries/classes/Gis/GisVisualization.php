@@ -36,7 +36,10 @@ class GisVisualization
 {
     /** @var array   Raw data for the visualization */
     private $_data;
+
+    /** @var string */
     private $_modified_sql;
+
     /** @var array   Set of default settings values are here. */
     private $_settings = [
         // Array of colors to be used for GIS visualizations.
@@ -64,6 +67,7 @@ class GisVisualization
         // The height of the GIS visualization.
         'height' => 450,
     ];
+
     /** @var array   Options that the user has specified. */
     private $_userSpecifiedSettings = null;
 
@@ -543,15 +547,15 @@ class GisVisualization
      */
     public function toImage($format)
     {
-        if ($format == 'svg') {
+        if ($format === 'svg') {
             return $this->asSVG();
         }
 
-        if ($format == 'png') {
+        if ($format === 'png') {
             return $this->asPng();
         }
 
-        if ($format == 'ol') {
+        if ($format === 'ol') {
             return $this->asOl();
         }
 
@@ -568,11 +572,11 @@ class GisVisualization
      */
     public function toFile($filename, $format)
     {
-        if ($format == 'svg') {
+        if ($format === 'svg') {
             $this->toFileAsSvg($filename);
-        } elseif ($format == 'png') {
+        } elseif ($format === 'png') {
             $this->toFileAsPng($filename);
-        } elseif ($format == 'pdf') {
+        } elseif ($format === 'pdf') {
             $this->toFileAsPdf($filename);
         }
     }
@@ -709,14 +713,14 @@ class GisVisualization
                 $label = $row[$this->_settings['labelColumn']];
             }
 
-            if ($format == 'svg') {
+            if ($format === 'svg') {
                 $results .= $gis_obj->prepareRowAsSvg(
                     $row[$this->_settings['spatialColumn']],
                     $label,
                     $this->_settings['colors'][$index],
                     $scale_data
                 );
-            } elseif ($format == 'png') {
+            } elseif ($format === 'png') {
                 $results = $gis_obj->prepareRowAsPng(
                     $row[$this->_settings['spatialColumn']],
                     $label,
@@ -724,7 +728,7 @@ class GisVisualization
                     $scale_data,
                     $results
                 );
-            } elseif ($format == 'pdf' && $results instanceof TCPDF) {
+            } elseif ($format === 'pdf' && $results instanceof TCPDF) {
                 $results = $gis_obj->prepareRowAsPdf(
                     $row[$this->_settings['spatialColumn']],
                     $label,
@@ -732,7 +736,7 @@ class GisVisualization
                     $scale_data,
                     $results
                 );
-            } elseif ($format == 'ol') {
+            } elseif ($format === 'ol') {
                 $results .= $gis_obj->prepareRowAsOl(
                     $row[$this->_settings['spatialColumn']],
                     $row['srid'],

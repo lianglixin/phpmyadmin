@@ -65,9 +65,7 @@ class FindReplaceController extends AbstractController
             return;
         }
 
-        $header = $this->response->getHeader();
-        $scripts = $header->getScripts();
-        $scripts->addFile('table/find_replace.js');
+        $this->addScriptFiles(['table/find_replace.js']);
 
         if (isset($_POST['replace'])) {
             $this->replaceAction();
@@ -156,7 +154,7 @@ class FindReplaceController extends AbstractController
     public function findAction(): void
     {
         $useRegex = array_key_exists('useRegex', $_POST)
-            && $_POST['useRegex'] == 'on';
+            && $_POST['useRegex'] === 'on';
 
         $preview = $this->getReplacePreview(
             $_POST['columnIndex'],

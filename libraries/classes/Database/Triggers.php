@@ -368,7 +368,7 @@ class Triggers
             $item[$index] = htmlentities($item[$index], ENT_QUOTES, 'UTF-8');
         }
         $original_data = '';
-        if ($mode == 'edit') {
+        if ($mode === 'edit') {
             $original_data = "<input name='item_original_name' "
                            . "type='hidden' value='" . $item['item_original_name'] . "'>\n";
         }
@@ -399,9 +399,9 @@ class Triggers
         $retval .= "        <select name='item_table'>\n";
         foreach ($tables as $key => $value) {
             $selected = '';
-            if ($mode == 'add' && $value == $table) {
+            if ($mode === 'add' && $value == $table) {
                 $selected = " selected='selected'";
-            } elseif ($mode == 'edit' && $value == $item['item_table']) {
+            } elseif ($mode === 'edit' && $value == $item['item_table']) {
                 $selected = " selected='selected'";
             }
             $retval .= '<option' . $selected . '>';
@@ -589,7 +589,7 @@ class Triggers
             exit;
         }
 
-        $message->display();
+        echo $message->getDisplay();
     }
 
     private function export(): void
@@ -645,6 +645,6 @@ class Triggers
             exit;
         }
 
-        $message->display();
+        echo $message->getDisplay();
     }
 }

@@ -88,13 +88,7 @@ final class ReplaceController extends AbstractController
          */
         $goto_include = false;
 
-        $header = $this->response->getHeader();
-        $scripts = $header->getScripts();
-        $scripts->addFile('makegrid.js');
-        // Needed for generation of Inline Edit anchors
-        $scripts->addFile('sql.js');
-        $scripts->addFile('indexes.js');
-        $scripts->addFile('gis_data_editor.js');
+        $this->addScriptFiles(['makegrid.js', 'sql.js', 'indexes.js', 'gis_data_editor.js']);
 
         // check whether insert row mode, if so include /table/change
         $this->insertEdit->isInsertRow();
@@ -110,9 +104,9 @@ final class ReplaceController extends AbstractController
             $url_params['after_insert'] = $_POST['after_insert'];
             if (isset($_POST['where_clause'])) {
                 foreach ($_POST['where_clause'] as $one_where_clause) {
-                    if ($_POST['after_insert'] == 'same_insert') {
+                    if ($_POST['after_insert'] === 'same_insert') {
                         $url_params['where_clause'][] = $one_where_clause;
-                    } elseif ($_POST['after_insert'] == 'edit_next') {
+                    } elseif ($_POST['after_insert'] === 'edit_next') {
                         $this->insertEdit->setSessionForEditNext($one_where_clause);
                     }
                 }
@@ -396,7 +390,7 @@ final class ReplaceController extends AbstractController
             // Note: logic passes here for inline edit
             $message = Message::success(__('No change'));
             // Avoid infinite recursion
-            if ($goto_include == '/table/replace') {
+            if ($goto_include === '/table/replace') {
                 $goto_include = '/table/change';
             }
             $active_page = $goto_include;
@@ -442,6 +436,8 @@ final class ReplaceController extends AbstractController
         // If there is a request for SQL previewing.
         if (isset($_POST['preview_sql'])) {
             Core::previewSQL($query);
+
+            return;
         }
 
         /**
@@ -596,8 +592,7 @@ final class ReplaceController extends AbstractController
             $GLOBALS['sql_query'] = $return_to_sql_query;
         }
 
-        $scripts->addFile('vendor/jquery/additional-methods.js');
-        $scripts->addFile('table/change.js');
+        $this->addScriptFiles(['vendor/jquery/additional-methods.js', 'table/change.js']);
 
         $active_page = $goto_include;
 
@@ -606,7 +601,7 @@ final class ReplaceController extends AbstractController
          * WHERE clause information so that /table/change does not go back
          * to the current record
          */
-        if (isset($_POST['after_insert']) && $_POST['after_insert'] == 'new_insert') {
+        if (isset($_POST['after_insert']) && $_POST['after_insert'] === 'new_insert') {
             unset($_POST['where_clause']);
         }
 

@@ -25,16 +25,37 @@ use function mb_strtolower;
  */
 class Data
 {
+    /** @var array */
     public $status;
+
+    /** @var array */
     public $sections;
+
+    /** @var array */
     public $variables;
+
+    /** @var array */
     public $used_queries;
+
+    /** @var array */
     public $allocationMap;
+
+    /** @var array */
     public $links;
+
+    /** @var bool */
     public $db_isLocal;
+
+    /** @var mixed */
     public $section;
+
+    /** @var array */
     public $sectionUsed;
+
+    /** @var string */
     public $selfUrl;
+
+    /** @var bool */
     public $dataLoaded;
 
     /**
@@ -295,7 +316,7 @@ class Data
                 $allocationMap[$name] = $section;
                 $sectionUsed[$section] = true;
                 $section_found = true;
-                if ($section == 'com' && $value > 0) {
+                if ($section === 'com' && $value > 0) {
                     $used_queries[$name] = $value;
                 }
                 break; // Only exits inner loop

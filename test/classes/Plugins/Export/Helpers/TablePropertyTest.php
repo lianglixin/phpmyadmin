@@ -15,6 +15,7 @@ use PhpMyAdmin\Tests\AbstractTestCase;
  */
 class TablePropertyTest extends AbstractTestCase
 {
+    /** @var TableProperty */
     protected $object;
 
     /**
@@ -108,7 +109,7 @@ class TablePropertyTest extends AbstractTestCase
      *
      * @dataProvider isNotNullProvider
      */
-    public function testIsNotNull($nullable, $expected): void
+    public function testIsNotNull(string $nullable, string $expected): void
     {
         $this->object->nullable = $nullable;
 
@@ -149,7 +150,7 @@ class TablePropertyTest extends AbstractTestCase
      *
      * @dataProvider isUniqueProvider
      */
-    public function testIsUnique($key, $expected): void
+    public function testIsUnique(string $key, string $expected): void
     {
         $this->object->key = $key;
 
@@ -198,7 +199,7 @@ class TablePropertyTest extends AbstractTestCase
      *
      * @dataProvider getDotNetPrimitiveTypeProvider
      */
-    public function testGetDotNetPrimitiveType($type, $expected): void
+    public function testGetDotNetPrimitiveType(string $type, string $expected): void
     {
         $this->object->type = $type;
 
@@ -271,7 +272,7 @@ class TablePropertyTest extends AbstractTestCase
      *
      * @dataProvider getDotNetObjectTypeProvider
      */
-    public function testGetDotNetObjectType($type, $expected): void
+    public function testGetDotNetObjectType(string $type, string $expected): void
     {
         $this->object->type = $type;
 

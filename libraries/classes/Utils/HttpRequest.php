@@ -43,8 +43,13 @@ use function strlen;
  */
 class HttpRequest
 {
+    /** @var string */
     private $proxyUrl;
+
+    /** @var string */
     private $proxyUser;
+
+    /** @var string */
     private $proxyPass;
 
     public function __construct()
@@ -147,14 +152,14 @@ class HttpRequest
         }
         $curlStatus &= curl_setopt($curlHandle, CURLOPT_USERAGENT, 'phpMyAdmin');
 
-        if ($method != 'GET') {
+        if ($method !== 'GET') {
             $curlStatus &= curl_setopt($curlHandle, CURLOPT_CUSTOMREQUEST, $method);
         }
         if ($header) {
             $curlStatus &= curl_setopt($curlHandle, CURLOPT_HTTPHEADER, [$header]);
         }
 
-        if ($method == 'POST') {
+        if ($method === 'POST') {
             $curlStatus &= curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $content);
         }
 
@@ -245,7 +250,7 @@ class HttpRequest
         if ($header) {
             $context['http']['header'] .= "\n" . $header;
         }
-        if ($method == 'POST') {
+        if ($method === 'POST') {
             $context['http']['content'] = $content;
         }
         $context = $this->handleContext($context);

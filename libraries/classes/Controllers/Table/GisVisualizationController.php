@@ -55,7 +55,7 @@ final class GisVisualizationController extends AbstractController
         $labelCandidates = [];
         $spatialCandidates = [];
         foreach ($meta as $column_meta) {
-            if ($column_meta->type == 'geometry') {
+            if ($column_meta->type === 'geometry') {
                 $spatialCandidates[] = $column_meta->name;
             } else {
                 $labelCandidates[] = $column_meta->name;
@@ -88,7 +88,7 @@ final class GisVisualizationController extends AbstractController
         if (isset($_GET['session_max_rows'])) {
             $rows = $_GET['session_max_rows'];
         } else {
-            if ($_SESSION['tmpval']['max_rows'] != 'all') {
+            if ($_SESSION['tmpval']['max_rows'] !== 'all') {
                 $rows = $_SESSION['tmpval']['max_rows'];
             } else {
                 $rows = $GLOBALS['cfg']['MaxRows'];
@@ -107,13 +107,11 @@ final class GisVisualizationController extends AbstractController
             return;
         }
 
-        $this->response->getHeader()->getScripts()->addFiles(
-            [
-                'vendor/openlayers/OpenLayers.js',
-                'vendor/jquery/jquery.svg.js',
-                'table/gis_visualization.js',
-            ]
-        );
+        $this->addScriptFiles([
+            'vendor/openlayers/OpenLayers.js',
+            'vendor/jquery/jquery.svg.js',
+            'table/gis_visualization.js',
+        ]);
 
         // If all the rows contain SRID, use OpenStreetMaps on the initial loading.
         if (! isset($_POST['displayVisualization'])) {

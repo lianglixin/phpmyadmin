@@ -34,12 +34,23 @@ class SvgRelationSchema extends ExportRelationSchema
 {
     /** @var TableStatsDia[]|TableStatsEps[]|TableStatsPdf[]|TableStatsSvg[] */
     private $_tables = [];
+
     /** @var RelationStatsSvg[] Relations */
     private $_relations = [];
+
+    /** @var int */
     private $_xMax = 0;
+
+    /** @var int */
     private $_yMax = 0;
+
+    /** @var int */
     private $_xMin = 100000;
+
+    /** @var int */
     private $_yMin = 100000;
+
+    /** @var int */
     private $_tablewidth;
 
     /**
@@ -116,7 +127,7 @@ class SvgRelationSchema extends ExportRelationSchema
                 * (do not use array_search() because we would have to
                 * to do a === false and this is not PHP3 compatible)
                 */
-                if ($master_field != 'foreign_keys_data') {
+                if ($master_field !== 'foreign_keys_data') {
                     if (in_array($rel['foreign_table'], $alltables)) {
                         $this->addRelation(
                             $one_table,

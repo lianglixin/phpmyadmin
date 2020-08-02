@@ -6,11 +6,11 @@ namespace PhpMyAdmin\Controllers\Database;
 
 use PhpMyAdmin\CentralColumns;
 use PhpMyAdmin\Charsets;
+use PhpMyAdmin\CheckUserPrivileges;
 use PhpMyAdmin\Common;
 use PhpMyAdmin\Config\PageSettings;
 use PhpMyAdmin\Core;
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Display\CreateTable;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Message;
 use PhpMyAdmin\Operations;
@@ -140,10 +140,7 @@ class StructureController extends AbstractController
 
         Common::database();
 
-        $this->response->getHeader()->getScripts()->addFiles([
-            'database/structure.js',
-            'table/change.js',
-        ]);
+        $this->addScriptFiles(['database/structure.js', 'table/change.js']);
 
         // Gets the database structure
         $this->getDatabaseInfo('_structure');
@@ -162,7 +159,9 @@ class StructureController extends AbstractController
 
         ReplicationInfo::load();
 
-        PageSettings::showGroup('DbStructure');
+        $pageSettings = new PageSettings('DbStructure');
+        $this->response->addHTML($pageSettings->getErrorHTML());
+        $this->response->addHTML($pageSettings->getHTML());
 
         if ($this->numTables > 0) {
             $urlParams = [
@@ -189,7 +188,10 @@ class StructureController extends AbstractController
 
         $createTable = '';
         if (empty($this->dbIsSystemSchema)) {
-            $createTable = CreateTable::getHtml($this->db);
+            $checkUserPrivileges = new CheckUserPrivileges($this->dbi);
+            $checkUserPrivileges->getPrivileges();
+
+            $createTable = $this->template->render('database/create_table', ['db' => $this->db]);
         }
 
         $this->render('database/structure/index', [
@@ -1016,8 +1018,8 @@ class StructureController extends AbstractController
                 }
         } // end switch
 
-        if ($current_table['TABLE_TYPE'] == 'VIEW'
-            || $current_table['TABLE_TYPE'] == 'SYSTEM VIEW'
+        if ($current_table['TABLE_TYPE'] === 'VIEW'
+            || $current_table['TABLE_TYPE'] === 'SYSTEM VIEW'
         ) {
             // countRecords() takes care of $cfg['MaxExactCountViews']
             $current_table['TABLE_ROWS'] = $this->dbi
@@ -1458,7 +1460,7 @@ class StructureController extends AbstractController
         }
 
         $sql = new Sql();
-        $sql->executeQueryAndSendQueryResponse(
+        $this->response->addHTML($sql->executeQueryAndSendQueryResponse(
             null,
             false,
             $db,
@@ -1477,7 +1479,7 @@ class StructureController extends AbstractController
             $sql_query,
             $selected,
             null
-        );
+        ));
 
         if (empty($_POST['message'])) {
             $_POST['message'] = Message::success();
@@ -1509,7 +1511,7 @@ class StructureController extends AbstractController
         }
 
         $sql = new Sql();
-        $sql->executeQueryAndSendQueryResponse(
+        $this->response->addHTML($sql->executeQueryAndSendQueryResponse(
             null,
             false,
             $db,
@@ -1528,7 +1530,7 @@ class StructureController extends AbstractController
             $sqlQuery,
             $selected,
             null
-        );
+        ));
 
         if (empty($_POST['message'])) {
             $_POST['message'] = Message::success();
@@ -1560,7 +1562,7 @@ class StructureController extends AbstractController
         }
 
         $sql = new Sql();
-        $sql->executeQueryAndSendQueryResponse(
+        $this->response->addHTML($sql->executeQueryAndSendQueryResponse(
             null,
             false,
             $db,
@@ -1579,7 +1581,7 @@ class StructureController extends AbstractController
             $sql_query,
             $selected,
             null
-        );
+        ));
 
         if (empty($_POST['message'])) {
             $_POST['message'] = Message::success();
@@ -1611,7 +1613,7 @@ class StructureController extends AbstractController
         }
 
         $sql = new Sql();
-        $sql->executeQueryAndSendQueryResponse(
+        $this->response->addHTML($sql->executeQueryAndSendQueryResponse(
             null,
             false,
             $db,
@@ -1630,7 +1632,7 @@ class StructureController extends AbstractController
             $sql_query,
             $selected,
             null
-        );
+        ));
 
         if (empty($_POST['message'])) {
             $_POST['message'] = Message::success();
@@ -1662,7 +1664,7 @@ class StructureController extends AbstractController
         }
 
         $sql = new Sql();
-        $sql->executeQueryAndSendQueryResponse(
+        $this->response->addHTML($sql->executeQueryAndSendQueryResponse(
             null,
             false,
             $db,
@@ -1681,7 +1683,7 @@ class StructureController extends AbstractController
             $sql_query,
             $selected,
             null
-        );
+        ));
 
         if (empty($_POST['message'])) {
             $_POST['message'] = Message::success();

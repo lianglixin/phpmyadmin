@@ -132,15 +132,14 @@ class StructureController extends AbstractController
         $tbl_collation = $this->table_obj->getCollation();
         $table_info_num_rows = $this->table_obj->getNumRows();
 
-        PageSettings::showGroup('TableStructure');
+        $pageSettings = new PageSettings('TableStructure');
+        $this->response->addHTML($pageSettings->getErrorHTML());
+        $this->response->addHTML($pageSettings->getHTML());
 
         $checkUserPrivileges = new CheckUserPrivileges($this->dbi);
         $checkUserPrivileges->getPrivileges();
 
-        $this->response->getHeader()->getScripts()->addFiles([
-            'table/structure.js',
-            'indexes.js',
-        ]);
+        $this->addScriptFiles(['table/structure.js', 'indexes.js']);
 
         $cfgRelation = $this->relation->getRelationsParam();
 
@@ -777,9 +776,9 @@ class StructureController extends AbstractController
         $checkUserPrivileges = new CheckUserPrivileges($this->dbi);
         $checkUserPrivileges->getPrivileges();
 
-        ColumnsDefinition::displayForm(
-            $this->response,
-            $this->template,
+        $this->addScriptFiles(['vendor/jquery/jquery.uitablefilter.js', 'indexes.js']);
+
+        $templateData = ColumnsDefinition::displayForm(
             $this->transformations,
             $this->relation,
             $this->dbi,
@@ -789,6 +788,8 @@ class StructureController extends AbstractController
             $selected,
             $fields_meta
         );
+
+        $this->render('columns_definitions/column_definitions_form', $templateData);
     }
 
     public function partitioning(): void
@@ -814,12 +815,11 @@ class StructureController extends AbstractController
             return;
         }
 
-        PageSettings::showGroup('TableStructure');
+        $pageSettings = new PageSettings('TableStructure');
+        $this->response->addHTML($pageSettings->getErrorHTML());
+        $this->response->addHTML($pageSettings->getHTML());
 
-        $this->response->getHeader()->getScripts()->addFiles([
-            'table/structure.js',
-            'indexes.js',
-        ]);
+        $this->addScriptFiles(['table/structure.js', 'indexes.js']);
 
         $partitionDetails = null;
         if (! isset($_POST['partition_by'])) {
@@ -900,17 +900,17 @@ class StructureController extends AbstractController
         // Only LIST and RANGE type parameters allow subpartitioning
         $partitionDetails['can_have_subpartitions']
             = $partitionDetails['partition_count'] > 1
-                && ($partitionDetails['partition_by'] == 'RANGE'
-                || $partitionDetails['partition_by'] == 'RANGE COLUMNS'
-                || $partitionDetails['partition_by'] == 'LIST'
-                || $partitionDetails['partition_by'] == 'LIST COLUMNS');
+                && ($partitionDetails['partition_by'] === 'RANGE'
+                || $partitionDetails['partition_by'] === 'RANGE COLUMNS'
+                || $partitionDetails['partition_by'] === 'LIST'
+                || $partitionDetails['partition_by'] === 'LIST COLUMNS');
 
         // Values are specified only for LIST and RANGE type partitions
         $partitionDetails['value_enabled'] = isset($partitionDetails['partition_by'])
-            && ($partitionDetails['partition_by'] == 'RANGE'
-            || $partitionDetails['partition_by'] == 'RANGE COLUMNS'
-            || $partitionDetails['partition_by'] == 'LIST'
-            || $partitionDetails['partition_by'] == 'LIST COLUMNS');
+            && ($partitionDetails['partition_by'] === 'RANGE'
+            || $partitionDetails['partition_by'] === 'RANGE COLUMNS'
+            || $partitionDetails['partition_by'] === 'LIST'
+            || $partitionDetails['partition_by'] === 'LIST COLUMNS');
 
         $partitionDetails['partitions'] = [];
 
@@ -933,7 +933,7 @@ class StructureController extends AbstractController
                 $p = $stmt->partitions[$i];
                 $type = $p->type;
                 $expr = trim((string) $p->expr, '()');
-                if ($expr == 'MAXVALUE') {
+                if ($expr === 'MAXVALUE') {
                     $type .= ' MAXVALUE';
                     $expr = '';
                 }
@@ -1181,6 +1181,8 @@ class StructureController extends AbstractController
             // If there is a request for SQL previewing.
             if (isset($_POST['preview_sql'])) {
                 Core::previewSQL(count($changes) > 0 ? $sql_query : '');
+
+                exit;
             }
 
             $columns_with_index = $this->dbi
@@ -1641,7 +1643,7 @@ class StructureController extends AbstractController
         }
 
         $is_innodb = (isset($showtable['Type'])
-            && $showtable['Type'] == 'InnoDB');
+            && $showtable['Type'] === 'InnoDB');
 
         $mergetable = $this->table_obj->isMerge();
 
@@ -1763,7 +1765,7 @@ class StructureController extends AbstractController
         $primary = '';
         while ($row = $this->dbi->fetchAssoc($result)) {
             // Backups the list of primary keys
-            if (! is_array($row) || $row['Key_name'] != 'PRIMARY') {
+            if (! is_array($row) || $row['Key_name'] !== 'PRIMARY') {
                 continue;
             }
 

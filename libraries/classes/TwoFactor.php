@@ -56,7 +56,7 @@ class TwoFactor
         $this->user = $user;
         $this->_available = $this->getAvailableBackends();
         $this->config = $this->readConfig();
-        $this->_writable = ($this->config['type'] == 'db');
+        $this->_writable = ($this->config['type'] === 'db');
         $this->_backend = $this->getBackendForCurrentUser();
     }
 
@@ -269,7 +269,7 @@ class TwoFactor
         }
         $result = $this->save();
         if ($result !== true) {
-            $result->display();
+            echo $result->getDisplay();
         }
 
         return true;

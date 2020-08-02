@@ -126,6 +126,8 @@ class CreateController extends AbstractController
             // If there is a request for SQL previewing.
             if (isset($_POST['preview_sql'])) {
                 Core::previewSQL($sql_query);
+
+                return;
             }
             // Executes the query
             $result = $this->dbi->tryQuery($sql_query);
@@ -166,14 +168,16 @@ class CreateController extends AbstractController
         // This global variable needs to be reset for the header class to function properly
         $table = '';
 
-        ColumnsDefinition::displayForm(
-            $this->response,
-            $this->template,
+        $this->addScriptFiles(['vendor/jquery/jquery.uitablefilter.js', 'indexes.js']);
+
+        $templateData = ColumnsDefinition::displayForm(
             $this->transformations,
             $this->relation,
             $this->dbi,
             $action,
             $num_fields
         );
+
+        $this->render('columns_definitions/column_definitions_form', $templateData);
     }
 }

@@ -17,7 +17,7 @@ use PhpMyAdmin\Tests\AbstractTestCase;
  */
 class SearchTest extends AbstractTestCase
 {
-    /** @access protected */
+    /** @var Search */
     protected $object;
 
     /**
@@ -76,7 +76,7 @@ class SearchTest extends AbstractTestCase
      *
      * @dataProvider searchTypes
      */
-    public function testGetWhereClause($type, $expected): void
+    public function testGetWhereClause(string $type, string $expected): void
     {
         $_POST['criteriaSearchType'] = $type;
         $_POST['criteriaSearchString'] = 'search string';

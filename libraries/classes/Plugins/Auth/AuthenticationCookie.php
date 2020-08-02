@@ -55,11 +55,15 @@ class AuthenticationCookie extends AuthenticationPlugin
 {
     /**
      * IV for encryption
+     *
+     * @var string|null
      */
     private $_cookie_iv = null;
 
     /**
      * Whether to use OpenSSL directly
+     *
+     * @var bool
      */
     private $_use_openssl;
 
@@ -327,7 +331,13 @@ class AuthenticationCookie extends AuthenticationPlugin
 
             // The user just logged in
             $this->user = Core::sanitizeMySQLUser($_POST['pma_username']);
-            $this->password = $_POST['pma_password'] ?? '';
+
+            $password = $_POST['pma_password'] ?? '';
+            if (strlen($password) > 256) {
+                $password = substr($password, 0, 256);
+            }
+            $this->password = $password;
+
             if ($GLOBALS['cfg']['AllowArbitraryServer']
                 && isset($_REQUEST['pma_servername'])
             ) {

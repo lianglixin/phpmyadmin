@@ -85,9 +85,7 @@ class OperationsController extends AbstractController
 
         $pma_table = $this->dbi->getTable($db, $table);
 
-        $header = $this->response->getHeader();
-        $scripts = $header->getScripts();
-        $scripts->addFile('table/operations.js');
+        $this->addScriptFiles(['table/operations.js']);
 
         /**
          * Runs common work
@@ -146,12 +144,25 @@ class OperationsController extends AbstractController
          * If the table has to be moved to some other database
          */
         if (isset($_POST['submit_move']) || isset($_POST['submit_copy'])) {
-            //$_message = '';
-            $this->operations->moveOrCopyTable($db, $table);
+            $message = $this->operations->moveOrCopyTable($db, $table);
 
-            // This was ended in an Ajax call
+            if (! $this->response->isAjax()) {
+                return;
+            }
+
+            $this->response->addJSON('message', $message);
+
+            if ($message->isSuccess()) {
+                $this->response->addJSON('db', $db);
+
+                return;
+            }
+
+            $this->response->setRequestStatus(false);
+
             return;
         }
+
         /**
          * If the table has to be maintained
          */
@@ -375,10 +386,10 @@ class OperationsController extends AbstractController
         // `ALTER TABLE ORDER BY` does not make sense for InnoDB tables that contain
         // a user-defined clustered index (PRIMARY KEY or NOT NULL UNIQUE index).
         // InnoDB always orders table rows according to such an index if one is present.
-        if ($tbl_storage_engine == 'INNODB') {
+        if ($tbl_storage_engine === 'INNODB') {
             $indexes = Index::getFromTable($table, $db);
             foreach ($indexes as $name => $idx) {
-                if ($name == 'PRIMARY') {
+                if ($name === 'PRIMARY') {
                     $hideOrderTable = true;
                     break;
                 }

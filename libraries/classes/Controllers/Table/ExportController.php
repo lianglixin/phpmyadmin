@@ -10,7 +10,6 @@ use PhpMyAdmin\DatabaseInterface;
 use PhpMyAdmin\Display\Export;
 use PhpMyAdmin\Html\Generator;
 use PhpMyAdmin\Message;
-use PhpMyAdmin\Relation;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\SqlParser\Parser;
 use PhpMyAdmin\SqlParser\Statements\SelectStatement;
@@ -25,9 +24,6 @@ class ExportController extends AbstractController
     /** @var Export */
     private $export;
 
-    /** @var Relation */
-    private $relation;
-
     /**
      * @param Response          $response A Response instance.
      * @param DatabaseInterface $dbi      A DatabaseInterface instance.
@@ -35,7 +31,6 @@ class ExportController extends AbstractController
      * @param string            $db       Database name.
      * @param string            $table    Table name.
      * @param Export            $export   An Export instance.
-     * @param Relation          $relation A Relation instance.
      */
     public function __construct(
         $response,
@@ -43,33 +38,22 @@ class ExportController extends AbstractController
         Template $template,
         $db,
         $table,
-        Export $export,
-        Relation $relation
+        Export $export
     ) {
         parent::__construct($response, $dbi, $template, $db, $table);
         $this->export = $export;
-        $this->relation = $relation;
     }
 
     public function index(): void
     {
-        global $db, $url_query, $url_params, $table, $export_page_title, $replaces;
-        global $sql_query, $where_clause, $num_tables, $unlim_num_rows, $multi_values;
+        global $db, $url_query, $url_params, $table, $replaces;
+        global $sql_query, $where_clause, $num_tables, $unlim_num_rows;
 
-        PageSettings::showGroup('Export');
+        $pageSettings = new PageSettings('Export');
+        $pageSettingsErrorHtml = $pageSettings->getErrorHTML();
+        $pageSettingsHtml = $pageSettings->getHTML();
 
-        $header = $this->response->getHeader();
-        $scripts = $header->getScripts();
-        $scripts->addFile('export.js');
-
-        $cfgRelation = $this->relation->getRelationsParam();
-
-        // handling export template actions
-        if (isset($_POST['templateAction']) && $cfgRelation['exporttemplateswork']) {
-            $this->export->handleTemplateActions($cfgRelation);
-
-            return;
-        }
+        $this->addScriptFiles(['export.js']);
 
         /**
          * Gets tables information and displays top links
@@ -82,7 +66,7 @@ class ExportController extends AbstractController
         ];
         $url_query .= Url::getCommon($url_params, '&');
 
-        $export_page_title = __('View dump (schema) of table');
+        $message = '';
 
         // When we have some query, we need to remove LIMIT from that and possibly
         // generate WHERE clause (if we are asked to export specific rows)
@@ -115,7 +99,7 @@ class ExportController extends AbstractController
                 );
             }
 
-            echo Generator::getMessage(Message::success());
+            $message = Generator::getMessage(Message::success());
         }
 
         if (! isset($sql_query)) {
@@ -127,19 +111,23 @@ class ExportController extends AbstractController
         if (! isset($unlim_num_rows)) {
             $unlim_num_rows = 0;
         }
-        if (! isset($multi_values)) {
-            $multi_values = '';
-        }
 
-        $this->response->addHTML($this->export->getDisplay(
+        $display = $this->export->getDisplay(
             'table',
             $db,
             $table,
             $sql_query,
             $num_tables,
             $unlim_num_rows,
-            $multi_values
-        ));
+            ''
+        );
+
+        $this->render('table/export/index', [
+            'page_settings_error_html' => $pageSettingsErrorHtml,
+            'page_settings_html' => $pageSettingsHtml,
+            'message' => $message,
+            'display' => $display,
+        ]);
     }
 
     public function rows(): void

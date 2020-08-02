@@ -23,7 +23,7 @@ use function trim;
  */
 class GisMultiPoint extends GisGeometry
 {
-    // Hold the singleton instance of the class
+    /** @var self */
     private static $_instance;
 
     /**
@@ -424,7 +424,7 @@ class GisMultiPoint extends GisGeometry
         }
 
         $olArrayLength = mb_strlen($ol_array);
-        if (mb_substr($ol_array, $olArrayLength - 2) == ', ') {
+        if (mb_substr($ol_array, $olArrayLength - 2) === ', ') {
             $ol_array = mb_substr($ol_array, 0, $olArrayLength - 2);
         }
 

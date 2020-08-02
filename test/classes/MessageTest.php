@@ -395,7 +395,7 @@ class MessageTest extends AbstractTestCase
      *
      * @dataProvider decodeBBDataProvider
      */
-    public function testDecodeBB($actual, $expected): void
+    public function testDecodeBB(string $actual, string $expected): void
     {
         unset($GLOBALS['server']);
         $this->assertEquals($expected, Message::decodeBB($actual));
@@ -491,28 +491,11 @@ class MessageTest extends AbstractTestCase
     }
 
     /**
-     * testing display method (output string and _is_displayed variable)
-     */
-    public function testDisplay(): void
-    {
-        $this->assertFalse($this->object->isDisplayed());
-        $this->object->setMessage('Test Message');
-
-        $this->expectOutputString(
-            '<div class="alert alert-primary" role="alert">' . "\n"
-            . '  <img src="themes/dot.gif" title="" alt="" class="icon ic_s_notice"> Test Message' . "\n"
-            . '</div>' . "\n"
-        );
-        $this->object->display();
-
-        $this->assertTrue($this->object->isDisplayed());
-    }
-
-    /**
      * getDisplay test
      */
     public function testGetDisplay(): void
     {
+        $this->assertFalse($this->object->isDisplayed());
         $this->object->setMessage('Test Message');
         $this->assertEquals(
             '<div class="alert alert-primary" role="alert">' . "\n"
@@ -520,6 +503,7 @@ class MessageTest extends AbstractTestCase
             . '</div>' . "\n",
             $this->object->getDisplay()
         );
+        $this->assertTrue($this->object->isDisplayed());
     }
 
     /**
@@ -569,13 +553,12 @@ class MessageTest extends AbstractTestCase
      *
      * @dataProvider providerAffectedRows
      */
-    public function testAffectedRows($rows, $output): void
+    public function testAffectedRows(int $rows, string $output): void
     {
         $this->object = new Message();
         $msg = $this->object->getMessageForAffectedRows($rows);
         $this->object->addMessage($msg);
-        $this->expectOutputString($output);
-        $this->object->display();
+        $this->assertEquals($output, $this->object->getDisplay());
     }
 
     /**
@@ -615,13 +598,12 @@ class MessageTest extends AbstractTestCase
      *
      * @dataProvider providerInsertedRows
      */
-    public function testInsertedRows($rows, $output): void
+    public function testInsertedRows(int $rows, string $output): void
     {
         $this->object = new Message();
         $msg = $this->object->getMessageForInsertedRows($rows);
         $this->object->addMessage($msg);
-        $this->expectOutputString($output);
-        $this->object->display();
+        $this->assertEquals($output, $this->object->getDisplay());
     }
 
     /**
@@ -661,12 +643,11 @@ class MessageTest extends AbstractTestCase
      *
      * @dataProvider providerDeletedRows
      */
-    public function testDeletedRows($rows, $output): void
+    public function testDeletedRows(int $rows, string $output): void
     {
         $this->object = new Message();
         $msg = $this->object->getMessageForDeletedRows($rows);
         $this->object->addMessage($msg);
-        $this->expectOutputString($output);
-        $this->object->display();
+        $this->assertEquals($output, $this->object->getDisplay());
     }
 }

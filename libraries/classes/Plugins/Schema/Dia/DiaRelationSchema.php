@@ -31,12 +31,23 @@ class DiaRelationSchema extends ExportRelationSchema
 {
     /** @var TableStatsDia[]|TableStatsEps[]|TableStatsPdf[]|TableStatsSvg[] */
     private $_tables = [];
+
     /** @var RelationStatsDia[] Relations */
     private $_relations = [];
+
+    /** @var float */
     private $_topMargin = 2.8222000598907471;
+
+    /** @var float */
     private $_bottomMargin = 2.8222000598907471;
+
+    /** @var float */
     private $_leftMargin = 2.8222000598907471;
+
+    /** @var float */
     private $_rightMargin = 2.8222000598907471;
+
+    /** @var int */
     public static $objectId = 0;
 
     /**
@@ -96,7 +107,7 @@ class DiaRelationSchema extends ExportRelationSchema
                  * (do not use array_search() because we would have to
                  * to do a === false and this is not PHP3 compatible)
                  */
-                if ($master_field != 'foreign_keys_data') {
+                if ($master_field !== 'foreign_keys_data') {
                     if (in_array($rel['foreign_table'], $alltables)) {
                         $this->addRelation(
                             $one_table,
