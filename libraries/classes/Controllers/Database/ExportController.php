@@ -7,13 +7,15 @@ namespace PhpMyAdmin\Controllers\Database;
 use PhpMyAdmin\Common;
 use PhpMyAdmin\Config\PageSettings;
 use PhpMyAdmin\DatabaseInterface;
-use PhpMyAdmin\Display\Export as DisplayExport;
 use PhpMyAdmin\Export;
+use PhpMyAdmin\Export\Options;
 use PhpMyAdmin\Message;
+use PhpMyAdmin\Plugins;
 use PhpMyAdmin\Response;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use function array_merge;
 use function is_array;
 
 final class ExportController extends AbstractController
@@ -21,17 +23,19 @@ final class ExportController extends AbstractController
     /** @var Export */
     private $export;
 
+    /** @var Options */
+    private $exportOptions;
+
     /**
-     * @param Response          $response A Response instance.
-     * @param DatabaseInterface $dbi      A DatabaseInterface instance.
-     * @param Template          $template A Template instance.
+     * @param Response          $response
+     * @param DatabaseInterface $dbi
      * @param string            $db       Database name.
-     * @param Export            $export   An Export instance.
      */
-    public function __construct($response, $dbi, Template $template, $db, Export $export)
+    public function __construct($response, $dbi, Template $template, $db, Export $export, Options $exportOptions)
     {
         parent::__construct($response, $dbi, $template, $db);
         $this->export = $export;
+        $this->exportOptions = $exportOptions;
     }
 
     public function index(): void
@@ -121,11 +125,6 @@ final class ExportController extends AbstractController
             ];
         }
 
-        $multi_values = $this->template->render('database/export/multi_values', [
-            'structure_or_data_forced' => $_POST['structure_or_data_forced'] ?? 0,
-            'tables' => $tablesForMultiValues,
-        ]);
-
         if (! isset($sql_query)) {
             $sql_query = '';
         }
@@ -143,21 +142,33 @@ final class ExportController extends AbstractController
             $export_type = 'database';
         }
 
-        $displayExport = new DisplayExport();
-        $display = $displayExport->getDisplay(
+        $GLOBALS['single_table'] = $_POST['single_table'] ?? $_GET['single_table'] ?? null;
+
+        $exportList = Plugins::getExport($export_type, isset($GLOBALS['single_table']));
+
+        if (empty($exportList)) {
+            $this->response->addHTML(Message::error(
+                __('Could not load export plugins, please check your installation!')
+            )->getDisplay());
+
+            return;
+        }
+
+        $options = $this->exportOptions->getOptions(
             $export_type,
             $db,
             $table,
             $sql_query,
             $num_tables,
             $unlim_num_rows,
-            $multi_values
+            $exportList
         );
 
-        $this->render('database/export/index', [
+        $this->render('database/export/index', array_merge($options, [
             'page_settings_error_html' => $pageSettingsErrorHtml,
             'page_settings_html' => $pageSettingsHtml,
-            'display' => $display,
-        ]);
+            'structure_or_data_forced' => $_POST['structure_or_data_forced'] ?? 0,
+            'tables' => $tablesForMultiValues,
+        ]));
     }
 }

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phpMyAdmin 5.1.0-dev\n"
 "Report-Msgid-Bugs-To: translators@phpmyadmin.net\n"
-"POT-Creation-Date: 2020-07-30 23:36-0300\n"
-"PO-Revision-Date: 2019-11-08 14:26+0000\n"
+"POT-Creation-Date: 2020-08-16 18:48-0300\n"
+"PO-Revision-Date: 2020-08-11 17:32+0000\n"
 "Last-Translator: Giovanni Sora <g.sora@tiscali.it>\n"
 "Language-Team: Interlingua <https://hosted.weblate.org/projects/phpmyadmin/"
 "master/ia/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: libraries/classes/Advisor.php:319
 #, php-format
@@ -107,8 +107,8 @@ msgstr "Cerca:"
 #: libraries/classes/Database/Triggers.php:462
 #: libraries/classes/InsertEdit.php:1987 libraries/classes/InsertEdit.php:2021
 #: libraries/classes/Normalization.php:260
-#: libraries/classes/Normalization.php:972 libraries/classes/Tracking.php:349
-#: libraries/classes/Tracking.php:502
+#: libraries/classes/Normalization.php:972 libraries/classes/Tracking.php:353
+#: libraries/classes/Tracking.php:506
 #: templates/columns_definitions/column_definitions_form.twig:43
 #: templates/database/create_table.twig:21
 #: templates/database/events/editor_form.twig:107
@@ -118,12 +118,11 @@ msgstr "Cerca:"
 #: templates/database/operations/index.twig:190
 #: templates/database/operations/index.twig:230
 #: templates/database/search/main.twig:74
-#: templates/display/export/options_format.twig:18
 #: templates/display/import/import.twig:232
-#: templates/display/results/table.twig:175
+#: templates/display/results/table.twig:175 templates/export.twig:422
 #: templates/gis_data_editor_form.twig:211 templates/header_location.twig:18
-#: templates/login/form.twig:83 templates/login/form.twig:85
-#: templates/preferences/manage/main.twig:46
+#: templates/login/form.twig:85 templates/login/form.twig:87
+#: templates/login/form.twig:90 templates/preferences/manage/main.twig:46
 #: templates/preferences/manage/main.twig:108
 #: templates/server/binlog/index.twig:34
 #: templates/server/privileges/add_user.twig:36
@@ -231,7 +230,7 @@ msgstr "NO"
 #: libraries/classes/CentralColumns.php:955
 #: libraries/classes/Config/Descriptions.php:889
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:385
-#: libraries/classes/Display/Results.php:3211
+#: libraries/classes/Display/Results.php:3213
 #: libraries/classes/Html/Generator.php:757
 #: libraries/classes/Html/Generator.php:1019
 #: libraries/classes/Server/UserGroups.php:125 libraries/classes/Util.php:3221
@@ -259,19 +258,18 @@ msgstr "Modifica"
 #: libraries/classes/CentralColumns.php:960
 #: libraries/classes/CentralColumns.php:961
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:386
-#: libraries/classes/Display/Results.php:3280
+#: libraries/classes/Display/Results.php:3282
 #: libraries/classes/Server/UserGroups.php:134
-#: libraries/classes/Tracking.php:275 templates/console/bookmark_content.twig:7
+#: libraries/classes/Tracking.php:279 templates/console/bookmark_content.twig:7
 #: templates/database/central_columns/main.twig:284
 #: templates/database/central_columns/main.twig:407
 #: templates/database/central_columns/main.twig:408
 #: templates/database/designer/main.twig:390
 #: templates/database/qbe/ins_del_and_or_cell.twig:18
 #: templates/database/search/results.twig:43
-#: templates/display/export/template_loading.twig:22
 #: templates/display/results/table.twig:218
-#: templates/display/results/table.twig:219 templates/setup/home/index.twig:62
-#: templates/sql/query.twig:173
+#: templates/display/results/table.twig:219 templates/export.twig:38
+#: templates/setup/home/index.twig:62 templates/sql/query.twig:173
 msgid "Delete"
 msgstr "Dele"
 
@@ -1072,8 +1070,7 @@ msgstr ""
 msgid "Maximum execution time"
 msgstr "Maxime tempore de execution"
 
-#: libraries/classes/Config/Descriptions.php:216
-#: templates/display/export/options_output.twig:16
+#: libraries/classes/Config/Descriptions.php:216 templates/export.twig:293
 #, php-format
 msgid "Use %s statement"
 msgstr "Usa le instruction %s"
@@ -1251,9 +1248,8 @@ msgid "Save on server"
 msgstr "Salveguarda sur le servitor"
 
 #: libraries/classes/Config/Descriptions.php:264
-#: libraries/classes/Config/Descriptions.php:267
-#: templates/display/export/options_output.twig:39
-#: templates/display/export/options_quick_export.twig:16
+#: libraries/classes/Config/Descriptions.php:267 templates/export.twig:150
+#: templates/export.twig:316
 msgid "Overwrite existing file(s)"
 msgstr "Superscribe file(s) existente"
 
@@ -1516,12 +1512,12 @@ msgid "Servers display options."
 msgstr "Optiones pro monstrar servitores."
 
 #: libraries/classes/Config/Descriptions.php:345
-#: libraries/classes/Controllers/Database/ExportController.php:96
 #: libraries/classes/Controllers/Server/DatabasesController.php:477
 #: libraries/classes/Navigation/Nodes/NodeTableContainer.php:24
 #: libraries/classes/Navigation/Nodes/NodeTableContainer.php:25
 #: libraries/classes/Plugins/Export/ExportXml.php:130
 #: libraries/classes/Server/Status/Data.php:151
+#: templates/database/export/index.twig:23
 #: templates/database/structure/show_create.twig:6
 msgid "Tables"
 msgstr "Tabellas"
@@ -2000,17 +1996,13 @@ msgid "Maximum tables"
 msgstr "Maxime numero de tabellas"
 
 #: libraries/classes/Config/Descriptions.php:512
-#, fuzzy
-#| msgid ""
-#| "The number of bytes a script is allowed to allocate, eg. [kbd]32M[/kbd] "
-#| "([kbd]-1[/kbd] for no limit and [kbd]0[/kbd] for no change)."
 msgid ""
 "The number of bytes a script is allowed to allocate, e.g. [kbd]32M[/kbd] "
 "([kbd]-1[/kbd] for no limit and [kbd]0[/kbd] for no change)."
 msgstr ""
-"Fixa le numero de bytes pro le qual un script es permittite allocar, pro "
-"exemplo [kbd]32M[/kbd] ([kbd]-1[/kbd] pro nulle limite) e [kbd]0[/kbd] pro "
-"nulle modification."
+"Le numero de bytes pro le qual un script es permittite allocar, pro exemplo "
+"[kbd]32M[/kbd] ([kbd]-1[/kbd] pro nulle limite) e [kbd]0[/kbd] pro nulle "
+"modification)."
 
 #: libraries/classes/Config/Descriptions.php:515
 msgid "Memory limit"
@@ -2063,16 +2055,12 @@ msgid "Logo link URL"
 msgstr "URL del ligamine de logo"
 
 #: libraries/classes/Config/Descriptions.php:531
-#, fuzzy
-#| msgid ""
-#| "Open the linked page in the main window ([kbd]main[/kbd]) or in a new one "
-#| "([kbd]new[/kbd])."
 msgid ""
 "Open the linked page in the main window ([code]main[/code]) or in a new one "
 "([code]new[/code])."
 msgstr ""
-"Aperi le pagina de ligamine in le fenestra principal ([kbd]main[/kbd]) o in "
-"un nove ([kbd]new[/kbd])."
+"Aperi le pagina de ligamine in le fenestra principal ([code]main[/code]) o "
+"in un nove ([code]new[/code])."
 
 #: libraries/classes/Config/Descriptions.php:534
 msgid "Logo link target"
@@ -2499,7 +2487,7 @@ msgid ""
 "Leave blank for no column comments/media types, suggested: "
 "[kbd]pma__column_info[/kbd]."
 msgstr ""
-"Lassa vacue pro nulle commentos/typos de media de columna, proponite:  "
+"Lassa vacue pro nulle commentos/typos de media de columna, proponite: "
 "[kbd]pma__column_info[/kbd]."
 
 #: libraries/classes/Config/Descriptions.php:666
@@ -2905,9 +2893,9 @@ msgid ""
 "this feature, suggested: [kbd]pma__users[/kbd]."
 msgstr ""
 "Ambe iste tabella e le tabella del gruppo de usator es requirite per "
-"habilitar le characteristica del menu configurabile,\n"
-"si on lassa un de lor vacue on dishabilitara iste characteristica, "
-"suggerite: [kbd]pma__users[/kbd]."
+"habilitar le characteristica del menu configurabile, si on lassa un de lor "
+"vacue on dishabilitara iste characteristica, suggerite: [kbd]pma__users[/"
+"kbd]."
 
 #: libraries/classes/Config/Descriptions.php:820
 msgid "Users table"
@@ -2920,9 +2908,8 @@ msgid ""
 "suggested: [kbd]pma__usergroups[/kbd]."
 msgstr ""
 "Ambe iste tabella e le tabella de usatores es requirite per habilitar le "
-"characteristica del menu configurabile, si\n"
-"on lassa un de lor vacue on dishabilitara iste characteristica, suggerite: "
-"[kbd]pma__users[/kbd]."
+"characteristica del menu configurabile, si on lassa un de lor vacue on "
+"dishabilitara iste characteristica, suggerite: [kbd]pma__users[/kbd]."
 
 #: libraries/classes/Config/Descriptions.php:826
 msgid "User groups table"
@@ -2987,8 +2974,7 @@ msgstr "Monstra modulo pro crear base de datos"
 
 #: libraries/classes/Config/Descriptions.php:848
 msgid "Show or hide a column displaying the comments for all tables."
-msgstr ""
-"Monstra o cela un columna monstrante le le commentos pro omne tabellas."
+msgstr "Monstra o cela un columna monstrante le commentos pro omne tabellas."
 
 #: libraries/classes/Config/Descriptions.php:849
 msgid "Show table comments"
@@ -3101,12 +3087,10 @@ msgid "Retain query box"
 msgstr "Cela quadro de query"
 
 #: libraries/classes/Config/Descriptions.php:883
-#, fuzzy
-#| msgid "Allow to display database and table statistics (eg. space usage)."
 msgid "Allow to display database and table statistics (e.g. space usage)."
 msgstr ""
-"Permitte monstrar statisticas de base de datos e tabellas (pro exemplo uso "
-"de spatio)."
+"Permitte monstrar statisticas de base de datos e tabellas (p.ex. uso de "
+"spatio)."
 
 #: libraries/classes/Config/Descriptions.php:884
 msgid "Show statistics"
@@ -3383,10 +3367,8 @@ msgid "Private key for reCaptcha"
 msgstr "Clave private pro reCaptcha"
 
 #: libraries/classes/Config/Descriptions.php:963
-#, fuzzy
-#| msgid "Enter your private key for your domain reCaptcha service."
 msgid "Enter your siteverify URL for your reCaptcha service."
-msgstr "Inserta tu clave private pro tu servicio de dominio reCaptcha."
+msgstr "Inserta tu verifica de sito pro tu servicio de reCaptcha."
 
 #: libraries/classes/Config/Descriptions.php:964
 msgid "URL for reCaptcha siteverify"
@@ -3672,7 +3654,6 @@ msgstr "Personalisate"
 #: libraries/classes/Config/Forms/User/ExportForm.php:53
 #: libraries/classes/Config/Forms/User/ExportForm.php:98
 #: libraries/classes/Config/Forms/User/ExportForm.php:126
-#: libraries/classes/Controllers/Database/ExportController.php:97
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:719
 #: libraries/classes/Import.php:1385 libraries/classes/Menu.php:277
 #: libraries/classes/Menu.php:397
@@ -3685,6 +3666,7 @@ msgstr "Personalisate"
 #: libraries/config.values.php:165 libraries/config.values.php:175
 #: templates/columns_definitions/table_fields_definitions.twig:4
 #: templates/database/central_columns/edit_table_header.twig:2
+#: templates/database/export/index.twig:24
 #: templates/server/privileges/privileges_table.twig:328
 #: templates/table/tracking/structure_snapshot_columns.twig:1
 msgid "Structure"
@@ -3694,8 +3676,8 @@ msgstr "Structura"
 #: libraries/classes/Config/Forms/User/ExportForm.php:106
 #: libraries/classes/Config/Forms/User/ExportForm.php:131
 #: libraries/classes/Config/Forms/User/ExportForm.php:137
-#: libraries/classes/Controllers/Database/ExportController.php:98
 #: libraries/classes/Controllers/Server/DatabasesController.php:487
+#: templates/database/export/index.twig:25
 #: templates/server/privileges/privileges_table.twig:254
 #: templates/table/structure/display_table_stats.twig:17
 msgid "Data"
@@ -3739,10 +3721,9 @@ msgstr "Texto OpenDocument"
 #: templates/database/triggers/list.twig:37
 #: templates/database/triggers/list.twig:38
 #: templates/database/triggers/row.twig:35
-#: templates/display/export/option_header.twig:3
 #: templates/display/results/table.twig:223
 #: templates/display/results/table.twig:224
-#: templates/display/results/table.twig:262
+#: templates/display/results/table.twig:262 templates/export.twig:8
 #: templates/preferences/header.twig:42
 #: templates/preferences/manage/main.twig:68
 #: templates/server/privileges/new_user_ajax.twig:63
@@ -4047,20 +4028,15 @@ msgid ""
 "The %s file is not available on this system, please visit %s for more "
 "information."
 msgstr ""
-"Le %s file non es disponibile sur iste systema, tu visita %s pro ulterior "
-"information.\n"
-"."
+"Le file %s non es disponibile sur iste systema, tu visita %s pro ulterior "
+"information."
 
 #: libraries/classes/Controllers/Database/CentralColumnsController.php:148
 #, php-format
 msgid "Showing rows %1$s - %2$s."
 msgstr "Monstrante rangos %1$s - %2$s."
 
-#: libraries/classes/Controllers/Database/ExportController.php:75
-msgid "View dump (schema) of database"
-msgstr "Vide dump (schema) del base de datos"
-
-#: libraries/classes/Controllers/Database/ExportController.php:80
+#: libraries/classes/Controllers/Database/ExportController.php:78
 #: libraries/classes/Controllers/Database/TrackingController.php:125
 #: libraries/classes/Controllers/ExportController.php:457
 #: libraries/classes/Database/Qbe.php:359
@@ -4069,13 +4045,12 @@ msgstr "Vide dump (schema) del base de datos"
 msgid "No tables found in database."
 msgstr "Il non ha tabulas in le base de datos."
 
-#: libraries/classes/Controllers/Database/ExportController.php:101
-#: templates/database/designer/database_tables.twig:31
-#: templates/database/search/main.twig:43
-#: templates/display/export/select_options.twig:4
-#: templates/server/replication/database_multibox.twig:7
-msgid "Select all"
-msgstr "Selige toto"
+#: libraries/classes/Controllers/Database/ExportController.php:156
+#: libraries/classes/Controllers/Server/ExportController.php:72
+#: libraries/classes/Controllers/Table/ExportController.php:128
+msgid "Could not load export plugins, please check your installation!"
+msgstr ""
+"Il non pote cargar plugins de exportar, pro favor verifica tu installation!"
 
 #: libraries/classes/Controllers/Database/OperationsController.php:97
 #: libraries/classes/Controllers/Table/CreateController.php:76
@@ -4138,7 +4113,7 @@ msgid "Table %s has been emptied."
 msgstr "Tabella %s ha essite vacuate."
 
 #: libraries/classes/Controllers/Database/StructureController.php:779
-#: libraries/classes/Display/Results.php:4419
+#: libraries/classes/Display/Results.php:4421
 #, php-format
 msgid ""
 "This view has at least this number of rows. Please refer to %sdocumentation"
@@ -4166,10 +4141,8 @@ msgstr "incognite"
 #: libraries/classes/Controllers/Database/StructureController.php:1552
 #: libraries/classes/Controllers/Database/StructureController.php:1603
 #: libraries/classes/Controllers/Database/StructureController.php:1654
-#, fuzzy
-#| msgid "No tables selected."
 msgid "No table selected."
-msgstr "Necun tabellas seligite."
+msgstr "Necun tabella seligite."
 
 #: libraries/classes/Controllers/Database/StructureController.php:1255
 #: libraries/classes/Controllers/Database/StructureController.php:1278
@@ -4322,8 +4295,8 @@ msgid ""
 "because of this, your login will expire sooner than configured in phpMyAdmin."
 msgstr ""
 "Immagazinage del cookie de authenticar se es inferior al validitate de "
-"cookie configurate in phpMyAdmin, pro iste ration, tu\n"
-"accesso expirara plus tosto que lo que es configurate in phpMyAdmin."
+"cookie configurate in phpMyAdmin, pro iste ration, tu accesso expirara plus "
+"tosto que lo que es configurate in phpMyAdmin."
 
 #: libraries/classes/Controllers/HomeController.php:435
 msgid ""
@@ -4428,7 +4401,7 @@ msgstr ""
 "installation!"
 
 #: libraries/classes/Controllers/ImportController.php:646
-#: libraries/classes/Controllers/SqlController.php:354
+#: libraries/classes/Controllers/SqlController.php:355
 #: libraries/classes/Sql.php:1382
 #, php-format
 msgid "Bookmark %s has been created."
@@ -4460,7 +4433,7 @@ msgstr ""
 "pro permitter a phpMyAdmin terminar le operation."
 
 #: libraries/classes/Controllers/ImportController.php:771
-#: libraries/classes/Controllers/SqlController.php:165
+#: libraries/classes/Controllers/SqlController.php:166
 msgid "\"DROP DATABASE\" statements are disabled."
 msgstr "Commandos \"DROP DATABASE\" es dishabilitate."
 
@@ -4711,8 +4684,7 @@ msgid "Matched rows:"
 msgstr "Rangos coincidente trovate:"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:115
-#: libraries/classes/Html/Generator.php:991
-#: templates/display/export/query.twig:4
+#: libraries/classes/Html/Generator.php:991 templates/export.twig:49
 msgid "SQL query:"
 msgstr "Query SQL:"
 
@@ -4750,7 +4722,7 @@ msgid "Removing Selected Users"
 msgstr "Removente usatores selectionate"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:130
-#: libraries/classes/Tracking.php:253 libraries/classes/Tracking.php:660
+#: libraries/classes/Tracking.php:257 libraries/classes/Tracking.php:664
 #: templates/server/status/advisor/index.twig:20
 #: templates/server/status/advisor/index.twig:47
 msgid "Close"
@@ -4974,8 +4946,7 @@ msgstr "Pro favor tu adde al minus un variabile al series!"
 #: libraries/classes/Plugins/Schema/SchemaPdf.php:96
 #: libraries/config.values.php:111
 #: templates/columns_definitions/transformation.twig:4
-#: templates/database/designer/main.twig:590
-#: templates/display/export/options_output.twig:89
+#: templates/database/designer/main.twig:590 templates/export.twig:355
 #: templates/server/privileges/privileges_summary.twig:30
 #: templates/server/status/monitor/index.twig:204
 #: templates/server/status/processes/list.twig:54
@@ -4986,10 +4957,8 @@ msgstr "Necun"
 
 #. l10n: SQL Query on modal to show exported query
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:199
-#, fuzzy
-#| msgid "SQL query"
 msgid "SQL Query"
-msgstr "Query SQL"
+msgstr "SQL Query"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:200
 msgid "Resume monitor"
@@ -5229,19 +5198,19 @@ msgid "Chart"
 msgstr "Graphico"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:275
-#: libraries/classes/Display/Export.php:376
+#: templates/export.twig:171
 msgctxt "Alias"
 msgid "Database"
 msgstr "Base de datos"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:276
-#: libraries/classes/Display/Export.php:388
+#: templates/export.twig:185
 msgctxt "Alias"
 msgid "Table"
 msgstr "Tabella"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:277
-#: libraries/classes/Display/Export.php:399
+#: templates/export.twig:198
 msgctxt "Alias"
 msgid "Column"
 msgstr "Columna"
@@ -5806,7 +5775,7 @@ msgid "Ignore"
 msgstr "Ignora"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:483
-#: libraries/classes/Display/Results.php:3215
+#: libraries/classes/Display/Results.php:3217
 #: libraries/classes/Html/Generator.php:70
 #: templates/display/results/table.twig:214
 #: templates/display/results/table.twig:215
@@ -6007,10 +5976,8 @@ msgid "%d object(s) created."
 msgstr "%d objecto(s) create."
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:547
-#, fuzzy
-#| msgid "Column names:"
 msgid "Column name"
-msgstr "Nomines de columna:"
+msgstr "Nomine de columna"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:548
 #: templates/sql/query.twig:165
@@ -6204,7 +6171,7 @@ msgid "up to date"
 msgstr "actualisate"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:631
-#: libraries/classes/Display/Results.php:4623
+#: libraries/classes/Display/Results.php:4625
 #: templates/database/structure/show_create.twig:33
 #: templates/display/results/table.twig:284 templates/view_create.twig:11
 msgid "Create view"
@@ -6417,7 +6384,8 @@ msgid "No such column"
 msgstr "Necun tal columna"
 
 #: libraries/classes/Controllers/NormalizationController.php:49
-#: libraries/classes/Normalization.php:255 libraries/classes/Types.php:744
+#: libraries/classes/Normalization.php:255 libraries/classes/Types.php:750
+#: libraries/classes/Types.php:788
 msgctxt "string types"
 msgid "String"
 msgstr "Catena"
@@ -6486,10 +6454,6 @@ msgstr "Total"
 #: templates/table/structure/display_table_stats.twig:32
 msgid "Overhead"
 msgstr "Overhead"
-
-#: libraries/classes/Controllers/Server/ExportController.php:45
-msgid "View dump (schema) of databases"
-msgstr ""
 
 #: libraries/classes/Controllers/Server/PrivilegesController.php:122
 #: libraries/classes/Server/Privileges.php:253
@@ -7426,7 +7390,7 @@ msgstr ""
 msgid "Setting variable failed"
 msgstr "Il falleva fixar variabile"
 
-#: libraries/classes/Controllers/Setup/FormController.php:33
+#: libraries/classes/Controllers/Setup/FormController.php:32
 msgid "Incorrect form specified!"
 msgstr ""
 
@@ -7487,7 +7451,7 @@ msgstr "Servitor predefinite"
 msgid "End of line"
 msgstr "Fin del linea"
 
-#: libraries/classes/Controllers/SqlController.php:361
+#: libraries/classes/Controllers/SqlController.php:362
 msgid "Bookmark not created!"
 msgstr "Marcator de libro non create!"
 
@@ -7501,7 +7465,7 @@ msgstr "Tabella %1$s ha essite alterate successosemente."
 
 #: libraries/classes/Controllers/Table/ChangeController.php:312
 #: libraries/classes/Controllers/Table/DeleteController.php:96
-#: libraries/classes/Controllers/Table/ExportController.php:135
+#: libraries/classes/Controllers/Table/ExportController.php:157
 msgid "No row selected."
 msgstr "Necun rango seligite."
 
@@ -7534,14 +7498,10 @@ msgstr ""
 #: libraries/classes/Controllers/Table/RelationController.php:275
 #: libraries/classes/Controllers/ViewOperationsController.php:75
 #: libraries/classes/Database/Routines.php:1534
-#: libraries/classes/Display/Results.php:4086 libraries/classes/Message.php:177
+#: libraries/classes/Display/Results.php:4088 libraries/classes/Message.php:177
 #: templates/sql/query.twig:7
 msgid "Your SQL query has been executed successfully."
 msgstr "Le demanda (query) SQL ha essite executate con successo."
-
-#: libraries/classes/Controllers/Table/ExportController.php:69
-msgid "View dump (schema) of table"
-msgstr ""
 
 #: libraries/classes/Controllers/Table/GetFieldController.php:44
 msgid "Invalid table name"
@@ -7607,7 +7567,7 @@ msgstr "Il falleva obtener description de columna %s!"
 
 #: libraries/classes/Controllers/Table/StructureController.php:1015
 #: libraries/classes/Controllers/Table/StructureController.php:1296
-#: libraries/classes/Tracking.php:791
+#: libraries/classes/Tracking.php:795
 msgid "Query error"
 msgstr "Error de query"
 
@@ -7783,18 +7743,14 @@ msgid ""
 msgstr ""
 
 #: libraries/classes/Database/Designer/Common.php:571
-#, fuzzy
-#| msgid ""
-#| "The configuration storage is not ready for the central list of columns "
-#| "feature."
 msgctxt ""
 "phpMyAdmin configuration storage is not configured for \"Display Features\" "
 "on designer when user tries to set a display field."
 msgid ""
 "phpMyAdmin configuration storage is not configured for \"Display Features\"."
 msgstr ""
-"Le immagazinage del configuration non es preste pro le lista central del "
-"characteristica de columnas."
+"Immagazinage del configuration de phpMyAdmin non es configurate per le "
+"\"characteristica de monstrator\"."
 
 #: libraries/classes/Database/Designer/Common.php:620
 msgid "Error: relationship already exists."
@@ -7968,11 +7924,12 @@ msgid "Export of event %s"
 msgstr ""
 
 #: libraries/classes/Database/Events.php:618
-#, fuzzy, php-format
-#| msgid "No event with name %1$s found in database %2$s."
+#, php-format
 msgid ""
 "Error in processing request: No event with name %1$s found in database %2$s."
-msgstr "il non ha trovate alcun evento con nomine %1$s in base de datos %2$s."
+msgstr ""
+"Error quando on processava requesta: il non ha trovate alcun evento con "
+"nomine %1$s in base de datos %2$s."
 
 #: libraries/classes/DatabaseInterface.php:1099
 #, php-format
@@ -8415,30 +8372,17 @@ msgid "Export of trigger %s"
 msgstr ""
 
 #: libraries/classes/Database/Triggers.php:635
-#, fuzzy, php-format
-#| msgid "No trigger with name %1$s found in database %2$s."
+#, php-format
 msgid ""
 "Error in processing request: No trigger with name %1$s found in database "
 "%2$s."
-msgstr "Il non ha trovate alcun trigger con nomine %1$s in base de datos %2$s."
+msgstr ""
+"Error quando processava requesta: Il non ha trovate alcun trigger con nomine "
+"%1$s in base de datos %2$s."
 
 #: libraries/classes/Dbal/DbiMysqli.php:187
 msgid "SSL connection enforced by server, automatically enabling it."
 msgstr ""
-
-#: libraries/classes/Display/Export.php:368
-msgid "Defined aliases"
-msgstr "Aliases definite"
-
-#: libraries/classes/Display/Export.php:427
-#: templates/display/export/options_output.twig:7
-msgid "Rename exported databases/tables/columns"
-msgstr "Renomina base de datos/tabellas/columnas exportate"
-
-#: libraries/classes/Display/Export.php:485
-msgid "Could not load export plugins, please check your installation!"
-msgstr ""
-"Il non pote cargar plugins de exportar, pro favor verifica tu installation!"
 
 #: libraries/classes/Display/Results.php:911
 #: libraries/classes/Html/Generator.php:1295
@@ -8508,46 +8452,46 @@ msgstr "Descendente"
 msgid "Ascending"
 msgstr "Ascendente"
 
-#: libraries/classes/Display/Results.php:3256
-#: libraries/classes/Display/Results.php:3271
+#: libraries/classes/Display/Results.php:3258
+#: libraries/classes/Display/Results.php:3273
 msgid "The row has been deleted."
 msgstr "Le rango ha essite delite."
 
-#: libraries/classes/Display/Results.php:3303
+#: libraries/classes/Display/Results.php:3305
 #: templates/server/status/processes/list.twig:44
 msgid "Kill"
 msgstr "Remove"
 
-#: libraries/classes/Display/Results.php:4010
+#: libraries/classes/Display/Results.php:4012
 msgid "May be approximate. See [doc@faq3-11]FAQ 3.11[/doc]."
 msgstr "Il pote esser approximate. Vide[doc@faq3-11]FAQ 3.11[/doc]."
 
-#: libraries/classes/Display/Results.php:4431
+#: libraries/classes/Display/Results.php:4433
 #, php-format
 msgid "Showing rows %1s - %2s"
 msgstr "Monstrante rangos %1s - %2s"
 
-#: libraries/classes/Display/Results.php:4445
+#: libraries/classes/Display/Results.php:4447
 #, php-format
 msgid "%1$d total, %2$d in query"
 msgstr "%1$d total, %2$d in query"
 
-#: libraries/classes/Display/Results.php:4450
+#: libraries/classes/Display/Results.php:4452
 #, php-format
 msgid "%d total"
 msgstr "%d total"
 
-#: libraries/classes/Display/Results.php:4462 libraries/classes/Sql.php:1203
+#: libraries/classes/Display/Results.php:4464 libraries/classes/Sql.php:1203
 #, php-format
 msgid "Query took %01.4f seconds."
 msgstr "Query prendeva %01.4f secundas."
 
-#: libraries/classes/Display/Results.php:4612
+#: libraries/classes/Display/Results.php:4614
 #: templates/display/results/table.twig:242
 msgid "Query results operations"
 msgstr "Operationes super exitos de query"
 
-#: libraries/classes/Display/Results.php:4865
+#: libraries/classes/Display/Results.php:4867
 msgid "Link not found!"
 msgstr "Ligamine non trovate!"
 
@@ -9294,12 +9238,12 @@ msgstr "Monstrante query de SQL"
 msgid "Inserted row id: %1$d"
 msgstr "Insertate id de rango: %1$d"
 
-#: libraries/classes/LanguageManager.php:963
+#: libraries/classes/LanguageManager.php:970
 msgid "Ignoring unsupported language code."
 msgstr "Ignorante codice de linguage non supportate."
 
-#: libraries/classes/LanguageManager.php:989
-#: libraries/classes/LanguageManager.php:990 templates/setup/home/index.twig:8
+#: libraries/classes/LanguageManager.php:996
+#: libraries/classes/LanguageManager.php:997 templates/setup/home/index.twig:8
 #: templates/setup/home/index.twig:9
 msgid "Language"
 msgstr "Linguage"
@@ -9489,7 +9433,7 @@ msgid "Procedures:"
 msgstr "Procedimentos:"
 
 #: libraries/classes/Navigation/Navigation.php:221
-#: templates/display/export/selection.twig:5
+#: templates/database/export/index.twig:14
 msgid "Tables:"
 msgstr "Tabulas:"
 
@@ -9514,12 +9458,8 @@ msgstr "Gruppos"
 #, php-format
 msgid "%s result found"
 msgid_plural "%s results found"
-msgstr[0] ""
-"Uno\n"
-"%s resultato trovate"
-msgstr[1] ""
-"Altere\n"
-"%s resultatos trovate"
+msgstr[0] "%s resultato trovate"
+msgstr[1] "%s resultatos trovate"
 
 #: libraries/classes/Navigation/NavigationTree.php:1405
 #: libraries/classes/Navigation/NavigationTree.php:1440
@@ -10097,19 +10037,19 @@ msgstr "Reessaya a connecter te"
 msgid "Your session has expired. Please log in again."
 msgstr "Tu session ha expirate. Pro favor authentica te de novo."
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:288
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:289
 msgid "Missing reCAPTCHA verification, maybe it has been blocked by adblock?"
 msgstr ""
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:323
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:324
 msgid "Failed to connect to the reCAPTCHA service!"
 msgstr "Il falleva connecter a servicio de reCAPTCHA!"
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:325
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:326
 msgid "Entered captcha is wrong, try again!"
 msgstr "Le captcha insertate es errate, essaya de novo!"
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:358
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:359
 msgid "You are not allowed to log in to this MySQL server!"
 msgstr ""
 "Tu non ha le permisso de acceder con authentication a iste servitor MySQL!"
@@ -10146,8 +10086,7 @@ msgid "You have enabled two factor authentication, please confirm your login."
 msgstr ""
 
 #: libraries/classes/Plugins/Export/ExportCodegen.php:87
-#: templates/display/export/format_dropdown.twig:2
-#: templates/display/import/import.twig:209
+#: templates/display/import/import.twig:209 templates/export.twig:94
 msgid "Format:"
 msgstr "Formato:"
 
@@ -10395,10 +10334,8 @@ msgstr "Exporta capites de tabella"
 
 #: libraries/classes/Plugins/Export/ExportOdt.php:267
 #: libraries/classes/Plugins/Export/ExportTexytext.php:192
-#, fuzzy
-#| msgid "Dumping data for table"
 msgid "Dumping data for query result"
-msgstr "Dump del datos per le tabella"
+msgstr "Dump del datos per le exito de query"
 
 #: libraries/classes/Plugins/Export/ExportPdf.php:98
 msgid "Report title:"
@@ -10409,10 +10346,8 @@ msgid "Dumping data"
 msgstr "Dump (discargamento) de datos"
 
 #: libraries/classes/Plugins/Export/ExportPdf.php:252
-#, fuzzy
-#| msgid "Query results"
 msgid "Query result data"
-msgstr "Exitos del query"
+msgstr "Datos de exito del query"
 
 #: libraries/classes/Plugins/Export/ExportPdf.php:310
 msgid "View structure"
@@ -11095,9 +11030,11 @@ msgstr "Converte un adresse de rete Internet ab formato (IPv4/IPv6) a binari"
 
 #: libraries/classes/Plugins/Transformations/Input/Text_Plain_Iptolong.php:29
 #, fuzzy
-#| msgid "Converts an Internet network address in (IPv4/IPv6) format to binary"
-msgid "Converts an Internet network address in (IPv4/IPv6) format to long."
-msgstr "Converte un adresse de rete Internet ab formato (IPv4/IPv6) a binari"
+#| msgid "Converts an Internet network address in (IPv4/IPv6) format to long."
+msgid ""
+"Converts an Internet network address in (IPv4/IPv6) format into a long "
+"integer."
+msgstr "Converte un adresse de rete Internet ab formato (IPv4/IPv6) a longe."
 
 #: libraries/classes/Plugins/Transformations/Input/Text_Plain_JsonEditor.php:26
 msgid "Syntax highlighted CodeMirror editor for JSON."
@@ -11896,155 +11833,155 @@ msgstr "Thema:"
 msgid "No valid image path for theme %s found!"
 msgstr "Il trovava necun valide percurso de imagine pro le thema %s!"
 
-#: libraries/classes/Tracking.php:252
+#: libraries/classes/Tracking.php:256
 #: templates/database/tracking/tables.twig:78
 #: templates/table/tracking/main.twig:73
 msgid "Tracking report"
 msgstr "Reporto de tracia"
 
-#: libraries/classes/Tracking.php:256
+#: libraries/classes/Tracking.php:260
 msgid "Tracking statements"
 msgstr ""
 
-#: libraries/classes/Tracking.php:271
+#: libraries/classes/Tracking.php:275
 msgid "Delete tracking data row from report"
 msgstr ""
 
-#: libraries/classes/Tracking.php:282
+#: libraries/classes/Tracking.php:286
 msgid "No data"
 msgstr ""
 
-#: libraries/classes/Tracking.php:334
+#: libraries/classes/Tracking.php:338
 #: templates/database/operations/index.twig:136
 #: templates/database/structure/copy_form.twig:19
 #: templates/table/operations/index.twig:253
 msgid "Structure only"
 msgstr "Solmente le structura"
 
-#: libraries/classes/Tracking.php:337
+#: libraries/classes/Tracking.php:341
 #: templates/database/operations/index.twig:148
 #: templates/database/structure/copy_form.twig:29
 #: templates/table/operations/index.twig:265
 msgid "Data only"
 msgstr "Solmente datos"
 
-#: libraries/classes/Tracking.php:340
+#: libraries/classes/Tracking.php:344
 #: templates/database/operations/index.twig:142
 #: templates/database/structure/copy_form.twig:24
 #: templates/table/operations/index.twig:259
 msgid "Structure and data"
 msgstr "Structura e datos"
 
-#: libraries/classes/Tracking.php:405 libraries/classes/Tracking.php:472
+#: libraries/classes/Tracking.php:409 libraries/classes/Tracking.php:476
 #, php-format
 msgid "Show %1$s with dates from %2$s to %3$s by user %4$s %5$s"
 msgstr ""
 
-#: libraries/classes/Tracking.php:493
+#: libraries/classes/Tracking.php:497
 msgid "SQL dump (file download)"
 msgstr ""
 
-#: libraries/classes/Tracking.php:495
+#: libraries/classes/Tracking.php:499
 msgid "SQL dump"
 msgstr ""
 
-#: libraries/classes/Tracking.php:498
+#: libraries/classes/Tracking.php:502
 msgid "This option will replace your table and contained data."
 msgstr ""
 
-#: libraries/classes/Tracking.php:500
+#: libraries/classes/Tracking.php:504
 msgid "SQL execution"
 msgstr ""
 
-#: libraries/classes/Tracking.php:504
+#: libraries/classes/Tracking.php:508
 #, php-format
 msgid "Export as %s"
 msgstr ""
 
-#: libraries/classes/Tracking.php:542
+#: libraries/classes/Tracking.php:546
 msgid "Data manipulation statement"
 msgstr ""
 
-#: libraries/classes/Tracking.php:578
+#: libraries/classes/Tracking.php:582
 msgid "Data definition statement"
 msgstr ""
 
-#: libraries/classes/Tracking.php:659
+#: libraries/classes/Tracking.php:663
 #: templates/database/tracking/tables.twig:89
 #: templates/table/tracking/main.twig:80
 msgid "Structure snapshot"
 msgstr "Fragmento de structura"
 
-#: libraries/classes/Tracking.php:679
+#: libraries/classes/Tracking.php:683
 #, php-format
 msgid "Version %s snapshot (SQL code)"
 msgstr ""
 
-#: libraries/classes/Tracking.php:745
+#: libraries/classes/Tracking.php:749
 msgid "Tracking data definition successfully deleted"
 msgstr ""
 
-#: libraries/classes/Tracking.php:755
+#: libraries/classes/Tracking.php:759
 msgid "Tracking data manipulation successfully deleted"
 msgstr ""
 
-#: libraries/classes/Tracking.php:811
+#: libraries/classes/Tracking.php:815
 msgid ""
 "You can execute the dump by creating and using a temporary database. Please "
 "ensure that you have the privileges to do so."
 msgstr ""
 
-#: libraries/classes/Tracking.php:815
+#: libraries/classes/Tracking.php:819
 msgid "Comment out these two lines if you do not need them."
 msgstr ""
 
-#: libraries/classes/Tracking.php:825
+#: libraries/classes/Tracking.php:829
 msgid "SQL statements exported. Please copy the dump or execute it."
 msgstr ""
 
-#: libraries/classes/Tracking.php:873
+#: libraries/classes/Tracking.php:877
 #, php-format
 msgid "Tracking report for table `%s`"
 msgstr ""
 
-#: libraries/classes/Tracking.php:904
+#: libraries/classes/Tracking.php:908
 #, php-format
 msgid "Tracking for %1$s was activated at version %2$s."
 msgstr ""
 
-#: libraries/classes/Tracking.php:907
+#: libraries/classes/Tracking.php:911
 #, php-format
 msgid "Tracking for %1$s was deactivated at version %2$s."
 msgstr ""
 
-#: libraries/classes/Tracking.php:1001
+#: libraries/classes/Tracking.php:1005
 #, php-format
 msgid "Version %1$s of %2$s was deleted."
 msgstr "Version %1$s de %2$s esseva delite."
 
-#: libraries/classes/Tracking.php:1032
+#: libraries/classes/Tracking.php:1036
 #, php-format
 msgid "Version %1$s was created, tracking for %2$s is active."
 msgstr ""
 
-#: libraries/classes/Tracking.php:1142 libraries/classes/Tracking.php:1280
+#: libraries/classes/Tracking.php:1146 libraries/classes/Tracking.php:1284
 #: templates/table/tracking/main.twig:10 templates/table/tracking/main.twig:53
 msgid "active"
 msgstr "active"
 
-#: libraries/classes/Tracking.php:1145 libraries/classes/Tracking.php:1275
+#: libraries/classes/Tracking.php:1149 libraries/classes/Tracking.php:1279
 #: templates/table/tracking/main.twig:12 templates/table/tracking/main.twig:56
 msgid "not active"
 msgstr "non active"
 
-#: libraries/classes/Types.php:205
+#: libraries/classes/Types.php:206
 msgid ""
 "A 1-byte integer, signed range is -128 to 127, unsigned range is 0 to 255"
 msgstr ""
 "Le extension de un integer de 1 byte, signate es ex -128 a 127, si non "
 "signate es ex 0 a 255"
 
-#: libraries/classes/Types.php:210
+#: libraries/classes/Types.php:211
 msgid ""
 "A 2-byte integer, signed range is -32,768 to 32,767, unsigned range is 0 to "
 "65,535"
@@ -12052,7 +11989,7 @@ msgstr ""
 "Le extension de un integer de 2 bytes signate es ex -32,768 a 32,767, si non "
 "signate es ex 0 a 65,535"
 
-#: libraries/classes/Types.php:215
+#: libraries/classes/Types.php:216
 msgid ""
 "A 3-byte integer, signed range is -8,388,608 to 8,388,607, unsigned range is "
 "0 to 16,777,215"
@@ -12060,7 +11997,7 @@ msgstr ""
 "Le extension de un integer de 3 bytes signate es ex -8,388,608 a 8,388,607, "
 "si non signate es ex 0 a 16,777,215"
 
-#: libraries/classes/Types.php:220
+#: libraries/classes/Types.php:221
 msgid ""
 "A 4-byte integer, signed range is -2,147,483,648 to 2,147,483,647, unsigned "
 "range is 0 to 4,294,967,295"
@@ -12068,7 +12005,7 @@ msgstr ""
 "Le extension de un integer de 4 bytes signate es ex -2,147,483,648 a "
 "2,147,483,647, si non signate es ex 0 a 4,294,967,295"
 
-#: libraries/classes/Types.php:226
+#: libraries/classes/Types.php:227
 msgid ""
 "An 8-byte integer, signed range is -9,223,372,036,854,775,808 to "
 "9,223,372,036,854,775,807, unsigned range is 0 to 18,446,744,073,709,551,615"
@@ -12077,7 +12014,7 @@ msgstr ""
 "--9,223,372,036,854,775,808 a 9,223,372,036,854,775,807, si non signate es "
 "ex 0 a 18,446,744,073,709,551,615"
 
-#: libraries/classes/Types.php:232
+#: libraries/classes/Types.php:233
 msgid ""
 "A fixed-point number (M, D) - the maximum number of digits (M) is 65 "
 "(default 10), the maximum number of decimals (D) is 30 (default 0)"
@@ -12086,7 +12023,7 @@ msgstr ""
 "es 65 (predefinite 10), le maxime numero de decimales (D) es 30 (predefinite "
 "0)"
 
-#: libraries/classes/Types.php:238
+#: libraries/classes/Types.php:239
 msgid ""
 "A small floating-point number, allowable values are -3.402823466E+38 to "
 "-1.175494351E-38, 0, and 1.175494351E-38 to 3.402823466E+38"
@@ -12095,7 +12032,7 @@ msgstr ""
 "-3.402823466E+38 a -1.175494351E-38, 0, e ex 1.175494351E-38 a 3.402823466E"
 "+38"
 
-#: libraries/classes/Types.php:244
+#: libraries/classes/Types.php:245
 msgid ""
 "A double-precision floating-point number, allowable values are "
 "-1.7976931348623157E+308 to -2.2250738585072014E-308, 0, and "
@@ -12105,7 +12042,7 @@ msgstr ""
 "disponibile es ex -1.7976931348623157E+308 a -2.2250738585072014E-308, 0, e "
 "ex 2.2250738585072014E-308 a 1.7976931348623157E+308"
 
-#: libraries/classes/Types.php:250
+#: libraries/classes/Types.php:251
 msgid ""
 "Synonym for DOUBLE (exception: in REAL_AS_FLOAT SQL mode it is a synonym for "
 "FLOAT)"
@@ -12113,7 +12050,7 @@ msgstr ""
 "Synonymo de DOUBLE (exception in modo REAL_AS_FLOAT illo es un synonymo de "
 "FLOAT)"
 
-#: libraries/classes/Types.php:255
+#: libraries/classes/Types.php:256
 msgid ""
 "A bit-field type (M), storing M of bits per value (default is 1, maximum is "
 "64)"
@@ -12121,7 +12058,7 @@ msgstr ""
 "Un typo de campo bit (M), immagazinante M bits per valor (predefinite 1, "
 "maxime es 64)"
 
-#: libraries/classes/Types.php:260
+#: libraries/classes/Types.php:261
 msgid ""
 "A synonym for TINYINT(1), a value of zero is considered false, nonzero "
 "values are considered true"
@@ -12129,22 +12066,22 @@ msgstr ""
 "Un synonymo de TINYINT(1), un valor de zero es considerate false (false), "
 "valores de non zero es considerate ver (true)"
 
-#: libraries/classes/Types.php:264
+#: libraries/classes/Types.php:265
 msgid "An alias for BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE"
 msgstr "Un alias for BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE"
 
-#: libraries/classes/Types.php:267
+#: libraries/classes/Types.php:268
 #, php-format
 msgid "A date, supported range is %1$s to %2$s"
 msgstr "Un data, le extension supportate es ex %1$s a %2$s"
 
-#: libraries/classes/Types.php:273
+#: libraries/classes/Types.php:274
 #, php-format
 msgid "A date and time combination, supported range is %1$s to %2$s"
 msgstr ""
 "Un combination de data e tempore, extension supportate es ex %1$s a %2$s"
 
-#: libraries/classes/Types.php:279
+#: libraries/classes/Types.php:280
 msgid ""
 "A timestamp, range is 1970-01-01 00:00:01 UTC to 2038-01-09 03:14:07 UTC, "
 "stored as the number of seconds since the epoch (1970-01-01 00:00:00 UTC)"
@@ -12153,12 +12090,12 @@ msgstr ""
 "03:14:07 UTC, immagazinate como le numero de secundas ex le epocha "
 "(1970-01-01 00:00:00 UTC)"
 
-#: libraries/classes/Types.php:285
+#: libraries/classes/Types.php:286
 #, php-format
 msgid "A time, range is %1$s to %2$s"
 msgstr "Un tempore, extension es ab %1$s a %2$s"
 
-#: libraries/classes/Types.php:291
+#: libraries/classes/Types.php:292
 msgid ""
 "A year in four-digit (4, default) or two-digit (2) format, the allowable "
 "values are 70 (1970) to 69 (2069) or 1901 to 2155 and 0000"
@@ -12166,7 +12103,7 @@ msgstr ""
 "Un anno in le formato de quatro cifras (4, per definition) o duo cifras, le "
 "valores permittite es ex 70 (1970) a 69 (2069) o ex 191 a 2155 e 0000"
 
-#: libraries/classes/Types.php:297
+#: libraries/classes/Types.php:298
 msgid ""
 "A fixed-length (0-255, default 1) string that is always right-padded with "
 "spaces to the specified length when stored"
@@ -12174,7 +12111,7 @@ msgstr ""
 "Un catena de longitude fixate (0-255, 1 predefinite) que es sempre plenate a "
 "dextera con spatios al longor specificate quando on immagazinava"
 
-#: libraries/classes/Types.php:303
+#: libraries/classes/Types.php:304
 #, php-format
 msgid ""
 "A variable-length (%s) string, the effective maximum length is subject to "
@@ -12183,7 +12120,7 @@ msgstr ""
 "Un catena de longitude variabile (%s), le effective maxime longor depende ex "
 "le maxime grandor de rango"
 
-#: libraries/classes/Types.php:310
+#: libraries/classes/Types.php:311
 msgid ""
 "A TEXT column with a maximum length of 255 (2^8 - 1) characters, stored with "
 "a one-byte prefix indicating the length of the value in bytes"
@@ -12191,7 +12128,7 @@ msgstr ""
 "Un columna de TEXT con un longor maxime de 255 (2^8 - 1) characteres, "
 "immagazinate con un prefixo de 1 byte indicante le valores in bytes"
 
-#: libraries/classes/Types.php:316
+#: libraries/classes/Types.php:317
 msgid ""
 "A TEXT column with a maximum length of 65,535 (2^16 - 1) characters, stored "
 "with a two-byte prefix indicating the length of the value in bytes"
@@ -12199,7 +12136,7 @@ msgstr ""
 "Un columna de TEXT con un longor maxime de 65,535 (2^16 - 1) characteres, "
 "immagazinate con un prefixo de 2 bytes indicante le valores in bytes"
 
-#: libraries/classes/Types.php:322
+#: libraries/classes/Types.php:323
 msgid ""
 "A TEXT column with a maximum length of 16,777,215 (2^24 - 1) characters, "
 "stored with a three-byte prefix indicating the length of the value in bytes"
@@ -12208,7 +12145,7 @@ msgstr ""
 "characteres, immagazinate con un prefixo de 3 bytes indicante le valores in "
 "bytes"
 
-#: libraries/classes/Types.php:328
+#: libraries/classes/Types.php:329
 msgid ""
 "A TEXT column with a maximum length of 4,294,967,295 or 4GiB (2^32 - 1) "
 "characters, stored with a four-byte prefix indicating the length of the "
@@ -12218,7 +12155,7 @@ msgstr ""
 "characteres, immagazinate con un prefixo de 4 bytes indicante le valores in "
 "bytes"
 
-#: libraries/classes/Types.php:334
+#: libraries/classes/Types.php:335
 msgid ""
 "Similar to the CHAR type, but stores binary byte strings rather than non-"
 "binary character strings"
@@ -12226,7 +12163,7 @@ msgstr ""
 "Como pro le typo CHAR, ma immagazina catenas de byte binari plus tosto que "
 "catenas de character non binari"
 
-#: libraries/classes/Types.php:339
+#: libraries/classes/Types.php:340
 msgid ""
 "Similar to the VARCHAR type, but stores binary byte strings rather than non-"
 "binary character strings"
@@ -12234,7 +12171,7 @@ msgstr ""
 "Como pro le typo VARCHAR, ma immagazina catenas de byte binari plus tosto "
 "que catenas de character non binari"
 
-#: libraries/classes/Types.php:344
+#: libraries/classes/Types.php:345
 msgid ""
 "A BLOB column with a maximum length of 255 (2^8 - 1) bytes, stored with a "
 "one-byte prefix indicating the length of the value"
@@ -12242,7 +12179,7 @@ msgstr ""
 "Un columna de BLOB con un longitude maxime de 255 (2^8 - 1) bytes, "
 "immagazinate con un prefixo indicante le longor del valor"
 
-#: libraries/classes/Types.php:349
+#: libraries/classes/Types.php:350
 msgid ""
 "A BLOB column with a maximum length of 16,777,215 (2^24 - 1) bytes, stored "
 "with a three-byte prefix indicating the length of the value"
@@ -12250,7 +12187,7 @@ msgstr ""
 "Un columna de BLOB con un longitude maxime de 16,777,215 (2^24 - 1) bytes, "
 "immagazinate con un prefixo de 3 bytes indicante le longor del valor"
 
-#: libraries/classes/Types.php:355
+#: libraries/classes/Types.php:356
 msgid ""
 "A BLOB column with a maximum length of 65,535 (2^16 - 1) bytes, stored with "
 "a two-byte prefix indicating the length of the value"
@@ -12258,7 +12195,7 @@ msgstr ""
 "Un columna de BLOB con un longitude maxime de 65,535 (2^16 - 1) bytes, "
 "immagazinate con un prefixo de duo bytes indicante le longor del valor"
 
-#: libraries/classes/Types.php:360
+#: libraries/classes/Types.php:361
 msgid ""
 "A BLOB column with a maximum length of 4,294,967,295 or 4GiB (2^32 - 1) "
 "bytes, stored with a four-byte prefix indicating the length of the value"
@@ -12266,7 +12203,7 @@ msgstr ""
 "Un columna de BLOB con un longitude maxime de 4,294,967,295 or 4GiB (2^32 - "
 "1) bytes, immagazinate con un prefixo de 4bytes indicante le longor del valor"
 
-#: libraries/classes/Types.php:366
+#: libraries/classes/Types.php:367
 msgid ""
 "An enumeration, chosen from the list of up to 65,535 values or the special "
 "'' error value"
@@ -12274,43 +12211,43 @@ msgstr ""
 "Un enumeration,seligite ex le lista usque calores de 65,535 o le valor "
 "special de error \""
 
-#: libraries/classes/Types.php:370
+#: libraries/classes/Types.php:371
 msgid "A single value chosen from a set of up to 64 members"
 msgstr "Un singule valor, seligite ex un insimul usque 64 membros"
 
-#: libraries/classes/Types.php:372
+#: libraries/classes/Types.php:373
 msgid "A type that can store a geometry of any type"
 msgstr "Un typo pote immagazinar un geometria de omne typo"
 
-#: libraries/classes/Types.php:374
+#: libraries/classes/Types.php:375
 msgid "A point in 2-dimensional space"
 msgstr "Un puncto in un spatio a duo dimensiones"
 
-#: libraries/classes/Types.php:376
+#: libraries/classes/Types.php:377
 msgid "A curve with linear interpolation between points"
 msgstr "Un curva con interpolation linear inter punctos"
 
-#: libraries/classes/Types.php:378
+#: libraries/classes/Types.php:379
 msgid "A polygon"
 msgstr "Un polygono"
 
-#: libraries/classes/Types.php:380
+#: libraries/classes/Types.php:381
 msgid "A collection of points"
 msgstr "Un collection de punctos"
 
-#: libraries/classes/Types.php:383
+#: libraries/classes/Types.php:384
 msgid "A collection of curves with linear interpolation between points"
 msgstr "Un collection de curvas con interpolation linear inter punctos"
 
-#: libraries/classes/Types.php:386
+#: libraries/classes/Types.php:387
 msgid "A collection of polygons"
 msgstr "Un collection de polygonos"
 
-#: libraries/classes/Types.php:388
+#: libraries/classes/Types.php:389
 msgid "A collection of geometry objects of any type"
 msgstr "Un collection de objectos de geometria de omne typo"
 
-#: libraries/classes/Types.php:391
+#: libraries/classes/Types.php:392
 msgid ""
 "Stores and enables efficient access to data in JSON (JavaScript Object "
 "Notation) documents"
@@ -12318,17 +12255,23 @@ msgstr ""
 "Immagazina e habilita accesso efficiente al datos in documentos de JSON "
 "(JavaScript Object Notation)"
 
-#: libraries/classes/Types.php:717
+#: libraries/classes/Types.php:396
+msgid ""
+"Intended for storage of IPv6 addresses, as well as IPv4 addresses assuming "
+"conventional mapping of IPv4 addresses into IPv6 addresses"
+msgstr ""
+
+#: libraries/classes/Types.php:723
 msgctxt "numeric types"
 msgid "Numeric"
 msgstr "Numeric"
 
-#: libraries/classes/Types.php:735
+#: libraries/classes/Types.php:741
 msgctxt "date and time types"
 msgid "Date and time"
 msgstr "Data e tempore"
 
-#: libraries/classes/Types.php:765
+#: libraries/classes/Types.php:771
 msgctxt "spatial types"
 msgid "Spatial"
 msgstr "Spatial"
@@ -12424,8 +12367,6 @@ msgstr "Dec"
 
 #. l10n: Short week day name for Sunday
 #: libraries/classes/Util.php:797
-#, fuzzy
-#| msgid "Sun"
 msgctxt "Short week day name for Sunday"
 msgid "Sun"
 msgstr "Dom"
@@ -12690,9 +12631,8 @@ msgstr "Nomine de tabella"
 
 #: templates/columns_definitions/column_definitions_form.twig:32
 #: templates/console/display.twig:99
-#: templates/database/central_columns/main.twig:212
-#: templates/export/alias_add.twig:18 templates/export/alias_add.twig:32
-#: templates/export/alias_add.twig:46
+#: templates/database/central_columns/main.twig:212 templates/export.twig:244
+#: templates/export.twig:258 templates/export.twig:272
 msgid "Add"
 msgstr "Adde"
 
@@ -12715,21 +12655,17 @@ msgstr "Connexion:"
 #: templates/columns_definitions/column_definitions_form.twig:113
 #: templates/columns_definitions/partitions.twig:137
 #: templates/table/operations/index.twig:128
-#, fuzzy
-#| msgid "Storage engines"
 msgid "Storage engine"
-msgstr "Motores de immagazinage"
+msgstr "Motor de immagazinage"
 
 #: templates/columns_definitions/column_definitions_form.twig:136
 msgid "PARTITION definition:"
 msgstr ""
 
 #: templates/columns_definitions/column_definitions_form.twig:154
-#, fuzzy
-#| msgid "Enclose export in a transaction"
 msgctxt "Online transaction part of the SQL DDL for InnoDB"
 msgid "Online transaction"
-msgstr "Include exportation in un transaction"
+msgstr "Transaction in linea"
 
 #: templates/columns_definitions/column_length.twig:9
 msgid "Edit ENUM/SET values"
@@ -13132,6 +13068,13 @@ msgstr "Cardinalitate"
 msgid "No index defined!"
 msgstr "Necun indice definite!"
 
+#: templates/database/designer/database_tables.twig:31
+#: templates/database/export/index.twig:29
+#: templates/database/search/main.twig:43 templates/server/export/index.twig:12
+#: templates/server/replication/database_multibox.twig:7
+msgid "Select all"
+msgstr "Selige toto"
+
 #: templates/database/designer/database_tables.twig:37
 msgid "Show/hide columns"
 msgstr "Monstra/cela columnas"
@@ -13141,10 +13084,9 @@ msgid "See table structure"
 msgstr "Vide le structura de tabella"
 
 #: templates/database/designer/database_tables.twig:91
-#, fuzzy, php-format
-#| msgid "Select all"
+#, php-format
 msgid "Select \"%s\""
-msgstr "Selige toto"
+msgstr "Selige \"%s\""
 
 #: templates/database/designer/database_tables.twig:109
 #, php-format
@@ -13417,6 +13359,24 @@ msgstr "Marca omnes"
 msgid "Event scheduler status"
 msgstr ""
 
+#: templates/database/export/index.twig:62
+msgid ""
+"@SERVER@ will become the server name and @DATABASE@ will become the database "
+"name."
+msgstr ""
+"@SERVER@ devenira le nomine de servitor e @DATABASE@ devenira le nomine de "
+"base de datos."
+
+#. l10n: A query that the user has written freely
+#: templates/database/export/index.twig:5
+msgid "Exporting a raw query"
+msgstr "Exportante un query crude"
+
+#: templates/database/export/index.twig:7
+#, php-format
+msgid "Exporting tables from \"%s\" database"
+msgstr "Exportante tabellas ex le base de datos \"%s\""
+
 #: templates/database/multi_table_query/form.twig:4
 #: templates/database/qbe/index.twig:4
 msgid "Multi-table query"
@@ -13493,8 +13453,7 @@ msgstr "Commento del base de datos"
 msgid "Rename database to"
 msgstr "Renominar le base de datos como"
 
-#: templates/database/operations/index.twig:64
-#: templates/export/alias_add.twig:15
+#: templates/database/operations/index.twig:64 templates/export.twig:241
 msgid "New database name"
 msgstr "Nomine de nove base de datos"
 
@@ -13503,16 +13462,12 @@ msgstr "Nomine de nove base de datos"
 #: templates/table/operations/index.twig:79
 #: templates/table/operations/index.twig:113
 #: templates/table/operations/index.twig:291
-#, fuzzy
-#| msgid ""
-#| "You don't have sufficient privileges to perform this operation; Please "
-#| "refer to the documentation for more details"
 msgid ""
 "You don't have sufficient privileges to perform this operation; Please refer "
 "to the documentation for more details."
 msgstr ""
-"Tu non ha bastante privilegios pro executar iste operation; Pro favor refere "
-"al documentation pro altere detalios"
+"Tu non ha bastante privilegios pro executar iste operation; Pro favor tu "
+"refere al documentation pro altere detalios."
 
 #: templates/database/operations/index.twig:89
 msgid "Remove database"
@@ -13644,10 +13599,8 @@ msgid "Ins:"
 msgstr "Insere:"
 
 #: templates/database/qbe/ins_del_and_or_cell.twig:12
-#, fuzzy
-#| msgid "And:"
 msgid "And"
-msgstr "E (And):"
+msgstr "E (And)"
 
 #: templates/database/qbe/ins_del_and_or_cell.twig:17
 msgid "Del:"
@@ -13683,23 +13636,17 @@ msgid "Modify:"
 msgstr "Modifica:"
 
 #: templates/database/qbe/selection_form.twig:54
-#, fuzzy
-#| msgid "Add/Delete criteria rows"
 msgid "Add/Delete criteria rows:"
-msgstr "Adde/Dele rangos de criterios"
+msgstr "Adde/Dele rangos de criterios:"
 
 #: templates/database/qbe/selection_form.twig:67
-#, fuzzy
-#| msgid "Add/Delete columns"
 msgid "Add/Delete columns:"
-msgstr "Adde/Dele columnas"
+msgstr "Adde/Dele columnas:"
 
 #: templates/database/qbe/selection_form.twig:86
 #: templates/database/qbe/selection_form.twig:88
-#, fuzzy
-#| msgid "Use Tables"
 msgid "Use tables"
-msgstr "Usa tabulas"
+msgstr "Usa tabellas"
 
 #: templates/database/qbe/selection_form.twig:107
 #, php-format
@@ -13707,9 +13654,6 @@ msgid "SQL query on database <b>%s</b>:"
 msgstr "SQL-query sur base de datos <b>%s</b>:"
 
 #: templates/database/routines/footer.twig:2
-#, fuzzy
-#| msgctxt "Create new column"
-#| msgid "New"
 msgctxt "Create new routine"
 msgid "New"
 msgstr "Nove"
@@ -13744,8 +13688,7 @@ msgstr "Parolas es separate per un character de spatio (\" \")."
 msgid "Inside tables:"
 msgstr "Intra tabulas:"
 
-#: templates/database/search/main.twig:46
-#: templates/display/export/select_options.twig:8
+#: templates/database/search/main.twig:46 templates/server/export/index.twig:16
 #: templates/server/replication/database_multibox.twig:8
 msgid "Unselect all"
 msgstr "Deselige toto"
@@ -13839,10 +13782,8 @@ msgid "Make consistent with central list"
 msgstr "Face consistente con le lista central"
 
 #: templates/database/structure/copy_form.twig:14
-#, fuzzy
-#| msgid "Options"
 msgid "Options:"
-msgstr "Optiones"
+msgstr "Optiones:"
 
 #: templates/database/structure/copy_form.twig:39
 msgid "Add AUTO INCREMENT value"
@@ -13959,220 +13900,6 @@ msgstr "Tracia tabula"
 msgid "There are no triggers to display."
 msgstr ""
 
-#: templates/display/export/method.twig:3
-msgid "Export method:"
-msgstr "Methodo de exportation:"
-
-#: templates/display/export/method.twig:9
-msgid "Quick - display only the minimal options"
-msgstr "Rapide-monstra solo le optiones minime"
-
-#: templates/display/export/method.twig:17
-msgid "Custom - display all possible options"
-msgstr "Personalisate-monstra omne optiones possibile"
-
-#: templates/display/export/option_header.twig:5
-msgid "Exporting databases from the current server"
-msgstr "Exportante base de datos ex le servitor currente"
-
-#: templates/display/export/option_header.twig:7
-#, php-format
-msgid "Exporting tables from \"%s\" database"
-msgstr "Exportante tabellas ex le base de datos \"%s\""
-
-#. l10n: A query that the user has written freely
-#: templates/display/export/option_header.twig:9
-#, fuzzy
-#| msgid "Showing SQL query"
-msgid "Exporting a raw query"
-msgstr "Monstrante query de SQL"
-
-#: templates/display/export/option_header.twig:11
-#, php-format
-msgid "Exporting rows from \"%s\" table"
-msgstr "Exportante rangos ex tabella \"%s\""
-
-#: templates/display/export/options_format.twig:2
-#: templates/display/import/import.twig:215
-msgid "Format-specific options:"
-msgstr "Optiones specific de formato:"
-
-#: templates/display/export/options_format.twig:4
-#: templates/display/import/import.twig:217
-msgid ""
-"Scroll down to fill in the options for the selected format and ignore the "
-"options for other formats."
-msgstr ""
-"Rola a basso pro completar le optiones pro le formato seligite e ignorar le "
-"optiones pro altere formatos."
-
-#: templates/display/export/options_format.twig:12
-#: templates/display/import/import.twig:226
-msgid "Encoding Conversion:"
-msgstr "Conversion de codifica:"
-
-#: templates/display/export/options_output.twig:2
-#: templates/display/export/options_quick_export.twig:2
-msgid "Output:"
-msgstr "Exito:"
-
-#: templates/display/export/options_output.twig:25
-msgid "Save output to a file"
-msgstr "Salveguarda exito in un file"
-
-#: templates/display/export/options_output.twig:32
-#: templates/display/export/options_quick_export.twig:8
-#, php-format
-msgid "Save on server in the directory <strong>%s</strong>"
-msgstr "Salveguarda sur servitor in le directorio <strong>%s</strong>"
-
-#: templates/display/export/options_output.twig:46
-msgid "File name template:"
-msgstr "Patrono de nomine de file:"
-
-#: templates/display/export/options_output.twig:48
-#, fuzzy
-#| msgid ""
-#| "This value is interpreted using %1$sstrftime%2$s, so you can use time "
-#| "formatting strings. Additionally the following transformations will "
-#| "happen: %3$s. Other text will be kept as is. See the %4$sFAQ%5$s for "
-#| "details."
-msgid ""
-"This value is interpreted using the 'strftime' function, so you can use time "
-"formatting strings. Additionally the following transformations will happen:"
-msgstr ""
-"Iste valor es interpretate per usar %1$sstrftime%2$s, assi que tu pote usar "
-"catenas de formatation per le datas/tempore. Anque on potera adder le "
-"sequente transformationes: %3$s. Altere texto essera mantenite assi como il "
-"es. Vide le %4$sFAQ%5$s pro detalios."
-
-#: templates/display/export/options_output.twig:50
-#, fuzzy
-#| msgid "@SERVER@ will become the server name"
-msgid "@SERVER@ will become the server name."
-msgstr "@SERVER@ devenira le nomine de servitor"
-
-#: templates/display/export/options_output.twig:52
-#, fuzzy
-#| msgid ", @DATABASE@ will become the database name"
-msgid ""
-"@SERVER@ will become the server name, @DATABASE@ will become the database "
-"name."
-msgstr ", @DATABASE@ devenira le nomine de base de datos"
-
-#: templates/display/export/options_output.twig:54
-msgid ""
-"@SERVER@ will become the server name, @DATABASE@ will become the database "
-"name, @TABLE@ will become the table name."
-msgstr ""
-
-#: templates/display/export/options_output.twig:56
-msgid "Other text will be kept as is. See the FAQ 6.27 for details."
-msgstr ""
-
-#: templates/display/export/options_output.twig:63
-msgid "use this for future exports"
-msgstr "usa isto pro exportationes futur"
-
-#: templates/display/export/options_output.twig:70
-#: templates/display/import/import.twig:135
-msgid "Character set of the file:"
-msgstr "Insimul de characteres de file:"
-
-#: templates/display/export/options_output.twig:86
-msgid "Compression:"
-msgstr "Compression:"
-
-#: templates/display/export/options_output.twig:93
-msgid "zipped"
-msgstr "comprimite per zip"
-
-#: templates/display/export/options_output.twig:99
-msgid "gzipped"
-msgstr "comprimite per gzip"
-
-#: templates/display/export/options_output.twig:114
-msgid "Export databases as separate files"
-msgstr "Exporta base de datos como files separate"
-
-#: templates/display/export/options_output.twig:116
-msgid "Export tables as separate files"
-msgstr "Exporta tabellas como files separate"
-
-#: templates/display/export/options_output.twig:128
-msgid "View output as text"
-msgstr "Vide exito como texto"
-
-#: templates/display/export/options_output.twig:134
-#, php-format
-msgid "Skip tables larger than %s MiB"
-msgstr "Salta tabellas plus grande que %s MiB"
-
-#: templates/display/export/options_rows.twig:2
-msgid "Rows:"
-msgstr "Rangos:"
-
-#: templates/display/export/options_rows.twig:7
-msgid "Dump some row(s)"
-msgstr "Executa le dump de alicun rango(s)"
-
-#: templates/display/export/options_rows.twig:10
-#: templates/display/results/table.twig:49
-#: templates/start_and_number_of_rows_panel.twig:10
-msgid "Number of rows:"
-msgstr "Numero de rangos:"
-
-#: templates/display/export/options_rows.twig:22
-msgid "Row to begin at:"
-msgstr "Rango de initiar a:"
-
-#: templates/display/export/options_rows.twig:31
-msgid "Dump all rows"
-msgstr "Le dump de omne rangos"
-
-#: templates/display/export/query.twig:8
-#, fuzzy
-#| msgid "Showing SQL query"
-msgid "Show SQL query"
-msgstr "Monstrante query de SQL"
-
-#: templates/display/export/selection.twig:3
-msgid "Databases:"
-msgstr "Base de datos:"
-
-#: templates/display/export/template_loading.twig:2
-msgid "Export templates:"
-msgstr "Patronos de exportation:"
-
-#: templates/display/export/template_loading.twig:6
-msgid "New template:"
-msgstr "Nove patrono:"
-
-#: templates/display/export/template_loading.twig:8
-msgid "Template name"
-msgstr "Nomine de patrono"
-
-#: templates/display/export/template_loading.twig:10
-#: templates/server/databases/index.twig:55
-msgid "Create"
-msgstr "Crea"
-
-#: templates/display/export/template_loading.twig:16
-msgid "Existing templates:"
-msgstr "Patronos existente:"
-
-#: templates/display/export/template_loading.twig:17
-msgid "Template:"
-msgstr "Patrono:"
-
-#: templates/display/export/template_loading.twig:21
-msgid "Update"
-msgstr "Actualisa"
-
-#: templates/display/export/template_options.twig:1
-msgid "Select a template"
-msgstr "Selige un patrono"
-
 #: templates/display/import/import.twig:40
 msgid "Importing into the current server"
 msgstr "Importante in le currente servitor"
@@ -14211,10 +13938,8 @@ msgid "Browse your computer:"
 msgstr "Cerca in tu computator:"
 
 #: templates/display/import/import.twig:73
-#, fuzzy
-#| msgid "Browse your computer:"
 msgid "Browse your computer"
-msgstr "Cerca in tu computator:"
+msgstr "Cerca in tu computator"
 
 #: templates/display/import/import.twig:79
 #: templates/display/import/import.twig:112
@@ -14223,16 +13948,14 @@ msgstr "Tu anque pot etraher e deponer un file sur qualcunque pagina."
 
 #: templates/display/import/import.twig:85
 #: templates/display/import/import.twig:115
-#, fuzzy, php-format
-#| msgid "Select from the web server upload directory <b>%s</b>:"
+#, php-format
 msgid "Select from the web server upload directory [strong]%s[/strong]:"
-msgstr "Selige ex le directorio de incargamento de servitor web <b>%s</b>:"
+msgstr ""
+"Selige ex le directorio de incargamento de servitor web [strong]%s[/strong]:"
 
 #: templates/display/import/import.twig:91
-#, fuzzy
-#| msgid "File to import:"
 msgid "Select file to import"
-msgstr "File de importar:"
+msgstr "Selige file de importar"
 
 #: templates/display/import/import.twig:96
 #: templates/display/import/import.twig:126
@@ -14242,6 +13965,10 @@ msgstr "Il non ha alcun file de incargar!"
 #: templates/display/import/import.twig:129
 msgid "File uploads are not allowed on this server."
 msgstr "Il non es permittite incargar files sur iste servitor."
+
+#: templates/display/import/import.twig:135 templates/export.twig:336
+msgid "Character set of the file:"
+msgstr "Insimul de characteres de file:"
 
 #: templates/display/import/import.twig:163
 msgid "Partial import:"
@@ -14272,6 +13999,22 @@ msgstr "Salta iste numero de queries (pro SQL) initiante ab le prime:"
 #: templates/display/import/import.twig:200
 msgid "Other options:"
 msgstr "Altere optiones:"
+
+#: templates/display/import/import.twig:215 templates/export.twig:406
+msgid "Format-specific options:"
+msgstr "Optiones specific de formato:"
+
+#: templates/display/import/import.twig:217 templates/export.twig:408
+msgid ""
+"Scroll down to fill in the options for the selected format and ignore the "
+"options for other formats."
+msgstr ""
+"Rola a basso pro completar le optiones pro le formato seligite e ignorar le "
+"optiones pro altere formatos."
+
+#: templates/display/import/import.twig:226 templates/export.twig:416
+msgid "Encoding Conversion:"
+msgstr "Conversion de codifica:"
 
 #: templates/display/import/javascript.twig:12
 msgid ""
@@ -14328,6 +14071,11 @@ msgstr "Salveguarda datos modificate"
 #: templates/display/results/table.twig:38
 msgid "Restore column order"
 msgstr "Restabili ordine de columna"
+
+#: templates/display/results/table.twig:49 templates/export.twig:110
+#: templates/start_and_number_of_rows_panel.twig:10
+msgid "Number of rows:"
+msgstr "Numero de rangos:"
 
 #: templates/display/results/table.twig:52
 msgid "All"
@@ -14403,33 +14151,168 @@ msgstr ""
 msgid "You may examine the data in the error report:"
 msgstr "Tu pote examinar le datos in le reporto de error:"
 
-#: templates/export/alias_add.twig:4
+#: templates/export/template_options.twig:1 templates/export.twig:30
+msgid "Select a template"
+msgstr "Selige un patrono"
+
+#: templates/export.twig:15
+msgid "Export templates:"
+msgstr "Patronos de exportation:"
+
+#: templates/export.twig:19
+msgid "New template:"
+msgstr "Nove patrono:"
+
+#: templates/export.twig:20
+msgid "Template name"
+msgstr "Nomine de patrono"
+
+#: templates/export.twig:21 templates/server/databases/index.twig:55
+msgid "Create"
+msgstr "Crea"
+
+#: templates/export.twig:27
+msgid "Existing templates:"
+msgstr "Patronos existente:"
+
+#: templates/export.twig:28
+msgid "Template:"
+msgstr "Patrono:"
+
+#: templates/export.twig:37
+msgid "Update"
+msgstr "Actualisa"
+
+#: templates/export.twig:53
+msgid "Show SQL query"
+msgstr "Monstra query de SQL"
+
+#: templates/export.twig:72
+msgid "Export method:"
+msgstr "Methodo de exportation:"
+
+#: templates/export.twig:78
+msgid "Quick - display only the minimal options"
+msgstr "Rapide-monstra solo le optiones minime"
+
+#: templates/export.twig:86
+msgid "Custom - display all possible options"
+msgstr "Personalisate-monstra omne optiones possibile"
+
+#: templates/export.twig:102
+msgid "Rows:"
+msgstr "Rangos:"
+
+#: templates/export.twig:107
+msgid "Dump some row(s)"
+msgstr "Executa le dump de alicun rango(s)"
+
+#: templates/export.twig:121
+msgid "Row to begin at:"
+msgstr "Rango de initiar a:"
+
+#: templates/export.twig:130
+msgid "Dump all rows"
+msgstr "Le dump de omne rangos"
+
+#: templates/export.twig:138 templates/export.twig:279
+msgid "Output:"
+msgstr "Exito:"
+
+#: templates/export.twig:143 templates/export.twig:309
+#, php-format
+msgid "Save on server in the directory <strong>%s</strong>"
+msgstr "Salveguarda sur servitor in le directorio <strong>%s</strong>"
+
+#: templates/export.twig:157 templates/export.twig:284
+msgid "Rename exported databases/tables/columns"
+msgstr "Renomina base de datos/tabellas/columnas exportate"
+
+#: templates/export.twig:162
+msgid "Defined aliases"
+msgstr "Aliases definite"
+
+#: templates/export.twig:177 templates/export.twig:191
+#: templates/export.twig:204 templates/export.twig:221
+msgid "Remove"
+msgstr ""
+
+#: templates/export.twig:230
 msgid "Define new aliases"
 msgstr ""
 
-#: templates/export/alias_add.twig:9
+#: templates/export.twig:235
 msgid "Select database:"
 msgstr "Selige base de datos:"
 
-#: templates/export/alias_add.twig:23
+#: templates/export.twig:249
 msgid "Select table:"
 msgstr "Selige tabella:"
 
-#: templates/export/alias_add.twig:29
+#: templates/export.twig:255
 msgid "New table name"
 msgstr "Nomine de nove tabella"
 
-#: templates/export/alias_add.twig:37
+#: templates/export.twig:263
 msgid "Select column:"
 msgstr "Selige columna:"
 
-#: templates/export/alias_add.twig:43
+#: templates/export.twig:269
 msgid "New column name"
 msgstr "Nove nomine de columna"
 
-#: templates/export/alias_item.twig:8
-msgid "Remove"
+#: templates/export.twig:302
+msgid "Save output to a file"
+msgstr "Salveguarda exito in un file"
+
+#: templates/export.twig:323
+msgid "File name template:"
+msgstr "Patrono de nomine de file:"
+
+#: templates/export.twig:324
+#, php-format
+msgid ""
+"This value is interpreted using the 'strftime' function, so you can use time "
+"formatting strings. Additionally the following transformations will happen: "
+"%s Other text will be kept as is. See the FAQ 6.27 for details."
 msgstr ""
+"Iste valor es interpretate per usar le function 'strftime', assi que tu pote "
+"usar catenas de formatation per le datas/tempore. Anque on potera adder le "
+"sequente transformationes: %s. Altere texto essera mantenite assi como il "
+"es. Vide le FAQ 6.27 pro detalios."
+
+#: templates/export.twig:329
+msgid "use this for future exports"
+msgstr "usa isto pro exportationes futur"
+
+#: templates/export.twig:352
+msgid "Compression:"
+msgstr "Compression:"
+
+#: templates/export.twig:359
+msgid "zipped"
+msgstr "comprimite per zip"
+
+#: templates/export.twig:365
+msgid "gzipped"
+msgstr "comprimite per gzip"
+
+#: templates/export.twig:380
+msgid "Export databases as separate files"
+msgstr "Exporta base de datos como files separate"
+
+#: templates/export.twig:382
+msgid "Export tables as separate files"
+msgstr "Exporta tabellas como files separate"
+
+#: templates/export.twig:394
+msgid "View output as text"
+msgstr "Vide exito como texto"
+
+#: templates/export.twig:400
+#, php-format
+msgid "Skip tables larger than %s MiB"
+msgstr "Salta tabellas plus grande que %s MiB"
 
 #: templates/filter.twig:4 templates/server/status/processes/index.twig:7
 #: templates/server/status/variables/index.twig:8
@@ -14533,22 +14416,19 @@ msgid "no branch"
 msgstr "necun ramo"
 
 #: templates/home/git_info.twig:15 templates/home/git_info.twig:22
-#, fuzzy, php-format
-#| msgid "%1$s from %2$s branch"
+#, php-format
 msgid "from %s branch"
-msgstr "%1$s ex ramo %2$s"
+msgstr "ex ramo %s"
 
 #: templates/home/git_info.twig:25
-#, fuzzy, php-format
-#| msgid "committed on %1$s by %2$s"
+#, php-format
 msgid "committed on %s by %s"
-msgstr "committite le %1$s per %2$s"
+msgstr "committite le %s per %s"
 
 #: templates/home/git_info.twig:32
-#, fuzzy, php-format
-#| msgid "authored on %1$s by %2$s"
+#, php-format
 msgid "authored on %s by %s"
-msgstr "create le %1$s per %2$s"
+msgstr "create le %s per %s"
 
 #: templates/home/index.twig:22 templates/login/form.twig:7
 #, php-format
@@ -14660,27 +14540,18 @@ msgstr "calendario-mense-anno"
 
 #. l10n: Year suffix for calendar, "none" is empty.
 #: templates/javascript/variables.twig:11
-#, fuzzy
-#| msgctxt "Year suffix"
-#| msgid "none"
 msgid "none"
-msgstr "necun"
+msgstr "nulle"
 
 #. l10n: Previous month. Display text for previous month link in calendar
 #: templates/javascript/variables.twig:16
-#, fuzzy
-#| msgctxt "Previous month"
-#| msgid "Prev"
 msgid "Prev"
-msgstr "Mense previe"
+msgstr "Prev"
 
 #. l10n: Next month. Display text for next month link in calendar
 #: templates/javascript/variables.twig:17
-#, fuzzy
-#| msgctxt "Next month"
-#| msgid "Next"
 msgid "Next"
-msgstr "Mense proxime"
+msgstr "Prox"
 
 #. l10n: Display text for current month link in calendar
 #: templates/javascript/variables.twig:18
@@ -14951,10 +14822,8 @@ msgid "Verify"
 msgstr ""
 
 #: templates/menu/breadcrumbs.twig:27
-#, fuzzy
-#| msgid "Views:"
 msgid "View:"
-msgstr "Vistas:"
+msgstr "Vista:"
 
 #: templates/navigation/item_unhide_dialog.twig:20
 msgid "Unhide"
@@ -14977,16 +14846,12 @@ msgid "phpMyAdmin documentation"
 msgstr "Documentation de phpMyAdmin"
 
 #: templates/navigation/main.twig:40 templates/navigation/main.twig:41
-#, fuzzy
-#| msgid "Documentation"
 msgid "MariaDB Documentation"
-msgstr "Documentation"
+msgstr "Documentation de MariaDB"
 
 #: templates/navigation/main.twig:40 templates/navigation/main.twig:41
-#, fuzzy
-#| msgid "Documentation"
 msgid "MySQL Documentation"
-msgstr "Documentation"
+msgstr "Documentation de MySQL"
 
 #: templates/navigation/main.twig:44 templates/navigation/main.twig:45
 msgid "Navigation panel settings"
@@ -15275,6 +15140,18 @@ msgstr "Motor de immagazinage"
 msgid "Unknown storage engine."
 msgstr "Motor de immagazinage incognite."
 
+#: templates/server/export/index.twig:32
+msgid "@SERVER@ will become the server name."
+msgstr "@SERVER@ devenira le nomine de servitor."
+
+#: templates/server/export/index.twig:3
+msgid "Exporting databases from the current server"
+msgstr "Exportante base de datos ex le servitor currente"
+
+#: templates/server/export/index.twig:7
+msgid "Databases:"
+msgstr "Base de datos:"
+
 #: templates/server/plugins/index.twig:26
 msgid "Plugin"
 msgstr "Plugin"
@@ -15354,10 +15231,8 @@ msgid "User group"
 msgstr "Gruppo de Usator"
 
 #: templates/server/privileges/choose_user_group.twig:6
-#, fuzzy
-#| msgid "User group"
 msgid "User group:"
-msgstr "Gruppo de Usator"
+msgstr "Gruppo de Usator:"
 
 #: templates/server/privileges/edit_routine_privileges.twig:4
 #: templates/server/privileges/user_properties.twig:4
@@ -15504,7 +15379,7 @@ msgid ""
 "'<em>unencrypted connection that encrypts the password using RSA</em>'; "
 "while connecting to the server."
 msgstr ""
-"Iste methodo require que on usa un  '<em>connexion SSL</em>' o un '<em> "
+"Iste methodo require que on usa un '<em>connexion SSL</em>' o un '<em> "
 "connexion non cryptate que crypta le contrasigno usante RSA</em>'; durante "
 "que on connecte al servitor."
 
@@ -15877,46 +15752,32 @@ msgid "Rules file is not well formed, the following errors were found:"
 msgstr ""
 
 #: templates/server/status/advisor/index.twig:66
-#, fuzzy
-#| msgid "Some error occurred while getting SQL debug info."
 msgid "Errors occurred while executing rule expressions:"
-msgstr ""
-"Alcun error occurreva durante que on obteneva information super le debug de "
-"SQL."
+msgstr "Alcun error occurreva durante que on executava expressiones de regula:"
 
 #: templates/server/status/advisor/index.twig:76
 msgid "Possible performance issues"
 msgstr "Possibile problemas de prestationes"
 
 #: templates/server/status/advisor/index.twig:89
-#, fuzzy
-#| msgid "Issue"
 msgid "Issue:"
-msgstr "Problema"
+msgstr "Problema:"
 
 #: templates/server/status/advisor/index.twig:92
-#, fuzzy
-#| msgid "Recommendation"
 msgid "Recommendation:"
-msgstr "Recommendation"
+msgstr "Recommendation:"
 
 #: templates/server/status/advisor/index.twig:95
-#, fuzzy
-#| msgid "Justification"
 msgid "Justification:"
-msgstr "Justification"
+msgstr "Justification:"
 
 #: templates/server/status/advisor/index.twig:98
-#, fuzzy
-#| msgid "Used variable / formula"
 msgid "Used variable / formula:"
-msgstr "Variabile/formula utilisate"
+msgstr "Variabile/formula utilisate:"
 
 #: templates/server/status/advisor/index.twig:101
-#, fuzzy
-#| msgid "Test"
 msgid "Test:"
-msgstr "Essaya"
+msgstr "Essaya:"
 
 #: templates/server/status/base.twig:16
 msgid "Query statistics"
@@ -16416,10 +16277,8 @@ msgid "Rollback when finished"
 msgstr ""
 
 #: templates/sql/query.twig:149
-#, fuzzy
-#| msgid "Bookmark"
 msgid "Bookmark:"
-msgstr "Marcator de libro"
+msgstr "Marcator de libro:"
 
 #: templates/sql/query.twig:156
 msgid "shared"
@@ -16525,6 +16384,19 @@ msgstr "Columna de valor:"
 msgid "Save chart as image"
 msgstr "Salveguarda diagramma como imagine"
 
+#: templates/table/export/index.twig:8
+msgid ""
+"@SERVER@ will become the server name, @DATABASE@ will become the database "
+"name and @TABLE@ will become the table name."
+msgstr ""
+"@SERVER@ devenira le nomine de servitor, @DATABASE@ devenira le nomine de "
+"base de datos e @TABLE@ devenira le nomine de tabella."
+
+#: templates/table/export/index.twig:5
+#, php-format
+msgid "Exporting rows from \"%s\" table"
+msgstr "Exportante rangos ex tabella \"%s\""
+
 #: templates/table/find_replace/index.twig:4
 #: templates/table/search/index.twig:4 templates/table/zoom_search/index.twig:4
 msgid "Table search"
@@ -16597,8 +16469,6 @@ msgid "Index choice:"
 msgstr "Selection de indice:"
 
 #: templates/table/index_form.twig:52
-#, fuzzy
-#| msgid "Advanced Options"
 msgid "Advanced options"
 msgstr "Optiones avantiate"
 
@@ -16632,17 +16502,13 @@ msgid "Alter table order by"
 msgstr "Alterar le ordine de tabella per"
 
 #: templates/table/operations/index.twig:20
-#, fuzzy
-#| msgid "(singly)"
 msgctxt "Alter table order by a single field."
 msgid "(singly)"
 msgstr "(singularmente)"
 
 #: templates/table/operations/index.twig:50
-#, fuzzy
-#| msgid "Move table to (database<b>.</b>table)"
 msgid "Move table to (database.table)"
-msgstr "Move le tabella in (database<b>.</b>table)"
+msgstr "Move le tabella in (database.table)"
 
 #: templates/table/operations/index.twig:103
 msgid "Table options"
@@ -16661,10 +16527,8 @@ msgid "Change all column collations"
 msgstr "Modifica omne collation de columna"
 
 #: templates/table/operations/index.twig:227
-#, fuzzy
-#| msgid "Copy table to (database<b>.</b>table)"
 msgid "Copy table to (database.table)"
-msgstr "Copia le tabella in (database<b>.</b>table)"
+msgstr "Copia le tabella in (database.table)"
 
 #: templates/table/operations/index.twig:300
 msgid "Switch to copied table"
@@ -16688,10 +16552,8 @@ msgid "Remove partitioning"
 msgstr "Remove partitionemento"
 
 #: templates/table/operations/index.twig:417
-#, fuzzy
-#| msgid "Check referential integrity:"
 msgid "Check referential integrity"
-msgstr "Verifica le integritate referential:"
+msgstr "Verifica le integritate referential"
 
 #: templates/table/operations/view.twig:11
 msgid "Rename view to"
@@ -16762,10 +16624,9 @@ msgstr "Selige columna de monstrar:"
 
 #: templates/table/relation/common_form.twig:315
 #: templates/table/structure/display_structure.twig:497
-#, fuzzy, php-format
-#| msgid "Create an index on &nbsp;%s&nbsp;columns"
+#, php-format
 msgid "Create an index on %s columns"
-msgstr "Crea un indice sur &nbsp;%s&nbsp;columnas"
+msgstr "Crea un indice sur %s columnas"
 
 #: templates/table/relation/foreign_key_row.twig:15
 #, php-format
@@ -17024,10 +16885,8 @@ msgstr "Pulsa pro alternar"
 
 #. l10n: Show or hide the menu using the hamburger style button
 #: templates/top_menu.twig:4
-#, fuzzy
-#| msgid "Table navigation bar"
 msgid "Toggle navigation"
-msgstr "Barra de navigation de tabella"
+msgstr "Commuta navigation"
 
 #. l10n: Current page
 #: templates/top_menu.twig:14
@@ -18119,6 +17978,9 @@ msgstr ""
 #: libraries/advisory_rules_mysql_before80003.txt:57
 msgid "query_cache_limit is set to 1 MiB"
 msgstr ""
+
+#~ msgid "View dump (schema) of database"
+#~ msgstr "Vide dump (schema) del base de datos"
 
 #~ msgid ", @TABLE@ will become the table name"
 #~ msgstr ", @TABLE@ devenira le nomine de tabella"

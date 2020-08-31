@@ -10,7 +10,7 @@
     <file>.</file>
 
     <exclude-pattern>libraries/cache/routes.cache.php</exclude-pattern>
-    <exclude-pattern>test/sami-config.php</exclude-pattern>
+    <exclude-pattern>test/doctum-config.php</exclude-pattern>
     <exclude-pattern>*/node_modules/*</exclude-pattern>
     <exclude-pattern>*/tmp/*</exclude-pattern>
     <exclude-pattern>*/twig-templates/*</exclude-pattern>
@@ -26,9 +26,6 @@
     </rule>
 
     <!-- Rules that should be followed, but are not required -->
-    <rule ref="PSR2.Classes.PropertyDeclaration.Underscore">
-        <severity>4</severity>
-    </rule>
     <rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators">
         <severity>4</severity>
     </rule>

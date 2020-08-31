@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phpMyAdmin 5.1.0-dev\n"
 "Report-Msgid-Bugs-To: translators@phpmyadmin.net\n"
-"POT-Creation-Date: 2020-07-30 23:36-0300\n"
+"POT-Creation-Date: 2020-08-16 18:48-0300\n"
 "PO-Revision-Date: 2019-08-23 11:23+0000\n"
 "Last-Translator: Michal Čihař <michal@cihar.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/phpmyadmin/"
@@ -98,8 +98,8 @@ msgstr "খুঁজ:"
 #: libraries/classes/Database/Triggers.php:462
 #: libraries/classes/InsertEdit.php:1987 libraries/classes/InsertEdit.php:2021
 #: libraries/classes/Normalization.php:260
-#: libraries/classes/Normalization.php:972 libraries/classes/Tracking.php:349
-#: libraries/classes/Tracking.php:502
+#: libraries/classes/Normalization.php:972 libraries/classes/Tracking.php:353
+#: libraries/classes/Tracking.php:506
 #: templates/columns_definitions/column_definitions_form.twig:43
 #: templates/database/create_table.twig:21
 #: templates/database/events/editor_form.twig:107
@@ -109,12 +109,11 @@ msgstr "খুঁজ:"
 #: templates/database/operations/index.twig:190
 #: templates/database/operations/index.twig:230
 #: templates/database/search/main.twig:74
-#: templates/display/export/options_format.twig:18
 #: templates/display/import/import.twig:232
-#: templates/display/results/table.twig:175
+#: templates/display/results/table.twig:175 templates/export.twig:422
 #: templates/gis_data_editor_form.twig:211 templates/header_location.twig:18
-#: templates/login/form.twig:83 templates/login/form.twig:85
-#: templates/preferences/manage/main.twig:46
+#: templates/login/form.twig:85 templates/login/form.twig:87
+#: templates/login/form.twig:90 templates/preferences/manage/main.twig:46
 #: templates/preferences/manage/main.twig:108
 #: templates/server/binlog/index.twig:34
 #: templates/server/privileges/add_user.twig:36
@@ -222,7 +221,7 @@ msgstr ""
 #: libraries/classes/CentralColumns.php:955
 #: libraries/classes/Config/Descriptions.php:889
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:385
-#: libraries/classes/Display/Results.php:3211
+#: libraries/classes/Display/Results.php:3213
 #: libraries/classes/Html/Generator.php:757
 #: libraries/classes/Html/Generator.php:1019
 #: libraries/classes/Server/UserGroups.php:125 libraries/classes/Util.php:3221
@@ -250,19 +249,18 @@ msgstr "সম্পাদনা"
 #: libraries/classes/CentralColumns.php:960
 #: libraries/classes/CentralColumns.php:961
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:386
-#: libraries/classes/Display/Results.php:3280
+#: libraries/classes/Display/Results.php:3282
 #: libraries/classes/Server/UserGroups.php:134
-#: libraries/classes/Tracking.php:275 templates/console/bookmark_content.twig:7
+#: libraries/classes/Tracking.php:279 templates/console/bookmark_content.twig:7
 #: templates/database/central_columns/main.twig:284
 #: templates/database/central_columns/main.twig:407
 #: templates/database/central_columns/main.twig:408
 #: templates/database/designer/main.twig:390
 #: templates/database/qbe/ins_del_and_or_cell.twig:18
 #: templates/database/search/results.twig:43
-#: templates/display/export/template_loading.twig:22
 #: templates/display/results/table.twig:218
-#: templates/display/results/table.twig:219 templates/setup/home/index.twig:62
-#: templates/sql/query.twig:173
+#: templates/display/results/table.twig:219 templates/export.twig:38
+#: templates/setup/home/index.twig:62 templates/sql/query.twig:173
 msgid "Delete"
 msgstr "মুছ"
 
@@ -1168,8 +1166,7 @@ msgstr "একটি স্ক্রীপট চলার সময় (সেক�
 msgid "Maximum execution time"
 msgstr "সম্পাদনের সর্বোচ্চ সময়"
 
-#: libraries/classes/Config/Descriptions.php:216
-#: templates/display/export/options_output.twig:16
+#: libraries/classes/Config/Descriptions.php:216 templates/export.twig:293
 #, fuzzy, php-format
 #| msgid "Add %s statement"
 msgid "Use %s statement"
@@ -1352,9 +1349,8 @@ msgid "Save on server"
 msgstr "সার্ভারে সংরক্ষন কর"
 
 #: libraries/classes/Config/Descriptions.php:264
-#: libraries/classes/Config/Descriptions.php:267
-#: templates/display/export/options_output.twig:39
-#: templates/display/export/options_quick_export.twig:16
+#: libraries/classes/Config/Descriptions.php:267 templates/export.twig:150
+#: templates/export.twig:316
 msgid "Overwrite existing file(s)"
 msgstr "পূর্বের ফাইলটিতে রাখ"
 
@@ -1625,12 +1621,12 @@ msgid "Servers display options."
 msgstr "সার্ভারের প্রর্দশন অপশনগুলো।"
 
 #: libraries/classes/Config/Descriptions.php:345
-#: libraries/classes/Controllers/Database/ExportController.php:96
 #: libraries/classes/Controllers/Server/DatabasesController.php:477
 #: libraries/classes/Navigation/Nodes/NodeTableContainer.php:24
 #: libraries/classes/Navigation/Nodes/NodeTableContainer.php:25
 #: libraries/classes/Plugins/Export/ExportXml.php:130
 #: libraries/classes/Server/Status/Data.php:151
+#: templates/database/export/index.twig:23
 #: templates/database/structure/show_create.twig:6
 msgid "Tables"
 msgstr "টেবল"
@@ -3864,7 +3860,6 @@ msgstr "পরিবর্তন"
 #: libraries/classes/Config/Forms/User/ExportForm.php:53
 #: libraries/classes/Config/Forms/User/ExportForm.php:98
 #: libraries/classes/Config/Forms/User/ExportForm.php:126
-#: libraries/classes/Controllers/Database/ExportController.php:97
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:719
 #: libraries/classes/Import.php:1385 libraries/classes/Menu.php:277
 #: libraries/classes/Menu.php:397
@@ -3877,6 +3872,7 @@ msgstr "পরিবর্তন"
 #: libraries/config.values.php:165 libraries/config.values.php:175
 #: templates/columns_definitions/table_fields_definitions.twig:4
 #: templates/database/central_columns/edit_table_header.twig:2
+#: templates/database/export/index.twig:24
 #: templates/server/privileges/privileges_table.twig:328
 #: templates/table/tracking/structure_snapshot_columns.twig:1
 msgid "Structure"
@@ -3886,8 +3882,8 @@ msgstr "গঠন"
 #: libraries/classes/Config/Forms/User/ExportForm.php:106
 #: libraries/classes/Config/Forms/User/ExportForm.php:131
 #: libraries/classes/Config/Forms/User/ExportForm.php:137
-#: libraries/classes/Controllers/Database/ExportController.php:98
 #: libraries/classes/Controllers/Server/DatabasesController.php:487
+#: templates/database/export/index.twig:25
 #: templates/server/privileges/privileges_table.twig:254
 #: templates/table/structure/display_table_stats.twig:17
 msgid "Data"
@@ -3931,10 +3927,9 @@ msgstr "ওপেন অফিস টেক্সট"
 #: templates/database/triggers/list.twig:37
 #: templates/database/triggers/list.twig:38
 #: templates/database/triggers/row.twig:35
-#: templates/display/export/option_header.twig:3
 #: templates/display/results/table.twig:223
 #: templates/display/results/table.twig:224
-#: templates/display/results/table.twig:262
+#: templates/display/results/table.twig:262 templates/export.twig:8
 #: templates/preferences/header.twig:42
 #: templates/preferences/manage/main.twig:68
 #: templates/server/privileges/new_user_ajax.twig:63
@@ -4279,11 +4274,7 @@ msgstr "%s ফাইলটি এখানে নাই, অনুগ্রহ �
 msgid "Showing rows %1$s - %2$s."
 msgstr "রো দেখাচ্ছে %1$s - %2$s."
 
-#: libraries/classes/Controllers/Database/ExportController.php:75
-msgid "View dump (schema) of database"
-msgstr "ডাটাবেজ(গঠন)স্তুপ দেখাও"
-
-#: libraries/classes/Controllers/Database/ExportController.php:80
+#: libraries/classes/Controllers/Database/ExportController.php:78
 #: libraries/classes/Controllers/Database/TrackingController.php:125
 #: libraries/classes/Controllers/ExportController.php:457
 #: libraries/classes/Database/Qbe.php:359
@@ -4292,13 +4283,11 @@ msgstr "ডাটাবেজ(গঠন)স্তুপ দেখাও"
 msgid "No tables found in database."
 msgstr "ডাটাবেইজে কোন টেবিল নাই।"
 
-#: libraries/classes/Controllers/Database/ExportController.php:101
-#: templates/database/designer/database_tables.twig:31
-#: templates/database/search/main.twig:43
-#: templates/display/export/select_options.twig:4
-#: templates/server/replication/database_multibox.twig:7
-msgid "Select all"
-msgstr "সবগুলো নির্বাচন"
+#: libraries/classes/Controllers/Database/ExportController.php:156
+#: libraries/classes/Controllers/Server/ExportController.php:72
+#: libraries/classes/Controllers/Table/ExportController.php:128
+msgid "Could not load export plugins, please check your installation!"
+msgstr "রফতানী সহায়কটি লোড করা যাচ্ছে না, ইনস্টলেশন পরীক্ষা করুন!"
 
 #: libraries/classes/Controllers/Database/OperationsController.php:97
 #: libraries/classes/Controllers/Table/CreateController.php:76
@@ -4358,7 +4347,7 @@ msgid "Table %s has been emptied."
 msgstr "টেবিল %s খালি করা হয়েছে।"
 
 #: libraries/classes/Controllers/Database/StructureController.php:779
-#: libraries/classes/Display/Results.php:4419
+#: libraries/classes/Display/Results.php:4421
 #, php-format
 msgid ""
 "This view has at least this number of rows. Please refer to %sdocumentation"
@@ -4635,7 +4624,7 @@ msgstr ""
 "আমদানি সহায়ক (plugin) পাওয়া যাচ্ছে না, অনুগ্রহ করে আপনার ইন্সষ্টলেশন পরীক্ষা করুন!"
 
 #: libraries/classes/Controllers/ImportController.php:646
-#: libraries/classes/Controllers/SqlController.php:354
+#: libraries/classes/Controllers/SqlController.php:355
 #: libraries/classes/Sql.php:1382
 #, php-format
 msgid "Bookmark %s has been created."
@@ -4667,7 +4656,7 @@ msgstr ""
 "আমদানিটি শেষ করা যাবে না।"
 
 #: libraries/classes/Controllers/ImportController.php:771
-#: libraries/classes/Controllers/SqlController.php:165
+#: libraries/classes/Controllers/SqlController.php:166
 msgid "\"DROP DATABASE\" statements are disabled."
 msgstr "\"DROP DATABASE\" অকার্যকর করা আছে।"
 
@@ -4949,8 +4938,7 @@ msgid "Matched rows:"
 msgstr "প্রভাবিত রোসমুহ:"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:115
-#: libraries/classes/Html/Generator.php:991
-#: templates/display/export/query.twig:4
+#: libraries/classes/Html/Generator.php:991 templates/export.twig:49
 msgid "SQL query:"
 msgstr "SQL অনুসন্ধান:"
 
@@ -4992,7 +4980,7 @@ msgid "Removing Selected Users"
 msgstr "নির্বাচিত ব্যবহারকারীদের মুছে ফেলা হচ্ছে"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:130
-#: libraries/classes/Tracking.php:253 libraries/classes/Tracking.php:660
+#: libraries/classes/Tracking.php:257 libraries/classes/Tracking.php:664
 #: templates/server/status/advisor/index.twig:20
 #: templates/server/status/advisor/index.twig:47
 msgid "Close"
@@ -5232,8 +5220,7 @@ msgstr "সিরিজে অন্তত একটি চলক যোগ ক�
 #: libraries/classes/Plugins/Schema/SchemaPdf.php:96
 #: libraries/config.values.php:111
 #: templates/columns_definitions/transformation.twig:4
-#: templates/database/designer/main.twig:590
-#: templates/display/export/options_output.twig:89
+#: templates/database/designer/main.twig:590 templates/export.twig:355
 #: templates/server/privileges/privileges_summary.twig:30
 #: templates/server/status/monitor/index.twig:204
 #: templates/server/status/processes/list.twig:54
@@ -5479,7 +5466,7 @@ msgid "Chart"
 msgstr "চিত্র"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:275
-#: libraries/classes/Display/Export.php:376
+#: templates/export.twig:171
 #, fuzzy
 #| msgid "Database"
 msgctxt "Alias"
@@ -5487,7 +5474,7 @@ msgid "Database"
 msgstr "ডাটাবেইজ"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:276
-#: libraries/classes/Display/Export.php:388
+#: templates/export.twig:185
 #, fuzzy
 #| msgid "Table"
 msgctxt "Alias"
@@ -5495,7 +5482,7 @@ msgid "Table"
 msgstr "টেবল"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:277
-#: libraries/classes/Display/Export.php:399
+#: templates/export.twig:198
 #, fuzzy
 #| msgid "Column"
 msgctxt "Alias"
@@ -6099,7 +6086,7 @@ msgid "Ignore"
 msgstr "উপেক্ষা"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:483
-#: libraries/classes/Display/Results.php:3215
+#: libraries/classes/Display/Results.php:3217
 #: libraries/classes/Html/Generator.php:70
 #: templates/display/results/table.twig:214
 #: templates/display/results/table.twig:215
@@ -6538,7 +6525,7 @@ msgid "up to date"
 msgstr "তারিখ পর্যন্ত"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:631
-#: libraries/classes/Display/Results.php:4623
+#: libraries/classes/Display/Results.php:4625
 #: templates/database/structure/show_create.twig:33
 #: templates/display/results/table.twig:284 templates/view_create.twig:11
 msgid "Create view"
@@ -6762,7 +6749,8 @@ msgid "No such column"
 msgstr "স্বম্ভ সরাও"
 
 #: libraries/classes/Controllers/NormalizationController.php:49
-#: libraries/classes/Normalization.php:255 libraries/classes/Types.php:744
+#: libraries/classes/Normalization.php:255 libraries/classes/Types.php:750
+#: libraries/classes/Types.php:788
 msgctxt "string types"
 msgid "String"
 msgstr "স্ট্রিং"
@@ -6837,10 +6825,6 @@ msgstr "মোট"
 #: templates/table/structure/display_table_stats.twig:32
 msgid "Overhead"
 msgstr "অতিরিক্ত"
-
-#: libraries/classes/Controllers/Server/ExportController.php:45
-msgid "View dump (schema) of databases"
-msgstr "ডাটাবেইজের স্তুপ(আকৃতি) দেখাও"
 
 #: libraries/classes/Controllers/Server/PrivilegesController.php:122
 #: libraries/classes/Server/Privileges.php:253
@@ -7876,7 +7860,7 @@ msgstr "থ্রেডের সংখ্যা যা ঘুমন্ত ন�
 msgid "Setting variable failed"
 msgstr "চলক সেটিং ব্যার্থ হয়েছে"
 
-#: libraries/classes/Controllers/Setup/FormController.php:33
+#: libraries/classes/Controllers/Setup/FormController.php:32
 msgid "Incorrect form specified!"
 msgstr ""
 
@@ -7952,7 +7936,7 @@ msgstr "স্বভাবিক সার্ভার"
 msgid "End of line"
 msgstr "লাইনের শেষ"
 
-#: libraries/classes/Controllers/SqlController.php:361
+#: libraries/classes/Controllers/SqlController.php:362
 #, fuzzy
 #| msgid "Bookmark not created"
 msgid "Bookmark not created!"
@@ -7968,7 +7952,7 @@ msgstr "%1$s টেবিলটি সফলভাবে পরিবর্ত�
 
 #: libraries/classes/Controllers/Table/ChangeController.php:312
 #: libraries/classes/Controllers/Table/DeleteController.php:96
-#: libraries/classes/Controllers/Table/ExportController.php:135
+#: libraries/classes/Controllers/Table/ExportController.php:157
 #, fuzzy
 #| msgid "No rows selected"
 msgid "No row selected."
@@ -8003,14 +7987,10 @@ msgstr "টেবিল %s পুর্ব থেকেই আছে!"
 #: libraries/classes/Controllers/Table/RelationController.php:275
 #: libraries/classes/Controllers/ViewOperationsController.php:75
 #: libraries/classes/Database/Routines.php:1534
-#: libraries/classes/Display/Results.php:4086 libraries/classes/Message.php:177
+#: libraries/classes/Display/Results.php:4088 libraries/classes/Message.php:177
 #: templates/sql/query.twig:7
 msgid "Your SQL query has been executed successfully."
 msgstr "আপনার SQL অনুসন্ধানটি সফলভাবে কাজ করেছে."
-
-#: libraries/classes/Controllers/Table/ExportController.php:69
-msgid "View dump (schema) of table"
-msgstr "টেবিলের স্তুপ (গঠন) দেখাও"
 
 #: libraries/classes/Controllers/Table/GetFieldController.php:44
 msgid "Invalid table name"
@@ -8083,7 +8063,7 @@ msgstr "হেডার নিয়ে আসতে ব্যর্থ হয়ে�
 
 #: libraries/classes/Controllers/Table/StructureController.php:1015
 #: libraries/classes/Controllers/Table/StructureController.php:1296
-#: libraries/classes/Tracking.php:791
+#: libraries/classes/Tracking.php:795
 msgid "Query error"
 msgstr "অনুসন্ধানে ভুল"
 
@@ -8955,19 +8935,6 @@ msgstr "ডাটাবেইজ %2$s এ %1$s নামে কোন ট্র�
 msgid "SSL connection enforced by server, automatically enabling it."
 msgstr ""
 
-#: libraries/classes/Display/Export.php:368
-msgid "Defined aliases"
-msgstr ""
-
-#: libraries/classes/Display/Export.php:427
-#: templates/display/export/options_output.twig:7
-msgid "Rename exported databases/tables/columns"
-msgstr ""
-
-#: libraries/classes/Display/Export.php:485
-msgid "Could not load export plugins, please check your installation!"
-msgstr "রফতানী সহায়কটি লোড করা যাচ্ছে না, ইনস্টলেশন পরীক্ষা করুন!"
-
 #: libraries/classes/Display/Results.php:911
 #: libraries/classes/Html/Generator.php:1295
 #: libraries/classes/Html/Generator.php:1298
@@ -9036,46 +9003,46 @@ msgstr "অধ মুখী"
 msgid "Ascending"
 msgstr "উর্ধ্ব মূখী"
 
-#: libraries/classes/Display/Results.php:3256
-#: libraries/classes/Display/Results.php:3271
+#: libraries/classes/Display/Results.php:3258
+#: libraries/classes/Display/Results.php:3273
 msgid "The row has been deleted."
 msgstr "রো টি মুছা হয়েছে।"
 
-#: libraries/classes/Display/Results.php:3303
+#: libraries/classes/Display/Results.php:3305
 #: templates/server/status/processes/list.twig:44
 msgid "Kill"
 msgstr "হত্যা"
 
-#: libraries/classes/Display/Results.php:4010
+#: libraries/classes/Display/Results.php:4012
 msgid "May be approximate. See [doc@faq3-11]FAQ 3.11[/doc]."
 msgstr "সম্ভবত আনুমানিক। [doc@faq3-11]FAQ 3.11[/doc] দেখুন।"
 
-#: libraries/classes/Display/Results.php:4431
+#: libraries/classes/Display/Results.php:4433
 #, php-format
 msgid "Showing rows %1s - %2s"
 msgstr "রো দেখাচ্ছে %1s - %2s"
 
-#: libraries/classes/Display/Results.php:4445
+#: libraries/classes/Display/Results.php:4447
 #, php-format
 msgid "%1$d total, %2$d in query"
 msgstr "মোট %1$d, অনুসন্ধানে %2$d"
 
-#: libraries/classes/Display/Results.php:4450
+#: libraries/classes/Display/Results.php:4452
 #, php-format
 msgid "%d total"
 msgstr "%d মোট"
 
-#: libraries/classes/Display/Results.php:4462 libraries/classes/Sql.php:1203
+#: libraries/classes/Display/Results.php:4464 libraries/classes/Sql.php:1203
 #, php-format
 msgid "Query took %01.4f seconds."
 msgstr "অনুসন্ধানে %01.4f সেঃ লেগেছ."
 
-#: libraries/classes/Display/Results.php:4612
+#: libraries/classes/Display/Results.php:4614
 #: templates/display/results/table.twig:242
 msgid "Query results operations"
 msgstr "অনুসন্ধান ফল"
 
-#: libraries/classes/Display/Results.php:4865
+#: libraries/classes/Display/Results.php:4867
 msgid "Link not found!"
 msgstr "সংযোগটি পাওয়া যায়নি!"
 
@@ -9817,12 +9784,12 @@ msgstr "এসকিউএল অনুসন্ধান দেখাচ্ছ�
 msgid "Inserted row id: %1$d"
 msgstr "প্রবেশকৃত রো আইডি: %1$d"
 
-#: libraries/classes/LanguageManager.php:963
+#: libraries/classes/LanguageManager.php:970
 msgid "Ignoring unsupported language code."
 msgstr ""
 
-#: libraries/classes/LanguageManager.php:989
-#: libraries/classes/LanguageManager.php:990 templates/setup/home/index.twig:8
+#: libraries/classes/LanguageManager.php:996
+#: libraries/classes/LanguageManager.php:997 templates/setup/home/index.twig:8
 #: templates/setup/home/index.twig:9
 msgid "Language"
 msgstr "ভাষা"
@@ -10016,7 +9983,7 @@ msgid "Procedures:"
 msgstr "প্রোসিডিউরস:"
 
 #: libraries/classes/Navigation/Navigation.php:221
-#: templates/display/export/selection.twig:5
+#: templates/database/export/index.twig:14
 msgid "Tables:"
 msgstr "টেবলসমুহ:"
 
@@ -10593,21 +10560,21 @@ msgstr "পুনরায় সংযোগের চেষ্ট কর"
 msgid "Your session has expired. Please log in again."
 msgstr "আপনার সেশন শেষ হয়ে গেছে। আবার লগইন করুন।"
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:288
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:289
 msgid "Missing reCAPTCHA verification, maybe it has been blocked by adblock?"
 msgstr ""
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:323
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:324
 #, fuzzy
 #| msgid "Could not connect to the database server!"
 msgid "Failed to connect to the reCAPTCHA service!"
 msgstr "ডাটাবেইজ সার্ভারে সংযোগ করা যায়নি"
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:325
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:326
 msgid "Entered captcha is wrong, try again!"
 msgstr ""
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:358
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:359
 #, fuzzy
 #| msgid "Cannot log in to the MySQL server"
 msgid "You are not allowed to log in to this MySQL server!"
@@ -10643,8 +10610,7 @@ msgid "You have enabled two factor authentication, please confirm your login."
 msgstr ""
 
 #: libraries/classes/Plugins/Export/ExportCodegen.php:87
-#: templates/display/export/format_dropdown.twig:2
-#: templates/display/import/import.twig:209
+#: templates/display/import/import.twig:209 templates/export.twig:94
 msgid "Format:"
 msgstr "গঠন:"
 
@@ -11683,7 +11649,9 @@ msgstr ""
 #| msgid ""
 #| "Converts an (IPv4) Internet network address into a string in Internet "
 #| "standard dotted format."
-msgid "Converts an Internet network address in (IPv4/IPv6) format to long."
+msgid ""
+"Converts an Internet network address in (IPv4/IPv6) format into a long "
+"integer."
 msgstr ""
 "একটি (IPv4) ইন্টারনেট নেটওর্য়াক ঠিকানা ইন্টারনেট উপযোগী দশমিক গঠনে রুপান্তর করবে।"
 
@@ -12580,156 +12548,156 @@ msgstr "খীম:"
 msgid "No valid image path for theme %s found!"
 msgstr "%s থীমের জন্য ছবির পথ পাওয়া যায়নি!"
 
-#: libraries/classes/Tracking.php:252
+#: libraries/classes/Tracking.php:256
 #: templates/database/tracking/tables.twig:78
 #: templates/table/tracking/main.twig:73
 msgid "Tracking report"
 msgstr "ট্রেকিং প্রতিবেদন"
 
-#: libraries/classes/Tracking.php:256
+#: libraries/classes/Tracking.php:260
 msgid "Tracking statements"
 msgstr "ট্রেকিং বিবরণী"
 
-#: libraries/classes/Tracking.php:271
+#: libraries/classes/Tracking.php:275
 msgid "Delete tracking data row from report"
 msgstr "প্রতিবেদনের রো থেকে ট্রেকিং তথ্য মুছে ফেল"
 
-#: libraries/classes/Tracking.php:282
+#: libraries/classes/Tracking.php:286
 msgid "No data"
 msgstr "কোন তথ্য নাই"
 
-#: libraries/classes/Tracking.php:334
+#: libraries/classes/Tracking.php:338
 #: templates/database/operations/index.twig:136
 #: templates/database/structure/copy_form.twig:19
 #: templates/table/operations/index.twig:253
 msgid "Structure only"
 msgstr "শুধুমাত্র গঠন"
 
-#: libraries/classes/Tracking.php:337
+#: libraries/classes/Tracking.php:341
 #: templates/database/operations/index.twig:148
 #: templates/database/structure/copy_form.twig:29
 #: templates/table/operations/index.twig:265
 msgid "Data only"
 msgstr "শুধুমাত্র তথ্য"
 
-#: libraries/classes/Tracking.php:340
+#: libraries/classes/Tracking.php:344
 #: templates/database/operations/index.twig:142
 #: templates/database/structure/copy_form.twig:24
 #: templates/table/operations/index.twig:259
 msgid "Structure and data"
 msgstr "গঠন এবং তথ্য"
 
-#: libraries/classes/Tracking.php:405 libraries/classes/Tracking.php:472
+#: libraries/classes/Tracking.php:409 libraries/classes/Tracking.php:476
 #, php-format
 msgid "Show %1$s with dates from %2$s to %3$s by user %4$s %5$s"
 msgstr ""
 "%2$s তারিখ থেকে %3$s তারিখ পযর্ন্ত ব্যবহারকারী %4$s %5$s অনুযায়ী %1$s তারিখসহ "
 "দেখাও"
 
-#: libraries/classes/Tracking.php:493
+#: libraries/classes/Tracking.php:497
 msgid "SQL dump (file download)"
 msgstr "স্তুপকৃত এসকিউএল (ফাইল ডাউনলোড করুন)"
 
-#: libraries/classes/Tracking.php:495
+#: libraries/classes/Tracking.php:499
 msgid "SQL dump"
 msgstr "স্তুপকৃত এসকিউএল"
 
-#: libraries/classes/Tracking.php:498
+#: libraries/classes/Tracking.php:502
 msgid "This option will replace your table and contained data."
 msgstr "এই অপশনটি আপনার টেবল এবং এর তথ্য প্রতিস্থাপন (রিপ্লেস) করবে।"
 
-#: libraries/classes/Tracking.php:500
+#: libraries/classes/Tracking.php:504
 msgid "SQL execution"
 msgstr "এসকিউএল সম্পাদন"
 
-#: libraries/classes/Tracking.php:504
+#: libraries/classes/Tracking.php:508
 #, php-format
 msgid "Export as %s"
 msgstr "%s মত রফতানী কর"
 
-#: libraries/classes/Tracking.php:542
+#: libraries/classes/Tracking.php:546
 msgid "Data manipulation statement"
 msgstr "তথ্য মেনিপুলেশন বিবরণী"
 
-#: libraries/classes/Tracking.php:578
+#: libraries/classes/Tracking.php:582
 msgid "Data definition statement"
 msgstr "তথ্য সংজ্ঞার বিবরণী"
 
-#: libraries/classes/Tracking.php:659
+#: libraries/classes/Tracking.php:663
 #: templates/database/tracking/tables.twig:89
 #: templates/table/tracking/main.twig:80
 msgid "Structure snapshot"
 msgstr "গঠনের প্রতিচ্ছবি"
 
-#: libraries/classes/Tracking.php:679
+#: libraries/classes/Tracking.php:683
 #, php-format
 msgid "Version %s snapshot (SQL code)"
 msgstr "সংস্করন %s এর স্ন্যাপশট (SQL code)"
 
-#: libraries/classes/Tracking.php:745
+#: libraries/classes/Tracking.php:749
 msgid "Tracking data definition successfully deleted"
 msgstr "ট্রেকিং তথ্যের বিবরণী সফলভাবে মুছা হয়েছে"
 
-#: libraries/classes/Tracking.php:755
+#: libraries/classes/Tracking.php:759
 msgid "Tracking data manipulation successfully deleted"
 msgstr "ট্রেকিং তথ্যের মেনিপুলেশন সফলভাবে মুছা হয়েছে"
 
-#: libraries/classes/Tracking.php:811
+#: libraries/classes/Tracking.php:815
 msgid ""
 "You can execute the dump by creating and using a temporary database. Please "
 "ensure that you have the privileges to do so."
 msgstr "আপনি একটি সাময়িক ডাটাবেইজ তৈরী ও ব্যবহার করে স্তুপটি নির্বাহ করতে পারেন।"
 
-#: libraries/classes/Tracking.php:815
+#: libraries/classes/Tracking.php:819
 msgid "Comment out these two lines if you do not need them."
 msgstr "প্রয়োজন না হলে এই দু'টো লাইনে কমেন্ট চিহ্ন দিয়ে রাখুন।"
 
-#: libraries/classes/Tracking.php:825
+#: libraries/classes/Tracking.php:829
 msgid "SQL statements exported. Please copy the dump or execute it."
 msgstr "SQL রফতানী করা হয়েছে। স্তুপটি প্রতিলিপ বা কার্যকর কর।"
 
-#: libraries/classes/Tracking.php:873
+#: libraries/classes/Tracking.php:877
 #, php-format
 msgid "Tracking report for table `%s`"
 msgstr "টেবল %s এর ট্রেকিং প্রতিবেদন"
 
-#: libraries/classes/Tracking.php:904
+#: libraries/classes/Tracking.php:908
 #, php-format
 msgid "Tracking for %1$s was activated at version %2$s."
 msgstr "%1$s ট্রেকিং কার্যকর করা হয়েছে সংস্করন %2$s এ।"
 
-#: libraries/classes/Tracking.php:907
+#: libraries/classes/Tracking.php:911
 #, php-format
 msgid "Tracking for %1$s was deactivated at version %2$s."
 msgstr "%1$s ট্রেকিং অকার্যকর করা হয়েছে %2$s সংস্করনে।"
 
-#: libraries/classes/Tracking.php:1001
+#: libraries/classes/Tracking.php:1005
 #, fuzzy, php-format
 #| msgid "Create version %1$s of %2$s"
 msgid "Version %1$s of %2$s was deleted."
 msgstr "%1$s এর %2$s সংস্করন তৈরী কর"
 
-#: libraries/classes/Tracking.php:1032
+#: libraries/classes/Tracking.php:1036
 #, php-format
 msgid "Version %1$s was created, tracking for %2$s is active."
 msgstr "%1$s সংস্করন তৈরী করা হয়েছে, %2$s ট্রেকিং কার্য চলছে।"
 
-#: libraries/classes/Tracking.php:1142 libraries/classes/Tracking.php:1280
+#: libraries/classes/Tracking.php:1146 libraries/classes/Tracking.php:1284
 #: templates/table/tracking/main.twig:10 templates/table/tracking/main.twig:53
 msgid "active"
 msgstr "কার্যকর"
 
-#: libraries/classes/Tracking.php:1145 libraries/classes/Tracking.php:1275
+#: libraries/classes/Tracking.php:1149 libraries/classes/Tracking.php:1279
 #: templates/table/tracking/main.twig:12 templates/table/tracking/main.twig:56
 msgid "not active"
 msgstr "অকার্যকর"
 
-#: libraries/classes/Types.php:205
+#: libraries/classes/Types.php:206
 msgid ""
 "A 1-byte integer, signed range is -128 to 127, unsigned range is 0 to 255"
 msgstr "একটি ১ বাইট ইন্টিজার, চিহ্নিত সীমা -১২৮ থেকে ১২৭, অচিহ্নত হলে ০ থেকে ২৫৫"
 
-#: libraries/classes/Types.php:210
+#: libraries/classes/Types.php:211
 msgid ""
 "A 2-byte integer, signed range is -32,768 to 32,767, unsigned range is 0 to "
 "65,535"
@@ -12737,7 +12705,7 @@ msgstr ""
 "একটি ২ বাইট পুর্ণ সংখ্য, চিহ্নিতের সীমা -৩২,৭৬৮ - ৩২,৭৬৭, অচিহ্নিতের সীমা ০ থেকে "
 "৬৫,৫৩৫"
 
-#: libraries/classes/Types.php:215
+#: libraries/classes/Types.php:216
 msgid ""
 "A 3-byte integer, signed range is -8,388,608 to 8,388,607, unsigned range is "
 "0 to 16,777,215"
@@ -12745,7 +12713,7 @@ msgstr ""
 "একটি ৩ বাইট পুর্ণ সংখ্য, চিহ্নিতের সীমা -৮,৩৮৮,৬০৮ - ৮,৩৮৮,৬০৭ অচিহ্নিতের সীমা ০ "
 "থেকে ১৬,৭৭৭,২১৫"
 
-#: libraries/classes/Types.php:220
+#: libraries/classes/Types.php:221
 msgid ""
 "A 4-byte integer, signed range is -2,147,483,648 to 2,147,483,647, unsigned "
 "range is 0 to 4,294,967,295"
@@ -12753,7 +12721,7 @@ msgstr ""
 "একটি ৪ বাইট পুর্ণ সংখ্যা চিহ্নিতের সীমা -২,১৪৭,৪৮৩,৬৪৮ থেকে ২,১৪৭,৪৮৩,৬৪৭, "
 "অচিহ্নিতের সীমা ০ থেকে ৪,২৯৪.৯৬৭.২৯৫"
 
-#: libraries/classes/Types.php:226
+#: libraries/classes/Types.php:227
 msgid ""
 "An 8-byte integer, signed range is -9,223,372,036,854,775,808 to "
 "9,223,372,036,854,775,807, unsigned range is 0 to 18,446,744,073,709,551,615"
@@ -12761,7 +12729,7 @@ msgstr ""
 "একটি ৮ বাইট পুর্ণ সংখ্য, চিহ্নিতের সীমা -৯,২২,৩৭২,০৩৬,৮৫৪,৭৭৫,৮০৮ - "
 "৯,২২৩,৩৭২,০৩৬,৮৫৪,৭৭৫,৮০৭ অচিহ্নিতের সীমা ০ থেকে ১৮,৪৪৬,৭৪৪,০৭৩,৭০৯,৫৫১,৬১৫"
 
-#: libraries/classes/Types.php:232
+#: libraries/classes/Types.php:233
 msgid ""
 "A fixed-point number (M, D) - the maximum number of digits (M) is 65 "
 "(default 10), the maximum number of decimals (D) is 30 (default 0)"
@@ -12769,7 +12737,7 @@ msgstr ""
 "একটি নির্দিষ্ট-পয়েন্ট নাম্বার ((M, D) -(M) সর্বোচ্চ ৬৫টি সংখ্যা (স্বভাবিক ১০), "
 "দশমিকের সংখ্যা সর্বোচ্চ (D) ৩০ (স্বভাবিক ০)"
 
-#: libraries/classes/Types.php:238
+#: libraries/classes/Types.php:239
 msgid ""
 "A small floating-point number, allowable values are -3.402823466E+38 to "
 "-1.175494351E-38, 0, and 1.175494351E-38 to 3.402823466E+38"
@@ -12777,7 +12745,7 @@ msgstr ""
 "একটি ছোট দশমিক-পয়েন্টের অনুমোদিত মান হল -৩.৪০২৮২৬৪৬৬E+৩৮ থেকে "
 "-১.১৭৫৪৯৪৩৫১E-৩৮, ০ এবং ১.১৭৫৪৯৪৩৫১E-৩৮ থেকে ৩.৪০২৮২৬৪৬৬E+৩৮"
 
-#: libraries/classes/Types.php:244
+#: libraries/classes/Types.php:245
 msgid ""
 "A double-precision floating-point number, allowable values are "
 "-1.7976931348623157E+308 to -2.2250738585072014E-308, 0, and "
@@ -12787,42 +12755,42 @@ msgstr ""
 "২.২২৫০৭৩৮৫৮৫০৭২০১৪E-৩০৮, ০, এবং ২.২২৫০৭৩৮৫৮৫০৭২০১৪E-৩০৮ থেকে "
 "১.৭৯৭৬৯৩১৩৪৮৬২৩১৫৭E+৩০৮"
 
-#: libraries/classes/Types.php:250
+#: libraries/classes/Types.php:251
 msgid ""
 "Synonym for DOUBLE (exception: in REAL_AS_FLOAT SQL mode it is a synonym for "
 "FLOAT)"
 msgstr ""
 "DOUBLE এর সমার্থক নাম (ব্যাতিক্রম:REAL_AS_FLOAT SQL পদ্ধতিতে এর সমার্থত হল FLOAT)"
 
-#: libraries/classes/Types.php:255
+#: libraries/classes/Types.php:256
 msgid ""
 "A bit-field type (M), storing M of bits per value (default is 1, maximum is "
 "64)"
 msgstr ""
 "একটি বিট ক্ষেত্র (M), প্রতিটি মানের জন্য বিট মজুদ করে (স্বাভাবিক হল ১, সর্বোচ্চ ৬৪)"
 
-#: libraries/classes/Types.php:260
+#: libraries/classes/Types.php:261
 msgid ""
 "A synonym for TINYINT(1), a value of zero is considered false, nonzero "
 "values are considered true"
 msgstr ""
 "একটি সমার্থক হল TINYINT(1) এর, ০ মান মিথ্যা এবং মান ০ নাহলে সত্য বলে ধরা হয়"
 
-#: libraries/classes/Types.php:264
+#: libraries/classes/Types.php:265
 msgid "An alias for BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE"
 msgstr "একটি উপনাম BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE এর"
 
-#: libraries/classes/Types.php:267
+#: libraries/classes/Types.php:268
 #, php-format
 msgid "A date, supported range is %1$s to %2$s"
 msgstr "একটি তারিখ, অনুমোদিত সীমা হল %1$s - %2$s"
 
-#: libraries/classes/Types.php:273
+#: libraries/classes/Types.php:274
 #, php-format
 msgid "A date and time combination, supported range is %1$s to %2$s"
 msgstr "একটি তারিখ এবং সময়ের মিশ্রণ,অনুমোদিত সীমা হল %1$s - %2$s"
 
-#: libraries/classes/Types.php:279
+#: libraries/classes/Types.php:280
 msgid ""
 "A timestamp, range is 1970-01-01 00:00:01 UTC to 2038-01-09 03:14:07 UTC, "
 "stored as the number of seconds since the epoch (1970-01-01 00:00:00 UTC)"
@@ -12830,12 +12798,12 @@ msgstr ""
 "একটি timestamp, সীমা হল ১৯৭০-০১-১০ ০০:০০:০১ UTC - ২০৩৮-০১-০৯ ০৩:১৪:০৭ UTC, "
 "সেকেন্ডের নাম্বার হিসাবে মজুদ করা হয় ঐতিহাসিক(১৯৭০-০১-১০ ০০:০০:০১)থেকে"
 
-#: libraries/classes/Types.php:285
+#: libraries/classes/Types.php:286
 #, php-format
 msgid "A time, range is %1$s to %2$s"
 msgstr "সময়, সীমা %1$s - %2$s"
 
-#: libraries/classes/Types.php:291
+#: libraries/classes/Types.php:292
 msgid ""
 "A year in four-digit (4, default) or two-digit (2) format, the allowable "
 "values are 70 (1970) to 69 (2069) or 1901 to 2155 and 0000"
@@ -12843,21 +12811,21 @@ msgstr ""
 "চার সংখ্যায় বৎসর (৪, স্বাভাবিক) বা দুই সংখ্যা (২) গঠনে, গ্রহনযোগ্য মান হল ৭০ "
 "(১৯৭০) - ৬৯ (২০৬৯) বা ১৯০১ থেকে ২১৫৫ এবং ০০০০"
 
-#: libraries/classes/Types.php:297
+#: libraries/classes/Types.php:298
 msgid ""
 "A fixed-length (0-255, default 1) string that is always right-padded with "
 "spaces to the specified length when stored"
 msgstr ""
 "নির্দিষ্ট দৈর্ঘ্য (০-২৫৫, স্বাভাবিক ১) লেখাটি যখন মজুদ করা হবে সবসময় ডান দিকে থাকবে"
 
-#: libraries/classes/Types.php:303
+#: libraries/classes/Types.php:304
 #, php-format
 msgid ""
 "A variable-length (%s) string, the effective maximum length is subject to "
 "the maximum row size"
 msgstr "একটি চলক দৈর্ঘ্য (%s)লেখা, কার্যকর সর্বোচ্চ সংখ্যা হল সর্বোচ্চ দৈঘ্যের আকার"
 
-#: libraries/classes/Types.php:310
+#: libraries/classes/Types.php:311
 msgid ""
 "A TEXT column with a maximum length of 255 (2^8 - 1) characters, stored with "
 "a one-byte prefix indicating the length of the value in bytes"
@@ -12865,7 +12833,7 @@ msgstr ""
 "একটি TEXT স্তম্ভ সর্বোচ্চ ২৫৫(২^৮ - ১) সংখ্যক অক্ষরের, সন্মুখে একটি বাইট সহ মজুদ করা "
 "হয় যা এর দৈর্ঘ্যের পরিমান রাখে"
 
-#: libraries/classes/Types.php:316
+#: libraries/classes/Types.php:317
 msgid ""
 "A TEXT column with a maximum length of 65,535 (2^16 - 1) characters, stored "
 "with a two-byte prefix indicating the length of the value in bytes"
@@ -12873,7 +12841,7 @@ msgstr ""
 "একটি TEXT স্তম্ভ সর্বোচ্চ ৬৫,৫৩৫*(২^১৬ - ১) সংখ্যক অক্ষরের, সন্মুখে দুইটি বাইট সহ মজুদ "
 "করা হয় যা এর দৈর্ঘ্যের পরিমান রাখে"
 
-#: libraries/classes/Types.php:322
+#: libraries/classes/Types.php:323
 msgid ""
 "A TEXT column with a maximum length of 16,777,215 (2^24 - 1) characters, "
 "stored with a three-byte prefix indicating the length of the value in bytes"
@@ -12881,7 +12849,7 @@ msgstr ""
 "একটি TEXT স্তম্ভ সর্বোচ্চ ১৬,৭৭৭,২১৫(২^২৪ - ১) সংখ্যক অক্ষর, সন্মুখে তিনটি বাইট সহ "
 "মজুদ করা হয় যা এর দৈর্ঘ্যের পরিমান রাখে"
 
-#: libraries/classes/Types.php:328
+#: libraries/classes/Types.php:329
 msgid ""
 "A TEXT column with a maximum length of 4,294,967,295 or 4GiB (2^32 - 1) "
 "characters, stored with a four-byte prefix indicating the length of the "
@@ -12890,19 +12858,19 @@ msgstr ""
 "একটি TEXT স্তম্ভ সর্বোচ্চ ৪,২৯৪,৯৬৭,২৯৫ বা ৪জিবা(২^৩২ - ১) সংখ্যক অক্ষরের, সন্মুখে "
 "চারটি বাইট সহ মজুদ করা হয় যা এর দৈর্ঘ্যের পরিমান রাখে"
 
-#: libraries/classes/Types.php:334
+#: libraries/classes/Types.php:335
 msgid ""
 "Similar to the CHAR type, but stores binary byte strings rather than non-"
 "binary character strings"
 msgstr "CHAR ধরনের মত, কিন্তু বাইনারী লেখা মজুদ করে অ-বাইনারী নয়"
 
-#: libraries/classes/Types.php:339
+#: libraries/classes/Types.php:340
 msgid ""
 "Similar to the VARCHAR type, but stores binary byte strings rather than non-"
 "binary character strings"
 msgstr "VARCHAR ধরনের মত, কিন্তু বাইনারী লেখা মজুদ করে অ-বাইনারী নয়"
 
-#: libraries/classes/Types.php:344
+#: libraries/classes/Types.php:345
 msgid ""
 "A BLOB column with a maximum length of 255 (2^8 - 1) bytes, stored with a "
 "one-byte prefix indicating the length of the value"
@@ -12910,7 +12878,7 @@ msgstr ""
 "BLOB স্তম্ভ সর্বোচ্চ ২৫৫(২^৮ - ১)বাইট হয়, সন্মুখে একটি বাইট সহ মজুদ করা হয় যা এর "
 "দৈর্ঘ্যের পরিমান রাখে"
 
-#: libraries/classes/Types.php:349
+#: libraries/classes/Types.php:350
 msgid ""
 "A BLOB column with a maximum length of 16,777,215 (2^24 - 1) bytes, stored "
 "with a three-byte prefix indicating the length of the value"
@@ -12918,7 +12886,7 @@ msgstr ""
 "BLOB স্তম্ভ সর্বোচ্চ ১৬,৭৭৭,২১৫(২^২৪ - ১)বাইট হয়, সন্মুখে তিনটি বাইট সহ মজুদ করা হয় "
 "যা এর দৈর্ঘ্যের পরিমান রাখে"
 
-#: libraries/classes/Types.php:355
+#: libraries/classes/Types.php:356
 msgid ""
 "A BLOB column with a maximum length of 65,535 (2^16 - 1) bytes, stored with "
 "a two-byte prefix indicating the length of the value"
@@ -12926,7 +12894,7 @@ msgstr ""
 "BLOB স্তম্ভ সর্বোচ্চ ৬৫,৫৩৫(২^১৬ - ১)বাইট হয়, সন্মুখে দুইটি বাইট সহ মজুদ করা হয় যা "
 "এর দৈর্ঘ্যের পরিমান এই  বাইটে রাখে"
 
-#: libraries/classes/Types.php:360
+#: libraries/classes/Types.php:361
 msgid ""
 "A BLOB column with a maximum length of 4,294,967,295 or 4GiB (2^32 - 1) "
 "bytes, stored with a four-byte prefix indicating the length of the value"
@@ -12934,65 +12902,71 @@ msgstr ""
 "BLOB স্তম্ভ সর্বোচ্চ ৪,২৯৪,৯৬৭,২৯৫,বা ৪জিবি(২^৩২ - ১)বাইট হয়, সন্মুখে চারটি বাইট "
 "সহ মজুদ করা হয় যা এর দৈর্ঘ্যের পরিমান রাখে"
 
-#: libraries/classes/Types.php:366
+#: libraries/classes/Types.php:367
 msgid ""
 "An enumeration, chosen from the list of up to 65,535 values or the special "
 "'' error value"
 msgstr "একটি গনক, ৬৫,৫৩৫ টি মান থেকে পছন্দ করা হয় বা বিশেষ '' ভুল মান থেকে"
 
-#: libraries/classes/Types.php:370
+#: libraries/classes/Types.php:371
 msgid "A single value chosen from a set of up to 64 members"
 msgstr "৬৪টি সদস্যের মান থেকে একটি পছন্দ করা হয়"
 
-#: libraries/classes/Types.php:372
+#: libraries/classes/Types.php:373
 msgid "A type that can store a geometry of any type"
 msgstr "একটি ধরন যা যে কোন জ্যামিতিক ধরন মজুদ করতে পারে"
 
-#: libraries/classes/Types.php:374
+#: libraries/classes/Types.php:375
 msgid "A point in 2-dimensional space"
 msgstr "২ দশমিক স্থানের একটি জায়গা"
 
-#: libraries/classes/Types.php:376
+#: libraries/classes/Types.php:377
 msgid "A curve with linear interpolation between points"
 msgstr "একটি বাঁক পয়েন্টের মধ্য রৈখিক সংযোগকারী"
 
-#: libraries/classes/Types.php:378
+#: libraries/classes/Types.php:379
 msgid "A polygon"
 msgstr "একটি পলিগন"
 
-#: libraries/classes/Types.php:380
+#: libraries/classes/Types.php:381
 msgid "A collection of points"
 msgstr "পয়েন্টের সম্ভার"
 
-#: libraries/classes/Types.php:383
+#: libraries/classes/Types.php:384
 msgid "A collection of curves with linear interpolation between points"
 msgstr "বিভিন্ন পয়েন্টের রৈখিক বাকেঁর সম্ভার"
 
-#: libraries/classes/Types.php:386
+#: libraries/classes/Types.php:387
 msgid "A collection of polygons"
 msgstr "বহুভুজের সম্ভার"
 
-#: libraries/classes/Types.php:388
+#: libraries/classes/Types.php:389
 msgid "A collection of geometry objects of any type"
 msgstr "জ্যামিতিক অবজেক্টের সম্ভার"
 
-#: libraries/classes/Types.php:391
+#: libraries/classes/Types.php:392
 msgid ""
 "Stores and enables efficient access to data in JSON (JavaScript Object "
 "Notation) documents"
 msgstr ""
 
-#: libraries/classes/Types.php:717
+#: libraries/classes/Types.php:396
+msgid ""
+"Intended for storage of IPv6 addresses, as well as IPv4 addresses assuming "
+"conventional mapping of IPv4 addresses into IPv6 addresses"
+msgstr ""
+
+#: libraries/classes/Types.php:723
 msgctxt "numeric types"
 msgid "Numeric"
 msgstr "গানিতিক"
 
-#: libraries/classes/Types.php:735
+#: libraries/classes/Types.php:741
 msgctxt "date and time types"
 msgid "Date and time"
 msgstr "সময় এবং তারিখ"
 
-#: libraries/classes/Types.php:765
+#: libraries/classes/Types.php:771
 msgctxt "spatial types"
 msgid "Spatial"
 msgstr "স্পাটিয়াল"
@@ -13365,9 +13339,8 @@ msgstr "টেবিলের নাম"
 
 #: templates/columns_definitions/column_definitions_form.twig:32
 #: templates/console/display.twig:99
-#: templates/database/central_columns/main.twig:212
-#: templates/export/alias_add.twig:18 templates/export/alias_add.twig:32
-#: templates/export/alias_add.twig:46
+#: templates/database/central_columns/main.twig:212 templates/export.twig:244
+#: templates/export.twig:258 templates/export.twig:272
 #, fuzzy
 #| msgid "And"
 msgid "Add"
@@ -13940,6 +13913,13 @@ msgstr "Cardinality"
 msgid "No index defined!"
 msgstr "কোন ইনডেক্স তৈরী করা হয়নি!"
 
+#: templates/database/designer/database_tables.twig:31
+#: templates/database/export/index.twig:29
+#: templates/database/search/main.twig:43 templates/server/export/index.twig:12
+#: templates/server/replication/database_multibox.twig:7
+msgid "Select all"
+msgstr "সবগুলো নির্বাচন"
+
 #: templates/database/designer/database_tables.twig:37
 #, fuzzy
 #| msgid "Move columns"
@@ -14262,6 +14242,26 @@ msgstr "সবগুলোতে টিক দাও"
 msgid "Event scheduler status"
 msgstr "ইভেন্ট সময়সূচীর অবস্থা"
 
+#: templates/database/export/index.twig:62
+#, fuzzy
+#| msgid ", @DATABASE@ will become the database name"
+msgid ""
+"@SERVER@ will become the server name and @DATABASE@ will become the database "
+"name."
+msgstr ", @DATABASE@ হবে ডাটাবেইজের নাম"
+
+#. l10n: A query that the user has written freely
+#: templates/database/export/index.twig:5
+#, fuzzy
+#| msgid "Showing SQL query"
+msgid "Exporting a raw query"
+msgstr "এসকিউএল অনুসন্ধান দেখাচ্ছে"
+
+#: templates/database/export/index.twig:7
+#, php-format
+msgid "Exporting tables from \"%s\" database"
+msgstr "ডাটাবেইজ থেকে \"%s\" টেবিল রফতানী করা হচ্ছে"
+
 #: templates/database/multi_table_query/form.twig:4
 #: templates/database/qbe/index.twig:4
 #, fuzzy
@@ -14364,8 +14364,7 @@ msgstr "ডাটাবেইজের মন্তব্য"
 msgid "Rename database to"
 msgstr "ডাটাবেজ পুনঃনামকরন"
 
-#: templates/database/operations/index.twig:64
-#: templates/export/alias_add.twig:15
+#: templates/database/operations/index.twig:64 templates/export.twig:241
 #, fuzzy
 #| msgid "Database name"
 msgid "New database name"
@@ -14621,8 +14620,7 @@ msgstr "শব্দগুলো ফাকা (\" \") বর্ণ দিয়ে 
 msgid "Inside tables:"
 msgstr "টেবিলের ভিতরে:"
 
-#: templates/database/search/main.twig:46
-#: templates/display/export/select_options.twig:8
+#: templates/database/search/main.twig:46 templates/server/export/index.twig:16
 #: templates/server/replication/database_multibox.twig:8
 #, fuzzy
 #| msgid "Unselect All"
@@ -14859,240 +14857,6 @@ msgstr "টেবিল ট্রেক"
 msgid "There are no triggers to display."
 msgstr "দেখানোর জন্য কোন ট্রিগার নাই।"
 
-#: templates/display/export/method.twig:3
-#, fuzzy
-#| msgid "Export method"
-msgid "Export method:"
-msgstr "রফতানী পদ্ধতী"
-
-#: templates/display/export/method.twig:9
-msgid "Quick - display only the minimal options"
-msgstr "দ্রুত - সাম্ভাব্য কম অপশনগুলো দেখাও"
-
-#: templates/display/export/method.twig:17
-msgid "Custom - display all possible options"
-msgstr "কাষ্টম - সাম্ভাব্য সবগুলো অপশন দেখাও"
-
-#: templates/display/export/option_header.twig:5
-msgid "Exporting databases from the current server"
-msgstr "সার্ভার থেকে ডাটাবেইজ রফতানী করা হচ্ছে"
-
-#: templates/display/export/option_header.twig:7
-#, php-format
-msgid "Exporting tables from \"%s\" database"
-msgstr "ডাটাবেইজ থেকে \"%s\" টেবিল রফতানী করা হচ্ছে"
-
-#. l10n: A query that the user has written freely
-#: templates/display/export/option_header.twig:9
-#, fuzzy
-#| msgid "Showing SQL query"
-msgid "Exporting a raw query"
-msgstr "এসকিউএল অনুসন্ধান দেখাচ্ছে"
-
-#: templates/display/export/option_header.twig:11
-#, php-format
-msgid "Exporting rows from \"%s\" table"
-msgstr "টেবল থেকে \"%s\" রো রফতানী করা হচ্ছে"
-
-#: templates/display/export/options_format.twig:2
-#: templates/display/import/import.twig:215
-msgid "Format-specific options:"
-msgstr "গঠন নির্দিষ্ট অপশনসমূহ:"
-
-#: templates/display/export/options_format.twig:4
-#: templates/display/import/import.twig:217
-msgid ""
-"Scroll down to fill in the options for the selected format and ignore the "
-"options for other formats."
-msgstr "এই গঠনের অপশনগুলো পূর্ণ করার জন্য নীচে যান এবং অন্য গঠনের অপশনগুলো বাদ দিন।"
-
-#: templates/display/export/options_format.twig:12
-#: templates/display/import/import.twig:226
-msgid "Encoding Conversion:"
-msgstr "এনকোডিং কনভারশন:"
-
-#: templates/display/export/options_output.twig:2
-#: templates/display/export/options_quick_export.twig:2
-msgid "Output:"
-msgstr "আউটপুট:"
-
-#: templates/display/export/options_output.twig:25
-msgid "Save output to a file"
-msgstr "আউটপুট একটি ফাইলে রাখ"
-
-#: templates/display/export/options_output.twig:32
-#: templates/display/export/options_quick_export.twig:8
-#, fuzzy, php-format
-#| msgid "Save on server in the directory <b>%s</b>"
-msgid "Save on server in the directory <strong>%s</strong>"
-msgstr "সার্ভারের <b>%s</b> ডিরেক্টরিতে রাখ"
-
-#: templates/display/export/options_output.twig:46
-msgid "File name template:"
-msgstr "ফাইলের নামের নকশা:"
-
-#: templates/display/export/options_output.twig:48
-#, fuzzy
-#| msgid ""
-#| "This value is interpreted using %1$sstrftime%2$s, so you can use time "
-#| "formatting strings. Additionally the following transformations will "
-#| "happen: %3$s. Other text will be kept as is. See the %4$sFAQ%5$s for "
-#| "details."
-msgid ""
-"This value is interpreted using the 'strftime' function, so you can use time "
-"formatting strings. Additionally the following transformations will happen:"
-msgstr ""
-"এই মানটি %1$sstrftime%2$s ভাবে অনুবাদিত হবে, আপনি সময় গঠনের স্ট্রিং ব্যবহার করতে "
-"পারেন। এখন এই রুপান্তরটি হবে:%3$s। অন্যান্য লেখা ঠিকই থাকবে।  %4$sFAQ%5$s এ বিশদ "
-"পাওয়া যাবে।"
-
-#: templates/display/export/options_output.twig:50
-#, fuzzy
-#| msgid "@SERVER@ will become the server name"
-msgid "@SERVER@ will become the server name."
-msgstr "সার্ভারের নাম হবে @SERVER@"
-
-#: templates/display/export/options_output.twig:52
-#, fuzzy
-#| msgid ", @DATABASE@ will become the database name"
-msgid ""
-"@SERVER@ will become the server name, @DATABASE@ will become the database "
-"name."
-msgstr ", @DATABASE@ হবে ডাটাবেইজের নাম"
-
-#: templates/display/export/options_output.twig:54
-msgid ""
-"@SERVER@ will become the server name, @DATABASE@ will become the database "
-"name, @TABLE@ will become the table name."
-msgstr ""
-
-#: templates/display/export/options_output.twig:56
-msgid "Other text will be kept as is. See the FAQ 6.27 for details."
-msgstr ""
-
-#: templates/display/export/options_output.twig:63
-msgid "use this for future exports"
-msgstr "ভবিষৎ রফতানীতে ইহা ব্যবহার করবে"
-
-#: templates/display/export/options_output.twig:70
-#: templates/display/import/import.twig:135
-msgid "Character set of the file:"
-msgstr "ফাইলের বর্ণ রাশি:"
-
-#: templates/display/export/options_output.twig:86
-msgid "Compression:"
-msgstr "সংকোচন:"
-
-#: templates/display/export/options_output.twig:93
-msgid "zipped"
-msgstr "জিপ্ড"
-
-#: templates/display/export/options_output.twig:99
-msgid "gzipped"
-msgstr "জিজিপ্ড"
-
-#: templates/display/export/options_output.twig:114
-#, fuzzy
-#| msgid "Export views as tables"
-msgid "Export databases as separate files"
-msgstr "ভিউ টেবিলের মত রফতানী করা হচ্ছে"
-
-#: templates/display/export/options_output.twig:116
-#, fuzzy
-#| msgid "Export table headers"
-msgid "Export tables as separate files"
-msgstr "সমান্তরাল (rotated headers)"
-
-#: templates/display/export/options_output.twig:128
-msgid "View output as text"
-msgstr "লেখার মত আউটপুট দেখা"
-
-#: templates/display/export/options_output.twig:134
-#, php-format
-msgid "Skip tables larger than %s MiB"
-msgstr ""
-
-#: templates/display/export/options_rows.twig:2
-msgid "Rows:"
-msgstr "সারি:"
-
-#: templates/display/export/options_rows.twig:7
-msgid "Dump some row(s)"
-msgstr "কিছু রো স্তুপ কর"
-
-#: templates/display/export/options_rows.twig:10
-#: templates/display/results/table.twig:49
-#: templates/start_and_number_of_rows_panel.twig:10
-msgid "Number of rows:"
-msgstr "রো সংখ্যা:"
-
-#: templates/display/export/options_rows.twig:22
-msgid "Row to begin at:"
-msgstr "শুরুর রো:"
-
-#: templates/display/export/options_rows.twig:31
-msgid "Dump all rows"
-msgstr "সব রো স্তুপ কর"
-
-#: templates/display/export/query.twig:8
-#, fuzzy
-#| msgid "Showing SQL query"
-msgid "Show SQL query"
-msgstr "এসকিউএল অনুসন্ধান দেখাচ্ছে"
-
-#: templates/display/export/selection.twig:3
-#, fuzzy
-#| msgid "Databases"
-msgid "Databases:"
-msgstr "ডাটাবেইজ"
-
-#: templates/display/export/template_loading.twig:2
-#, fuzzy
-#| msgid "Export type"
-msgid "Export templates:"
-msgstr "রফাতানীর ধরন"
-
-#: templates/display/export/template_loading.twig:6
-#, fuzzy
-#| msgid "File name template:"
-msgid "New template:"
-msgstr "ফাইলের নামের নকশা:"
-
-#: templates/display/export/template_loading.twig:8
-#, fuzzy
-#| msgid "Table name"
-msgid "Template name"
-msgstr "টেবিলের নাম"
-
-#: templates/display/export/template_loading.twig:10
-#: templates/server/databases/index.twig:55
-msgid "Create"
-msgstr "তৈরী"
-
-#: templates/display/export/template_loading.twig:16
-#, fuzzy
-#| msgid "File name template:"
-msgid "Existing templates:"
-msgstr "ফাইলের নামের নকশা:"
-
-#: templates/display/export/template_loading.twig:17
-#, fuzzy
-#| msgid "Temp disk rate"
-msgid "Template:"
-msgstr "সাময়িক ডিস্ক হার"
-
-#: templates/display/export/template_loading.twig:21
-#, fuzzy
-#| msgid "Updated"
-msgid "Update"
-msgstr "আধুনিকায়ন হয়েছে"
-
-#: templates/display/export/template_options.twig:1
-#, fuzzy
-#| msgid "Select Tables"
-msgid "Select a template"
-msgstr "টেবল নির্বাচন"
-
 #: templates/display/import/import.twig:40
 msgid "Importing into the current server"
 msgstr "এই সার্ভারে আমদানি কর"
@@ -15171,6 +14935,10 @@ msgstr "আপলোড করার জন্য কোন ফাইল না�
 msgid "File uploads are not allowed on this server."
 msgstr "এই সার্ভরে আপলোড করা যায় না।"
 
+#: templates/display/import/import.twig:135 templates/export.twig:336
+msgid "Character set of the file:"
+msgstr "ফাইলের বর্ণ রাশি:"
+
 #: templates/display/import/import.twig:163
 #, fuzzy
 #| msgid "Partial Import:"
@@ -15210,6 +14978,20 @@ msgstr "এড়িয়ে যাওয়ার রো'র সংখ্যা, আর
 #| msgid "Options"
 msgid "Other options:"
 msgstr "অপশনস"
+
+#: templates/display/import/import.twig:215 templates/export.twig:406
+msgid "Format-specific options:"
+msgstr "গঠন নির্দিষ্ট অপশনসমূহ:"
+
+#: templates/display/import/import.twig:217 templates/export.twig:408
+msgid ""
+"Scroll down to fill in the options for the selected format and ignore the "
+"options for other formats."
+msgstr "এই গঠনের অপশনগুলো পূর্ণ করার জন্য নীচে যান এবং অন্য গঠনের অপশনগুলো বাদ দিন।"
+
+#: templates/display/import/import.twig:226 templates/export.twig:416
+msgid "Encoding Conversion:"
+msgstr "এনকোডিং কনভারশন:"
 
 #: templates/display/import/javascript.twig:12
 msgid ""
@@ -15265,6 +15047,11 @@ msgstr "সম্পাদিত তথ্য সংরক্ষন কর"
 #: templates/display/results/table.twig:38
 msgid "Restore column order"
 msgstr "স্থম্ভের বিন্যাস ফিরিয়ে আনা"
+
+#: templates/display/results/table.twig:49 templates/export.twig:110
+#: templates/start_and_number_of_rows_panel.twig:10
+msgid "Number of rows:"
+msgstr "রো সংখ্যা:"
 
 #: templates/display/results/table.twig:52
 msgid "All"
@@ -15339,42 +15126,204 @@ msgstr ""
 msgid "You may examine the data in the error report:"
 msgstr ""
 
-#: templates/export/alias_add.twig:4
+#: templates/export/template_options.twig:1 templates/export.twig:30
+#, fuzzy
+#| msgid "Select Tables"
+msgid "Select a template"
+msgstr "টেবল নির্বাচন"
+
+#: templates/export.twig:15
+#, fuzzy
+#| msgid "Export type"
+msgid "Export templates:"
+msgstr "রফাতানীর ধরন"
+
+#: templates/export.twig:19
+#, fuzzy
+#| msgid "File name template:"
+msgid "New template:"
+msgstr "ফাইলের নামের নকশা:"
+
+#: templates/export.twig:20
+#, fuzzy
+#| msgid "Table name"
+msgid "Template name"
+msgstr "টেবিলের নাম"
+
+#: templates/export.twig:21 templates/server/databases/index.twig:55
+msgid "Create"
+msgstr "তৈরী"
+
+#: templates/export.twig:27
+#, fuzzy
+#| msgid "File name template:"
+msgid "Existing templates:"
+msgstr "ফাইলের নামের নকশা:"
+
+#: templates/export.twig:28
+#, fuzzy
+#| msgid "Temp disk rate"
+msgid "Template:"
+msgstr "সাময়িক ডিস্ক হার"
+
+#: templates/export.twig:37
+#, fuzzy
+#| msgid "Updated"
+msgid "Update"
+msgstr "আধুনিকায়ন হয়েছে"
+
+#: templates/export.twig:53
+#, fuzzy
+#| msgid "Showing SQL query"
+msgid "Show SQL query"
+msgstr "এসকিউএল অনুসন্ধান দেখাচ্ছে"
+
+#: templates/export.twig:72
+#, fuzzy
+#| msgid "Export method"
+msgid "Export method:"
+msgstr "রফতানী পদ্ধতী"
+
+#: templates/export.twig:78
+msgid "Quick - display only the minimal options"
+msgstr "দ্রুত - সাম্ভাব্য কম অপশনগুলো দেখাও"
+
+#: templates/export.twig:86
+msgid "Custom - display all possible options"
+msgstr "কাষ্টম - সাম্ভাব্য সবগুলো অপশন দেখাও"
+
+#: templates/export.twig:102
+msgid "Rows:"
+msgstr "সারি:"
+
+#: templates/export.twig:107
+msgid "Dump some row(s)"
+msgstr "কিছু রো স্তুপ কর"
+
+#: templates/export.twig:121
+msgid "Row to begin at:"
+msgstr "শুরুর রো:"
+
+#: templates/export.twig:130
+msgid "Dump all rows"
+msgstr "সব রো স্তুপ কর"
+
+#: templates/export.twig:138 templates/export.twig:279
+msgid "Output:"
+msgstr "আউটপুট:"
+
+#: templates/export.twig:143 templates/export.twig:309
+#, fuzzy, php-format
+#| msgid "Save on server in the directory <b>%s</b>"
+msgid "Save on server in the directory <strong>%s</strong>"
+msgstr "সার্ভারের <b>%s</b> ডিরেক্টরিতে রাখ"
+
+#: templates/export.twig:157 templates/export.twig:284
+msgid "Rename exported databases/tables/columns"
+msgstr ""
+
+#: templates/export.twig:162
+msgid "Defined aliases"
+msgstr ""
+
+#: templates/export.twig:177 templates/export.twig:191
+#: templates/export.twig:204 templates/export.twig:221
+msgid "Remove"
+msgstr ""
+
+#: templates/export.twig:230
 msgid "Define new aliases"
 msgstr ""
 
-#: templates/export/alias_add.twig:9
+#: templates/export.twig:235
 #, fuzzy
 #| msgid "Select Tables"
 msgid "Select database:"
 msgstr "টেবল নির্বাচন"
 
-#: templates/export/alias_add.twig:23
+#: templates/export.twig:249
 #, fuzzy
 #| msgid "Select Tables"
 msgid "Select table:"
 msgstr "টেবল নির্বাচন"
 
-#: templates/export/alias_add.twig:29
+#: templates/export.twig:255
 #, fuzzy
 #| msgid "New page name: "
 msgid "New table name"
 msgstr "নতুন পাতার নাম: "
 
-#: templates/export/alias_add.twig:37
+#: templates/export.twig:263
 #, fuzzy
 #| msgid "Select two columns"
 msgid "Select column:"
 msgstr "দুইটি স্তম্ভ নির্বাচন করুন"
 
-#: templates/export/alias_add.twig:43
+#: templates/export.twig:269
 #, fuzzy
 #| msgid "Copy column name"
 msgid "New column name"
 msgstr "স্তম্ভের নাম প্রতিলিপি"
 
-#: templates/export/alias_item.twig:8
-msgid "Remove"
+#: templates/export.twig:302
+msgid "Save output to a file"
+msgstr "আউটপুট একটি ফাইলে রাখ"
+
+#: templates/export.twig:323
+msgid "File name template:"
+msgstr "ফাইলের নামের নকশা:"
+
+#: templates/export.twig:324
+#, fuzzy, php-format
+#| msgid ""
+#| "This value is interpreted using %1$sstrftime%2$s, so you can use time "
+#| "formatting strings. Additionally the following transformations will "
+#| "happen: %3$s. Other text will be kept as is. See the %4$sFAQ%5$s for "
+#| "details."
+msgid ""
+"This value is interpreted using the 'strftime' function, so you can use time "
+"formatting strings. Additionally the following transformations will happen: "
+"%s Other text will be kept as is. See the FAQ 6.27 for details."
+msgstr ""
+"এই মানটি %1$sstrftime%2$s ভাবে অনুবাদিত হবে, আপনি সময় গঠনের স্ট্রিং ব্যবহার করতে "
+"পারেন। এখন এই রুপান্তরটি হবে:%3$s। অন্যান্য লেখা ঠিকই থাকবে।  %4$sFAQ%5$s এ বিশদ "
+"পাওয়া যাবে।"
+
+#: templates/export.twig:329
+msgid "use this for future exports"
+msgstr "ভবিষৎ রফতানীতে ইহা ব্যবহার করবে"
+
+#: templates/export.twig:352
+msgid "Compression:"
+msgstr "সংকোচন:"
+
+#: templates/export.twig:359
+msgid "zipped"
+msgstr "জিপ্ড"
+
+#: templates/export.twig:365
+msgid "gzipped"
+msgstr "জিজিপ্ড"
+
+#: templates/export.twig:380
+#, fuzzy
+#| msgid "Export views as tables"
+msgid "Export databases as separate files"
+msgstr "ভিউ টেবিলের মত রফতানী করা হচ্ছে"
+
+#: templates/export.twig:382
+#, fuzzy
+#| msgid "Export table headers"
+msgid "Export tables as separate files"
+msgstr "সমান্তরাল (rotated headers)"
+
+#: templates/export.twig:394
+msgid "View output as text"
+msgstr "লেখার মত আউটপুট দেখা"
+
+#: templates/export.twig:400
+#, php-format
+msgid "Skip tables larger than %s MiB"
 msgstr ""
 
 #: templates/filter.twig:4 templates/server/status/processes/index.twig:7
@@ -16317,6 +16266,22 @@ msgstr "মজুদ ব্যবস্থা"
 #| msgid "Storage Engines"
 msgid "Unknown storage engine."
 msgstr "মজুদ ব্যবস্থা"
+
+#: templates/server/export/index.twig:32
+#, fuzzy
+#| msgid "@SERVER@ will become the server name"
+msgid "@SERVER@ will become the server name."
+msgstr "সার্ভারের নাম হবে @SERVER@"
+
+#: templates/server/export/index.twig:3
+msgid "Exporting databases from the current server"
+msgstr "সার্ভার থেকে ডাটাবেইজ রফতানী করা হচ্ছে"
+
+#: templates/server/export/index.twig:7
+#, fuzzy
+#| msgid "Databases"
+msgid "Databases:"
+msgstr "ডাটাবেইজ"
 
 #: templates/server/plugins/index.twig:26
 msgid "Plugin"
@@ -17687,6 +17652,19 @@ msgstr "%s স্তম্ভের জন্য তথ্য"
 #| msgid "Save as file"
 msgid "Save chart as image"
 msgstr "ফাইল এর মত সংরক্ষন"
+
+#: templates/table/export/index.twig:8
+#, fuzzy
+#| msgid ", @DATABASE@ will become the database name"
+msgid ""
+"@SERVER@ will become the server name, @DATABASE@ will become the database "
+"name and @TABLE@ will become the table name."
+msgstr ", @DATABASE@ হবে ডাটাবেইজের নাম"
+
+#: templates/table/export/index.twig:5
+#, php-format
+msgid "Exporting rows from \"%s\" table"
+msgstr "টেবল থেকে \"%s\" রো রফতানী করা হচ্ছে"
 
 #: templates/table/find_replace/index.twig:4
 #: templates/table/search/index.twig:4 templates/table/zoom_search/index.twig:4
@@ -19544,6 +19522,15 @@ msgstr ""
 #: libraries/advisory_rules_mysql_before80003.txt:57
 msgid "query_cache_limit is set to 1 MiB"
 msgstr "query_cache_limit ১ মেবা নিধারণ করা হয়েছে"
+
+#~ msgid "View dump (schema) of database"
+#~ msgstr "ডাটাবেজ(গঠন)স্তুপ দেখাও"
+
+#~ msgid "View dump (schema) of databases"
+#~ msgstr "ডাটাবেইজের স্তুপ(আকৃতি) দেখাও"
+
+#~ msgid "View dump (schema) of table"
+#~ msgstr "টেবিলের স্তুপ (গঠন) দেখাও"
 
 #~ msgid ", @TABLE@ will become the table name"
 #~ msgstr "@TABLE@ হবে টেবলের নাম"

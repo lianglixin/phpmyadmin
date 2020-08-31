@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: phpMyAdmin 5.1.0-dev\n"
 "Report-Msgid-Bugs-To: translators@phpmyadmin.net\n"
-"POT-Creation-Date: 2020-07-30 23:36-0300\n"
-"PO-Revision-Date: 2020-06-20 05:33+0000\n"
+"POT-Creation-Date: 2020-08-16 18:48-0300\n"
+"PO-Revision-Date: 2020-08-09 15:50+0000\n"
 "Last-Translator: William Desportes <williamdes@wdes.fr>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "phpmyadmin/master/zh_Hant/>\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.1.1\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: libraries/classes/Advisor.php:319
 #, php-format
@@ -97,8 +97,8 @@ msgstr "搜尋："
 #: libraries/classes/Database/Triggers.php:462
 #: libraries/classes/InsertEdit.php:1987 libraries/classes/InsertEdit.php:2021
 #: libraries/classes/Normalization.php:260
-#: libraries/classes/Normalization.php:972 libraries/classes/Tracking.php:349
-#: libraries/classes/Tracking.php:502
+#: libraries/classes/Normalization.php:972 libraries/classes/Tracking.php:353
+#: libraries/classes/Tracking.php:506
 #: templates/columns_definitions/column_definitions_form.twig:43
 #: templates/database/create_table.twig:21
 #: templates/database/events/editor_form.twig:107
@@ -108,12 +108,11 @@ msgstr "搜尋："
 #: templates/database/operations/index.twig:190
 #: templates/database/operations/index.twig:230
 #: templates/database/search/main.twig:74
-#: templates/display/export/options_format.twig:18
 #: templates/display/import/import.twig:232
-#: templates/display/results/table.twig:175
+#: templates/display/results/table.twig:175 templates/export.twig:422
 #: templates/gis_data_editor_form.twig:211 templates/header_location.twig:18
-#: templates/login/form.twig:83 templates/login/form.twig:85
-#: templates/preferences/manage/main.twig:46
+#: templates/login/form.twig:85 templates/login/form.twig:87
+#: templates/login/form.twig:90 templates/preferences/manage/main.twig:46
 #: templates/preferences/manage/main.twig:108
 #: templates/server/binlog/index.twig:34
 #: templates/server/privileges/add_user.twig:36
@@ -217,7 +216,7 @@ msgstr "否"
 #: libraries/classes/CentralColumns.php:955
 #: libraries/classes/Config/Descriptions.php:889
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:385
-#: libraries/classes/Display/Results.php:3211
+#: libraries/classes/Display/Results.php:3213
 #: libraries/classes/Html/Generator.php:757
 #: libraries/classes/Html/Generator.php:1019
 #: libraries/classes/Server/UserGroups.php:125 libraries/classes/Util.php:3221
@@ -245,19 +244,18 @@ msgstr "編輯"
 #: libraries/classes/CentralColumns.php:960
 #: libraries/classes/CentralColumns.php:961
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:386
-#: libraries/classes/Display/Results.php:3280
+#: libraries/classes/Display/Results.php:3282
 #: libraries/classes/Server/UserGroups.php:134
-#: libraries/classes/Tracking.php:275 templates/console/bookmark_content.twig:7
+#: libraries/classes/Tracking.php:279 templates/console/bookmark_content.twig:7
 #: templates/database/central_columns/main.twig:284
 #: templates/database/central_columns/main.twig:407
 #: templates/database/central_columns/main.twig:408
 #: templates/database/designer/main.twig:390
 #: templates/database/qbe/ins_del_and_or_cell.twig:18
 #: templates/database/search/results.twig:43
-#: templates/display/export/template_loading.twig:22
 #: templates/display/results/table.twig:218
-#: templates/display/results/table.twig:219 templates/setup/home/index.twig:62
-#: templates/sql/query.twig:173
+#: templates/display/results/table.twig:219 templates/export.twig:38
+#: templates/setup/home/index.twig:62 templates/sql/query.twig:173
 msgid "Delete"
 msgstr "刪除"
 
@@ -1030,8 +1028,7 @@ msgstr "設定 Script 允許執行的時間限制 (以秒計算，[kbd]0[/kbd] �
 msgid "Maximum execution time"
 msgstr "執行時間限制"
 
-#: libraries/classes/Config/Descriptions.php:216
-#: templates/display/export/options_output.twig:16
+#: libraries/classes/Config/Descriptions.php:216 templates/export.twig:293
 #, php-format
 msgid "Use %s statement"
 msgstr "使用 %s 指令"
@@ -1209,9 +1206,8 @@ msgid "Save on server"
 msgstr "儲存在伺服器"
 
 #: libraries/classes/Config/Descriptions.php:264
-#: libraries/classes/Config/Descriptions.php:267
-#: templates/display/export/options_output.twig:39
-#: templates/display/export/options_quick_export.twig:16
+#: libraries/classes/Config/Descriptions.php:267 templates/export.twig:150
+#: templates/export.twig:316
 msgid "Overwrite existing file(s)"
 msgstr "覆蓋既有檔案"
 
@@ -1469,12 +1465,12 @@ msgid "Servers display options."
 msgstr "伺服器顯示選項。"
 
 #: libraries/classes/Config/Descriptions.php:345
-#: libraries/classes/Controllers/Database/ExportController.php:96
 #: libraries/classes/Controllers/Server/DatabasesController.php:477
 #: libraries/classes/Navigation/Nodes/NodeTableContainer.php:24
 #: libraries/classes/Navigation/Nodes/NodeTableContainer.php:25
 #: libraries/classes/Plugins/Export/ExportXml.php:130
 #: libraries/classes/Server/Status/Data.php:151
+#: templates/database/export/index.twig:23
 #: templates/database/structure/show_create.twig:6
 msgid "Tables"
 msgstr "資料表"
@@ -1982,14 +1978,11 @@ msgid "Logo link URL"
 msgstr "標誌連結網址"
 
 #: libraries/classes/Config/Descriptions.php:531
-#, fuzzy
-#| msgid ""
-#| "Open the linked page in the main window ([kbd]main[/kbd]) or in a new one "
-#| "([kbd]new[/kbd])."
 msgid ""
 "Open the linked page in the main window ([code]main[/code]) or in a new one "
 "([code]new[/code])."
-msgstr "以主視窗 ([kbd]main[/kbd]) 還是新視窗 ([kbd]new[/kbd]) 開啟目標連結。"
+msgstr ""
+"以主視窗 ([code]main[/code]) 還是新視窗 ([code]new[/code]) 開啟目標連結。"
 
 #: libraries/classes/Config/Descriptions.php:534
 msgid "Logo link target"
@@ -3469,7 +3462,6 @@ msgstr "自訂"
 #: libraries/classes/Config/Forms/User/ExportForm.php:53
 #: libraries/classes/Config/Forms/User/ExportForm.php:98
 #: libraries/classes/Config/Forms/User/ExportForm.php:126
-#: libraries/classes/Controllers/Database/ExportController.php:97
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:719
 #: libraries/classes/Import.php:1385 libraries/classes/Menu.php:277
 #: libraries/classes/Menu.php:397
@@ -3482,6 +3474,7 @@ msgstr "自訂"
 #: libraries/config.values.php:165 libraries/config.values.php:175
 #: templates/columns_definitions/table_fields_definitions.twig:4
 #: templates/database/central_columns/edit_table_header.twig:2
+#: templates/database/export/index.twig:24
 #: templates/server/privileges/privileges_table.twig:328
 #: templates/table/tracking/structure_snapshot_columns.twig:1
 msgid "Structure"
@@ -3491,8 +3484,8 @@ msgstr "結構"
 #: libraries/classes/Config/Forms/User/ExportForm.php:106
 #: libraries/classes/Config/Forms/User/ExportForm.php:131
 #: libraries/classes/Config/Forms/User/ExportForm.php:137
-#: libraries/classes/Controllers/Database/ExportController.php:98
 #: libraries/classes/Controllers/Server/DatabasesController.php:487
+#: templates/database/export/index.twig:25
 #: templates/server/privileges/privileges_table.twig:254
 #: templates/table/structure/display_table_stats.twig:17
 msgid "Data"
@@ -3536,10 +3529,9 @@ msgstr "OpenDocument/OpenOffice 文字檔"
 #: templates/database/triggers/list.twig:37
 #: templates/database/triggers/list.twig:38
 #: templates/database/triggers/row.twig:35
-#: templates/display/export/option_header.twig:3
 #: templates/display/results/table.twig:223
 #: templates/display/results/table.twig:224
-#: templates/display/results/table.twig:262
+#: templates/display/results/table.twig:262 templates/export.twig:8
 #: templates/preferences/header.twig:42
 #: templates/preferences/manage/main.twig:68
 #: templates/server/privileges/new_user_ajax.twig:63
@@ -3812,11 +3804,7 @@ msgstr "在本系統找不到 %s 檔案，詳情請參閱 %s。"
 msgid "Showing rows %1$s - %2$s."
 msgstr "正在顯示第 %1$s - %2$s 列。"
 
-#: libraries/classes/Controllers/Database/ExportController.php:75
-msgid "View dump (schema) of database"
-msgstr "檢視資料庫的傾印資料 (綱要)"
-
-#: libraries/classes/Controllers/Database/ExportController.php:80
+#: libraries/classes/Controllers/Database/ExportController.php:78
 #: libraries/classes/Controllers/Database/TrackingController.php:125
 #: libraries/classes/Controllers/ExportController.php:457
 #: libraries/classes/Database/Qbe.php:359
@@ -3825,13 +3813,11 @@ msgstr "檢視資料庫的傾印資料 (綱要)"
 msgid "No tables found in database."
 msgstr "資料庫沒有資料表。"
 
-#: libraries/classes/Controllers/Database/ExportController.php:101
-#: templates/database/designer/database_tables.twig:31
-#: templates/database/search/main.twig:43
-#: templates/display/export/select_options.twig:4
-#: templates/server/replication/database_multibox.twig:7
-msgid "Select all"
-msgstr "全選"
+#: libraries/classes/Controllers/Database/ExportController.php:156
+#: libraries/classes/Controllers/Server/ExportController.php:72
+#: libraries/classes/Controllers/Table/ExportController.php:128
+msgid "Could not load export plugins, please check your installation!"
+msgstr "無法載入匯出外掛程式，請檢查安裝！"
 
 #: libraries/classes/Controllers/Database/OperationsController.php:97
 #: libraries/classes/Controllers/Table/CreateController.php:76
@@ -3890,7 +3876,7 @@ msgid "Table %s has been emptied."
 msgstr "已清空資料表 %s。"
 
 #: libraries/classes/Controllers/Database/StructureController.php:779
-#: libraries/classes/Display/Results.php:4419
+#: libraries/classes/Display/Results.php:4421
 #, php-format
 msgid ""
 "This view has at least this number of rows. Please refer to %sdocumentation"
@@ -4148,7 +4134,7 @@ msgid "Could not load import plugins, please check your installation!"
 msgstr "無法載入匯入外掛程式，請檢查安裝是否有誤！"
 
 #: libraries/classes/Controllers/ImportController.php:646
-#: libraries/classes/Controllers/SqlController.php:354
+#: libraries/classes/Controllers/SqlController.php:355
 #: libraries/classes/Sql.php:1382
 #, php-format
 msgid "Bookmark %s has been created."
@@ -4177,7 +4163,7 @@ msgstr ""
 "成匯入。可試試增加 PHP 執行時間上限。"
 
 #: libraries/classes/Controllers/ImportController.php:771
-#: libraries/classes/Controllers/SqlController.php:165
+#: libraries/classes/Controllers/SqlController.php:166
 msgid "\"DROP DATABASE\" statements are disabled."
 msgstr "刪除資料庫 DROP DATABASE 指令已經被停用。"
 
@@ -4415,8 +4401,7 @@ msgid "Matched rows:"
 msgstr "符合條件的列數："
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:115
-#: libraries/classes/Html/Generator.php:991
-#: templates/display/export/query.twig:4
+#: libraries/classes/Html/Generator.php:991 templates/export.twig:49
 msgid "SQL query:"
 msgstr "SQL 查詢："
 
@@ -4454,7 +4439,7 @@ msgid "Removing Selected Users"
 msgstr "正在刪除已選擇的使用者"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:130
-#: libraries/classes/Tracking.php:253 libraries/classes/Tracking.php:660
+#: libraries/classes/Tracking.php:257 libraries/classes/Tracking.php:664
 #: templates/server/status/advisor/index.twig:20
 #: templates/server/status/advisor/index.twig:47
 msgid "Close"
@@ -4675,8 +4660,7 @@ msgstr "請至少增加一個變數到資料序列！"
 #: libraries/classes/Plugins/Schema/SchemaPdf.php:96
 #: libraries/config.values.php:111
 #: templates/columns_definitions/transformation.twig:4
-#: templates/database/designer/main.twig:590
-#: templates/display/export/options_output.twig:89
+#: templates/database/designer/main.twig:590 templates/export.twig:355
 #: templates/server/privileges/privileges_summary.twig:30
 #: templates/server/status/monitor/index.twig:204
 #: templates/server/status/processes/list.twig:54
@@ -4916,19 +4900,19 @@ msgid "Chart"
 msgstr "圖表"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:275
-#: libraries/classes/Display/Export.php:376
+#: templates/export.twig:171
 msgctxt "Alias"
 msgid "Database"
 msgstr "資料庫"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:276
-#: libraries/classes/Display/Export.php:388
+#: templates/export.twig:185
 msgctxt "Alias"
 msgid "Table"
 msgstr "資料表"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:277
-#: libraries/classes/Display/Export.php:399
+#: templates/export.twig:198
 msgctxt "Alias"
 msgid "Column"
 msgstr "欄位"
@@ -5465,7 +5449,7 @@ msgid "Ignore"
 msgstr "略過"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:483
-#: libraries/classes/Display/Results.php:3215
+#: libraries/classes/Display/Results.php:3217
 #: libraries/classes/Html/Generator.php:70
 #: templates/display/results/table.twig:214
 #: templates/display/results/table.twig:215
@@ -5836,7 +5820,7 @@ msgid "up to date"
 msgstr "最新"
 
 #: libraries/classes/Controllers/JavaScriptMessagesController.php:631
-#: libraries/classes/Display/Results.php:4623
+#: libraries/classes/Display/Results.php:4625
 #: templates/database/structure/show_create.twig:33
 #: templates/display/results/table.twig:284 templates/view_create.twig:11
 msgid "Create view"
@@ -6035,7 +6019,8 @@ msgid "No such column"
 msgstr "無此欄位"
 
 #: libraries/classes/Controllers/NormalizationController.php:49
-#: libraries/classes/Normalization.php:255 libraries/classes/Types.php:744
+#: libraries/classes/Normalization.php:255 libraries/classes/Types.php:750
+#: libraries/classes/Types.php:788
 msgctxt "string types"
 msgid "String"
 msgstr "字串"
@@ -6105,10 +6090,6 @@ msgstr "總計"
 #: templates/table/structure/display_table_stats.twig:32
 msgid "Overhead"
 msgstr "資料分散"
-
-#: libraries/classes/Controllers/Server/ExportController.php:45
-msgid "View dump (schema) of databases"
-msgstr "檢視資料庫的傾印資料 (綱要)"
 
 #: libraries/classes/Controllers/Server/PrivilegesController.php:122
 #: libraries/classes/Server/Privileges.php:253
@@ -7107,7 +7088,7 @@ msgstr "非睡眠狀態的執行緒數量。"
 msgid "Setting variable failed"
 msgstr "設定變數失敗"
 
-#: libraries/classes/Controllers/Setup/FormController.php:33
+#: libraries/classes/Controllers/Setup/FormController.php:32
 msgid "Incorrect form specified!"
 msgstr "指定了不正確的表單！"
 
@@ -7173,7 +7154,7 @@ msgstr "預設伺服器"
 msgid "End of line"
 msgstr "換行符號"
 
-#: libraries/classes/Controllers/SqlController.php:361
+#: libraries/classes/Controllers/SqlController.php:362
 msgid "Bookmark not created!"
 msgstr "書籤尚未建立！"
 
@@ -7187,7 +7168,7 @@ msgstr "已成功修改資料表 %1$s 。"
 
 #: libraries/classes/Controllers/Table/ChangeController.php:312
 #: libraries/classes/Controllers/Table/DeleteController.php:96
-#: libraries/classes/Controllers/Table/ExportController.php:135
+#: libraries/classes/Controllers/Table/ExportController.php:157
 msgid "No row selected."
 msgstr "尚未選擇列。"
 
@@ -7220,14 +7201,10 @@ msgstr "已有 %s 資料表！"
 #: libraries/classes/Controllers/Table/RelationController.php:275
 #: libraries/classes/Controllers/ViewOperationsController.php:75
 #: libraries/classes/Database/Routines.php:1534
-#: libraries/classes/Display/Results.php:4086 libraries/classes/Message.php:177
+#: libraries/classes/Display/Results.php:4088 libraries/classes/Message.php:177
 #: templates/sql/query.twig:7
 msgid "Your SQL query has been executed successfully."
 msgstr "SQL 查詢已順利執行。"
-
-#: libraries/classes/Controllers/Table/ExportController.php:69
-msgid "View dump (schema) of table"
-msgstr "檢視資料表的傾印資料 (綱要)"
 
 #: libraries/classes/Controllers/Table/GetFieldController.php:44
 msgid "Invalid table name"
@@ -7295,7 +7272,7 @@ msgstr "未能取得 %s 欄位的說明！"
 
 #: libraries/classes/Controllers/Table/StructureController.php:1015
 #: libraries/classes/Controllers/Table/StructureController.php:1296
-#: libraries/classes/Tracking.php:791
+#: libraries/classes/Tracking.php:795
 msgid "Query error"
 msgstr "查詢錯誤"
 
@@ -8107,19 +8084,6 @@ msgstr "在資料庫 %2$s 中查無名稱為 %1$s 的觸發器。"
 msgid "SSL connection enforced by server, automatically enabling it."
 msgstr "伺服器強制使用 SSL 連線，正在自動啟用。"
 
-#: libraries/classes/Display/Export.php:368
-msgid "Defined aliases"
-msgstr "已定義別名"
-
-#: libraries/classes/Display/Export.php:427
-#: templates/display/export/options_output.twig:7
-msgid "Rename exported databases/tables/columns"
-msgstr "重新命名已匯出的資料庫/資料表/欄位"
-
-#: libraries/classes/Display/Export.php:485
-msgid "Could not load export plugins, please check your installation!"
-msgstr "無法載入匯出外掛程式，請檢查安裝！"
-
 #: libraries/classes/Display/Results.php:911
 #: libraries/classes/Html/Generator.php:1295
 #: libraries/classes/Html/Generator.php:1298
@@ -8189,46 +8153,46 @@ msgstr "遞減"
 msgid "Ascending"
 msgstr "遞增"
 
-#: libraries/classes/Display/Results.php:3256
-#: libraries/classes/Display/Results.php:3271
+#: libraries/classes/Display/Results.php:3258
+#: libraries/classes/Display/Results.php:3273
 msgid "The row has been deleted."
 msgstr "已刪除該行。"
 
-#: libraries/classes/Display/Results.php:3303
+#: libraries/classes/Display/Results.php:3305
 #: templates/server/status/processes/list.twig:44
 msgid "Kill"
 msgstr "中止"
 
-#: libraries/classes/Display/Results.php:4010
+#: libraries/classes/Display/Results.php:4012
 msgid "May be approximate. See [doc@faq3-11]FAQ 3.11[/doc]."
 msgstr "可能為近似值，請參閱[doc@faq3-11]常見問題(FAQ) 3.11[/doc]。"
 
-#: libraries/classes/Display/Results.php:4431
+#: libraries/classes/Display/Results.php:4433
 #, php-format
 msgid "Showing rows %1s - %2s"
 msgstr "顯示第 %1s - %2s 列"
 
-#: libraries/classes/Display/Results.php:4445
+#: libraries/classes/Display/Results.php:4447
 #, php-format
 msgid "%1$d total, %2$d in query"
 msgstr "總計 %1$d 筆，目前查詢 %2$d 筆"
 
-#: libraries/classes/Display/Results.php:4450
+#: libraries/classes/Display/Results.php:4452
 #, php-format
 msgid "%d total"
 msgstr "總計 %d 筆"
 
-#: libraries/classes/Display/Results.php:4462 libraries/classes/Sql.php:1203
+#: libraries/classes/Display/Results.php:4464 libraries/classes/Sql.php:1203
 #, php-format
 msgid "Query took %01.4f seconds."
 msgstr "查詢用了 %01.4f 秒。"
 
-#: libraries/classes/Display/Results.php:4612
+#: libraries/classes/Display/Results.php:4614
 #: templates/display/results/table.twig:242
 msgid "Query results operations"
 msgstr "查詢結果選項"
 
-#: libraries/classes/Display/Results.php:4865
+#: libraries/classes/Display/Results.php:4867
 msgid "Link not found!"
 msgstr "無此連結！"
 
@@ -8929,12 +8893,12 @@ msgstr "顯示 SQL 查詢"
 msgid "Inserted row id: %1$d"
 msgstr "新增的資料列行 ID：%1$d"
 
-#: libraries/classes/LanguageManager.php:963
+#: libraries/classes/LanguageManager.php:970
 msgid "Ignoring unsupported language code."
 msgstr "忽略不支援的語言代碼。"
 
-#: libraries/classes/LanguageManager.php:989
-#: libraries/classes/LanguageManager.php:990 templates/setup/home/index.twig:8
+#: libraries/classes/LanguageManager.php:996
+#: libraries/classes/LanguageManager.php:997 templates/setup/home/index.twig:8
 #: templates/setup/home/index.twig:9
 msgid "Language"
 msgstr "語言"
@@ -9119,7 +9083,7 @@ msgid "Procedures:"
 msgstr "程序："
 
 #: libraries/classes/Navigation/Navigation.php:221
-#: templates/display/export/selection.twig:5
+#: templates/database/export/index.twig:14
 msgid "Tables:"
 msgstr "資料表："
 
@@ -9678,19 +9642,19 @@ msgstr "重試連接"
 msgid "Your session has expired. Please log in again."
 msgstr "連線已失效，請重新登入。"
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:288
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:289
 msgid "Missing reCAPTCHA verification, maybe it has been blocked by adblock?"
 msgstr "缺少 reCAPTCHA 驗證，是否被 adblock 阻截了？"
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:323
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:324
 msgid "Failed to connect to the reCAPTCHA service!"
 msgstr "無法連接 reCAPTCHA 服務！"
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:325
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:326
 msgid "Entered captcha is wrong, try again!"
 msgstr "輸入驗證碼錯誤，請再嘗試！"
 
-#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:358
+#: libraries/classes/Plugins/Auth/AuthenticationCookie.php:359
 msgid "You are not allowed to log in to this MySQL server!"
 msgstr "無權登入此 MySQL 伺服器！"
 
@@ -9724,8 +9688,7 @@ msgid "You have enabled two factor authentication, please confirm your login."
 msgstr "已啟用雙因素認證，請確認登入。"
 
 #: libraries/classes/Plugins/Export/ExportCodegen.php:87
-#: templates/display/export/format_dropdown.twig:2
-#: templates/display/import/import.twig:209
+#: templates/display/import/import.twig:209 templates/export.twig:94
 msgid "Format:"
 msgstr "格式："
 
@@ -10695,7 +10658,9 @@ msgstr "將使用 (IPv4/IPv6) 格式的網際網路位址，轉換為二進位"
 #: libraries/classes/Plugins/Transformations/Input/Text_Plain_Iptolong.php:29
 #, fuzzy
 #| msgid "Converts an Internet network address in (IPv4/IPv6) format to binary"
-msgid "Converts an Internet network address in (IPv4/IPv6) format to long."
+msgid ""
+"Converts an Internet network address in (IPv4/IPv6) format into a long "
+"integer."
 msgstr "將使用 (IPv4/IPv6) 格式的網際網路位址，轉換為二進位"
 
 #: libraries/classes/Plugins/Transformations/Input/Text_Plain_JsonEditor.php:26
@@ -11498,154 +11463,154 @@ msgstr "佈景主題："
 msgid "No valid image path for theme %s found!"
 msgstr "找不到佈景主題 %s 的有效圖片路徑！"
 
-#: libraries/classes/Tracking.php:252
+#: libraries/classes/Tracking.php:256
 #: templates/database/tracking/tables.twig:78
 #: templates/table/tracking/main.twig:73
 msgid "Tracking report"
 msgstr "追蹤報告"
 
-#: libraries/classes/Tracking.php:256
+#: libraries/classes/Tracking.php:260
 msgid "Tracking statements"
 msgstr "追蹤指令"
 
-#: libraries/classes/Tracking.php:271
+#: libraries/classes/Tracking.php:275
 msgid "Delete tracking data row from report"
 msgstr "刪除報表的追蹤資料列"
 
-#: libraries/classes/Tracking.php:282
+#: libraries/classes/Tracking.php:286
 msgid "No data"
 msgstr "沒有資料"
 
-#: libraries/classes/Tracking.php:334
+#: libraries/classes/Tracking.php:338
 #: templates/database/operations/index.twig:136
 #: templates/database/structure/copy_form.twig:19
 #: templates/table/operations/index.twig:253
 msgid "Structure only"
 msgstr "僅結構"
 
-#: libraries/classes/Tracking.php:337
+#: libraries/classes/Tracking.php:341
 #: templates/database/operations/index.twig:148
 #: templates/database/structure/copy_form.twig:29
 #: templates/table/operations/index.twig:265
 msgid "Data only"
 msgstr "僅資料"
 
-#: libraries/classes/Tracking.php:340
+#: libraries/classes/Tracking.php:344
 #: templates/database/operations/index.twig:142
 #: templates/database/structure/copy_form.twig:24
 #: templates/table/operations/index.twig:259
 msgid "Structure and data"
 msgstr "結構和資料"
 
-#: libraries/classes/Tracking.php:405 libraries/classes/Tracking.php:472
+#: libraries/classes/Tracking.php:409 libraries/classes/Tracking.php:476
 #, php-format
 msgid "Show %1$s with dates from %2$s to %3$s by user %4$s %5$s"
 msgstr "顯示自 %2$s 起至 %3$s 由使用者 %4$s 執行的 %1$s %5$s"
 
-#: libraries/classes/Tracking.php:493
+#: libraries/classes/Tracking.php:497
 msgid "SQL dump (file download)"
 msgstr "SQL 傾印 (檔案下載)"
 
-#: libraries/classes/Tracking.php:495
+#: libraries/classes/Tracking.php:499
 msgid "SQL dump"
 msgstr "SQL 傾印"
 
-#: libraries/classes/Tracking.php:498
+#: libraries/classes/Tracking.php:502
 msgid "This option will replace your table and contained data."
 msgstr "此選項將會替換您的資料表與內容資料。"
 
-#: libraries/classes/Tracking.php:500
+#: libraries/classes/Tracking.php:504
 msgid "SQL execution"
 msgstr "執行 SQL 指令"
 
-#: libraries/classes/Tracking.php:504
+#: libraries/classes/Tracking.php:508
 #, php-format
 msgid "Export as %s"
 msgstr "匯出為 %s"
 
-#: libraries/classes/Tracking.php:542
+#: libraries/classes/Tracking.php:546
 msgid "Data manipulation statement"
 msgstr "資料操作指令"
 
-#: libraries/classes/Tracking.php:578
+#: libraries/classes/Tracking.php:582
 msgid "Data definition statement"
 msgstr "資料定義指令"
 
-#: libraries/classes/Tracking.php:659
+#: libraries/classes/Tracking.php:663
 #: templates/database/tracking/tables.twig:89
 #: templates/table/tracking/main.twig:80
 msgid "Structure snapshot"
 msgstr "結構快照"
 
-#: libraries/classes/Tracking.php:679
+#: libraries/classes/Tracking.php:683
 #, php-format
 msgid "Version %s snapshot (SQL code)"
 msgstr "版本 %s 的快照 (SQL 程式碼)"
 
-#: libraries/classes/Tracking.php:745
+#: libraries/classes/Tracking.php:749
 msgid "Tracking data definition successfully deleted"
 msgstr "已刪除追蹤資料定義"
 
-#: libraries/classes/Tracking.php:755
+#: libraries/classes/Tracking.php:759
 msgid "Tracking data manipulation successfully deleted"
 msgstr "已刪除追蹤資料操作"
 
-#: libraries/classes/Tracking.php:811
+#: libraries/classes/Tracking.php:815
 msgid ""
 "You can execute the dump by creating and using a temporary database. Please "
 "ensure that you have the privileges to do so."
 msgstr "可以透過建立與使用暫存資料庫來執行資料傾印。請先確認您有足夠權限。"
 
-#: libraries/classes/Tracking.php:815
+#: libraries/classes/Tracking.php:819
 msgid "Comment out these two lines if you do not need them."
 msgstr "如果不需要，請將以下兩行註解掉。"
 
-#: libraries/classes/Tracking.php:825
+#: libraries/classes/Tracking.php:829
 msgid "SQL statements exported. Please copy the dump or execute it."
 msgstr "已匯出 SQL 指令。可以複製傾印內容或者直接執行。"
 
-#: libraries/classes/Tracking.php:873
+#: libraries/classes/Tracking.php:877
 #, php-format
 msgid "Tracking report for table `%s`"
 msgstr "資料表「%s」的追蹤報告"
 
-#: libraries/classes/Tracking.php:904
+#: libraries/classes/Tracking.php:908
 #, php-format
 msgid "Tracking for %1$s was activated at version %2$s."
 msgstr "已啟用 %1$s 版本 %2$s 的追蹤。"
 
-#: libraries/classes/Tracking.php:907
+#: libraries/classes/Tracking.php:911
 #, php-format
 msgid "Tracking for %1$s was deactivated at version %2$s."
 msgstr "已停用 %1$s 版本 %2$s 的追蹤。"
 
-#: libraries/classes/Tracking.php:1001
+#: libraries/classes/Tracking.php:1005
 #, php-format
 msgid "Version %1$s of %2$s was deleted."
 msgstr "已刪除 %2$s 的 %1$s 版本。"
 
-#: libraries/classes/Tracking.php:1032
+#: libraries/classes/Tracking.php:1036
 #, php-format
 msgid "Version %1$s was created, tracking for %2$s is active."
 msgstr "已建立版本 %1$s，%2$s 的追蹤已啓用。"
 
-#: libraries/classes/Tracking.php:1142 libraries/classes/Tracking.php:1280
+#: libraries/classes/Tracking.php:1146 libraries/classes/Tracking.php:1284
 #: templates/table/tracking/main.twig:10 templates/table/tracking/main.twig:53
 msgid "active"
 msgstr "啓用"
 
-#: libraries/classes/Tracking.php:1145 libraries/classes/Tracking.php:1275
+#: libraries/classes/Tracking.php:1149 libraries/classes/Tracking.php:1279
 #: templates/table/tracking/main.twig:12 templates/table/tracking/main.twig:56
 msgid "not active"
 msgstr "停用"
 
-#: libraries/classes/Types.php:205
+#: libraries/classes/Types.php:206
 msgid ""
 "A 1-byte integer, signed range is -128 to 127, unsigned range is 0 to 255"
 msgstr ""
 "1 位元組整數：若允許負數，範圍由 -128 至 127；若不允許負數，範圍由 0 至 255"
 
-#: libraries/classes/Types.php:210
+#: libraries/classes/Types.php:211
 msgid ""
 "A 2-byte integer, signed range is -32,768 to 32,767, unsigned range is 0 to "
 "65,535"
@@ -11653,7 +11618,7 @@ msgstr ""
 "2 位元組整數：若允許負數，範圍由 -32,768 至 32,767；若不允許負數，範圍由 0 "
 "至 65,535"
 
-#: libraries/classes/Types.php:215
+#: libraries/classes/Types.php:216
 msgid ""
 "A 3-byte integer, signed range is -8,388,608 to 8,388,607, unsigned range is "
 "0 to 16,777,215"
@@ -11661,7 +11626,7 @@ msgstr ""
 "3 位元組整數：若允許負數，範圍由 -8,388,608 至 8,388,607；若不允許負數，範圍"
 "由 0 至 16,777,215"
 
-#: libraries/classes/Types.php:220
+#: libraries/classes/Types.php:221
 msgid ""
 "A 4-byte integer, signed range is -2,147,483,648 to 2,147,483,647, unsigned "
 "range is 0 to 4,294,967,295"
@@ -11669,7 +11634,7 @@ msgstr ""
 "4 位元組整數：若允許負數，範圍由 -2,147,483,648 至 2,147,483,647；若不允許負"
 "數，範圍由 0 至 4,294,967,295"
 
-#: libraries/classes/Types.php:226
+#: libraries/classes/Types.php:227
 msgid ""
 "An 8-byte integer, signed range is -9,223,372,036,854,775,808 to "
 "9,223,372,036,854,775,807, unsigned range is 0 to 18,446,744,073,709,551,615"
@@ -11678,14 +11643,14 @@ msgstr ""
 "9,223,372,036,854,775,807；若不允許負數，範圍由 0 至 "
 "18,446,744,073,709,551,615"
 
-#: libraries/classes/Types.php:232
+#: libraries/classes/Types.php:233
 msgid ""
 "A fixed-point number (M, D) - the maximum number of digits (M) is 65 "
 "(default 10), the maximum number of decimals (D) is 30 (default 0)"
 msgstr ""
 "定點數 (M, D) - (M) 最大為 65 位數 (預設 10)，(D) 小數位數最大為 30 (預設 0)"
 
-#: libraries/classes/Types.php:238
+#: libraries/classes/Types.php:239
 msgid ""
 "A small floating-point number, allowable values are -3.402823466E+38 to "
 "-1.175494351E-38, 0, and 1.175494351E-38 to 3.402823466E+38"
@@ -11693,7 +11658,7 @@ msgstr ""
 "浮點數，範圍為 -3.402823466E+38 至 -1.175494351E-38、0 及 1.175494351E-38 至 "
 "3.402823466E+38"
 
-#: libraries/classes/Types.php:244
+#: libraries/classes/Types.php:245
 msgid ""
 "A double-precision floating-point number, allowable values are "
 "-1.7976931348623157E+308 to -2.2250738585072014E-308, 0, and "
@@ -11702,39 +11667,39 @@ msgstr ""
 "倍準浮點數，範圍為 -1.7976931348623157E+308 至 -2.2250738585072014E-308、0 "
 "及 2.2250738585072014E-308 至 1.7976931348623157E+308"
 
-#: libraries/classes/Types.php:250
+#: libraries/classes/Types.php:251
 msgid ""
 "Synonym for DOUBLE (exception: in REAL_AS_FLOAT SQL mode it is a synonym for "
 "FLOAT)"
 msgstr "倍準浮點數的別名 (例外: 在 REAL_AS_FLOAT 的模式中為 FLOAT 的別名)"
 
-#: libraries/classes/Types.php:255
+#: libraries/classes/Types.php:256
 msgid ""
 "A bit-field type (M), storing M of bits per value (default is 1, maximum is "
 "64)"
 msgstr "位元欄類型 (M)，每個值使用 M 個位元 (預設值為 1，最大值為 64)"
 
-#: libraries/classes/Types.php:260
+#: libraries/classes/Types.php:261
 msgid ""
 "A synonym for TINYINT(1), a value of zero is considered false, nonzero "
 "values are considered true"
 msgstr "TINYINT(1) 的別名，當值為 0 時視為 false，非 0 的值則視為 true"
 
-#: libraries/classes/Types.php:264
+#: libraries/classes/Types.php:265
 msgid "An alias for BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE"
 msgstr "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE 的別名"
 
-#: libraries/classes/Types.php:267
+#: libraries/classes/Types.php:268
 #, php-format
 msgid "A date, supported range is %1$s to %2$s"
 msgstr "日期，有效範圍為 %1$s 至 %2$s"
 
-#: libraries/classes/Types.php:273
+#: libraries/classes/Types.php:274
 #, php-format
 msgid "A date and time combination, supported range is %1$s to %2$s"
 msgstr "日期與時間組合，有效範圍為 %1$s 至 %2$s"
 
-#: libraries/classes/Types.php:279
+#: libraries/classes/Types.php:280
 msgid ""
 "A timestamp, range is 1970-01-01 00:00:01 UTC to 2038-01-09 03:14:07 UTC, "
 "stored as the number of seconds since the epoch (1970-01-01 00:00:00 UTC)"
@@ -11742,12 +11707,12 @@ msgstr ""
 "時間戳記，有效範圍為 1970-01-01 00:00:01 UTC 至 2038-01-09 03:14:07 UTC，以"
 "自 1970-01-01 00:00:00 UTC 計算的秒數儲存"
 
-#: libraries/classes/Types.php:285
+#: libraries/classes/Types.php:286
 #, php-format
 msgid "A time, range is %1$s to %2$s"
 msgstr "時間，有效範圍為 %1$s 至 %2$s"
 
-#: libraries/classes/Types.php:291
+#: libraries/classes/Types.php:292
 msgid ""
 "A year in four-digit (4, default) or two-digit (2) format, the allowable "
 "values are 70 (1970) to 69 (2069) or 1901 to 2155 and 0000"
@@ -11755,21 +11720,21 @@ msgstr ""
 "以 4 位數 (預設) 或 2 位數的方式表示年份，有效範圍為 70 (1970年) 至 69 (2069"
 "年) 或 1901 至 2155 和 0000"
 
-#: libraries/classes/Types.php:297
+#: libraries/classes/Types.php:298
 msgid ""
 "A fixed-length (0-255, default 1) string that is always right-padded with "
 "spaces to the specified length when stored"
 msgstr ""
 "固定長度 (0 至 255，預設為 1) 的字串，在儲存長度不足時會在右邊以空格補足"
 
-#: libraries/classes/Types.php:303
+#: libraries/classes/Types.php:304
 #, php-format
 msgid ""
 "A variable-length (%s) string, the effective maximum length is subject to "
 "the maximum row size"
 msgstr "可變長度 (%s) 的字串，實際的最大長度需視資料列大小限制而定"
 
-#: libraries/classes/Types.php:310
+#: libraries/classes/Types.php:311
 msgid ""
 "A TEXT column with a maximum length of 255 (2^8 - 1) characters, stored with "
 "a one-byte prefix indicating the length of the value in bytes"
@@ -11777,7 +11742,7 @@ msgstr ""
 "純文字(TEXT)欄位，最大長度為 255 (2^8 - 1) 個字元，儲存時會附加 1 個位元組在"
 "最前面用來記錄長度"
 
-#: libraries/classes/Types.php:316
+#: libraries/classes/Types.php:317
 msgid ""
 "A TEXT column with a maximum length of 65,535 (2^16 - 1) characters, stored "
 "with a two-byte prefix indicating the length of the value in bytes"
@@ -11785,7 +11750,7 @@ msgstr ""
 "純文字(TEXT)欄位，最大長度為 65,535 (2^16 - 1) 個字元，儲存時會附加 2 個位元"
 "組在最前面用來記錄長度"
 
-#: libraries/classes/Types.php:322
+#: libraries/classes/Types.php:323
 msgid ""
 "A TEXT column with a maximum length of 16,777,215 (2^24 - 1) characters, "
 "stored with a three-byte prefix indicating the length of the value in bytes"
@@ -11793,7 +11758,7 @@ msgstr ""
 "純文字(TEXT)欄位，最大長度為 16,777,215 (2^24 - 1) 個字元，儲存時會附加 3 個"
 "位元組在最前面用來記錄長度"
 
-#: libraries/classes/Types.php:328
+#: libraries/classes/Types.php:329
 msgid ""
 "A TEXT column with a maximum length of 4,294,967,295 or 4GiB (2^32 - 1) "
 "characters, stored with a four-byte prefix indicating the length of the "
@@ -11802,19 +11767,19 @@ msgstr ""
 "純文字(TEXT)欄位，最大長度為 4,294,967,295 或 4GiB (2^32 - 1) 個字元，儲存時"
 "會附加 4 個位元組在最前面用來記錄長度"
 
-#: libraries/classes/Types.php:334
+#: libraries/classes/Types.php:335
 msgid ""
 "Similar to the CHAR type, but stores binary byte strings rather than non-"
 "binary character strings"
 msgstr "類似 CHAR 類型，但此類型以二進位的方式儲存字串，而不是字元"
 
-#: libraries/classes/Types.php:339
+#: libraries/classes/Types.php:340
 msgid ""
 "Similar to the VARCHAR type, but stores binary byte strings rather than non-"
 "binary character strings"
 msgstr "類似 VARCHAR 類型，但此類型以二進位的方式儲存字串，而不是字元"
 
-#: libraries/classes/Types.php:344
+#: libraries/classes/Types.php:345
 msgid ""
 "A BLOB column with a maximum length of 255 (2^8 - 1) bytes, stored with a "
 "one-byte prefix indicating the length of the value"
@@ -11822,7 +11787,7 @@ msgstr ""
 "大型二進位物件(BLOB)欄位，最大長度為 255 (2^8 - 1) 個位元組，儲存時會附加 1 "
 "個位元組在最前面用來記錄長度"
 
-#: libraries/classes/Types.php:349
+#: libraries/classes/Types.php:350
 msgid ""
 "A BLOB column with a maximum length of 16,777,215 (2^24 - 1) bytes, stored "
 "with a three-byte prefix indicating the length of the value"
@@ -11830,7 +11795,7 @@ msgstr ""
 "大型二進位物件(BLOB)欄位，最大長度為 16,777,215 (2^24 - 1) 個位元組，儲存時會"
 "附加 3 個位元組在最前面用來記錄長度"
 
-#: libraries/classes/Types.php:355
+#: libraries/classes/Types.php:356
 msgid ""
 "A BLOB column with a maximum length of 65,535 (2^16 - 1) bytes, stored with "
 "a two-byte prefix indicating the length of the value"
@@ -11838,7 +11803,7 @@ msgstr ""
 "大型二進位物件(BLOB)欄位，最大長度為 65,535 (2^16 - 1) 個位元組，儲存時會附"
 "加 2 個位元組在最前面用來記錄長度"
 
-#: libraries/classes/Types.php:360
+#: libraries/classes/Types.php:361
 msgid ""
 "A BLOB column with a maximum length of 4,294,967,295 or 4GiB (2^32 - 1) "
 "bytes, stored with a four-byte prefix indicating the length of the value"
@@ -11846,65 +11811,71 @@ msgstr ""
 "大型二進位物件(BLOB)欄位，最大長度為 4,294,967,295 或 4GiB (2^32 - 1) 個位元"
 "組，儲存時會附加 4 個位元組在最前面用來記錄長度"
 
-#: libraries/classes/Types.php:366
+#: libraries/classes/Types.php:367
 msgid ""
 "An enumeration, chosen from the list of up to 65,535 values or the special "
 "'' error value"
 msgstr "列舉類型(ENUM)，在清單中最多可有 65,535 個值或特殊 '' 錯誤值"
 
-#: libraries/classes/Types.php:370
+#: libraries/classes/Types.php:371
 msgid "A single value chosen from a set of up to 64 members"
 msgstr "可從最多可 64 個成員中複選組成的一個值"
 
-#: libraries/classes/Types.php:372
+#: libraries/classes/Types.php:373
 msgid "A type that can store a geometry of any type"
 msgstr "可以儲存任何幾何圖形的類型"
 
-#: libraries/classes/Types.php:374
+#: libraries/classes/Types.php:375
 msgid "A point in 2-dimensional space"
 msgstr "2 維空間的點"
 
-#: libraries/classes/Types.php:376
+#: libraries/classes/Types.php:377
 msgid "A curve with linear interpolation between points"
 msgstr "點與點之間的線性插值曲線"
 
-#: libraries/classes/Types.php:378
+#: libraries/classes/Types.php:379
 msgid "A polygon"
 msgstr "多邊形"
 
-#: libraries/classes/Types.php:380
+#: libraries/classes/Types.php:381
 msgid "A collection of points"
 msgstr "點的集合"
 
-#: libraries/classes/Types.php:383
+#: libraries/classes/Types.php:384
 msgid "A collection of curves with linear interpolation between points"
 msgstr "點與點之間線性插值曲線的集合"
 
-#: libraries/classes/Types.php:386
+#: libraries/classes/Types.php:387
 msgid "A collection of polygons"
 msgstr "多邊形的集合"
 
-#: libraries/classes/Types.php:388
+#: libraries/classes/Types.php:389
 msgid "A collection of geometry objects of any type"
 msgstr "任何類型幾何圖形的集合"
 
-#: libraries/classes/Types.php:391
+#: libraries/classes/Types.php:392
 msgid ""
 "Stores and enables efficient access to data in JSON (JavaScript Object "
 "Notation) documents"
 msgstr "儲存並開啟對 JSON (JavaScript Object Notation) 文件資料的快速存取"
 
-#: libraries/classes/Types.php:717
+#: libraries/classes/Types.php:396
+msgid ""
+"Intended for storage of IPv6 addresses, as well as IPv4 addresses assuming "
+"conventional mapping of IPv4 addresses into IPv6 addresses"
+msgstr ""
+
+#: libraries/classes/Types.php:723
 msgctxt "numeric types"
 msgid "Numeric"
 msgstr "數值"
 
-#: libraries/classes/Types.php:735
+#: libraries/classes/Types.php:741
 msgctxt "date and time types"
 msgid "Date and time"
 msgstr "日期及時間"
 
-#: libraries/classes/Types.php:765
+#: libraries/classes/Types.php:771
 msgctxt "spatial types"
 msgid "Spatial"
 msgstr "空間類型"
@@ -12263,9 +12234,8 @@ msgstr "資料表名稱"
 
 #: templates/columns_definitions/column_definitions_form.twig:32
 #: templates/console/display.twig:99
-#: templates/database/central_columns/main.twig:212
-#: templates/export/alias_add.twig:18 templates/export/alias_add.twig:32
-#: templates/export/alias_add.twig:46
+#: templates/database/central_columns/main.twig:212 templates/export.twig:244
+#: templates/export.twig:258 templates/export.twig:272
 msgid "Add"
 msgstr "新增"
 
@@ -12709,6 +12679,13 @@ msgstr "基數"
 msgid "No index defined!"
 msgstr "沒有已定義的索引！"
 
+#: templates/database/designer/database_tables.twig:31
+#: templates/database/export/index.twig:29
+#: templates/database/search/main.twig:43 templates/server/export/index.twig:12
+#: templates/server/replication/database_multibox.twig:7
+msgid "Select all"
+msgstr "全選"
+
 #: templates/database/designer/database_tables.twig:37
 msgid "Show/hide columns"
 msgstr "顯示／隱藏欄位"
@@ -12994,6 +12971,26 @@ msgstr "全選"
 msgid "Event scheduler status"
 msgstr "事件排程狀態"
 
+#: templates/database/export/index.twig:62
+#, fuzzy
+#| msgid ", @DATABASE@ will become the database name"
+msgid ""
+"@SERVER@ will become the server name and @DATABASE@ will become the database "
+"name."
+msgstr "，@DATABASE@ 會以資料庫名稱取代"
+
+#. l10n: A query that the user has written freely
+#: templates/database/export/index.twig:5
+#, fuzzy
+#| msgid "Showing SQL query"
+msgid "Exporting a raw query"
+msgstr "顯示 SQL 查詢"
+
+#: templates/database/export/index.twig:7
+#, php-format
+msgid "Exporting tables from \"%s\" database"
+msgstr "正在匯出「%s」資料庫的資料表"
+
 #: templates/database/multi_table_query/form.twig:4
 #: templates/database/qbe/index.twig:4
 msgid "Multi-table query"
@@ -13070,8 +13067,7 @@ msgstr "資料庫備註"
 msgid "Rename database to"
 msgstr "將資料庫改名為"
 
-#: templates/database/operations/index.twig:64
-#: templates/export/alias_add.twig:15
+#: templates/database/operations/index.twig:64 templates/export.twig:241
 msgid "New database name"
 msgstr "新資料庫名稱"
 
@@ -13319,8 +13315,7 @@ msgstr "每個字詞用(半形)空格分隔。"
 msgid "Inside tables:"
 msgstr "於以下資料表："
 
-#: templates/database/search/main.twig:46
-#: templates/display/export/select_options.twig:8
+#: templates/database/search/main.twig:46 templates/server/export/index.twig:16
 #: templates/server/replication/database_multibox.twig:8
 msgid "Unselect all"
 msgstr "全部不選"
@@ -13531,217 +13526,6 @@ msgstr "追蹤資料表"
 msgid "There are no triggers to display."
 msgstr "沒有觸發器可供顯示。"
 
-#: templates/display/export/method.twig:3
-msgid "Export method:"
-msgstr "匯出方式："
-
-#: templates/display/export/method.twig:9
-msgid "Quick - display only the minimal options"
-msgstr "快速 - 僅顯示必要的選項"
-
-#: templates/display/export/method.twig:17
-msgid "Custom - display all possible options"
-msgstr "自訂 - 顯示所有可用的選項"
-
-#: templates/display/export/option_header.twig:5
-msgid "Exporting databases from the current server"
-msgstr "從目前的伺服器匯出資料庫"
-
-#: templates/display/export/option_header.twig:7
-#, php-format
-msgid "Exporting tables from \"%s\" database"
-msgstr "正在匯出「%s」資料庫的資料表"
-
-#. l10n: A query that the user has written freely
-#: templates/display/export/option_header.twig:9
-#, fuzzy
-#| msgid "Showing SQL query"
-msgid "Exporting a raw query"
-msgstr "顯示 SQL 查詢"
-
-#: templates/display/export/option_header.twig:11
-#, php-format
-msgid "Exporting rows from \"%s\" table"
-msgstr "正在匯出「%s」資料表的資料列"
-
-#: templates/display/export/options_format.twig:2
-#: templates/display/import/import.twig:215
-msgid "Format-specific options:"
-msgstr "格式選項："
-
-#: templates/display/export/options_format.twig:4
-#: templates/display/import/import.twig:217
-msgid ""
-"Scroll down to fill in the options for the selected format and ignore the "
-"options for other formats."
-msgstr "請下拉至所選格式並設定選項，其他格式的選項不用理會。"
-
-#: templates/display/export/options_format.twig:12
-#: templates/display/import/import.twig:226
-msgid "Encoding Conversion:"
-msgstr "轉換編碼："
-
-#: templates/display/export/options_output.twig:2
-#: templates/display/export/options_quick_export.twig:2
-msgid "Output:"
-msgstr "輸出："
-
-#: templates/display/export/options_output.twig:25
-msgid "Save output to a file"
-msgstr "將輸出儲存為檔案"
-
-#: templates/display/export/options_output.twig:32
-#: templates/display/export/options_quick_export.twig:8
-#, php-format
-msgid "Save on server in the directory <strong>%s</strong>"
-msgstr "儲存到伺服器的 <strong>%s</strong> 資料夾"
-
-#: templates/display/export/options_output.twig:46
-msgid "File name template:"
-msgstr "檔案名稱模版："
-
-#: templates/display/export/options_output.twig:48
-#, fuzzy
-#| msgid ""
-#| "This value is interpreted using %1$sstrftime%2$s, so you can use time "
-#| "formatting strings. Additionally the following transformations will "
-#| "happen: %3$s. Other text will be kept as is. See the %4$sFAQ%5$s for "
-#| "details."
-msgid ""
-"This value is interpreted using the 'strftime' function, so you can use time "
-"formatting strings. Additionally the following transformations will happen:"
-msgstr ""
-"此值會以 %1$sstrftime%2$s 來解讀，所以可以使用時間格式的字串。除此之外，以下"
-"資料格式也會轉換：%3$s。其他的文字則會保持原樣。請參閱%4$s常見問題 (FAQ)%5$s"
-"了解詳情。"
-
-#: templates/display/export/options_output.twig:50
-#, fuzzy
-#| msgid "@SERVER@ will become the server name"
-msgid "@SERVER@ will become the server name."
-msgstr "@SERVER@ 會以伺服器名稱取代"
-
-#: templates/display/export/options_output.twig:52
-#, fuzzy
-#| msgid ", @DATABASE@ will become the database name"
-msgid ""
-"@SERVER@ will become the server name, @DATABASE@ will become the database "
-"name."
-msgstr "，@DATABASE@ 會以資料庫名稱取代"
-
-#: templates/display/export/options_output.twig:54
-msgid ""
-"@SERVER@ will become the server name, @DATABASE@ will become the database "
-"name, @TABLE@ will become the table name."
-msgstr ""
-
-#: templates/display/export/options_output.twig:56
-msgid "Other text will be kept as is. See the FAQ 6.27 for details."
-msgstr ""
-
-#: templates/display/export/options_output.twig:63
-msgid "use this for future exports"
-msgstr "以後匯出時，也使用此設定"
-
-#: templates/display/export/options_output.twig:70
-#: templates/display/import/import.twig:135
-msgid "Character set of the file:"
-msgstr "檔案字元編碼："
-
-#: templates/display/export/options_output.twig:86
-msgid "Compression:"
-msgstr "壓縮："
-
-#: templates/display/export/options_output.twig:93
-msgid "zipped"
-msgstr "zip 壓縮"
-
-#: templates/display/export/options_output.twig:99
-msgid "gzipped"
-msgstr "gzip 壓縮"
-
-#: templates/display/export/options_output.twig:114
-msgid "Export databases as separate files"
-msgstr "將每個資料庫匯出為不同的檔案"
-
-#: templates/display/export/options_output.twig:116
-msgid "Export tables as separate files"
-msgstr "將每個資料表匯出為不同的檔案"
-
-#: templates/display/export/options_output.twig:128
-msgid "View output as text"
-msgstr "以文字顯示輸出結果"
-
-#: templates/display/export/options_output.twig:134
-#, php-format
-msgid "Skip tables larger than %s MiB"
-msgstr "略過超過 %s MiB 的資料表"
-
-#: templates/display/export/options_rows.twig:2
-msgid "Rows:"
-msgstr "資料列數："
-
-#: templates/display/export/options_rows.twig:7
-msgid "Dump some row(s)"
-msgstr "傾印部份資料列"
-
-#: templates/display/export/options_rows.twig:10
-#: templates/display/results/table.twig:49
-#: templates/start_and_number_of_rows_panel.twig:10
-msgid "Number of rows:"
-msgstr "資料列數："
-
-#: templates/display/export/options_rows.twig:22
-msgid "Row to begin at:"
-msgstr "起始列數："
-
-#: templates/display/export/options_rows.twig:31
-msgid "Dump all rows"
-msgstr "傾印所有資料列"
-
-#: templates/display/export/query.twig:8
-#, fuzzy
-#| msgid "Showing SQL query"
-msgid "Show SQL query"
-msgstr "顯示 SQL 查詢"
-
-#: templates/display/export/selection.twig:3
-msgid "Databases:"
-msgstr "資料庫："
-
-#: templates/display/export/template_loading.twig:2
-msgid "Export templates:"
-msgstr "匯出模板："
-
-#: templates/display/export/template_loading.twig:6
-msgid "New template:"
-msgstr "新模板："
-
-#: templates/display/export/template_loading.twig:8
-msgid "Template name"
-msgstr "模板名稱"
-
-#: templates/display/export/template_loading.twig:10
-#: templates/server/databases/index.twig:55
-msgid "Create"
-msgstr "建立"
-
-#: templates/display/export/template_loading.twig:16
-msgid "Existing templates:"
-msgstr "已有模板："
-
-#: templates/display/export/template_loading.twig:17
-msgid "Template:"
-msgstr "模板："
-
-#: templates/display/export/template_loading.twig:21
-msgid "Update"
-msgstr "更新"
-
-#: templates/display/export/template_options.twig:1
-msgid "Select a template"
-msgstr "選擇模板"
-
 #: templates/display/import/import.twig:40
 msgid "Importing into the current server"
 msgstr "匯入到目前伺服器"
@@ -13811,6 +13595,10 @@ msgstr "無可上傳的檔案！"
 msgid "File uploads are not allowed on this server."
 msgstr "此伺服器不允許上傳檔案。"
 
+#: templates/display/import/import.twig:135 templates/export.twig:336
+msgid "Character set of the file:"
+msgstr "檔案字元編碼："
+
 #: templates/display/import/import.twig:163
 msgid "Partial import:"
 msgstr "部分匯入："
@@ -13837,6 +13625,20 @@ msgstr "由第一行開始跳過此數量的查詢 (SQL)："
 #: templates/display/import/import.twig:200
 msgid "Other options:"
 msgstr "其他選項："
+
+#: templates/display/import/import.twig:215 templates/export.twig:406
+msgid "Format-specific options:"
+msgstr "格式選項："
+
+#: templates/display/import/import.twig:217 templates/export.twig:408
+msgid ""
+"Scroll down to fill in the options for the selected format and ignore the "
+"options for other formats."
+msgstr "請下拉至所選格式並設定選項，其他格式的選項不用理會。"
+
+#: templates/display/import/import.twig:226 templates/export.twig:416
+msgid "Encoding Conversion:"
+msgstr "轉換編碼："
 
 #: templates/display/import/javascript.twig:12
 msgid ""
@@ -13890,6 +13692,11 @@ msgstr "儲存修改過的資料"
 #: templates/display/results/table.twig:38
 msgid "Restore column order"
 msgstr "還原欄位的排序"
+
+#: templates/display/results/table.twig:49 templates/export.twig:110
+#: templates/start_and_number_of_rows_panel.twig:10
+msgid "Number of rows:"
+msgstr "資料列數："
 
 #: templates/display/results/table.twig:52
 msgid "All"
@@ -13964,33 +13771,174 @@ msgstr "可以告訴我們您做了什麼步驟導致問題發生嗎？這將能
 msgid "You may examine the data in the error report:"
 msgstr "可以檢視錯誤報告的資料："
 
-#: templates/export/alias_add.twig:4
+#: templates/export/template_options.twig:1 templates/export.twig:30
+msgid "Select a template"
+msgstr "選擇模板"
+
+#: templates/export.twig:15
+msgid "Export templates:"
+msgstr "匯出模板："
+
+#: templates/export.twig:19
+msgid "New template:"
+msgstr "新模板："
+
+#: templates/export.twig:20
+msgid "Template name"
+msgstr "模板名稱"
+
+#: templates/export.twig:21 templates/server/databases/index.twig:55
+msgid "Create"
+msgstr "建立"
+
+#: templates/export.twig:27
+msgid "Existing templates:"
+msgstr "已有模板："
+
+#: templates/export.twig:28
+msgid "Template:"
+msgstr "模板："
+
+#: templates/export.twig:37
+msgid "Update"
+msgstr "更新"
+
+#: templates/export.twig:53
+#, fuzzy
+#| msgid "Showing SQL query"
+msgid "Show SQL query"
+msgstr "顯示 SQL 查詢"
+
+#: templates/export.twig:72
+msgid "Export method:"
+msgstr "匯出方式："
+
+#: templates/export.twig:78
+msgid "Quick - display only the minimal options"
+msgstr "快速 - 僅顯示必要的選項"
+
+#: templates/export.twig:86
+msgid "Custom - display all possible options"
+msgstr "自訂 - 顯示所有可用的選項"
+
+#: templates/export.twig:102
+msgid "Rows:"
+msgstr "資料列數："
+
+#: templates/export.twig:107
+msgid "Dump some row(s)"
+msgstr "傾印部份資料列"
+
+#: templates/export.twig:121
+msgid "Row to begin at:"
+msgstr "起始列數："
+
+#: templates/export.twig:130
+msgid "Dump all rows"
+msgstr "傾印所有資料列"
+
+#: templates/export.twig:138 templates/export.twig:279
+msgid "Output:"
+msgstr "輸出："
+
+#: templates/export.twig:143 templates/export.twig:309
+#, php-format
+msgid "Save on server in the directory <strong>%s</strong>"
+msgstr "儲存到伺服器的 <strong>%s</strong> 資料夾"
+
+#: templates/export.twig:157 templates/export.twig:284
+msgid "Rename exported databases/tables/columns"
+msgstr "重新命名已匯出的資料庫/資料表/欄位"
+
+#: templates/export.twig:162
+msgid "Defined aliases"
+msgstr "已定義別名"
+
+#: templates/export.twig:177 templates/export.twig:191
+#: templates/export.twig:204 templates/export.twig:221
+msgid "Remove"
+msgstr "移除"
+
+#: templates/export.twig:230
 msgid "Define new aliases"
 msgstr "定義新別名"
 
-#: templates/export/alias_add.twig:9
+#: templates/export.twig:235
 msgid "Select database:"
 msgstr "選擇資料庫："
 
-#: templates/export/alias_add.twig:23
+#: templates/export.twig:249
 msgid "Select table:"
 msgstr "選擇資料表："
 
-#: templates/export/alias_add.twig:29
+#: templates/export.twig:255
 msgid "New table name"
 msgstr "新資料表名稱"
 
-#: templates/export/alias_add.twig:37
+#: templates/export.twig:263
 msgid "Select column:"
 msgstr "選擇欄位："
 
-#: templates/export/alias_add.twig:43
+#: templates/export.twig:269
 msgid "New column name"
 msgstr "新欄位名稱"
 
-#: templates/export/alias_item.twig:8
-msgid "Remove"
-msgstr "移除"
+#: templates/export.twig:302
+msgid "Save output to a file"
+msgstr "將輸出儲存為檔案"
+
+#: templates/export.twig:323
+msgid "File name template:"
+msgstr "檔案名稱模版："
+
+#: templates/export.twig:324
+#, fuzzy, php-format
+#| msgid ""
+#| "This value is interpreted using %1$sstrftime%2$s, so you can use time "
+#| "formatting strings. Additionally the following transformations will "
+#| "happen: %3$s. Other text will be kept as is. See the %4$sFAQ%5$s for "
+#| "details."
+msgid ""
+"This value is interpreted using the 'strftime' function, so you can use time "
+"formatting strings. Additionally the following transformations will happen: "
+"%s Other text will be kept as is. See the FAQ 6.27 for details."
+msgstr ""
+"此值會以 %1$sstrftime%2$s 來解讀，所以可以使用時間格式的字串。除此之外，以下"
+"資料格式也會轉換：%3$s。其他的文字則會保持原樣。請參閱%4$s常見問題 (FAQ)%5$s"
+"了解詳情。"
+
+#: templates/export.twig:329
+msgid "use this for future exports"
+msgstr "以後匯出時，也使用此設定"
+
+#: templates/export.twig:352
+msgid "Compression:"
+msgstr "壓縮："
+
+#: templates/export.twig:359
+msgid "zipped"
+msgstr "zip 壓縮"
+
+#: templates/export.twig:365
+msgid "gzipped"
+msgstr "gzip 壓縮"
+
+#: templates/export.twig:380
+msgid "Export databases as separate files"
+msgstr "將每個資料庫匯出為不同的檔案"
+
+#: templates/export.twig:382
+msgid "Export tables as separate files"
+msgstr "將每個資料表匯出為不同的檔案"
+
+#: templates/export.twig:394
+msgid "View output as text"
+msgstr "以文字顯示輸出結果"
+
+#: templates/export.twig:400
+#, php-format
+msgid "Skip tables larger than %s MiB"
+msgstr "略過超過 %s MiB 的資料表"
 
 #: templates/filter.twig:4 templates/server/status/processes/index.twig:7
 #: templates/server/status/variables/index.twig:8
@@ -14098,16 +14046,14 @@ msgid "from %s branch"
 msgstr "從 %2$s 分支的 %1$s"
 
 #: templates/home/git_info.twig:25
-#, fuzzy, php-format
-#| msgid "committed on %1$s by %2$s"
+#, php-format
 msgid "committed on %s by %s"
-msgstr "%2$s 提交了 %1$s"
+msgstr "%s 提交了 %s"
 
 #: templates/home/git_info.twig:32
-#, fuzzy, php-format
-#| msgid "authored on %1$s by %2$s"
+#, php-format
 msgid "authored on %s by %s"
-msgstr "%2$s 執筆於 %1$s"
+msgstr "%s 執筆於 %s"
 
 #: templates/home/index.twig:22 templates/login/form.twig:7
 #, php-format
@@ -14826,6 +14772,20 @@ msgstr "儲存引擎"
 #: templates/server/engines/show.twig:45
 msgid "Unknown storage engine."
 msgstr "不明儲存引擎。"
+
+#: templates/server/export/index.twig:32
+#, fuzzy
+#| msgid "@SERVER@ will become the server name"
+msgid "@SERVER@ will become the server name."
+msgstr "@SERVER@ 會以伺服器名稱取代"
+
+#: templates/server/export/index.twig:3
+msgid "Exporting databases from the current server"
+msgstr "從目前的伺服器匯出資料庫"
+
+#: templates/server/export/index.twig:7
+msgid "Databases:"
+msgstr "資料庫："
 
 #: templates/server/plugins/index.twig:26
 msgid "Plugin"
@@ -16095,6 +16055,19 @@ msgstr "資料欄位："
 #: templates/table/chart/tbl_chart.twig:151
 msgid "Save chart as image"
 msgstr "另存圖表為影像"
+
+#: templates/table/export/index.twig:8
+#, fuzzy
+#| msgid ", @DATABASE@ will become the database name"
+msgid ""
+"@SERVER@ will become the server name, @DATABASE@ will become the database "
+"name and @TABLE@ will become the table name."
+msgstr "，@DATABASE@ 會以資料庫名稱取代"
+
+#: templates/table/export/index.twig:5
+#, php-format
+msgid "Exporting rows from \"%s\" table"
+msgstr "正在匯出「%s」資料表的資料列"
 
 #: templates/table/find_replace/index.twig:4
 #: templates/table/search/index.twig:4 templates/table/zoom_search/index.twig:4
@@ -17812,6 +17785,15 @@ msgstr ""
 #: libraries/advisory_rules_mysql_before80003.txt:57
 msgid "query_cache_limit is set to 1 MiB"
 msgstr "query_cache_limit 目前設定為 1 MB"
+
+#~ msgid "View dump (schema) of database"
+#~ msgstr "檢視資料庫的傾印資料 (綱要)"
+
+#~ msgid "View dump (schema) of databases"
+#~ msgstr "檢視資料庫的傾印資料 (綱要)"
+
+#~ msgid "View dump (schema) of table"
+#~ msgstr "檢視資料表的傾印資料 (綱要)"
 
 #~ msgid ", @TABLE@ will become the table name"
 #~ msgstr "，@TABLE@ 會以資料表名稱取代"

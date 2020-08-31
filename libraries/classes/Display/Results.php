@@ -1372,7 +1372,7 @@ class Results
 
             $display_params['emptypre'] = $emptyPreCondition ? 4 : 0;
 
-            $button_html .= '<th class="column_action print_ignore" ' . $colspan
+            $button_html .= '<th class="column_action sticky print_ignore" ' . $colspan
                 . '>' . $full_or_partial_text_link . '</th>';
         } elseif ($leftOrBoth
             && (($displayParts['edit_lnk'] != self::NO_EDIT_OR_DELETE)
@@ -1386,7 +1386,7 @@ class Results
         } elseif ($GLOBALS['cfg']['RowActionLinks'] === self::POSITION_NONE) {
             // ... elseif display an empty column if the actions links are
             //  disabled to match the rest of the table
-            $button_html .= '<th class="column_action"></th>';
+            $button_html .= '<th class="column_action sticky"></th>';
         }
 
         $this->properties['display_params'] = $display_params;
@@ -2067,6 +2067,7 @@ class Results
         }
 
         $th_class[] = 'column_heading';
+        $th_class[] = 'sticky';
         if ($GLOBALS['cfg']['BrowsePointerEnable'] == true) {
             $th_class[] = 'pointer';
         }
@@ -2109,6 +2110,7 @@ class Results
         $draggable_html = '<th';
         $th_class = [];
         $th_class[] = 'draggable';
+        $th_class[] = 'sticky';
         $this->getClassForNumericColumnType($fields_meta, $th_class);
         if ($col_visib && ! $col_visib_j) {
             $th_class[] = 'hide';
@@ -4593,42 +4595,6 @@ class Results
             'has_export_button' => $analyzed_sql_results['querytype'] === 'SELECT',
             'clause_is_unique' => $clause_is_unique,
         ];
-    }
-
-    /**
-     * @param array $analyzed_sql_results analyzed sql results
-     *
-     * @return string
-     *
-     * @access public
-     */
-    public function getCreateViewQueryResultOp(array $analyzed_sql_results)
-    {
-        if (! empty($analyzed_sql_results['procedure'])) {
-            return '';
-        }
-
-        $results_operations_html = '<fieldset class="print_ignore" ><legend>'
-            . __('Query results operations') . '</legend>';
-        $results_operations_html .= '<span>';
-        $results_operations_html .= Generator::linkOrButton(
-            Url::getFromRoute('/view/create', [
-                'db' => $this->properties['db'],
-                'table' => $this->properties['table'],
-                'printview' => '1',
-                'sql_query' => $this->properties['sql_query'],
-            ]),
-            Generator::getIcon(
-                'b_view_add',
-                __('Create view'),
-                true
-            ),
-            ['class' => 'create_view ajax btn']
-        );
-        $results_operations_html .= '</span>' . "\n";
-        $results_operations_html .= '</fieldset><br>';
-
-        return $results_operations_html;
     }
 
     /**

@@ -17,6 +17,8 @@ use PhpMyAdmin\Sql;
 use PhpMyAdmin\Template;
 use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
+use const ENT_COMPAT;
+use function htmlentities;
 use function mb_strpos;
 use function strlen;
 use function strpos;
@@ -53,7 +55,7 @@ class SqlController extends AbstractController
     {
         global $cfg, $db, $display_query, $pmaThemeImage, $sql_query, $table, $message;
         global $ajax_reload, $goto, $err_url, $find_real_end, $unlim_num_rows, $import_text, $disp_query;
-        global $extra_data, $message_to_show, $sql_data, $disp_message, $query_type, $selected, $complete_query;
+        global $extra_data, $message_to_show, $sql_data, $disp_message, $complete_query;
         global $is_gotofile, $back, $table_from_sql;
 
         $this->checkUserPrivileges->getPrivileges();
@@ -66,6 +68,7 @@ class SqlController extends AbstractController
             'vendor/jquery/jquery.uitablefilter.js',
             'table/change.js',
             'indexes.js',
+            'vendor/stickyfill.min.js',
             'gis_data_editor.js',
             'multi_column_sort.js',
         ]);
@@ -212,9 +215,7 @@ class SqlController extends AbstractController
             $pmaThemeImage,
             isset($disp_query) ? $display_query : null,
             $disp_message ?? null,
-            $query_type ?? null,
             $sql_query,
-            $selected ?? null,
             $complete_query ?? null
         ));
     }
@@ -278,13 +279,30 @@ class SqlController extends AbstractController
         $this->checkUserPrivileges->getPrivileges();
 
         $column = $_POST['column'];
-        $curr_value = $_POST['curr_value'];
-        $select = $this->sql->getHtmlForSetColumn(
-            $db,
-            $table,
-            $column,
-            $curr_value
-        );
+        $currentValue = $_POST['curr_value'];
+        $fullValues = $_POST['get_full_values'] ?? false;
+        $whereClause = $_POST['where_clause'] ?? null;
+
+        $values = $this->sql->getValuesForColumn($db, $table, $column);
+
+        // If the $currentValue was truncated, we should fetch the correct full values from the table.
+        if ($fullValues && ! empty($whereClause)) {
+            $currentValue = $this->sql->getFullValuesForSetColumn(
+                $this->dbi,
+                $db,
+                $table,
+                $column,
+                $whereClause
+            );
+        }
+
+        // Converts characters of $currentValue to HTML entities.
+        $convertedCurrentValue = htmlentities($currentValue, ENT_COMPAT, 'UTF-8');
+
+        $select = $this->template->render('sql/set_column', [
+            'values' => $values,
+            'current_values' => $convertedCurrentValue,
+        ]);
 
         $this->response->addJSON('select', $select);
     }

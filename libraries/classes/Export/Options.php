@@ -1,23 +1,16 @@
 <?php
-/**
- * functions for displaying server, database and table export
- */
 
 declare(strict_types=1);
 
-namespace PhpMyAdmin\Display;
+namespace PhpMyAdmin\Export;
 
 use PhpMyAdmin\Core;
 use PhpMyAdmin\Encoding;
-use PhpMyAdmin\Export\TemplateModel;
-use PhpMyAdmin\Message;
 use PhpMyAdmin\Plugins;
 use PhpMyAdmin\Plugins\ExportPlugin;
 use PhpMyAdmin\Query\Utilities;
 use PhpMyAdmin\Relation;
 use PhpMyAdmin\Table;
-use PhpMyAdmin\Template;
-use PhpMyAdmin\Url;
 use PhpMyAdmin\Util;
 use function explode;
 use function function_exists;
@@ -27,25 +20,18 @@ use function mb_strpos;
 use function strlen;
 use function urldecode;
 
-/**
- * PhpMyAdmin\Display\Export class
- */
-class Export
+final class Options
 {
     /** @var Relation */
     private $relation;
 
-    /** @var Template */
-    public $template;
-
     /** @var TemplateModel */
     private $templateModel;
 
-    public function __construct()
+    public function __construct(Relation $relation, TemplateModel $templateModel)
     {
-        $this->relation = new Relation($GLOBALS['dbi']);
-        $this->template = new Template();
-        $this->templateModel = new TemplateModel($GLOBALS['dbi']);
+        $this->relation = $relation;
+        $this->templateModel = $templateModel;
     }
 
     /**
@@ -66,9 +52,9 @@ class Export
      *
      * @param string $tmpSelect Tmp selected method of export
      *
-     * @return string
+     * @return array
      */
-    public function getHtmlForSelectOptions($tmpSelect = '')
+    public function getDatabasesForSelectOptions($tmpSelect = '')
     {
         // Check if the selected databases are defined in $_POST
         // (from clicking Back button on /export page)
@@ -103,74 +89,45 @@ class Export
             ];
         }
 
-        return $this->template->render('display/export/select_options', ['databases' => $databases]);
+        return $databases;
     }
 
     /**
-     * Prints Html For Export Hidden Input
+     * @param string         $exportType   export type: server|database|table
+     * @param string         $db           selected DB
+     * @param string         $table        selected table
+     * @param string         $sqlQuery     SQL query
+     * @param int|string     $numTables    number of tables
+     * @param int|string     $unlimNumRows unlimited number of rows
+     * @param ExportPlugin[] $exportList
      *
-     * @param string $exportType  Selected Export Type
-     * @param string $db          Selected DB
-     * @param string $table       Selected Table
-     * @param string $singleTable Single Table
-     * @param string $sqlQuery    SQL Query
-     *
-     * @return string
+     * @return array<string, mixed>
      */
-    public function getHtmlForHiddenInputs(
+    public function getOptions(
         $exportType,
         $db,
         $table,
-        $singleTable,
-        $sqlQuery
-    ) {
-        global $cfg;
-
-        // If the export method was not set, the default is quick
-        if (isset($_POST['export_method'])) {
-            $cfg['Export']['method'] = $_POST['export_method'];
-        } elseif (! isset($cfg['Export']['method'])) {
-            $cfg['Export']['method'] = 'quick';
-        }
-
-        if (empty($sqlQuery) && isset($_POST['sql_query'])) {
-            $sqlQuery = $_POST['sql_query'];
-        }
-
-        return $this->template->render('display/export/hidden_inputs', [
-            'db' => $db,
-            'table' => $table,
-            'export_type' => $exportType,
-            'export_method' => $cfg['Export']['method'],
-            'single_table' => $singleTable,
-            'sql_query' => $sqlQuery,
-            'template_id' => $_POST['template_id'] ?? '',
-        ]);
-    }
-
-    /**
-     * Prints Html For Export Options
-     *
-     * @param string         $exportType   Selected Export Type
-     * @param string         $db           Selected DB
-     * @param string         $table        Selected Table
-     * @param string         $multiValues  Export selection
-     * @param string         $numTables    number of tables
-     * @param ExportPlugin[] $exportList   Export List
-     * @param string         $unlimNumRows Number of Rows
-     *
-     * @return string
-     */
-    public function getHtmlForOptions(
-        $exportType,
-        $db,
-        $table,
-        $multiValues,
+        $sqlQuery,
         $numTables,
-        $exportList,
-        $unlimNumRows
+        $unlimNumRows,
+        array $exportList
     ) {
         global $cfg;
+
+        $cfgRelation = $this->relation->getRelationsParam();
+
+        $templates = [];
+
+        if ($cfgRelation['exporttemplateswork']) {
+            $templates = $this->templateModel->getAll(
+                $cfgRelation['db'],
+                $cfgRelation['export_templates'],
+                $GLOBALS['cfg']['Server']['user'],
+                $exportType
+            );
+
+            $templates = is_array($templates) ? $templates : [];
+        }
 
         $dropdown = Plugins::getChoice('Export', 'what', $exportList, 'format');
         $tableObject = new Table($table, $db);
@@ -197,11 +154,35 @@ class Export
             $selectedCompression = 'zip';
         }
 
-        return $this->template->render('display/export/options', [
+        $hiddenInputs = [
+            'db' => $db,
+            'table' => $table,
+            'export_type' => $exportType,
+            'export_method' => $_POST['export_method'] ?? $cfg['Export']['method'] ?? 'quick',
+            'template_id' => $_POST['template_id'] ?? '',
+        ];
+
+        if (! empty($GLOBALS['single_table'])) {
+            $hiddenInputs['single_table'] = true;
+        }
+
+        if (! empty($sqlQuery)) {
+            $hiddenInputs['sql_query'] = $sqlQuery;
+        }
+
+        return [
+            'export_type' => $exportType,
+            'db' => $db,
+            'table' => $table,
+            'templates' => [
+                'is_enabled' => $cfgRelation['exporttemplateswork'],
+                'templates' => $templates,
+                'selected' => $_POST['template_id'] ?? null,
+            ],
+            'sql_query' => $sqlQuery,
+            'hidden_inputs' => $hiddenInputs,
             'export_method' => $_POST['quick_or_custom'] ?? $cfg['Export']['method'] ?? '',
             'dropdown' => $dropdown,
-            'export_type' => $exportType,
-            'multi_values' => $multiValues,
             'options' => Plugins::getOptions('Export', $exportList),
             'can_convert_kanji' => Encoding::canConvertKanji(),
             'exec_time_limit' => $cfg['ExecTimeLimit'],
@@ -228,112 +209,7 @@ class Export
             'has_gzip' => $cfg['GZipDump'] && function_exists('gzencode'),
             'selected_compression' => $selectedCompression,
             'filename_template' => $filenameTemplate,
-        ]);
-    }
-
-    /**
-     * Gets HTML to display export dialogs
-     *
-     * @param string $exportType   export type: server|database|table
-     * @param string $db           selected DB
-     * @param string $table        selected table
-     * @param string $sqlQuery     SQL query
-     * @param int    $numTables    number of tables
-     * @param int    $unlimNumRows unlimited number of rows
-     * @param string $multiValues  selector options
-     *
-     * @return string
-     */
-    public function getDisplay(
-        $exportType,
-        $db,
-        $table,
-        $sqlQuery,
-        $numTables,
-        $unlimNumRows,
-        $multiValues
-    ) {
-        $cfgRelation = $this->relation->getRelationsParam();
-
-        if (isset($_POST['single_table'])) {
-            $GLOBALS['single_table'] = $_POST['single_table'];
-        }
-
-        // Export a single table
-        if (isset($_GET['single_table'])) {
-            $GLOBALS['single_table'] = $_GET['single_table'];
-        }
-
-        /* Scan for plugins */
-        /** @var ExportPlugin[] $exportList */
-        $exportList = Plugins::getPlugins(
-            'export',
-            'libraries/classes/Plugins/Export/',
-            [
-                'export_type' => $exportType,
-                'single_table' => isset($GLOBALS['single_table']),
-            ]
-        );
-
-        /* Fail if we didn't find any plugin */
-        if (empty($exportList)) {
-            echo Message::error(
-                __('Could not load export plugins, please check your installation!')
-            )->getDisplay();
-            exit;
-        }
-
-        $html = $this->template->render('display/export/option_header', [
-            'export_type' => $exportType,
-            'db' => $db,
-            'table' => $table,
-        ]);
-
-        if ($cfgRelation['exporttemplateswork']) {
-            $templates = $this->templateModel->getAll(
-                $cfgRelation['db'],
-                $cfgRelation['export_templates'],
-                $GLOBALS['cfg']['Server']['user'],
-                $exportType
-            );
-
-            $html .= $this->template->render('display/export/template_loading', [
-                'options' => $this->template->render('display/export/template_options', [
-                    'templates' => is_array($templates) ? $templates : [],
-                    'selected_template' => $_POST['template_id'] ?? null,
-                ]),
-            ]);
-        }
-
-        $html .= $this->template->render('display/export/query', ['sql_query' => $sqlQuery]);
-
-        $html .= '<form method="post" action="' . Url::getFromRoute('/export')
-            . '" name="dump" class="disableAjax">';
-
-        //output Hidden Inputs
-        $singleTableStr = $GLOBALS['single_table'] ?? '';
-        $html .= $this->getHtmlForHiddenInputs(
-            $exportType,
-            $db,
-            $table,
-            $singleTableStr,
-            $sqlQuery
-        );
-
-        //output Export Options
-        $html .= $this->getHtmlForOptions(
-            $exportType,
-            $db,
-            $table,
-            $multiValues,
-            $numTables,
-            $exportList,
-            $unlimNumRows
-        );
-
-        $html .= '</form>';
-
-        return $html;
+        ];
     }
 
     private function getFileNameTemplate(string $exportType, ?string $filename = null): string
